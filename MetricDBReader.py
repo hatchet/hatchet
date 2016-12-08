@@ -14,13 +14,12 @@ import glob
 import struct
 import numpy as np
 # np.set_printoptions(threshold=np.inf)
-from sys import argv
 
 # Read all .metric-db files in the current directory
 mdbfiles = glob.glob('*.metric-db')
 numPes = len(mdbfiles)
 
-# Read header from one of the metric files
+# Read header from one of the .metric-db files
 metricdb = open(mdbfiles[0], "rb")
 
 tag = metricdb.read(18)
@@ -43,13 +42,17 @@ metrics = np.empty([numPes, numNodes, numMetrics])
 
 for index, filename in enumerate(mdbfiles):
     metricdb = open(filename, "rb")
+    # skip header of 32 bytes
     metricdb.seek(32)
+    # currently assumes a big endian binary and reads all the metrics at once
+    # into a numpy array
     arr = np.fromfile(metricdb, dtype=np.dtype('>f8'), count=numNodes*numMetrics)
     metrics[index] = arr.reshape(numNodes, numMetrics)
-#     for i in range(0, numNodes):
-# 	for j in range(0, numMetrics):
-# 	    print struct.unpack('>d', metricdb.read(8))[0],
-# 	print ""
+    # alternate method of reading the file one metric at a time
+    # for i in range(0, numNodes):
+    #     for j in range(0, numMetrics):
+    #         print struct.unpack('>d', metricdb.read(8))[0],
+    #     print ""
     metricdb.close()
 
 # print metrics[numPes-1]
