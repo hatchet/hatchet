@@ -1,2 +1,3 @@
+*.pyc
 *.metric-db
 experiment.xml

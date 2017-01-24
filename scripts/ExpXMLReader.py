@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 ##############################################################################
 # Copyright (c) 2017, Lawrence Livermore National Security, LLC.
 # Produced at the Lawrence Livermore National Laboratory.
@@ -9,6 +7,8 @@
 #
 # LLNL-CODE-XXXXXX. All rights reserved.
 ##############################################################################
+
+#!/usr/bin/env python
 
 try:
     import xml.etree.cElementTree as ET
