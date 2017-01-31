@@ -19,14 +19,16 @@ except ImportError:
 
 class HPCTDBReader:
 
-    def __init__(self, filename):
-	root = ET.parse(filename).getroot()
+    def __init__(self, dirname):
+	self.dirname = dirname
+
+	root = ET.parse(self.dirname + '/experiment.xml').getroot()
 	self.LoadModuleTable = root.iter('LoadModuleTable').next()
 	self.FileTable = root.iter('FileTable').next()
 	self.ProcedureTable = root.iter('ProcedureTable').next()
 	self.CallPathProfile = root.iter('SecCallPathProfileData').next()
 
-	mdbfiles = glob.glob('*.metric-db')
+	mdbfiles = glob.glob(self.dirname + '/*.metric-db')
 	self.numPes = len(mdbfiles)
 
 	metricdb = open(mdbfiles[0], "rb")
@@ -54,7 +56,7 @@ class HPCTDBReader:
 	return self.CallPathProfile
 
     def readMetricDBFiles(self):
-	mdbfiles = glob.glob('*.metric-db')
+	mdbfiles = glob.glob(self.dirname + '/*.metric-db')
 
 	for index, filename in enumerate(mdbfiles):
 	    metricdb = open(filename, "rb")
