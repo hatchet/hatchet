@@ -18,19 +18,19 @@ if __name__ == "__main__":
     dbr = HPCTDBReader(filename)
 
     for loadm in (dbr.getLoadModuleTable()).iter('LoadModule'):
-	print loadm.attrib
+        print loadm.attrib
     print ""
 
     for filename in (dbr.getFileTable()).iter('File'):
-	print filename.attrib
+        print filename.attrib
     print ""
 
     for procedure in (dbr.getProcedureTable()).iter('Procedure'):
-	print procedure.attrib
+        print procedure.attrib
     print ""
 
     for elem in (dbr.getCallPathProfile()).iter():
-	print elem.attrib
+        print elem.attrib
     print ""
 
     metrics = dbr.readMetricDBFiles()
