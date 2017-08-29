@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 ##############################################################################
 # Copyright (c) 2017, Lawrence Livermore National Security, LLC.
 # Produced at the Lawrence Livermore National Laboratory.
@@ -10,7 +8,12 @@
 # LLNL-CODE-XXXXXX. All rights reserved.
 ##############################################################################
 
-from HPCTDBReader import *
-from CCNode import *
-from CCTree import *
+#!/usr/bin/env python
+
+import sys
+from callpy import *
+
+if __name__ == "__main__":
+    dirname = sys.argv[1]
+    cct = CCTree(dirname)
 
