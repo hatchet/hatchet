@@ -41,7 +41,7 @@ class HPCTDBReader:
             self.numMetrics = struct.unpack('>i', metricdb.read(4))[0]
 
         metricdb.close()
-        self.metrics = np.empty([self.numPes, self.numNodes, self.numMetrics])
+        self.metrics = np.empty([self.numMetrics, self.numNodes, self.numPes])
 
     def getLoadModuleTable(self):
         return self.LoadModuleTable
@@ -58,11 +58,18 @@ class HPCTDBReader:
     def readMetricDBFiles(self):
         mdbfiles = glob.glob(self.dirname + '/*.metric-db')
 
-        for index, filename in enumerate(mdbfiles):
+        # assumes that glob returns a sorted order
+        for pe, filename in enumerate(mdbfiles):
             metricdb = open(filename, "rb")
             metricdb.seek(32)
             arr = np.fromfile(metricdb, dtype=np.dtype('>f8'), count=self.numNodes * self.numMetrics)
-            self.metrics[index] = arr.reshape(self.numNodes, self.numMetrics)
+            # inclusive time
+            metric1 = arr[0::2]
+            # exclusive time
+            metric2 = arr[1::2]
+            for i in range(0, len(metric1)):
+                self.metrics[0][i][pe] = metric1[i]
+                self.metrics[1][i][pe] = metric2[i]
             metricdb.close()
 
         return self.metrics

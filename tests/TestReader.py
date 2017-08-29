@@ -14,8 +14,8 @@ import sys
 from callpy import *
 
 if __name__ == "__main__":
-    filename = sys.argv[1]
-    dbr = HPCTDBReader(filename)
+    dirname = sys.argv[1]
+    dbr = HPCTDBReader(dirname)
 
     for loadm in (dbr.getLoadModuleTable()).iter('LoadModule'):
         print loadm.attrib
@@ -35,4 +35,4 @@ if __name__ == "__main__":
 
     metrics = dbr.readMetricDBFiles()
 
-    print metrics[0]
+    print metrics
