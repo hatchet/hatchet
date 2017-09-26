@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 ##############################################################################
 # Copyright (c) 2017, Lawrence Livermore National Security, LLC.
 # Produced at the Lawrence Livermore National Laboratory.
@@ -12,6 +10,8 @@
 
 from HPCTDBReader import *
 from CCNode import *
+
+filename = 0
 
 class CCTree:
 
@@ -45,13 +45,13 @@ class CCTree:
         # parse the ElementTree to generate a calling context tree
         root = dbr.getCallPathProfile().findall('PF')[0]
         nid = int(root.get('i'))
-        val = np.empty([self.numMetrics, 3])
+        metrics = np.empty([self.numMetrics, 3])
         for i in range(0, self.numMetrics):
-            val[i][0] = self.metmin[i][nid-1]
-            val[i][1] = self.metavg[i][nid-1]
-            val[i][2] = self.metmax[i][nid-1]
+            metrics[i][0] = self.metmin[i][nid-1]
+            metrics[i][1] = self.metavg[i][nid-1]
+            metrics[i][2] = self.metmax[i][nid-1]
 
-        self.root = CCNode(nid, root.get('s'), root.get('l'), val, root.get('n'), root.get('lm'), root.get('f'))
+        self.root = CCNode(nid, root.get('s'), root.get('l'), metrics, 'PF', root.get('n'), root.get('lm'), root.get('f'))
 
         # start tree construction at the root
         self.parseXMLChildren(root, self.root)
@@ -68,24 +68,41 @@ class CCTree:
     # parse an XML node and its children recursively
     def parseXMLNode(self, xmlNode, ccParent):
         nid = int(xmlNode.get('i'))
-        val = np.empty([self.numMetrics, 3])
+        metrics = np.empty([self.numMetrics, 3])
         for i in range(0, self.numMetrics):
-            val[i][0] = self.metmin[i][nid-1]
-            val[i][1] = self.metavg[i][nid-1]
-            val[i][2] = self.metmax[i][nid-1]
+            metrics[i][0] = self.metmin[i][nid-1]
+            metrics[i][1] = self.metavg[i][nid-1]
+            metrics[i][2] = self.metmax[i][nid-1]
 
+        global filename
         xmltag = xmlNode.tag
+
         if xmltag == 'PF':
-            ccNode = CCNode(nid, xmlNode.get('s'), xmlNode.get('l'), val, name=xmlNode.get('n'), loadm=xmlNode.get('lm'), filen=xmlNode.get('f'))
+            ccNode = CCNode(nid, xmlNode.get('s'), xmlNode.get('l'), metrics, xmltag, xmlNode.get('n'), xmlNode.get('lm'), xmlNode.get('f'))
+            filename = xmlNode.get('f')
         elif xmltag == 'Pr':
-            ccNode = CCNode(nid, xmlNode.get('s'), xmlNode.get('l'), val, name=xmlNode.get('n'), loadm=xmlNode.get('lm'), filen=xmlNode.get('f'))
-        elif xmltag == 'C':
-            ccNode = CCNode(nid, xmlNode.get('s'), xmlNode.get('l'), val)
+            ccNode = CCNode(nid, xmlNode.get('s'), xmlNode.get('l'), metrics, xmltag, xmlNode.get('n'), xmlNode.get('lm'), xmlNode.get('f'))
+            filename = xmlNode.get('f')
         elif xmltag == 'L':
-            ccNode = CCNode(nid, xmlNode.get('s'), xmlNode.get('l'), val, filen=xmlNode.get('f'))
+            ccNode = CCNode(nid, xmlNode.get('s'), xmlNode.get('l'), metrics, xmltag, src_file=xmlNode.get('f'))
+            filename = xmlNode.get('f')
+        # elif xmltag == 'C':
+            # ccNode = CCNode(nid, xmlNode.get('s'), xmlNode.get('l'), metrics, xmltag)
         elif xmltag == 'S':
-            ccNode = CCNode(nid, xmlNode.get('s'), xmlNode.get('l'), val)
+            ccNode = CCNode(nid, xmlNode.get('s'), xmlNode.get('l'), metrics, xmltag, src_file=filename)
 
-        ccParent.add_child(ccNode)
-        self.parseXMLChildren(xmlNode, ccNode)
+        if xmltag == 'C' or (xmltag == 'Pr' and self.procedures[xmlNode.get('n')] == ""):
+            # do not add a node to the tree
+            self.parseXMLChildren(xmlNode, ccParent)
+        else:
+            ccParent.add_child(ccNode)
+            self.parseXMLChildren(xmlNode, ccNode)
 
+
+    def getNodeName(self, ccNode):
+        if ccNode.node_type == 'PF' or ccNode.node_type == 'Pr':
+            return self.procedures[ccNode.name]
+        elif ccNode.node_type == 'L':
+            return "Loop@" + (self.files[ccNode.src_file]).rpartition('/')[2] + ":" + ccNode.line
+        elif ccNode.node_type == 'S':
+            return (self.files[ccNode.src_file]).rpartition('/')[2] + ":" + ccNode.line
