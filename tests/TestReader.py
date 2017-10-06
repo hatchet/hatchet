@@ -17,19 +17,19 @@ if __name__ == "__main__":
     dirname = sys.argv[1]
     dbr = HPCTDBReader(dirname)
 
-    for loadm in (dbr.getLoadModuleTable()).iter('LoadModule'):
+    for loadm in (dbr.LoadModuleTable).iter('LoadModule'):
         print loadm.attrib
     print ""
 
-    for filename in (dbr.getFileTable()).iter('File'):
+    for filename in (dbr.FileTable).iter('File'):
         print filename.attrib
     print ""
 
-    for procedure in (dbr.getProcedureTable()).iter('Procedure'):
+    for procedure in (dbr.ProcedureTable).iter('Procedure'):
         print procedure.attrib
     print ""
 
-    for elem in (dbr.getCallPathProfile()).iter():
+    for elem in (dbr.CallPathProfile).iter():
         print elem.attrib
     print ""
 

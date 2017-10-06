@@ -17,7 +17,12 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ET
 
+
 class HPCTDBReader:
+    """
+    Read in the various sections of an HPCToolkit experiment.xml file
+    and metric-db files
+    """
 
     def __init__(self, dirname):
         self.dirname = dirname
@@ -43,18 +48,6 @@ class HPCTDBReader:
         metricdb.close()
         self.metrics = np.empty([self.numMetrics, self.numNodes, self.numPes])
 
-    def getLoadModuleTable(self):
-        return self.LoadModuleTable
-
-    def getFileTable(self):
-        return self.FileTable
-
-    def getProcedureTable(self):
-        return self.ProcedureTable
-
-    def getCallPathProfile(self):
-        return self.CallPathProfile
-
     def readMetricDBFiles(self):
         mdbfiles = glob.glob(self.dirname + '/*.metric-db')
 
@@ -62,7 +55,8 @@ class HPCTDBReader:
         for pe, filename in enumerate(mdbfiles):
             metricdb = open(filename, "rb")
             metricdb.seek(32)
-            arr = np.fromfile(metricdb, dtype=np.dtype('>f8'), count=self.numNodes * self.numMetrics)
+            arr = np.fromfile(metricdb, dtype=np.dtype('>f8'),
+                              count=self.numNodes * self.numMetrics)
             # inclusive time
             metric1 = arr[0::2]
             # exclusive time
