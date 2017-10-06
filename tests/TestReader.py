@@ -11,7 +11,7 @@
 #!/usr/bin/env python
 
 import sys
-from callpy import *
+from hatchet import *
 
 if __name__ == "__main__":
     dirname = sys.argv[1]
