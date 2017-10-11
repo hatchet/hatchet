@@ -68,8 +68,10 @@ def test_cctree(calc_pi_hpct_db):
     assert all(pr in tree.procedures.values() for pr in procedures)
 
     # make sure every node has dummy data.
-    # for node in tree.traverse():
-    #    assert node.metrics == [0.0, 1.0]
+    for node in tree.traverse(tree.root):
+        for i in range(0, tree.numMetrics):
+            for j in range(0, 3):
+                assert node.metrics[i][j] >= 0.0
 
 def test_read_calc_pi_database(calc_pi_hpct_db):
     """Sanity check the HPCT database reader by examining a known input."""
