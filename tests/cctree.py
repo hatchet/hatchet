@@ -9,49 +9,80 @@
 ##############################################################################
 from hatchet import CCTree, HPCTDBReader
 
-modules = [
-    '/g/g92/bhatele1/llnl/hpctoolkit/lulesh/lulesh2.0',
-    '/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/'
-    'hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0',
-    '/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5',
-    '/lib64/libc-2.12.so',
-    '/usr/lib64/libpsm_infinipath.so.1.14',
-    '/usr/lib64/libinfinipath.so.4.0']
+modules = ['cpi',
+           '/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/'
+           'hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0',
+           '/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5',
+           '/lib64/libc-2.12.so',
+           '/usr/lib64/libpsm_infinipath.so.1.14']
 
-sources = ['./src/g/g92/bhatele1/llnl/hpctoolkit/lulesh/lulesh-comm.cc',
-           './src/g/g92/bhatele1/llnl/hpctoolkit/lulesh/lulesh.cc',
-           './src/g/g92/bhatele1/llnl/hpctoolkit/lulesh/lulesh.h']
+src_files = ['./src/cpi.c',
+             '<unknown file>',
+             '/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/'
+             'init/init.c',
+             '/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/'
+             'init/initthread.c',
+             '/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/'
+             'ch3/src/mpid_init.c',
+             '/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/'
+             'ch3/channels/psm/src/mpidi_calls.c',
+             '/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/'
+             'ch3/channels/psm/src/psm_entry.c',
+             '/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/'
+             'init/finalize.c',
+             '/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/'
+             'ch3/src/mpid_finalize.c',
+             '/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/'
+             'ch3/channels/psm/src/psm_exit.c',
+             'interp.c',
+             '<unknown file>']
 
-procedures = ['CalcMonotonicQForElems(Domain&, double*)',
-              'ApplyMaterialPropertiesForElems(Domain&, double*)',
-              'UpdateVolumesForElems(Domain&, double*, double, int)',
-              'CalcTimeConstraintsForElems(Domain&)']
+procedures = ['main',
+              '<program root>',
+              'MPI_Init',
+              'pthread_create',
+              'MPI_Finalize',
+              'PMPI_Init',
+              'MPIR_Init_thread',
+              'MPID_Init',
+              'MPIDI_CH3_Init',
+              'MPIDI_CH3_Finalize',
+              'psm_doinit',
+              'PMPI_Finalize',
+              'MPID_Finalize',
+              'psm_dofinalize',
+              '__GI_sched_yield',
+              '<unknown procedure>']
 
 
-def test_tree(lulesh_experiment_dir):
+def test_cctree(calc_pi_hpct_db):
     """Sanity test a CCTree object wtih known data."""
 
-    tree = CCTree(str(lulesh_experiment_dir))
+    tree = CCTree(str(calc_pi_hpct_db))
 
-    assert len(tree.loadModules) == 6
-    assert all(f in tree.loadModules.values() for f in modules)
-    assert all(s in tree.files.values() for s in sources)
-    assert all(p in tree.procedures.values() for p in procedures)
+    assert len(tree.loadModules) == 5
+    assert len(tree.files) == 12
+    assert len(tree.procedures) == 16
+    assert all(lm in tree.loadModules.values() for lm in modules)
+    assert all(sf in tree.files.values() for sf in src_files)
+    assert all(pr in tree.procedures.values() for pr in procedures)
 
     # make sure every node has dummy data.
-    for node in tree.traverse():
-        assert node.metrics == [0.0, 1.0]
+    # for node in tree.traverse():
+    #    assert node.metrics == [0.0, 1.0]
 
-def test_read_lulesh_data(lulesh_experiment_dir):
-    """Sanity check the reader by examining a known input."""
-    dbr = HPCTDBReader(str(lulesh_experiment_dir))
+def test_read_calc_pi_database(calc_pi_hpct_db):
+    """Sanity check the HPCT database reader by examining a known input."""
+    dbr = HPCTDBReader(str(calc_pi_hpct_db))
 
-    load_modules = [
+    dbr_modules = [
         x.attrib['n'] for x in dbr.LoadModuleTable.iter('LoadModule')]
-    file_names = [x.attrib['n'] for x in dbr.FileTable.iter('File')]
-    procs = [x.attrib['n'] for x in dbr.ProcedureTable.iter('Procedure')]
+    dbr_files = [x.attrib['n'] for x in dbr.FileTable.iter('File')]
+    dbr_procs = [x.attrib['n'] for x in dbr.ProcedureTable.iter('Procedure')]
 
-    assert len(load_modules) == 6
-    assert all(f in load_modules for f in modules)
-    assert all(s in file_names for s in sources)
-    assert all(p in procs for p in procedures)
+    assert len(dbr_modules) == 5
+    assert len(dbr_files) == 12
+    assert len(dbr_procs) == 16
+    assert all(lm in dbr_modules for lm in modules)
+    assert all(sf in dbr_files for sf in src_files)
+    assert all(pr in dbr_procs for pr in procedures)
