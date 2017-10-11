@@ -121,3 +121,13 @@ class CCTree:
         elif ccNode.node_type == 'S':
             return (self.files[ccNode.src_file]).rpartition('/')[2] + ":" + ccNode.line
 
+    def traverse(self, root=None):
+        """Traverse the tree depth-first and yield each node."""
+        if root is None:
+            root == self.root
+
+        for child in root.children:
+            for node in child.traverse():
+                yield node
+
+        yield root
