@@ -58,7 +58,7 @@ procedures = ['main',
 def test_cctree(calc_pi_hpct_db):
     """Sanity test a CCTree object wtih known data."""
 
-    tree = CCTree(str(calc_pi_hpct_db))
+    tree = CCTree(str(calc_pi_hpct_db), 'hpctoolkit')
 
     assert len(tree.loadModules) == 5
     assert len(tree.files) == 12
