@@ -35,3 +35,12 @@ class CCNode:
         assert isinstance(node, CCNode)
         self.children.append(node)
 
+    def __iter__(self):
+        """Traverse the tree depth-first and yield each node.
+        """
+        for child in self.children:
+            for item in child:
+                yield item
+
+        yield self
+
