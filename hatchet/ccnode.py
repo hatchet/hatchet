@@ -45,4 +45,3 @@ class CCNode:
                 yield item
 
         yield self
-

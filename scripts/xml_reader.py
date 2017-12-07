@@ -39,7 +39,8 @@ for child in root[1]:
 print ""
 
 # Root[1][0] - SecHeader
-# Children - MetricTable, MetricDBTable, TraceDBTable, LoadModuleTable, FileTable, ProcedureTable
+# Children - MetricTable, MetricDBTable, TraceDBTable, LoadModuleTable,
+#            FileTable, ProcedureTable
 for loadm in root[1][0][3].iter('LoadModule'):
     print loadm.attrib
 print ""

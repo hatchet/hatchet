@@ -72,7 +72,6 @@ def calc_pi_hpct_db(data_dir, tmpdir):
     """Builds a temporary directory containing the calc-pi database."""
     hpct_db_dir = os.path.join(data_dir, 'calc-pi-database')
 
-    # make_mock_metric_db(str(tmpdir), 'lulesh2.0', 8, 1643)
     for f in glob(os.path.join(str(hpct_db_dir), '*.metric-db')):
         shutil.copy(f, str(tmpdir))
     shutil.copy(os.path.join(hpct_db_dir, 'experiment.xml'), str(tmpdir))

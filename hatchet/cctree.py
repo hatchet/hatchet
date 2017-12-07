@@ -10,7 +10,7 @@
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
 
-from HPCTDBReader import *
+from hpctdb_reader import HPCTDBReader
 
 
 class CCTree:
@@ -19,37 +19,40 @@ class CCTree:
     """
 
     def __init__(self, dirname, srcformat):
-        self.numPes = 0
-        self.numNodes = 0
-        self.numMetrics = 0
+        self.num_pes = 0
+        self.num_nodes = 0
+        self.num_metrics = 0
 
         if srcformat == 'hpctoolkit':
             dbr = HPCTDBReader(dirname)
-            self.numPes = dbr.numPes
-            self.numNodes = dbr.numNodes
-            self.numMetrics = dbr.numMetrics
+            self.num_pes = dbr.num_pes
+            self.num_nodes = dbr.num_nodes
+            self.num_metrics = dbr.num_metrics
 
-            (self.loadModules, self.files, self.procedures) = dbr.fillTables()
+            (self.load_modules,
+             self.files, self.procedures) = dbr.fill_tables()
 
-            self.metrics = dbr.readMetricDBFiles()
+            self.metrics = dbr.read_metricdb()
 
-            # createCCTree assumes readMetricDBFiles has been called
-            self.root = dbr.createCCTree()
+            # create_cctree assumes read_metricdb has been called
+            self.root = dbr.create_cctree()
             print "Tree created from HPCToolkit database"
 
-    def getNodeName(self, ccNode):
+    def get_node_name(self, ccnode):
         """ Returns a string to be displayed in the ETE tree.
         """
-        if ccNode.node_type == 'PF' or ccNode.node_type == 'Pr':
-            return self.procedures[ccNode.name]
-        elif ccNode.node_type == 'L':
-            return "Loop@" + (self.files[ccNode.src_file]).rpartition('/')[2] + ":" + ccNode.line
-        elif ccNode.node_type == 'S':
-            return (self.files[ccNode.src_file]).rpartition('/')[2] + ":" + ccNode.line
+        if ccnode.node_type == 'PF' or ccnode.node_type == 'Pr':
+            return self.procedures[ccnode.name]
+        elif ccnode.node_type == 'L':
+            return ("Loop@" + (self.files[ccnode.src_file]).rpartition('/')[2]
+                    + ":" + ccnode.line)
+        elif ccnode.node_type == 'S':
+            return ((self.files[ccnode.src_file]).rpartition('/')[2]
+                    + ":" + ccnode.line)
 
     def traverse(self, root=None):
         """Traverse the tree depth-first and yield each node."""
-        if root == None:
+        if root is None:
             root = self.root
 
         return list(iter(root))

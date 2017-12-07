@@ -48,7 +48,8 @@ for index, filename in enumerate(mdbfiles):
     metricdb.seek(32)
     # currently assumes a big endian binary and reads all the metrics at once
     # into a numpy array
-    arr = np.fromfile(metricdb, dtype=np.dtype('>f8'), count=numNodes*numMetrics)
+    arr = np.fromfile(metricdb, dtype=np.dtype('>f8'),
+                      count=numNodes*numMetrics)
     metrics[index] = arr.reshape(numNodes, numMetrics)
     # alternate method of reading the file one metric at a time
     # for i in range(0, numNodes):

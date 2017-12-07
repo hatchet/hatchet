@@ -10,7 +10,4 @@
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
 
-from HPCTDBReader import *
-from CCNode import *
-from CCTree import *
-
+from cctree import *
