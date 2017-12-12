@@ -127,7 +127,7 @@ class HPCTDBReader:
             if xml_child.tag != 'M':
                 self.parse_xml_node(xml_child, ccnode)
 
-    def parse_xml_node(self, xml_node, ccParent):
+    def parse_xml_node(self, xml_node, cc_parent):
         """ Parses an XML node and its children recursively.
         """
         nid = int(xml_node.get('i'))
@@ -165,7 +165,7 @@ class HPCTDBReader:
         if xml_tag == 'C' or (xml_tag == 'Pr' and
                               self.procedures[xml_node.get('n')] == ""):
             # do not add a node to the tree
-            self.parse_xml_children(xml_node, ccParent)
+            self.parse_xml_children(xml_node, cc_parent)
         else:
-            ccParent.add_child(ccnode)
+            cc_parent.add_child(ccnode)
             self.parse_xml_children(xml_node, ccnode)
