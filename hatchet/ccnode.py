@@ -15,19 +15,19 @@ class CCNode:
     """ A node in the tree.
     """
 
-    def __init__(self, cct_id, flat_id, line, metrics, node_type, name=None,
-                 load_module=None, src_file=None):
-        self.cct_id = cct_id    # (i)d: unique identifier for cross referencing
-        self.flat_id = flat_id  # (s)tatic scope id
-        self.line = line        # (l)ine range: "beg-end" (inclusive range)
-        self.metrics = metrics  # (v)ma-range-set: "{[beg-end), [beg-end)...}"
-        self.node_type = node_type  # PF/Pr/L/C/S
+    def __init__(self, _cct_id, _flat_id, _line, _metrics, _node_type,
+                 _name=None, _load_module=None, _src_file=None):
+        self.cct_id = _cct_id    # (i)d: unique identifier for cross referencing
+        self.flat_id = _flat_id  # (s)tatic scope id
+        self.line = _line        # (l)ine range: "beg-end" (inclusive range)
+        self.metrics = _metrics  # (v)ma-range-set: "{[beg-end), [beg-end)...}"
+        self.node_type = _node_type  # PF/Pr/L/C/S
 
         # not all nodes have this information
-        self.name = name          # (n)ame: a string or an id in ProcedureTable
+        self.name = _name          # (n)ame: string or id in ProcedureTable
         # (lm) load module: string or id in LoadModuleTable
-        self.load_module = load_module
-        self.src_file = src_file  # (f)ile name: string or id in FileTable
+        self.load_module = _load_module
+        self.src_file = _src_file  # (f)ile name: string or id in FileTable
 
         self.children = []
 

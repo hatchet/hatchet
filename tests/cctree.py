@@ -64,11 +64,11 @@ def test_cctree(calc_pi_hpct_db):
     tree = CCTree(str(calc_pi_hpct_db), 'hpctoolkit')
 
     assert len(tree.load_modules) == 5
-    assert len(tree.files) == 12
-    assert len(tree.procedures) == 16
+    assert len(tree.src_files) == 12
+    assert len(tree.procedure_names) == 16
     assert all(lm in tree.load_modules.values() for lm in modules)
-    assert all(sf in tree.files.values() for sf in src_files)
-    assert all(pr in tree.procedures.values() for pr in procedures)
+    assert all(sf in tree.src_files.values() for sf in src_files)
+    assert all(pr in tree.procedure_names.values() for pr in procedures)
 
     # make sure every node has dummy data.
     for node in tree.traverse():
@@ -80,15 +80,11 @@ def test_cctree(calc_pi_hpct_db):
 def test_read_calc_pi_database(calc_pi_hpct_db):
     """Sanity check the HPCT database reader by examining a known input."""
     dbr = HPCTDBReader(str(calc_pi_hpct_db))
+    dbr.fill_tables()
 
-    dbr_modules = [
-        x.attrib['n'] for x in dbr.loadmodule_table.iter('LoadModule')]
-    dbr_files = [x.attrib['n'] for x in dbr.file_table.iter('File')]
-    dbr_procs = [x.attrib['n'] for x in dbr.procedure_table.iter('Procedure')]
-
-    assert len(dbr_modules) == 5
-    assert len(dbr_files) == 12
-    assert len(dbr_procs) == 16
-    assert all(lm in dbr_modules for lm in modules)
-    assert all(sf in dbr_files for sf in src_files)
-    assert all(pr in dbr_procs for pr in procedures)
+    assert len(dbr.load_modules) == 5
+    assert len(dbr.src_files) == 12
+    assert len(dbr.procedure_names) == 16
+    assert all(lm in dbr.load_modules.values() for lm in modules)
+    assert all(sf in dbr.src_files.values() for sf in src_files)
+    assert all(pr in dbr.procedure_names.values() for pr in procedures)

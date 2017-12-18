@@ -21,7 +21,7 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ET
 
-filename = 0
+src_file = 0
 
 
 class HPCTDBReader:
@@ -60,22 +60,23 @@ class HPCTDBReader:
         self.metrics_avg = np.empty([self.num_metrics, self.num_nodes])
         self.metrics_max = np.empty([self.num_metrics, self.num_nodes])
 
-    def fill_tables(self):
-        load_modules = {}
-        files = {}
-        procedures = {}
+        self.load_modules = {}
+        self.src_files = {}
+        self.procedure_names = {}
 
-        # create dicts of load modules, files and procedures
+
+    def fill_tables(self):
+        # create dicts of load modules, src_files and procedure_names
         for loadm in (self.loadmodule_table).iter('LoadModule'):
-            load_modules[loadm.get('i')] = loadm.get('n')
+            self.load_modules[loadm.get('i')] = loadm.get('n')
 
         for filename in (self.file_table).iter('File'):
-            files[filename.get('i')] = filename.get('n')
+            self.src_files[filename.get('i')] = filename.get('n')
 
         for procedure in (self.procedure_table).iter('Procedure'):
-            procedures[procedure.get('i')] = procedure.get('n')
+            self.procedure_names[procedure.get('i')] = procedure.get('n')
 
-        return load_modules, files, procedures
+        return self.load_modules, self.src_files, self.procedure_names
 
     def read_metricdb(self):
         metricdb_files = glob.glob(self.dir_name + '/*.metric-db')
@@ -103,6 +104,9 @@ class HPCTDBReader:
         return self.metrics
 
     def create_cctree(self):
+        self.fill_tables()
+        self.read_metricdb()
+
         # parse the ElementTree to generate a calling context tree
         root = self.callpath_profile.findall('PF')[0]
         nid = int(root.get('i'))
@@ -114,7 +118,8 @@ class HPCTDBReader:
             metrics[i][2] = self.metrics_max[i][nid-1]
 
         cct_root = CCNode(nid, root.get('s'), root.get('l'), metrics, 'PF',
-                          root.get('n'), root.get('lm'), root.get('f'))
+                          self.procedure_names[root.get('n')], root.get('lm'),
+                          root.get('f'))
 
         # start tree construction at the root
         self.parse_xml_children(root, cct_root)
@@ -138,32 +143,29 @@ class HPCTDBReader:
             metrics[i][1] = self.metrics_avg[i][nid-1]
             metrics[i][2] = self.metrics_max[i][nid-1]
 
-        global filename
+        global src_file
         xml_tag = xml_node.tag
 
-        if xml_tag == 'PF':
+        if xml_tag == 'PF' or xml_tag == 'Pr':
+            name = self.procedure_names[xml_node.get('n')]
+            src_file = xml_node.get('f')
             ccnode = CCNode(nid, xml_node.get('s'), xml_node.get('l'), metrics,
-                            xml_tag, xml_node.get('n'), xml_node.get('lm'),
-                            xml_node.get('f'))
-            filename = xml_node.get('f')
-        elif xml_tag == 'Pr':
-            ccnode = CCNode(nid, xml_node.get('s'), xml_node.get('l'), metrics,
-                            xml_tag, xml_node.get('n'), xml_node.get('lm'),
-                            xml_node.get('f'))
-            filename = xml_node.get('f')
+                            xml_tag, name, xml_node.get('lm'), src_file)
         elif xml_tag == 'L':
-            ccnode = CCNode(nid, xml_node.get('s'), xml_node.get('l'), metrics,
-                            xml_tag, src_file=xml_node.get('f'))
-            filename = xml_node.get('f')
+            src_file = xml_node.get('f')
+            line = xml_node.get('l')
+            name = "Loop@" + (self.src_files[src_file]).rpartition('/')[2] + ":" + line
+            ccnode = CCNode(nid, xml_node.get('s'), line, metrics, xml_tag,
+                            _name=name, _src_file=src_file)
         # elif xml_tag == 'C':
             # ccnode = CCNode(nid, xml_node.get('s'), xml_node.get('l'),
             #                 metrics, xml_tag)
         elif xml_tag == 'S':
             ccnode = CCNode(nid, xml_node.get('s'), xml_node.get('l'), metrics,
-                            xml_tag, src_file=filename)
+                            xml_tag, _src_file=src_file)
 
         if xml_tag == 'C' or (xml_tag == 'Pr' and
-                              self.procedures[xml_node.get('n')] == ""):
+                              self.procedure_names[xml_node.get('n')] == ""):
             # do not add a node to the tree
             self.parse_xml_children(xml_node, cc_parent)
         else:
