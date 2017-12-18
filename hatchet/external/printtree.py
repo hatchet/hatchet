@@ -71,23 +71,24 @@ def as_text(ccnode, root, src_files, metric, threshold,
 
 def ansi_color_for_time(time, total):
     colors = colors_enabled
-    if time > 0.6 * total:
+    if time > 0.9 * total:
+        return colors.light_red + colors.faint
+    elif time > 0.75 * total:
         return colors.red
-    elif time > 0.2 * total:
+    elif time > 0.25 * total:
         return colors.yellow
-    elif time > 0.05 * total:
+    elif time > 0.10 * total:
         return colors.green
     else:
-        return colors.bright_green + colors.faint
+        return colors.light_green + colors.faint
 
 
 class colors_enabled:
     red = '\033[31m'
-    green = '\033[32m'
+    light_red = '\033[91m'
     yellow = '\033[33m'
-    blue = '\033[34m'
-    cyan = '\033[36m'
-    bright_green = '\033[92m'
+    light_green = '\033[92m'
+    green = '\033[32m'
 
     bold = '\033[1m'
     faint = '\033[2m'
