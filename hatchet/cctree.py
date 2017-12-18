@@ -11,7 +11,8 @@
 ##############################################################################
 
 from hpctdb_reader import HPCTDBReader
-
+from hatchet.external.printtree import as_text
+import sys
 
 class CCTree:
     """ A single tree that includes the root node and other performance data
@@ -29,26 +30,13 @@ class CCTree:
             self.num_nodes = dbr.num_nodes
             self.num_metrics = dbr.num_metrics
 
-            (self.load_modules,
-             self.files, self.procedures) = dbr.fill_tables()
+            (self.load_modules, self.src_files,
+             self.procedure_names) = dbr.fill_tables()
 
             self.metrics = dbr.read_metricdb()
 
-            # create_cctree assumes read_metricdb has been called
             self.root = dbr.create_cctree()
             print "Tree created from HPCToolkit database"
-
-    def get_node_name(self, ccnode):
-        """ Returns a string to be displayed in the ETE tree.
-        """
-        if ccnode.node_type == 'PF' or ccnode.node_type == 'Pr':
-            return self.procedures[ccnode.name]
-        elif ccnode.node_type == 'L':
-            return ("Loop@" + (self.files[ccnode.src_file]).rpartition('/')[2]
-                    + ":" + ccnode.line)
-        elif ccnode.node_type == 'S':
-            return ((self.files[ccnode.src_file]).rpartition('/')[2]
-                    + ":" + ccnode.line)
 
     def traverse(self, root=None):
         """Traverse the tree depth-first and yield each node."""
@@ -56,3 +44,13 @@ class CCTree:
             root = self.root
 
         return list(iter(root))
+
+    def print_tree(self, root=None, _metric='inclusive', _threshold=0.01,
+                   _unicode=False, _color=False):
+        if root is None:
+            root = self.root
+
+        result = as_text(root, root, self.src_files, metric=_metric,
+                         threshold=_threshold, unicode=_unicode, color=_color)
+
+        sys.stdout.write(result)
