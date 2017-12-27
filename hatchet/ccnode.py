@@ -16,7 +16,7 @@ class CCNode:
     """
 
     def __init__(self, _cct_id, _flat_id, _line, _metrics, _node_type, _name,
-                 _src_file, _load_module=None):
+                 _src_file, _parent_callpath, _load_module=None):
         self.cct_id = _cct_id    # (i)d: unique identifier for cross referencing
         self.flat_id = _flat_id  # (s)tatic scope id
         self.line = _line        # (l)ine range: "beg-end" (inclusive range)
@@ -28,6 +28,12 @@ class CCNode:
         # not all nodes have a (lm) load module: string or id in LoadModuleTable
         self.load_module = _load_module
 
+        if not _parent_callpath:
+            self.callpath = []
+            self.callpath.append(self.name)
+        else:
+            self.callpath = list(_parent_callpath)
+            self.callpath.append(self.name)
         self.children = []
 
     def add_child(self, node):

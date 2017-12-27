@@ -119,7 +119,7 @@ class HPCTDBReader:
 
         cct_root = CCNode(nid, root.get('s'), root.get('l'), metrics, 'PF',
                           self.procedure_names[root.get('n')], root.get('f'),
-                          root.get('lm'))
+                          [], root.get('lm'))
 
         # start tree construction at the root
         self.parse_xml_children(root, cct_root)
@@ -150,18 +150,19 @@ class HPCTDBReader:
             name = self.procedure_names[xml_node.get('n')]
             src_file = xml_node.get('f')
             ccnode = CCNode(nid, xml_node.get('s'), xml_node.get('l'), metrics,
-                            xml_tag, name, src_file, xml_node.get('lm'))
+                            xml_tag, name, src_file, cc_parent.callpath,
+                            xml_node.get('lm'))
         elif xml_tag == 'L':
             src_file = xml_node.get('f')
             line = xml_node.get('l')
             name = "Loop@" + (self.src_files[src_file]).rpartition('/')[2] + ":" + line
             ccnode = CCNode(nid, xml_node.get('s'), line, metrics, xml_tag,
-                            name, src_file)
+                            name, src_file, cc_parent.callpath)
         elif xml_tag == 'S':
             line = xml_node.get('l')
             name = "Stmt@" + (self.src_files[src_file]).rpartition('/')[2] + ":" + line
             ccnode = CCNode(nid, xml_node.get('s'), line, metrics, xml_tag,
-                            name, src_file)
+                            name, src_file, cc_parent.callpath)
 
         if xml_tag == 'C' or (xml_tag == 'Pr' and
                               self.procedure_names[xml_node.get('n')] == ""):
