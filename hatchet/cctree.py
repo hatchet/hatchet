@@ -13,6 +13,7 @@
 from hpctdb_reader import HPCTDBReader
 from hatchet.external.printtree import as_text
 import sys
+import pandas as pd
 
 class CCTree:
     """ A single tree that includes the root node and other performance data
@@ -37,6 +38,14 @@ class CCTree:
 
             self.root = dbr.create_cctree()
             print "Tree created from HPCToolkit database"
+
+            list_index = []
+            list_dict = []
+
+            for node in self.traverse():
+                list_index.append(hash(''.join(node.callpath)))
+                list_dict.append(dict({'name': node.name, 'module': node.load_module, 'file': node.src_file, 'inc': node.metrics[0][1], 'exc': node.metrics[1][1]}))
+            self.treeframe = pd.DataFrame(data=list_dict, index=list_index)
 
     def traverse(self, root=None):
         """Traverse the tree depth-first and yield each node."""
