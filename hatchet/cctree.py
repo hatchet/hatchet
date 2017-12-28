@@ -12,7 +12,6 @@
 
 from hpctdb_reader import HPCTDBReader
 from hatchet.external.printtree import as_text
-import sys
 import pandas as pd
 
 class CCTree:
@@ -54,12 +53,15 @@ class CCTree:
 
         return list(iter(root))
 
-    def print_tree(self, root=None, _metric='inclusive', _threshold=0.01,
-                   _unicode=False, _color=False):
+    def tree_as_text(self, root=None, _metric='inclusive', _threshold=0.01,
+                   _unicode=True, _color=True):
         if root is None:
             root = self.root
 
         result = as_text(root, root, self.src_files, metric=_metric,
                          threshold=_threshold, unicode=_unicode, color=_color)
 
-        sys.stdout.write(result)
+        return result
+
+    def __str__(self):
+        return self.tree_as_text(self.root).encode('utf-8')
