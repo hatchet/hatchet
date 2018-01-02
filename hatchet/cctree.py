@@ -19,32 +19,20 @@ class CCTree:
         associated with this tree.
     """
 
-    def __init__(self, dirname, srcformat):
+    def __init__(self):
         self.num_pes = 0
         self.num_nodes = 0
         self.num_metrics = 0
 
-        if srcformat == 'hpctoolkit':
-            dbr = HPCTDBReader(dirname)
-            self.num_pes = dbr.num_pes
-            self.num_nodes = dbr.num_nodes
-            self.num_metrics = dbr.num_metrics
+        self.root = None
 
-            (self.load_modules, self.src_files,
-             self.procedure_names) = dbr.fill_tables()
+    def from_hpctoolkit(self, dirname):
+        dbr = HPCTDBReader(dirname)
+        self.num_pes = dbr.num_pes
+        self.num_nodes = dbr.num_nodes
+        self.num_metrics = dbr.num_metrics
 
-            self.metrics = dbr.read_metricdb()
-
-            self.root = dbr.create_cctree()
-            print "Tree created from HPCToolkit database"
-
-            list_index = []
-            list_dict = []
-
-            for node in self.traverse():
-                list_index.append(hash(''.join(node.callpath)))
-                list_dict.append(dict({'name': node.name, 'module': node.load_module, 'file': node.src_file, 'inc': node.metrics[0][1], 'exc': node.metrics[1][1]}))
-            self.treeframe = pd.DataFrame(data=list_dict, index=list_index)
+        (self.root, self.treeframe) = dbr.create_cctree()
 
     def traverse(self, root=None):
         """Traverse the tree depth-first and yield each node."""
@@ -53,12 +41,12 @@ class CCTree:
 
         return list(iter(root))
 
-    def tree_as_text(self, root=None, _metric='inclusive', _threshold=0.01,
+    def tree_as_text(self, root=None, _metric='CPUTIME (usec) (I)', _threshold=0.01,
                    _unicode=True, _color=True):
         if root is None:
             root = self.root
 
-        result = as_text(root, root, self.src_files, metric=_metric,
+        result = as_text(root, root, self.treeframe, metric=_metric,
                          threshold=_threshold, unicode=_unicode, color=_color)
 
         return result

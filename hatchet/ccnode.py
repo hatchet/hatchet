@@ -15,25 +15,10 @@ class CCNode:
     """ A node in the tree.
     """
 
-    def __init__(self, _cct_id, _flat_id, _line, _metrics, _node_type, _name,
-                 _src_file, _parent_callpath, _load_module=None):
-        self.cct_id = _cct_id    # (i)d: unique identifier for cross referencing
-        self.flat_id = _flat_id  # (s)tatic scope id
-        self.line = _line        # (l)ine range: "beg-end" (inclusive range)
-        self.metrics = _metrics  # (v)ma-range-set: "{[beg-end), [beg-end)...}"
-        self.node_type = _node_type  # PF/Pr/L/C/S
-        self.name = _name            # (n)ame: string or id in ProcedureTable
-        self.src_file = _src_file    # (f)ile name: string or id in FileTable
+    def __init__(self, _callpath_tuple, _parent):
+        self.callpath = CallPath(_callpath_tuple)
+        self.parent = _parent
 
-        # not all nodes have a (lm) load module: string or id in LoadModuleTable
-        self.load_module = _load_module
-
-        if not _parent_callpath:
-            self.callpath = []
-            self.callpath.append(self.name)
-        else:
-            self.callpath = list(_parent_callpath)
-            self.callpath.append(self.name)
         self.children = []
 
     def add_child(self, node):
@@ -50,3 +35,14 @@ class CCNode:
                 yield item
 
         yield self
+
+
+class CallPath:
+    """ A hashable object that stores the callpath of a CCNode.
+    """
+
+    def __init__(self, _callpath):
+        self.callpath = _callpath
+
+    def __hash__(self):
+        return hash(self.callpath)

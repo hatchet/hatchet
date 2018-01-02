@@ -18,7 +18,8 @@ import sys
 if __name__ == "__main__":
     dirname = sys.argv[1]
 
-    cct = CCTree(dirname, 'hpctoolkit')
+    cct = CCTree()
+    cct.from_hpctoolkit(dirname)
     # print cct.tree_as_text(cct.root, _threshold=0.0)
 
     print cct

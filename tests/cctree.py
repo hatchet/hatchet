@@ -59,22 +59,16 @@ procedures = ['main',
 
 
 def test_cctree(calc_pi_hpct_db):
-    """Sanity test a CCTree object wtih known data."""
+    """Sanity test a CCTree object with known data."""
 
-    tree = CCTree(str(calc_pi_hpct_db), 'hpctoolkit')
+    tree = CCTree()
+    tree.from_hpctoolkit(str(calc_pi_hpct_db))
 
-    assert len(tree.load_modules) == 5
-    assert len(tree.src_files) == 12
-    assert len(tree.procedure_names) == 16
-    assert all(lm in tree.load_modules.values() for lm in modules)
-    assert all(sf in tree.src_files.values() for sf in src_files)
-    assert all(pr in tree.procedure_names.values() for pr in procedures)
+    assert len(tree.treeframe.groupby('module')) == 5
+    assert len(tree.treeframe.groupby('file')) == 11
+    assert len(tree.treeframe.groupby('name')) == 18
 
-    # make sure every node has dummy data.
-    for node in tree.traverse():
-        for i in range(0, tree.num_metrics):
-            for j in range(0, 3):
-                assert node.metrics[i][j] >= 0.0
+    # TODO: add tests for treeframe
 
 
 def test_read_calc_pi_database(calc_pi_hpct_db):

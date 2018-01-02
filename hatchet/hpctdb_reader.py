@@ -13,6 +13,7 @@
 import glob
 import struct
 import numpy as np
+import pandas as pd
 
 from ccnode import CCNode
 
@@ -37,6 +38,7 @@ class HPCTDBReader:
         self.loadmodule_table = root.iter('LoadModuleTable').next()
         self.file_table = root.iter('FileTable').next()
         self.procedure_table = root.iter('ProcedureTable').next()
+        self.metricdb_table = root.iter('MetricDBTable').next()
         self.callpath_profile = root.iter('SecCallPathProfileData').next()
 
         metricdb_files = glob.glob(self.dir_name + '/*.metric-db')
@@ -56,14 +58,12 @@ class HPCTDBReader:
         self.metrics = np.empty([self.num_metrics,
                                  self.num_nodes,
                                  self.num_pes])
-        self.metrics_min = np.empty([self.num_metrics, self.num_nodes])
         self.metrics_avg = np.empty([self.num_metrics, self.num_nodes])
-        self.metrics_max = np.empty([self.num_metrics, self.num_nodes])
 
         self.load_modules = {}
         self.src_files = {}
         self.procedure_names = {}
-
+        self.metric_names = {}
 
     def fill_tables(self):
         # create dicts of load modules, src_files and procedure_names
@@ -76,7 +76,10 @@ class HPCTDBReader:
         for procedure in (self.procedure_table).iter('Procedure'):
             self.procedure_names[procedure.get('i')] = procedure.get('n')
 
-        return self.load_modules, self.src_files, self.procedure_names
+        for metric in (self.metricdb_table).iter('MetricDB'):
+            self.metric_names[metric.get('i')] = metric.get('n')
+
+        return self.load_modules, self.src_files, self.procedure_names, self.metric_names
 
     def read_metricdb(self):
         metricdb_files = glob.glob(self.dir_name + '/*.metric-db')
@@ -85,21 +88,18 @@ class HPCTDBReader:
         for pe, filename in enumerate(metricdb_files):
             metricdb = open(filename, "rb")
             metricdb.seek(32)
-            arr = np.fromfile(metricdb, dtype=np.dtype('>f8'),
+            arr1d = np.fromfile(metricdb, dtype=np.dtype('>f8'),
                               count=self.num_nodes * self.num_metrics)
-            # inclusive time
-            metric1 = arr[0::2]
-            # exclusive time
-            metric2 = arr[1::2]
-            for i in range(0, len(metric1)):
-                self.metrics[0][i][pe] = metric1[i]
-                self.metrics[1][i][pe] = metric2[i]
+
+            arr2d = arr1d.reshape(self.num_nodes, self.num_metrics)
+
+            for i in range(0, self.num_metrics):
+                for j in range(0, self.num_nodes):
+                    self.metrics[i][j][pe] = arr2d[j][i]
             metricdb.close()
 
-        # Also calculate min, avg, max metrics for each node
-        self.metrics_min = np.amin(self.metrics, axis=2)
+        # Also calculate avg metric per pe for each node
         self.metrics_avg = np.mean(self.metrics, axis=2)
-        self.metrics_max = np.amax(self.metrics, axis=2)
 
         return self.metrics
 
@@ -111,37 +111,34 @@ class HPCTDBReader:
         root = self.callpath_profile.findall('PF')[0]
         nid = int(root.get('i'))
 
-        metrics = np.empty([self.num_metrics, 3])
+        node_callpath = []
+        node_callpath.append(self.procedure_names[root.get('n')])
+        node_dict = {'name': self.procedure_names[root.get('n')], 'type': 'PF', 'file': self.src_files[root.get('f')], 'line': root.get('l'), 'module': self.load_modules[root.get('lm')]}
         for i in range(0, self.num_metrics):
-            metrics[i][0] = self.metrics_min[i][nid-1]
-            metrics[i][1] = self.metrics_avg[i][nid-1]
-            metrics[i][2] = self.metrics_max[i][nid-1]
+            node_dict[self.metric_names[str(i)]] = self.metrics_avg[i][nid-1]
 
-        cct_root = CCNode(nid, root.get('s'), root.get('l'), metrics, 'PF',
-                          self.procedure_names[root.get('n')], root.get('f'),
-                          [], root.get('lm'))
+        cct_root = CCNode(tuple(node_callpath), None)
+        list_index = []
+        list_dict = []
+        list_index.append(cct_root.callpath)
+        list_dict.append(node_dict)
 
         # start tree construction at the root
-        self.parse_xml_children(root, cct_root)
-        return cct_root
+        self.parse_xml_children(root, cct_root, list(node_callpath), list_index, list_dict)
+        treeframe = pd.DataFrame(data=list_dict, index=list_index)
+        return cct_root, treeframe
 
-    def parse_xml_children(self, xml_node, ccnode):
+    def parse_xml_children(self, xml_node, ccnode, parent_callpath, list_index, list_dict):
         """ Parses all children of an XML node.
         """
         for xml_child in xml_node.getchildren():
             if xml_child.tag != 'M':
-                self.parse_xml_node(xml_child, ccnode)
+                self.parse_xml_node(xml_child, ccnode, parent_callpath, list_index, list_dict)
 
-    def parse_xml_node(self, xml_node, cc_parent):
+    def parse_xml_node(self, xml_node, cc_parent, parent_callpath, list_index, list_dict):
         """ Parses an XML node and its children recursively.
         """
         nid = int(xml_node.get('i'))
-
-        metrics = np.empty([self.num_metrics, 3])
-        for i in range(0, self.num_metrics):
-            metrics[i][0] = self.metrics_min[i][nid-1]
-            metrics[i][1] = self.metrics_avg[i][nid-1]
-            metrics[i][2] = self.metrics_max[i][nid-1]
 
         global src_file
         xml_tag = xml_node.tag
@@ -149,25 +146,44 @@ class HPCTDBReader:
         if xml_tag == 'PF' or xml_tag == 'Pr':
             name = self.procedure_names[xml_node.get('n')]
             src_file = xml_node.get('f')
-            ccnode = CCNode(nid, xml_node.get('s'), xml_node.get('l'), metrics,
-                            xml_tag, name, src_file, cc_parent.callpath,
-                            xml_node.get('lm'))
+
+            node_callpath = parent_callpath
+            node_callpath.append(self.procedure_names[xml_node.get('n')])
+            node_dict = {'name': name, 'type': xml_tag, 'file': self.src_files[src_file], 'line': xml_node.get('l'), 'module': self.load_modules[xml_node.get('lm')]}
+            for i in range(0, self.num_metrics):
+                node_dict[self.metric_names[str(i)]] = self.metrics_avg[i][nid-1]
+
+            ccnode = CCNode(tuple(node_callpath), cc_parent)
         elif xml_tag == 'L':
             src_file = xml_node.get('f')
             line = xml_node.get('l')
-            name = "Loop@" + (self.src_files[src_file]).rpartition('/')[2] + ":" + line
-            ccnode = CCNode(nid, xml_node.get('s'), line, metrics, xml_tag,
-                            name, src_file, cc_parent.callpath)
+            name = 'Loop@' + (self.src_files[src_file]).rpartition('/')[2] + ':' + line
+
+            node_callpath = parent_callpath
+            node_callpath.append(name)
+            node_dict = {'name': name, 'type': xml_tag, 'file': self.src_files[src_file], 'line': line, 'module': None}
+            for i in range(0, self.num_metrics):
+                node_dict[self.metric_names[str(i)]] = self.metrics_avg[i][nid-1]
+
+            ccnode = CCNode(tuple(node_callpath), cc_parent)
         elif xml_tag == 'S':
             line = xml_node.get('l')
-            name = "Stmt@" + (self.src_files[src_file]).rpartition('/')[2] + ":" + line
-            ccnode = CCNode(nid, xml_node.get('s'), line, metrics, xml_tag,
-                            name, src_file, cc_parent.callpath)
+            name = 'Stmt@' + (self.src_files[src_file]).rpartition('/')[2] + ':' + line
+
+            node_callpath = parent_callpath
+            node_callpath.append(name)
+            node_dict = {'name': name, 'type': xml_tag, 'file': self.src_files[src_file], 'line': line, 'module': None}
+            for i in range(0, self.num_metrics):
+                node_dict[self.metric_names[str(i)]] = self.metrics_avg[i][nid-1]
+
+            ccnode = CCNode(tuple(node_callpath), cc_parent)
 
         if xml_tag == 'C' or (xml_tag == 'Pr' and
-                              self.procedure_names[xml_node.get('n')] == ""):
+                              self.procedure_names[xml_node.get('n')] == ''):
             # do not add a node to the tree
-            self.parse_xml_children(xml_node, cc_parent)
+            self.parse_xml_children(xml_node, cc_parent, parent_callpath, list_index, list_dict)
         else:
+            list_index.append(ccnode.callpath)
+            list_dict.append(node_dict)
             cc_parent.add_child(ccnode)
-            self.parse_xml_children(xml_node, ccnode)
+            self.parse_xml_children(xml_node, ccnode, list(node_callpath), list_index, list_dict)

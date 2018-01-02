@@ -29,26 +29,23 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-def as_text(ccnode, root, src_files, metric, threshold,
+def as_text(ccnode, root, treeframe, metric, threshold,
             indent=u'', child_indent=u'', unicode=False, color=False):
     """ Code adapted from https://github.com/joerick/pyinstrument
     """
     colors = colors_enabled if color else colors_disabled
-    if metric is 'exclusive':
-        node_time = ccnode.metrics[1][1] # exc, avg
-        root_time = root.metrics[1][1]   # exc, avg
-    else:
-        node_time = ccnode.metrics[0][1] # inc, avg
-        root_time = root.metrics[0][1]   # inc, avg
+    node_time = treeframe.loc[ccnode.callpath, metric]
+    root_time = treeframe.loc[root.callpath, metric]
 
     time_str = '{:.3f}'.format(node_time)
 
     if color:
         time_str = ansi_color_for_time(node_time, root_time) + time_str + colors.end
 
-    result = u'{indent}{time_str} {function}  {c.faint}{code_position}{c.end}\n'.format(indent=indent, time_str=time_str, function=ccnode.name,
-         code_position=src_files[ccnode.src_file],
-         c=colors_enabled if color else colors_disabled)
+    result = u'{indent}{time_str} {function}  {c.faint}{code_position}{c.end}\n'.format(indent=indent, time_str=time_str,
+        function=treeframe.loc[ccnode.callpath, 'name'],
+        code_position=treeframe.loc[ccnode.callpath, 'file'],
+        c=colors_enabled if color else colors_disabled)
 
     children = [child for child in ccnode.children if node_time >= threshold * root_time]
 
@@ -62,7 +59,7 @@ def as_text(ccnode, root, src_files, metric, threshold,
         else:
             c_indent = child_indent + (u'└─ ' if unicode else '`- ')
             cc_indent = child_indent + u'   '
-        result += as_text(child, root, src_files, metric, threshold,
+        result += as_text(child, root, treeframe, metric, threshold,
                           indent=c_indent, child_indent=cc_indent,
                           unicode=unicode, color=color)
 
