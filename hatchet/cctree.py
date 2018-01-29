@@ -11,6 +11,7 @@
 ##############################################################################
 
 from hpctdb_reader import HPCTDBReader
+from cdb_reader import CDBReader
 from hatchet.external.printtree import as_text
 import pandas as pd
 
@@ -28,6 +29,14 @@ class CCTree:
 
     def from_hpctoolkit(self, dirname):
         dbr = HPCTDBReader(dirname)
+        self.num_pes = dbr.num_pes
+        self.num_nodes = dbr.num_nodes
+        self.num_metrics = dbr.num_metrics
+
+        (self.root, self.treeframe) = dbr.create_cctree()
+
+    def from_caliper(self, filename):
+        dbr = CDBReader(filename)
         self.num_pes = dbr.num_pes
         self.num_nodes = dbr.num_nodes
         self.num_metrics = dbr.num_metrics

@@ -19,7 +19,8 @@ if __name__ == "__main__":
     dirname = sys.argv[1]
 
     cct = CCTree()
-    cct.from_hpctoolkit(dirname)
+    # cct.from_hpctoolkit(dirname)
+    cct.from_caliper(dirname)
     # print cct.tree_as_text(cct.root, _threshold=0.0)
 
     print cct
