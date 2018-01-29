@@ -33,21 +33,28 @@ def as_text(ccnode, root, treeframe, metric, threshold,
             indent=u'', child_indent=u'', unicode=False, color=False):
     """ Code adapted from https://github.com/joerick/pyinstrument
     """
-    colors = colors_enabled if color else colors_disabled
-    node_time = treeframe.loc[ccnode.callpath, metric]
-    root_time = treeframe.loc[root.callpath, metric]
+    # use this for hpc
+    if metric != None:
+        colors = colors_enabled if color else colors_disabled
+        node_time = treeframe.loc[ccnode.callpath, metric]
+        root_time = treeframe.loc[root.callpath, metric]
 
-    time_str = '{:.3f}'.format(node_time)
+        time_str = '{:.3f}'.format(node_time)
 
-    if color:
-        time_str = ansi_color_for_time(node_time, root_time) + time_str + colors.end
+        if color:
+            time_str = ansi_color_for_time(node_time, root_time) + time_str + colors.end
 
-    result = u'{indent}{time_str} {function}  {c.faint}{code_position}{c.end}\n'.format(indent=indent, time_str=time_str,
-        function=treeframe.loc[ccnode.callpath, 'name'],
-        code_position=treeframe.loc[ccnode.callpath, 'file'],
-        c=colors_enabled if color else colors_disabled)
+        result = u'{indent}{time_str} {function}  {c.faint}{code_position}{c.end}\n'.format(indent=indent, time_str=time_str,
+            function=treeframe.loc[ccnode.callpath, 'name'],
+            code_position=treeframe.loc[ccnode.callpath, 'file'],
+            c=colors_enabled if color else colors_disabled)
 
-    children = [child for child in ccnode.children if node_time >= threshold * root_time]
+        children = [child for child in ccnode.children if node_time >= threshold * root_time]
+    # use this for caliper or in general when we just want the structure of the
+    # tree without any metrics
+    else:
+        result = indent + ccnode.callpath.callpath[-1] + '\n'
+        children = ccnode.children
 
     if children:
         last_child = children[-1]
