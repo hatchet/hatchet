@@ -10,7 +10,7 @@
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
 
-from hpctdb_reader import HPCTDBReader
+from hpctoolkit_reader import HPCToolkitReader
 from hatchet.external.printtree import as_text
 import pandas as pd
 
@@ -27,12 +27,12 @@ class CCTree:
         self.root = None
 
     def from_hpctoolkit(self, dirname):
-        dbr = HPCTDBReader(dirname)
-        self.num_pes = dbr.num_pes
-        self.num_nodes = dbr.num_nodes
-        self.num_metrics = dbr.num_metrics
+        reader = HPCToolkitReader(dirname)
+        self.num_pes = reader.num_pes
+        self.num_nodes = reader.num_nodes
+        self.num_metrics = reader.num_metrics
 
-        (self.root, self.treeframe) = dbr.create_cctree()
+        (self.root, self.treeframe) = reader.create_cctree()
 
     def traverse(self, root=None):
         """Traverse the tree depth-first and yield each node."""

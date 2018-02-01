@@ -10,7 +10,7 @@
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
 
-from hatchet import CCTree, HPCTDBReader
+from hatchet import CCTree, HPCToolkitReader
 
 modules = ['cpi',
            '/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/'
@@ -73,12 +73,12 @@ def test_cctree(calc_pi_hpct_db):
 
 def test_read_calc_pi_database(calc_pi_hpct_db):
     """Sanity check the HPCT database reader by examining a known input."""
-    dbr = HPCTDBReader(str(calc_pi_hpct_db))
-    dbr.fill_tables()
+    reader = HPCToolkitReader(str(calc_pi_hpct_db))
+    reader.fill_tables()
 
-    assert len(dbr.load_modules) == 5
-    assert len(dbr.src_files) == 12
-    assert len(dbr.procedure_names) == 16
-    assert all(lm in dbr.load_modules.values() for lm in modules)
-    assert all(sf in dbr.src_files.values() for sf in src_files)
-    assert all(pr in dbr.procedure_names.values() for pr in procedures)
+    assert len(reader.load_modules) == 5
+    assert len(reader.src_files) == 12
+    assert len(reader.procedure_names) == 16
+    assert all(lm in reader.load_modules.values() for lm in modules)
+    assert all(sf in reader.src_files.values() for sf in src_files)
+    assert all(pr in reader.procedure_names.values() for pr in procedures)

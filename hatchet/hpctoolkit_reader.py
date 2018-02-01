@@ -25,7 +25,7 @@ except ImportError:
 src_file = 0
 
 
-class HPCTDBReader:
+class HPCToolkitReader:
     """
     Read in the various sections of an HPCToolkit experiment.xml file
     and metric-db files
