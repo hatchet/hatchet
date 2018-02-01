@@ -1,0 +1,226 @@
+{
+  "data": [
+    [ 2, 0, 0, 4, 5, 11439.000000 ],
+    [ 1, 0, 6, 8, 9, 43.000000 ],
+    [ 1, 0, 10, 17, 18, 2658.000000 ],
+    [ 2, 1, 19, 22, 23, 9381.000000 ],
+    [ 2, 2, 19, 22, 23, 9358.000000 ],
+    [ 2, 3, 19, 22, 23, 9380.000000 ],
+    [ 1, 2, 24, 3, 25, 60.000000 ],
+    [ 2, 1, 24, 39, 25, 2586.000000 ],
+    [ 2, 2, 24, 39, 25, 2556.000000 ],
+    [ 2, 3, 24, 39, 25, 2572.000000 ],
+    [ 1, 1, 40, 42, 43, 2155.000000 ],
+    [ 1, 2, 40, 42, 43, 2186.000000 ],
+    [ 1, 3, 40, 42, 43, 2202.000000 ],
+    [ 1, 1, 44, 46, 47, 46.000000 ],
+    [ 1, 3, 44, 46, 47, 61.000000 ]
+  ],
+  "columns": [
+    "count",
+    "mpi.rank",
+    "source.file#cali.sampler.pc",
+    "source.function#callpath.address",
+    "source.line#cali.sampler.pc",
+    "sum#time.duration"
+  ],
+  "column_metadata": [
+    {
+      "is_value": true
+    },
+    {
+      "is_value": true
+    },
+    {
+      "is_value": false
+    },
+    {
+      "is_value": false
+    },
+    {
+      "is_value": false
+    },
+    {
+      "is_value": true
+    }
+  ],
+  "nodes": [
+    {
+      "label": "/tmp/dpkg-mkdeb.tdJdWZUMBG/src/mvapich/src/build/../src/mpi/timer/wtime.c"
+    },
+    {
+      "label": "_start"
+    },
+    {
+      "label": "__libc_start_main",
+      "parent": 1
+    },
+    {
+      "label": "main",
+      "parent": 2
+    },
+    {
+      "label": "PMPI_Wtime",
+      "parent": 3
+    },
+    {
+      "label": "48"
+    },
+    {
+      "label": "/usr/src/debug/glibc-2.12-2-gc4ccff1/elf/../elf/dl-runtime.c"
+    },
+    {
+      "label": "_dl_runtime_resolve",
+      "parent": 3
+    },
+    {
+      "label": "_dl_fixup",
+      "parent": 7
+    },
+    {
+      "label": "100"
+    },
+    {
+      "label": "/tmp/dpkg-mkdeb.tdJdWZUMBG/src/mvapich/src/build/../src/mpi/pt2pt/waitany.c"
+    },
+    {
+      "label": "PMPI_Reduce",
+      "parent": 3
+    },
+    {
+      "label": "MPIR_Reduce_impl",
+      "parent": 11
+    },
+    {
+      "label": "MPIR_Reduce_MV2",
+      "parent": 12
+    },
+    {
+      "label": "MPIR_Reduce_index_tuned_intra_MV2",
+      "parent": 13
+    },
+    {
+      "label": "MPIR_Reduce_inter_knomial_wrapper_MV2",
+      "parent": 14
+    },
+    {
+      "label": "MPIR_Reduce_knomial_MV2",
+      "parent": 15
+    },
+    {
+      "label": "MPI_Waitany",
+      "parent": 16
+    },
+    {
+      "label": "70"
+    },
+    {
+      "label": "/tmp/dpkg-mkdeb.tdJdWZUMBG/src/mvapich/src/build/../src/mpi/coll/bcast_osu.c"
+    },
+    {
+      "label": "MPI_Bcast",
+      "parent": 3
+    },
+    {
+      "label": "MPIR_Bcast_impl",
+      "parent": 20
+    },
+    {
+      "label": "MPIR_Bcast_MV2",
+      "parent": 21
+    },
+    {
+      "label": "2980"
+    },
+    {
+      "label": "UNKNOWN"
+    },
+    {
+      "label": "0"
+    },
+    {
+      "label": "MPIR_Bcast_index_tuned_intra_MV2",
+      "parent": 22
+    },
+    {
+      "label": "MPIR_Bcast_intra",
+      "parent": 26
+    },
+    {
+      "label": "MPIR_Bcast_MV2",
+      "parent": 27
+    },
+    {
+      "label": "MPIR_Bcast_index_tuned_intra_MV2",
+      "parent": 28
+    },
+    {
+      "label": "MPIR_Bcast_intra",
+      "parent": 29
+    },
+    {
+      "label": "MPIR_Bcast_binomial",
+      "parent": 30
+    },
+    {
+      "label": "MPIC_Recv",
+      "parent": 31
+    },
+    {
+      "label": "MPID_Recv",
+      "parent": 32
+    },
+    {
+      "label": "psm_recv",
+      "parent": 33
+    },
+    {
+      "label": "psm_try_complete",
+      "parent": 34
+    },
+    {
+      "label": "psm_progress_wait",
+      "parent": 35
+    },
+    {
+      "label": "psm_mq_ipeek",
+      "parent": 36
+    },
+    {
+      "label": "psmi_poll_internal",
+      "parent": 37
+    },
+    {
+      "label": "ips_ptl_poll",
+      "parent": 38
+    },
+    {
+      "label": "/tmp/dpkg-mkdeb.tdJdWZUMBG/src/mvapich/src/build/../src/mpi/pt2pt/waitall.c"
+    },
+    {
+      "label": "MPIC_Waitall",
+      "parent": 16
+    },
+    {
+      "label": "MPIR_Waitall_impl",
+      "parent": 41
+    },
+    {
+      "label": "39"
+    },
+    {
+      "label": "/tmp/dpkg-mkdeb.tdJdWZUMBG/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_queue.c"
+    },
+    {
+      "label": "psm_process_completion",
+      "parent": 36
+    },
+    {
+      "label": "psm_complete_req",
+      "parent": 45
+    },
+    {
+      "label": "62"
+    }
+  ]
+}
