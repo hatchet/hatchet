@@ -70,7 +70,7 @@ def make_mock_metric_db(parent, name, nprocs, nnodes, nthreads=1,
 @pytest.fixture
 def calc_pi_hpct_db(data_dir, tmpdir):
     """Builds a temporary directory containing the calc-pi database."""
-    hpct_db_dir = os.path.join(data_dir, 'calc-pi-database')
+    hpct_db_dir = os.path.join(data_dir, 'hpctoolkit-cpi-database')
 
     for f in glob(os.path.join(str(hpct_db_dir), '*.metric-db')):
         shutil.copy(f, str(tmpdir))
