@@ -41,13 +41,13 @@ class CCTree:
 
         return list(iter(root))
 
-    def tree_as_text(self, root=None, _metric='CPUTIME (usec) (I)', _threshold=0.01,
-                   _unicode=True, _color=True):
+    def tree_as_text(self, root=None, metric='CPUTIME (usec) (I)',
+                     threshold=0.01, unicode=True, color=True):
         if root is None:
             root = self.root
 
-        result = as_text(root, root, self.treeframe, metric=_metric,
-                         threshold=_threshold, unicode=_unicode, color=_color)
+        result = as_text(root, root, self.treeframe, metric=metric,
+                         threshold=threshold, unicode=unicode, color=color)
 
         return result
 

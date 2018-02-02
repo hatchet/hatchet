@@ -20,6 +20,4 @@ if __name__ == "__main__":
 
     cct = CCTree()
     cct.from_hpctoolkit(dirname)
-    # print cct.tree_as_text(cct.root, _threshold=0.0)
-
-    print cct
+    print cct.tree_as_text(cct.root, threshold=0.0)

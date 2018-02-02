@@ -15,9 +15,9 @@ class CCNode:
     """ A node in the tree.
     """
 
-    def __init__(self, _callpath_tuple, _parent):
-        self.callpath = CallPath(_callpath_tuple)
-        self.parent = _parent
+    def __init__(self, callpath_tuple, parent):
+        self.callpath = CallPath(callpath_tuple)
+        self.parent = parent
 
         self.children = []
 
@@ -41,8 +41,8 @@ class CallPath:
     """ A hashable object that stores the callpath of a CCNode.
     """
 
-    def __init__(self, _callpath):
-        self.callpath = _callpath
+    def __init__(self, callpath):
+        self.callpath = callpath
 
     def __hash__(self):
         return hash(self.callpath)
