@@ -48,6 +48,6 @@ def test_treeframe(calc_pi_cali_db):
     (_, treeframe) = CaliperReader(str(calc_pi_cali_db)).create_cctree()
 
     assert isinstance(treeframe, pd.DataFrame)
-    assert len(treeframe.groupby('line')) == 7
-    assert len(treeframe.groupby('file')) == 7
-    assert len(treeframe.groupby('name')) == 8
+    assert len(treeframe.groupby('source.line#cali.sampler.pc')) == 7
+    assert len(treeframe.groupby('source.file#cali.sampler.pc')) == 7
+    assert len(treeframe.groupby('source.function#callpath.address')) == 8
