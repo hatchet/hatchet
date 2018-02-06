@@ -107,35 +107,40 @@ class HPCToolkitReader:
         self.fill_tables()
         self.read_metricdb()
 
+        # lists to create a dataframe
+        self.list_indices = []
+        self.list_dicts = []
+
         # parse the ElementTree to generate a calling context tree
         root = self.callpath_profile.findall('PF')[0]
         nid = int(root.get('i'))
 
         node_callpath = []
         node_callpath.append(self.procedure_names[root.get('n')])
-        node_dict = {'name': self.procedure_names[root.get('n')], 'type': 'PF', 'file': self.src_files[root.get('f')], 'line': root.get('l'), 'module': self.load_modules[root.get('lm')]}
-        for i in range(0, self.num_metrics):
-            node_dict[self.metric_names[str(i)]] = self.metrics_avg[i][nid-1]
-
         cct_root = CCNode(tuple(node_callpath), None)
-        list_index = []
-        list_dict = []
-        list_index.append(cct_root.callpath)
-        list_dict.append(node_dict)
+        indices, dicts = self.create_dataframe_rows(nid, cct_root.callpath,
+            self.procedure_names[root.get('n')], 'PF',
+            self.src_files[root.get('f')], root.get('l'),
+            self.load_modules[root.get('lm')])
+
+        self.list_indices.extend(indices)
+        self.list_dicts.extend(dicts)
 
         # start tree construction at the root
-        self.parse_xml_children(root, cct_root, list(node_callpath), list_index, list_dict)
-        treeframe = pd.DataFrame(data=list_dict, index=list_index)
+        self.parse_xml_children(root, cct_root, list(node_callpath))
+
+        index = pd.MultiIndex.from_tuples(self.list_indices, names=['callpath', 'rank'])
+        treeframe = pd.DataFrame(data=self.list_dicts, index=index)
         return cct_root, treeframe
 
-    def parse_xml_children(self, xml_node, ccnode, parent_callpath, list_index, list_dict):
+    def parse_xml_children(self, xml_node, ccnode, parent_callpath):
         """ Parses all children of an XML node.
         """
         for xml_child in xml_node.getchildren():
             if xml_child.tag != 'M':
-                self.parse_xml_node(xml_child, ccnode, parent_callpath, list_index, list_dict)
+                self.parse_xml_node(xml_child, ccnode, parent_callpath)
 
-    def parse_xml_node(self, xml_node, cc_parent, parent_callpath, list_index, list_dict):
+    def parse_xml_node(self, xml_node, cc_parent, parent_callpath):
         """ Parses an XML node and its children recursively.
         """
         nid = int(xml_node.get('i'))
@@ -149,11 +154,11 @@ class HPCToolkitReader:
 
             node_callpath = parent_callpath
             node_callpath.append(self.procedure_names[xml_node.get('n')])
-            node_dict = {'name': name, 'type': xml_tag, 'file': self.src_files[src_file], 'line': xml_node.get('l'), 'module': self.load_modules[xml_node.get('lm')]}
-            for i in range(0, self.num_metrics):
-                node_dict[self.metric_names[str(i)]] = self.metrics_avg[i][nid-1]
-
             ccnode = CCNode(tuple(node_callpath), cc_parent)
+            indices, dicts = self.create_dataframe_rows(nid, ccnode.callpath,
+                name, xml_tag, self.src_files[src_file], xml_node.get('l'),
+                self.load_modules[xml_node.get('lm')])
+
         elif xml_tag == 'L':
             src_file = xml_node.get('f')
             line = xml_node.get('l')
@@ -161,29 +166,40 @@ class HPCToolkitReader:
 
             node_callpath = parent_callpath
             node_callpath.append(name)
-            node_dict = {'name': name, 'type': xml_tag, 'file': self.src_files[src_file], 'line': line, 'module': None}
-            for i in range(0, self.num_metrics):
-                node_dict[self.metric_names[str(i)]] = self.metrics_avg[i][nid-1]
-
             ccnode = CCNode(tuple(node_callpath), cc_parent)
+            indices, dicts = self.create_dataframe_rows(nid, ccnode.callpath,
+                name, xml_tag, self.src_files[src_file], line, None)
+
         elif xml_tag == 'S':
             line = xml_node.get('l')
             name = 'Stmt@' + (self.src_files[src_file]).rpartition('/')[2] + ':' + line
 
             node_callpath = parent_callpath
             node_callpath.append(name)
-            node_dict = {'name': name, 'type': xml_tag, 'file': self.src_files[src_file], 'line': line, 'module': None}
-            for i in range(0, self.num_metrics):
-                node_dict[self.metric_names[str(i)]] = self.metrics_avg[i][nid-1]
-
             ccnode = CCNode(tuple(node_callpath), cc_parent)
+            indices, dicts = self.create_dataframe_rows(nid, ccnode.callpath,
+                name, xml_tag, self.src_files[src_file], line, None)
 
         if xml_tag == 'C' or (xml_tag == 'Pr' and
                               self.procedure_names[xml_node.get('n')] == ''):
             # do not add a node to the tree
-            self.parse_xml_children(xml_node, cc_parent, parent_callpath, list_index, list_dict)
+            self.parse_xml_children(xml_node, cc_parent, parent_callpath)
         else:
-            list_index.append(ccnode.callpath)
-            list_dict.append(node_dict)
+            self.list_indices.extend(indices)
+            self.list_dicts.extend(dicts)
             cc_parent.add_child(ccnode)
-            self.parse_xml_children(xml_node, ccnode, list(node_callpath), list_index, list_dict)
+            self.parse_xml_children(xml_node, ccnode, list(node_callpath))
+
+    def create_dataframe_rows(self, nid, callpath, name, node_type, src_file,
+            line, module):
+        list_indices = []
+        list_dicts = []
+
+        for pe in range(0, self.num_pes):
+            list_indices.append(tuple([callpath, pe]))
+            node_dict = {'name': name, 'type': node_type, 'file': src_file, 'line': line, 'module': module}
+            for metric in range(0, self.num_metrics):
+                node_dict[self.metric_names[str(metric)]] = self.metrics[metric][nid-1][pe]
+            list_dicts.append(node_dict)
+
+        return list_indices, list_dicts

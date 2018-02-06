@@ -29,13 +29,13 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-def as_text(ccnode, root, treeframe, metric, threshold,
+def as_text(ccnode, root, treeframe, metric, name, context, rank, threshold,
             indent=u'', child_indent=u'', unicode=False, color=False):
     """ Code adapted from https://github.com/joerick/pyinstrument
     """
     colors = colors_enabled if color else colors_disabled
-    node_time = treeframe.loc[ccnode.callpath, metric]
-    root_time = treeframe.loc[root.callpath, metric]
+    node_time = treeframe.loc[(ccnode.callpath, rank), metric]
+    root_time = treeframe.loc[(root.callpath, rank), metric]
 
     time_str = '{:.3f}'.format(node_time)
 
@@ -43,8 +43,8 @@ def as_text(ccnode, root, treeframe, metric, threshold,
         time_str = ansi_color_for_time(node_time, root_time) + time_str + colors.end
 
     result = u'{indent}{time_str} {function}  {c.faint}{code_position}{c.end}\n'.format(indent=indent, time_str=time_str,
-        function=treeframe.loc[ccnode.callpath, 'name'],
-        code_position=treeframe.loc[ccnode.callpath, 'file'],
+        function=treeframe.loc[(ccnode.callpath, rank), name],
+        code_position=treeframe.loc[(ccnode.callpath, rank), context],
         c=colors_enabled if color else colors_disabled)
 
     children = [child for child in ccnode.children if node_time >= threshold * root_time]
@@ -59,8 +59,8 @@ def as_text(ccnode, root, treeframe, metric, threshold,
         else:
             c_indent = child_indent + (u'└─ ' if unicode else '`- ')
             cc_indent = child_indent + u'   '
-        result += as_text(child, root, treeframe, metric, threshold,
-                          indent=c_indent, child_indent=cc_indent,
+        result += as_text(child, root, treeframe, metric, name, context, rank,
+                          threshold, indent=c_indent, child_indent=cc_indent,
                           unicode=unicode, color=color)
 
     return result
