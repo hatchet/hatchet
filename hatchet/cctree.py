@@ -11,6 +11,7 @@
 ##############################################################################
 
 from hpctoolkit_reader import HPCToolkitReader
+from caliper_reader import CaliperReader
 from hatchet.external.printtree import as_text
 import pandas as pd
 
@@ -31,6 +32,11 @@ class CCTree:
         self.num_pes = reader.num_pes
         self.num_nodes = reader.num_nodes
         self.num_metrics = reader.num_metrics
+
+        (self.root, self.treeframe) = reader.create_cctree()
+
+    def from_caliper(self, filename):
+        reader = CaliperReader(filename)
 
         (self.root, self.treeframe) = reader.create_cctree()
 

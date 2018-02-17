@@ -77,3 +77,15 @@ def calc_pi_hpct_db(data_dir, tmpdir):
     shutil.copy(os.path.join(hpct_db_dir, 'experiment.xml'), str(tmpdir))
 
     return tmpdir
+
+
+@pytest.fixture
+def calc_pi_cali_db(data_dir, tmpdir):
+    """Builds a temporary directory containing the calc-pi database."""
+    cali_db_dir = os.path.join(data_dir, 'caliper-cpi-json')
+    cali_db_file = os.path.join(cali_db_dir, 'cpi-sample-callpathprofile.json')
+
+    shutil.copy(cali_db_file, str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), 'cpi-sample-callpathprofile.json')
+
+    return tmpfile
