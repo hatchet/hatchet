@@ -12,7 +12,7 @@
 
 import json
 import pandas as pd
-from ccnode import CCNode, CallPath
+from ccnode import CCNode, CCNodeHandle
 
 
 class CaliperReader:
@@ -41,8 +41,11 @@ class CaliperReader:
     # possible column names of name for each record in dataframe
     name_column_names = ['source.function#callpath.address', 'path']
 
-    # column name of path for each record in dataframe
-    path_column_name = '_path'
+    # column name of ccnode handle for each record in treeframe, to be index
+    ccnode_handle_column_name = 'ccnode_handle'
+
+    # column name of ccnode for each record in treeframe
+    ccnode_column_name = 'ccnode'
 
     # key used to get is_value boolean from json column metadata
     is_value_key = 'is_value'
@@ -97,11 +100,14 @@ class CaliperReader:
         # create paths for each ccnode
         self.dfs_assign_paths(self.root)
 
-        # add path column for each record/row
-        ccnode_idx_to_path = lambda idx: self.idx_to_ccnode[idx].callpath
+        # add node handle column to treeframe
+        idx_to_handle_map = lambda idx: self.idx_to_ccnode[idx].handle
+        idx_to_ccnode_map = lambda idx: self.idx_to_ccnode[idx]
         ccnode_idx_column = self.treeframe[name_column_name]
-        path_column = ccnode_idx_column.map(ccnode_idx_to_path)
-        self.treeframe[self.path_column_name] = path_column
+        ccnode_handle_column = ccnode_idx_column.map(idx_to_handle_map)
+        ccnode_column = ccnode_idx_column.map(idx_to_ccnode_map)
+        self.treeframe[self.ccnode_handle_column_name] = ccnode_handle_column
+        self.treeframe[self.ccnode_column_name] = ccnode_column
 
         # some columns need to be converted from their nodes section index to
         # the label in that node (e.g. file is 5 but really is foo.c)
@@ -111,7 +117,7 @@ class CaliperReader:
         self.treeframe[metadata_column_names] = new_columns
 
         # assign indices for dataframe
-        indices = [self.path_column_name, 'mpi.rank']
+        indices = [self.ccnode_handle_column_name, 'mpi.rank']
         self.treeframe.set_index(indices, drop=False, inplace=True)
 
         return (self.root, self.treeframe)
@@ -183,8 +189,8 @@ class CaliperReader:
     def dfs_assign_paths(self, root):
         parent_path = ()
         if root.parent is not None:
-            parent_path = root.parent.callpath.callpath
-        root.callpath = CallPath(parent_path + (root.callpath.callpath[0],))
+            parent_path = root.parent.callpath
+        root.callpath = parent_path + (root.callpath[0],)
         for child in root.children:
             self.dfs_assign_paths(child)
 

@@ -10,15 +10,17 @@
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
 
+from functools import total_ordering
+
 
 class CCNode:
     """ A node in the tree.
     """
 
-    def __init__(self, callpath_tuple, parent):
-        self.callpath = CallPath(callpath_tuple)
+    def __init__(self, callpath, parent):
+        self.callpath = callpath
+        self.handle = CCNodeHandle(callpath)
         self.parent = parent
-
         self.children = []
 
     def add_child(self, node):
@@ -37,12 +39,19 @@ class CCNode:
         yield self
 
 
-class CallPath:
-    """ A hashable object that stores the callpath of a CCNode.
-    """
+@total_ordering
+class CCNodeHandle:
+    """The handle of any node is the hash of its callpath."""
 
     def __init__(self, callpath):
         self.callpath = callpath
+        self.handle = hash(callpath)
 
     def __hash__(self):
-        return hash(self.callpath)
+        return self.handle
+
+    def __eq__(self, other):
+        return self.handle == other.handle
+
+    def __lt__(self, other):
+        return self.callpath < other.callpath
