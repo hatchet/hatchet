@@ -44,16 +44,14 @@ class HPCToolkitReader:
         metricdb_files = glob.glob(self.dir_name + '/*.metric-db')
         self.num_pes = len(metricdb_files)
 
-        metricdb = open(metricdb_files[0], "rb")
-        tag = metricdb.read(18)
-        version = metricdb.read(5)
-        endian = metricdb.read(1)
+        with open(metricdb_files[0], "rb") as metricdb:
+            tag = metricdb.read(18)
+            version = metricdb.read(5)
+            endian = metricdb.read(1)
 
-        if endian == 'b':
-            self.num_nodes = struct.unpack('>i', metricdb.read(4))[0]
-            self.num_metrics = struct.unpack('>i', metricdb.read(4))[0]
-
-        metricdb.close()
+            if endian == 'b':
+                self.num_nodes = struct.unpack('>i', metricdb.read(4))[0]
+                self.num_metrics = struct.unpack('>i', metricdb.read(4))[0]
 
         self.metrics = np.empty([self.num_metrics,
                                  self.num_nodes,
@@ -86,17 +84,16 @@ class HPCToolkitReader:
 
         # assumes that glob returns a sorted order
         for pe, filename in enumerate(metricdb_files):
-            metricdb = open(filename, "rb")
-            metricdb.seek(32)
-            arr1d = np.fromfile(metricdb, dtype=np.dtype('>f8'),
-                              count=self.num_nodes * self.num_metrics)
+            with open(filename, "rb") as metricdb:
+                metricdb.seek(32)
+                arr1d = np.fromfile(metricdb, dtype=np.dtype('>f8'),
+                                    count=self.num_nodes * self.num_metrics)
 
-            arr2d = arr1d.reshape(self.num_nodes, self.num_metrics)
+                arr2d = arr1d.reshape(self.num_nodes, self.num_metrics)
 
-            for i in range(0, self.num_metrics):
-                for j in range(0, self.num_nodes):
-                    self.metrics[i][j][pe] = arr2d[j][i]
-            metricdb.close()
+                for i in range(0, self.num_metrics):
+                    for j in range(0, self.num_nodes):
+                        self.metrics[i][j][pe] = arr2d[j][i]
 
         # Also calculate avg metric per pe for each node
         self.metrics_avg = np.mean(self.metrics, axis=2)
@@ -197,7 +194,7 @@ class HPCToolkitReader:
 
         for pe in range(0, self.num_pes):
             list_indices.append(tuple([ccnode, pe]))
-            node_dict = {'name': name, 'type': node_type, 'file': src_file, 'line': line, 'module': module}
+            node_dict = {'name': name, 'type': node_type, 'file': src_file, 'line': line, 'module': module, 'node': ccnode}
             for metric in range(0, self.num_metrics):
                 node_dict[self.metric_names[str(metric)]] = self.metrics[metric][nid-1][pe]
             list_dicts.append(node_dict)
