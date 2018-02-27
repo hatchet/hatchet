@@ -35,7 +35,7 @@ class CCNode:
             yield self
 
         for child in self.children:
-            for item in child:
+            for item in child.traverse():
                 yield item
 
         if(order == 'post'):
