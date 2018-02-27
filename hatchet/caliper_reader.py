@@ -12,7 +12,7 @@
 
 import json
 import pandas as pd
-from ccnode import CCNode, CallPath
+from ccnode import CCNode
 
 
 class CaliperReader:
@@ -183,8 +183,8 @@ class CaliperReader:
     def dfs_assign_paths(self, root):
         parent_path = ()
         if root.parent is not None:
-            parent_path = root.parent.callpath.callpath
-        root.callpath = CallPath(parent_path + (root.callpath.callpath[0],))
+            parent_path = root.parent.callpath
+        root.callpath = parent_path + (root.callpath[0],)
         for child in root.children:
             self.dfs_assign_paths(child)
 

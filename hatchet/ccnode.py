@@ -16,9 +16,10 @@ class CCNode:
     """
 
     def __init__(self, callpath_tuple, parent):
-        self.callpath = CallPath(callpath_tuple)
-        self.parent = parent
+        self.callpath = callpath_tuple
+        self.tf_index = hash(callpath_tuple)
 
+        self.parent = parent
         self.children = []
 
     def add_child(self, node):
@@ -27,22 +28,18 @@ class CCNode:
         assert isinstance(node, CCNode)
         self.children.append(node)
 
-    def __iter__(self):
+    def traverse(self, order='pre'):
         """Traverse the tree depth-first and yield each node.
         """
+        if(order == 'pre'):
+            yield self
+
         for child in self.children:
             for item in child:
                 yield item
 
-        yield self
-
-
-class CallPath:
-    """ A hashable object that stores the callpath of a CCNode.
-    """
-
-    def __init__(self, callpath):
-        self.callpath = callpath
+        if(order == 'post'):
+            yield self
 
     def __hash__(self):
-        return hash(self.callpath)
+        return self.tf_index

@@ -118,7 +118,7 @@ class HPCToolkitReader:
         node_callpath = []
         node_callpath.append(self.procedure_names[root.get('n')])
         cct_root = CCNode(tuple(node_callpath), None)
-        indices, dicts = self.create_dataframe_rows(nid, cct_root.callpath,
+        indices, dicts = self.create_dataframe_rows(nid, cct_root,
             self.procedure_names[root.get('n')], 'PF',
             self.src_files[root.get('f')], root.get('l'),
             self.load_modules[root.get('lm')])
@@ -155,7 +155,7 @@ class HPCToolkitReader:
             node_callpath = parent_callpath
             node_callpath.append(self.procedure_names[xml_node.get('n')])
             ccnode = CCNode(tuple(node_callpath), cc_parent)
-            indices, dicts = self.create_dataframe_rows(nid, ccnode.callpath,
+            indices, dicts = self.create_dataframe_rows(nid, ccnode,
                 name, xml_tag, self.src_files[src_file], xml_node.get('l'),
                 self.load_modules[xml_node.get('lm')])
 
@@ -167,7 +167,7 @@ class HPCToolkitReader:
             node_callpath = parent_callpath
             node_callpath.append(name)
             ccnode = CCNode(tuple(node_callpath), cc_parent)
-            indices, dicts = self.create_dataframe_rows(nid, ccnode.callpath,
+            indices, dicts = self.create_dataframe_rows(nid, ccnode,
                 name, xml_tag, self.src_files[src_file], line, None)
 
         elif xml_tag == 'S':
@@ -177,7 +177,7 @@ class HPCToolkitReader:
             node_callpath = parent_callpath
             node_callpath.append(name)
             ccnode = CCNode(tuple(node_callpath), cc_parent)
-            indices, dicts = self.create_dataframe_rows(nid, ccnode.callpath,
+            indices, dicts = self.create_dataframe_rows(nid, ccnode,
                 name, xml_tag, self.src_files[src_file], line, None)
 
         if xml_tag == 'C' or (xml_tag == 'Pr' and
@@ -190,13 +190,13 @@ class HPCToolkitReader:
             cc_parent.add_child(ccnode)
             self.parse_xml_children(xml_node, ccnode, list(node_callpath))
 
-    def create_dataframe_rows(self, nid, callpath, name, node_type, src_file,
+    def create_dataframe_rows(self, nid, ccnode, name, node_type, src_file,
             line, module):
         list_indices = []
         list_dicts = []
 
         for pe in range(0, self.num_pes):
-            list_indices.append(tuple([callpath, pe]))
+            list_indices.append(tuple([ccnode, pe]))
             node_dict = {'name': name, 'type': node_type, 'file': src_file, 'line': line, 'module': module}
             for metric in range(0, self.num_metrics):
                 node_dict[self.metric_names[str(metric)]] = self.metrics[metric][nid-1][pe]

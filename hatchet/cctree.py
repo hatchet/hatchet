@@ -40,13 +40,6 @@ class CCTree:
 
         (self.root, self.treeframe) = reader.create_cctree()
 
-    def traverse(self, root=None):
-        """Traverse the tree depth-first and yield each node."""
-        if root is None:
-            root = self.root
-
-        return list(iter(root))
-
     def tree_as_text(self, root=None, metric='CPUTIME (usec) (I)', name='name',
             context='file', rank=0, threshold=0.01, unicode=True, color=True):
         if root is None:
