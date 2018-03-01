@@ -13,8 +13,8 @@
 from functools import total_ordering
 
 @total_ordering
-class CCNode:
-    """ A node in the tree.
+class Node:
+    """ A node in the graph.
     """
 
     def __init__(self, callpath_tuple, parent):
@@ -27,7 +27,7 @@ class CCNode:
     def add_child(self, node):
         """ Adds a child to this node.
         """
-        assert isinstance(node, CCNode)
+        assert isinstance(node, Node)
         self.children.append(node)
 
     def traverse(self, order='pre'):

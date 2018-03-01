@@ -33,12 +33,12 @@ class CCTree:
         self.num_nodes = reader.num_nodes
         self.num_metrics = reader.num_metrics
 
-        (self.root, self.treeframe) = reader.create_cctree()
+        (self.root, self.treeframe) = reader.create_graph()
 
     def from_caliper(self, filename):
         reader = CaliperReader(filename)
 
-        (self.root, self.treeframe) = reader.create_cctree()
+        (self.root, self.treeframe) = reader.create_graph()
 
     def tree_as_text(self, root=None, metric='CPUTIME (usec) (I)', name='name',
             context='file', rank=0, threshold=0.01, unicode=True, color=True):

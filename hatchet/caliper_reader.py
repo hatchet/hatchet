@@ -12,7 +12,7 @@
 
 import json
 import pandas as pd
-from ccnode import CCNode
+from node import Node
 
 
 class CaliperReader:
@@ -64,7 +64,7 @@ class CaliperReader:
         self.json_column_metadata = self.json_obj[self.json_column_metadata_key]
         self.json_nodes = self.json_obj[self.json_nodes_key]
 
-    def create_cctree(self):
+    def create_graph(self):
         """Creates the CCTree."""
         # some columns need their value mapped from index to label
         metadata_column_names = []
@@ -132,7 +132,7 @@ class CaliperReader:
         # potentially recreate it later
         current_json_node = self.json_nodes[current_json_nodes_idx]
         current_name = current_json_node[self.node_label_key]
-        current_ccnode = CCNode((current_name,), None)
+        current_ccnode = Node((current_name,), None)
         self.idx_to_ccnode[current_json_nodes_idx] = current_ccnode
 
         # this loop builds ccnodes for ancestry of current;
@@ -175,7 +175,7 @@ class CaliperReader:
             # update mapping so we don't potentially recreate current later
             current_json_node = self.json_nodes[current_json_nodes_idx]
             current_name = current_json_node[self.node_label_key]
-            current_ccnode = CCNode((current_name,), None)
+            current_ccnode = Node((current_name,), None)
             child_ccnode.parent = current_ccnode
             current_ccnode.add_child(child_ccnode)
             self.idx_to_ccnode[current_json_nodes_idx] = current_ccnode

@@ -45,7 +45,7 @@ def test_cctree(calc_pi_cali_db):
 def test_treeframe(calc_pi_cali_db):
     """Sanity test a pandas.DataFrame object with known data."""
 
-    (_, treeframe) = CaliperReader(str(calc_pi_cali_db)).create_cctree()
+    (_, treeframe) = CaliperReader(str(calc_pi_cali_db)).create_graph()
 
     assert isinstance(treeframe, pd.DataFrame)
     assert len(treeframe.groupby('source.line#cali.sampler.pc')) == 7
