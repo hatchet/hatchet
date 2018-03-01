@@ -23,6 +23,7 @@ except ImportError:
     import xml.etree.ElementTree as ET
 
 src_file = 0
+stmt_num = 1
 
 
 class HPCToolkitReader:
@@ -128,6 +129,7 @@ class HPCToolkitReader:
 
         index = pd.MultiIndex.from_tuples(self.list_indices, names=['callpath', 'rank'])
         treeframe = pd.DataFrame(data=self.list_dicts, index=index)
+        # treeframe.sort_index(level=0, inplace=True, sort_remaining=True)
         return cct_root, treeframe
 
     def parse_xml_children(self, xml_node, ccnode, parent_callpath):
@@ -143,6 +145,7 @@ class HPCToolkitReader:
         nid = int(xml_node.get('i'))
 
         global src_file
+        global stmt_num
         xml_tag = xml_node.tag
 
         if xml_tag == 'PF' or xml_tag == 'Pr':
@@ -169,7 +172,8 @@ class HPCToolkitReader:
 
         elif xml_tag == 'S':
             line = xml_node.get('l')
-            name = 'Stmt@' + (self.src_files[src_file]).rpartition('/')[2] + ':' + line
+            name = 'Stmt' + str(stmt_num) + '@' + (self.src_files[src_file]).rpartition('/')[2] + ':' + line
+            stmt_num = stmt_num + 1
 
             node_callpath = parent_callpath
             node_callpath.append(name)

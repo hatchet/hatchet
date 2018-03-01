@@ -10,7 +10,9 @@
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
 
+from functools import total_ordering
 
+@total_ordering
 class CCNode:
     """ A node in the tree.
     """
@@ -43,3 +45,9 @@ class CCNode:
 
     def __hash__(self):
         return self.tf_index
+
+    def __eq__(self, other):
+        return (self.callpath == other.callpath)
+
+    def __lt__(self, other):
+        return (self.callpath < other.callpath)
