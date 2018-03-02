@@ -66,7 +66,7 @@ def test_cctree(calc_pi_hpct_db):
 
     assert len(tree.treeframe.groupby('module')) == 5
     assert len(tree.treeframe.groupby('file')) == 11
-    assert len(tree.treeframe.groupby('name')) == 18
+    assert len(tree.treeframe.groupby('name')) == 24
 
     # TODO: add tests for treeframe
 

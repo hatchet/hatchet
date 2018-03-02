@@ -29,12 +29,12 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-def as_text(ccnode, root, treeframe, metric, name, context, rank, threshold,
+def as_text(hnode, root, treeframe, metric, name, context, rank, threshold,
             indent=u'', child_indent=u'', unicode=False, color=False):
     """ Code adapted from https://github.com/joerick/pyinstrument
     """
     colors = colors_enabled if color else colors_disabled
-    node_time = treeframe.loc[(ccnode, rank), metric]
+    node_time = treeframe.loc[(hnode, rank), metric]
     root_time = treeframe.loc[(root, rank), metric]
 
     time_str = '{:.3f}'.format(node_time)
@@ -43,11 +43,11 @@ def as_text(ccnode, root, treeframe, metric, name, context, rank, threshold,
         time_str = ansi_color_for_time(node_time, root_time) + time_str + colors.end
 
     result = u'{indent}{time_str} {function}  {c.faint}{code_position}{c.end}\n'.format(indent=indent, time_str=time_str,
-        function=treeframe.loc[(ccnode, rank), name],
-        code_position=treeframe.loc[(ccnode, rank), context],
+        function=treeframe.loc[(hnode, rank), name],
+        code_position=treeframe.loc[(hnode, rank), context],
         c=colors_enabled if color else colors_disabled)
 
-    children = [child for child in ccnode.children if node_time >= threshold * root_time]
+    children = [child for child in hnode.children if node_time >= threshold * root_time]
 
     if children:
         last_child = children[-1]
