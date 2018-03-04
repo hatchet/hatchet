@@ -10,7 +10,7 @@
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
 
-from hatchet import CCTree, HPCToolkitReader
+from hatchet import GraphFrame, HPCToolkitReader
 
 modules = ['cpi',
            '/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/'
@@ -58,17 +58,17 @@ procedures = ['main',
               '<unknown procedure>']
 
 
-def test_cctree(calc_pi_hpct_db):
-    """Sanity test a CCTree object with known data."""
+def test_graphframe(calc_pi_hpct_db):
+    """Sanity test a GraphFrame object with known data."""
 
-    tree = CCTree()
-    tree.from_hpctoolkit(str(calc_pi_hpct_db))
+    gf = GraphFrame()
+    gf.from_hpctoolkit(str(calc_pi_hpct_db))
 
-    assert len(tree.treeframe.groupby('module')) == 5
-    assert len(tree.treeframe.groupby('file')) == 11
-    assert len(tree.treeframe.groupby('name')) == 24
+    assert len(gf.dataframe.groupby('module')) == 5
+    assert len(gf.dataframe.groupby('file')) == 11
+    assert len(gf.dataframe.groupby('name')) == 24
 
-    # TODO: add tests for treeframe
+    # TODO: add tests for dataframe
 
 
 def test_read_calc_pi_database(calc_pi_hpct_db):

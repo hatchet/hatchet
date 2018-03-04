@@ -124,7 +124,7 @@ class CaliperReader:
         current_json_nodes_idx = json_nodes_idx
         current_ccnode = self.idx_to_ccnode.get(current_json_nodes_idx)
 
-        # if current already existed, then so do its parents in the cctree
+        # if current already existed, then so do its parents in the graph
         if current_ccnode is not None:
             return
 

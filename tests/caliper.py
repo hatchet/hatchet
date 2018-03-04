@@ -11,7 +11,7 @@
 ##############################################################################
 
 import pandas as pd
-from hatchet import CCTree, CaliperReader
+from hatchet import GraphFrame, CaliperReader
 
 
 def num_nodes(root):
@@ -32,22 +32,22 @@ def tree_height(root):
     return 1 + height
 
 
-def test_cctree(calc_pi_cali_db):
-    """Sanity test a CCTree object with known data."""
+def test_graphframe(calc_pi_cali_db):
+    """Sanity test a GraphFrame object with known data."""
 
-    tree = CCTree()
-    tree.from_caliper(str(calc_pi_cali_db))
+    gf = GraphFrame()
+    gf.from_caliper(str(calc_pi_cali_db))
 
-    assert num_nodes(tree.root) == 34
-    assert tree_height(tree.root) == 19
+    assert num_nodes(gf.root) == 34
+    assert tree_height(gf.root) == 19
 
 
-def test_treeframe(calc_pi_cali_db):
+def test_dataframe(calc_pi_cali_db):
     """Sanity test a pandas.DataFrame object with known data."""
 
-    (_, treeframe) = CaliperReader(str(calc_pi_cali_db)).create_graph()
+    (_, dataframe) = CaliperReader(str(calc_pi_cali_db)).create_graph()
 
-    assert isinstance(treeframe, pd.DataFrame)
-    assert len(treeframe.groupby('source.line#cali.sampler.pc')) == 7
-    assert len(treeframe.groupby('source.file#cali.sampler.pc')) == 7
-    assert len(treeframe.groupby('source.function#callpath.address')) == 8
+    assert isinstance(dataframe, pd.DataFrame)
+    assert len(dataframe.groupby('source.line#cali.sampler.pc')) == 7
+    assert len(dataframe.groupby('source.file#cali.sampler.pc')) == 7
+    assert len(dataframe.groupby('source.function#callpath.address')) == 8

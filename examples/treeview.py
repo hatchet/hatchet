@@ -23,11 +23,11 @@ pd.set_option('display.max_colwidth', 30)
 if __name__ == "__main__":
     dirname = sys.argv[1]
 
-    cct = CCTree()
-    cct.from_hpctoolkit(dirname)
+    gf = GraphFrame()
+    gf.from_hpctoolkit(dirname)
 
-    grouped_df = cct.treeframe.groupby('module')
+    grouped_df = gf.dataframe.groupby('module')
     for key, item in grouped_df:
         print grouped_df.get_group(key), "\n\n"
 
-    print cct.tree_as_text(cct.root, threshold=0.0)
+    print gf.tree_as_text(gf.root, threshold=0.0)

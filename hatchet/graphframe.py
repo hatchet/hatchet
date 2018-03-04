@@ -15,9 +15,8 @@ from caliper_reader import CaliperReader
 from hatchet.external.printtree import as_text
 import pandas as pd
 
-class CCTree:
-    """ A single tree that includes the root node and other performance data
-        associated with this tree.
+class GraphFrame:
+    """ This class associates the graph with a dataframe.
     """
 
     def __init__(self):
@@ -33,19 +32,19 @@ class CCTree:
         self.num_nodes = reader.num_nodes
         self.num_metrics = reader.num_metrics
 
-        (self.root, self.treeframe) = reader.create_graph()
+        (self.root, self.dataframe) = reader.create_graph()
 
     def from_caliper(self, filename):
         reader = CaliperReader(filename)
 
-        (self.root, self.treeframe) = reader.create_graph()
+        (self.root, self.dataframe) = reader.create_graph()
 
     def tree_as_text(self, root=None, metric='CPUTIME (usec) (I)', name='name',
             context='file', rank=0, threshold=0.01, unicode=True, color=True):
         if root is None:
             root = self.root
 
-        result = as_text(root, root, self.treeframe, metric, name, context,
+        result = as_text(root, root, self.dataframe, metric, name, context,
                          rank, threshold, unicode=unicode, color=color)
 
         return result
