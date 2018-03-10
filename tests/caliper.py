@@ -38,8 +38,8 @@ def test_graphframe(calc_pi_cali_db):
     gf = GraphFrame()
     gf.from_caliper(str(calc_pi_cali_db))
 
-    assert num_nodes(gf.root) == 34
-    assert tree_height(gf.root) == 19
+    assert num_nodes(gf.graph.roots[0]) == 34
+    assert tree_height(gf.graph.roots[0]) == 19
 
 
 def test_dataframe(calc_pi_cali_db):
