@@ -30,4 +30,4 @@ if __name__ == "__main__":
     for key, item in grouped_df:
         print grouped_df.get_group(key), "\n\n"
 
-    print gf.tree_as_text(gf.root, threshold=0.0)
+    print gf.graph.to_string(gf.graph.roots, gf.dataframe, threshold=0.0)

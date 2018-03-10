@@ -12,7 +12,6 @@
 
 from hpctoolkit_reader import HPCToolkitReader
 from caliper_reader import CaliperReader
-from hatchet.external.printtree import as_text
 import pandas as pd
 
 class GraphFrame:
@@ -24,7 +23,7 @@ class GraphFrame:
         self.num_nodes = 0
         self.num_metrics = 0
 
-        self.root = None
+        self.graph = None
 
     def from_hpctoolkit(self, dirname):
         reader = HPCToolkitReader(dirname)
@@ -32,22 +31,10 @@ class GraphFrame:
         self.num_nodes = reader.num_nodes
         self.num_metrics = reader.num_metrics
 
-        (self.root, self.dataframe) = reader.create_graph()
+        (self.graph, self.dataframe) = reader.create_graph()
 
     def from_caliper(self, filename):
         reader = CaliperReader(filename)
 
-        (self.root, self.dataframe) = reader.create_graph()
+        (self.graph, self.dataframe) = reader.create_graph()
 
-    def tree_as_text(self, root=None, metric='CPUTIME (usec) (I)', name='name',
-            context='file', rank=0, threshold=0.01, unicode=True, color=True):
-        if root is None:
-            root = self.root
-
-        result = as_text(root, root, self.dataframe, metric, name, context,
-                         rank, threshold, unicode=unicode, color=color)
-
-        return result
-
-    def __str__(self):
-        return self.tree_as_text(self.root).encode('utf-8')

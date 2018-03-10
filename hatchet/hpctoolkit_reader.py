@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 
 from node import Node
+from graph import Graph
 
 try:
     import xml.etree.cElementTree as ET
@@ -130,7 +131,9 @@ class HPCToolkitReader:
         index = pd.MultiIndex.from_tuples(self.list_indices, names=['callpath', 'rank'])
         dataframe = pd.DataFrame(data=self.list_dicts, index=index)
         # dataframe.sort_index(level=0, inplace=True, sort_remaining=True)
-        return graph_root, dataframe
+
+        graph = Graph([graph_root])
+        return graph, dataframe
 
     def parse_xml_children(self, xml_node, hnode, parent_callpath):
         """ Parses all children of an XML node.
