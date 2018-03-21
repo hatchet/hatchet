@@ -38,3 +38,43 @@ class GraphFrame:
 
         (self.graph, self.dataframe) = reader.create_graph()
 
+    def union(self, other):
+        """Constructs a new graphframe from self and other.
+
+        Longer description.
+
+        Args:
+            other (:obj:`GraphFrame`): The other graphframe to union with.
+
+        Returns:
+            A graphframe constructed from unioning self with other.
+
+        Raises:
+            ValueError: When an argument is invalid.
+        """
+        if not isinstance(other, GraphFrame):
+            raise ValueError('other is not a GraphFrame.')
+
+        # union the graphs
+        old_to_new = {}
+        new_graph = self.graph.union(other.graph, old_to_new)
+
+        # concat both dataframes, map old nodes to new nodes, join indices
+        new_dataframe = pd.concat([self.dataframe.reset_index(drop=True),
+                                   other.dataframe.reset_index(drop=True)],
+                                  ignore_index=True)
+        self.node_column_name = 'node'
+        node_column = new_dataframe[self.node_column_name]
+        old_to_new_map = lambda x: old_to_new[x]
+        new_dataframe[self.node_column_name] = node_column.map(old_to_new_map)
+        indices = list(set(self.dataframe.index.names +
+                           other.dataframe.index.names))
+        if self.node_column_name in indices:
+            indices.insert(0, indices.pop(indices.index(self.node_column_name)))
+        new_dataframe.set_index(indices, drop=False, inplace=True)
+
+        # construct new graphframe out of new dataframe and graph
+        unioned_graphframe = GraphFrame()
+        unioned_graphframe.dataframe = new_dataframe
+        unioned_graphframe.graph = new_graph
+        return unioned_graphframe
