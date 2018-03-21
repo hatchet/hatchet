@@ -115,17 +115,6 @@ class CaliperReader:
         indices = [self.node_column_name, 'mpi.rank']
         self.dataframe.set_index(indices, drop=False, inplace=True)
 
-        # add rows without metrics
-        rows_not_in_dataframe = []
-        for node in self.graph_root.traverse():
-            if node not in self.dataframe.index:
-                data = [None] * len(self.json_columns) + [node]
-                index = self.json_columns + [self.node_column_name]
-                row = pd.Series(data=data, index=index, name=(node, None))
-                row.loc[name_column_name] = node.callpath[-1]
-                rows_not_in_dataframe.append(row)
-        self.dataframe = self.dataframe.append(rows_not_in_dataframe)
-
         graph = Graph([self.graph_root])
         return (graph, self.dataframe)
 
