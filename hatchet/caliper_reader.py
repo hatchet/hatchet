@@ -42,8 +42,8 @@ class CaliperReader:
     # possible column names of name for each record in dataframe
     name_column_names = ['source.function#callpath.address', 'path']
 
-    # column name of path for each record in dataframe
-    path_column_name = '_path'
+    # column name of node for each record in dataframe
+    node_column_name = 'node'
 
     # key used to get is_value boolean from json column metadata
     is_value_key = 'is_value'
@@ -98,11 +98,11 @@ class CaliperReader:
         # create paths for each node
         self.dfs_assign_paths(self.graph_root)
 
-        # add path column for each record/row
-        node_idx_to_path = lambda idx: self.idx_to_node[idx].callpath
+        # add node column to dataframe
+        idx_to_node_map = lambda idx: self.idx_to_node[idx]
         node_idx_column = self.dataframe[name_column_name]
-        path_column = node_idx_column.map(node_idx_to_path)
-        self.dataframe[self.path_column_name] = path_column
+        node_column = node_idx_column.map(idx_to_node_map)
+        self.dataframe[self.node_column_name] = node_column
 
         # some columns need to be converted from their nodes section index to
         # the label in that node (e.g. file is 5 but really is foo.c)
@@ -112,7 +112,7 @@ class CaliperReader:
         self.dataframe[metadata_column_names] = new_columns
 
         # assign indices for dataframe
-        indices = [self.path_column_name, 'mpi.rank']
+        indices = [self.node_column_name, 'mpi.rank']
         self.dataframe.set_index(indices, drop=False, inplace=True)
 
         graph = Graph([self.graph_root])
