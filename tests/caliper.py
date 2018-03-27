@@ -50,4 +50,4 @@ def test_dataframe(calc_pi_cali_db):
     assert isinstance(dataframe, pd.DataFrame)
     assert len(dataframe.groupby('source.line#cali.sampler.pc')) == 7
     assert len(dataframe.groupby('source.file#cali.sampler.pc')) == 7
-    assert len(dataframe.groupby('source.function#callpath.address')) == 31
+    assert len(dataframe.groupby('source.function#callpath.address')) == 8
