@@ -39,7 +39,7 @@ class GraphFrame:
         (self.graph, self.dataframe) = reader.create_graph()
 
     def graft(self):
-        """Constructs a new graphframe from self's dataframe.
+        """Constructs new graph using only nodes in self's dataframe.
 
         Self's dataframe contains rows associated with nodes in self's graph.
         This function makes a copy of the dataframe and subset of graph with
@@ -49,70 +49,63 @@ class GraphFrame:
         Returns:
             A graphframe constructed from self's dataframe.
         """
-        def construct_clone(root, clone_parent, node_column, old_to_new,
-                            new_to_old, new_roots_dict):
-            if root in node_column.values:
+        # currently necessary hard-coded values
+        self.node_column_name = 'node'
+
+        # function used to clone, filter, and merge trees in graph
+        def construct_rewiring(root, clone_parent, nodes_to_be_grafted,
+                               old_to_new, grafted_roots):
+            # only clone root if it's included in dataframe
+            if root in nodes_to_be_grafted:
+                # construct clone from clone_parent
                 clone_parent_callpath = ()
                 if clone_parent is not None:
                     clone_parent_callpath = clone_parent.callpath
                 clone_callpath = clone_parent_callpath + (root.callpath[-1],)
                 clone = Node(clone_callpath, clone_parent)
-                old_to_new[root] = clone
-                new_to_old[clone] = root
-                if clone_parent is not None:
-                    clone_parent.add_child(clone)
+
+                # handle the case where clone is a root
+                if clone_parent is None:
+                    if clone in grafted_roots:
+                        # duplicate root, get original to update mapping later
+                        clone = grafted_roots[clone]
+                    else:
+                        # clone root is the original, set as new root
+                        grafted_roots[clone] = clone
                 else:
-                    if new_roots_dict.get(clone) is None:
-                        new_roots_dict[clone] = []
-                    new_roots_dict[clone].append(clone)
+                    # clone isn't a root, update parent's children list
+                    clone_parent.add_child(clone)
+
+                # update mapping from old to new
+                old_to_new[root] = clone
             else:
                 clone = clone_parent
             for child in root.children:
-                construct_clone(child, clone, node_column, old_to_new,
-                                new_to_old, new_roots_dict)
+                construct_rewiring(child, clone, nodes_to_be_grafted,
+                                   old_to_new, grafted_roots)
 
-        def merge_trees(into, using, old_to_new, new_to_old):
-            # we know into and using have the same callpath, but the dataframe
-            # should only use one of these as its reference node, use into
-            old_to_new[new_to_old[using]] = into
-
-            # review all using's children
-            for using_child in using.children:
-                if using_child in into.children:
-                    into_child = into.children[into.children.index(using_child)]
-                    merge_trees(into_child, using_child, old_to_new, new_to_old)
-                else:
-                    into.add_child(using_child)
-                    using_child.parent = into
-
-        # clone graph and filter
-        node_column = self.dataframe[self.node_column_name]
-        old_to_new, new_to_old = {}, {}
-        new_roots_dict = {}
+        # clone, filter, and merge graph
+        nodes_to_be_grafted = self.dataframe.index.levels[0]
+        grafted_roots, old_to_new = {}, {}
         for root in self.graph.roots:
-            construct_clone(root, None, node_column, old_to_new, new_to_old,
-                            new_roots_dict)
-
-        # merge common prefixes
-        new_roots = []
-        for common_prefix_roots in new_roots_dict.itervalues():
-            # merge all roots with common prefix into first
-            first = common_prefix_roots[0]
-            new_roots.append(first)
-            for other_root in common_prefix_roots[1:]:
-                merge_trees(first, other_root, old_to_new, new_to_old)
+            construct_rewiring(root, None, nodes_to_be_grafted, old_to_new,
+                               grafted_roots)
+        grafted_roots = grafted_roots.keys()
 
         # copy old dataframe, map old nodes to new nodes, reset indices
-        old_to_new_map = lambda x: old_to_new[x]
-        new_node_column = node_column.map(old_to_new_map)
-        new_dataframe = self.dataframe.copy()
-        new_dataframe[self.node_column_name] = new_node_column
-        new_dataframe.reset_index(drop=True, inplace=True)
-        indices = [self.node_column_name, self.rank_column_name]
-        new_dataframe.set_index(indices, drop=False, inplace=True)
+        remapped_dataframe = self.dataframe.copy()
+        old_node_column = remapped_dataframe[self.node_column_name]
+        node_column_map = lambda x: old_to_new[x]
+        new_node_column = old_node_column.map(node_column_map)
+        remapped_dataframe[self.node_column_name] = new_node_column
+        remapped_dataframe.reset_index(drop=True, inplace=True)
+        indices = list(self.dataframe.index.names)
+        if self.node_column_name in indices:
+            indices.insert(0, indices.pop(indices.index(self.node_column_name)))
+        remapped_dataframe.set_index(indices, drop=False, inplace=True)
 
-        # construct new graphframe out of new dataframe and graph
-        new_graphframe = GraphFrame()
-        new_graphframe.dataframe = new_dataframe
-        new_graphframe.graph = Graph(roots=new_roots)
-        return new_graphframe
+        # construct grafted graphframe from remapped dataframe and grafted graph
+        grafted_graphframe = GraphFrame()
+        grafted_graphframe.dataframe = remapped_dataframe
+        grafted_graphframe.graph = Graph(roots=list(grafted_roots))
+        return grafted_graphframe
