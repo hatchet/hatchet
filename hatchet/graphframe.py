@@ -58,25 +58,31 @@ class GraphFrame:
         Raises:
             ValueError: When an argument is invalid.
         """
-        # fill expects fill_maps to be a dict
-        if fill_maps is None:
-            fill_maps = {}
+        # currently necessary hard-coded values
+        self.node_column_name = 'node'
 
-        if (not isinstance(fill_maps, dict) or
-            any([not isinstance(x, basestring) for x in fill_maps.keys()]) or
-            any([not callable(x) for x in fill_maps.values()])):
-            raise ValueError('fill_maps is not a dict of basestring to '
-                             'function.')
+        # check for invalid arguments
+        if fill_maps is not None:
+            if (not isinstance(fill_maps, dict) or
+                any([not isinstance(x, basestring)
+                     for x in fill_maps.keys()]) or
+                any([not callable(x) for x in fill_maps.values()])):
+                raise ValueError('fill_maps is not a dict of basestring to '
+                                 'function.')
+        else:
+            fill_maps = {}
 
         # for each row in the dataframe, if necessary, create a row for each
         # 'ancestor' of that row, thus 'filling' the dataframe
         filled_rows = []
         filled_rows_indices = set()
-        self.node_column_name = 'node'
         for row in self.dataframe.iterrows():
             # get current row and parent node
             current_row = row[1]
             parent_node = current_row.loc[self.node_column_name].parent
+
+            # add current row to filled rows
+            filled_rows.append(current_row)
 
             # while parent node exists:
             while parent_node is not None:
@@ -99,10 +105,11 @@ class GraphFrame:
                     break
                 else:
                     # parent row didn't exist already, so we make it
-                    parent_row = pd.Series(name=parent_index)
+                    parent_row = pd.Series(index=self.dataframe.columns,
+                                           dtype=object)
 
                     # map all column values from current to parent
-                    for column_name in self.dataframe.columns.values:
+                    for column_name in self.dataframe:
                         fill_map = lambda x: None
                         if column_name in fill_maps:
                             fill_map = fill_maps[column_name]
@@ -117,7 +124,10 @@ class GraphFrame:
                 parent_node = parent_node.parent
 
         # add filled rows to dataframe and make copy
-        filled_dataframe = self.dataframe.append(filled_rows)
+        filled_dataframe = pd.DataFrame(data=filled_rows)
+        filled_dataframe.reset_index(drop=True, inplace=True)
+        indices = self.dataframe.index.names
+        filled_dataframe.set_index(indices, drop=False, inplace=True)
 
         # construct and return filled graphframe
         filled_graphframe = GraphFrame()
