@@ -2,123 +2,134 @@
 
 def test_union_a():
     """Sanity test GraphFrame.union()."""
-    # hard-coded graphframe a input
-    node_a = Node(callpath_tuple=None, parent=None)
-    node_a.callpath = ('MPI',)
-    node_a.parent = None
-    node_a.children = []
-    graph_a = Graph(roots=None)
-    graph_a.roots = [node_a]
-    data_a = [[142, 0, 'MPI', node_a]]
-    columns_a = ['count', 'mpi.rank', 'path', 'node']
-    dataframe_a = pd.DataFrame(data=data_a, columns=columns_a)
-    dataframe_a.set_index(['node', 'mpi.rank'], drop=False, inplace=True)
-    graphframe_a = GraphFrame()
-    graphframe_a.dataframe = dataframe_a
-    graphframe_a.graph = graph_a
+    # graphframe a input
+    input_nodes_a = [Node(callpath_tuple=None, parent=None) for _ in range(1)]
+    input_nodes_a[0].callpath = ('MPI',)
+    input_nodes_a[0].parent = None
+    input_nodes_a[0].children = []
+    input_graph_a = Graph(roots=None)
+    input_graph_a.roots = [input_nodes_a[0]]
+    input_data_a = [[142, 0, 'MPI', input_nodes_a[0]]]
+    input_columns_a = ['count', 'mpi.rank', 'path', 'node']
+    input_dataframe_a = pd.DataFrame(data=input_data_a, columns=input_columns_a)
+    input_dataframe_a.set_index(['node', 'mpi.rank'], drop=False, inplace=True)
+    input_graphframe_a = GraphFrame()
+    input_graphframe_a.dataframe = input_dataframe_a
+    input_graphframe_a.graph = input_graph_a
 
-    # hard-coded graphframe b input
-    node_b = Node(callpath_tuple=None, parent=None)
-    node_b.callpath = ('IB',)
-    node_b.parent = None
-    node_b.children = []
-    graph_b = Graph(roots=None)
-    graph_b.roots = [node_b]
-    data_b = [[1842, 0, 'IB', node_b]]
-    columns_b = ['count', 'mpi.rank', 'path', 'node']
-    dataframe_b = pd.DataFrame(data=data_b, columns=columns_b)
-    dataframe_b.set_index(['node', 'mpi.rank'], drop=False, inplace=True)
-    graphframe_b = GraphFrame()
-    graphframe_b.dataframe = dataframe_b
-    graphframe_b.graph = graph_b
+    # graphframe b input
+    input_nodes_b = [Node(callpath_tuple=None, parent=None) for _ in range(1)]
+    input_nodes_b[0].callpath = ('IB',)
+    input_nodes_b[0].parent = None
+    input_nodes_b[0].children = []
+    input_graph_b = Graph(roots=None)
+    input_graph_b.roots = [input_nodes_b[0]]
+    input_data_b = [[1842, 0, 'IB', input_nodes_b[0]]]
+    input_columns_b = ['count', 'mpi.rank', 'path', 'node']
+    input_dataframe_b = pd.DataFrame(data=input_data_b, columns=input_columns_b)
+    input_dataframe_b.set_index(['node', 'mpi.rank'], drop=False, inplace=True)
+    input_graphframe_b = GraphFrame()
+    input_graphframe_b.dataframe = input_dataframe_b
+    input_graphframe_b.graph = input_graph_b
 
-    # hard-coded unioned graphframe output
-    result_graph = Graph(roots=None)
-    result_graph.roots = [node_a, node_b]
-    result_data = [[142, 0, 'MPI', node_a],
-                   [1842, 0, 'IB', node_b]]
-    result_columns = ['count', 'mpi.rank', 'path', 'node']
-    result_dataframe = pd.DataFrame(data=result_data, columns=result_columns)
-    result_dataframe.set_index(['node', 'mpi.rank'], drop=False, inplace=True)
+    # expected graphframe output
+    expected_nodes = [Node(callpath_tuple=None, parent=None) for _ in range(2)]
+    expected_nodes[0].callpath = ('MPI',)
+    expected_nodes[0].parent = None
+    expected_nodes[0].children = []
+    expected_nodes[1].callpath = ('IB',)
+    expected_nodes[1].parent = None
+    expected_nodes[1].children = []
+    expected_graph = Graph(roots=None)
+    expected_graph.roots = [expected_nodes[0], expected_nodes[1]]
+    expected_data = [[142, 0, 'MPI', expected_nodes[0]],
+                     [1842, 0, 'IB', expected_nodes[1]]]
+    expected_columns = ['count', 'mpi.rank', 'path', 'node']
+    expected_dataframe = pd.DataFrame(data=expected_data,
+                                      columns=expected_columns)
+    expected_dataframe.set_index(['node', 'mpi.rank'], drop=False, inplace=True)
+    expected_graphframe = GraphFrame()
+    expected_graphframe.dataframe = expected_dataframe
+    expected_graphframe.graph = expected_graph
 
-    # get unioned graphframe output
-    unioned_graphframe = graphframe_a.union(graphframe_b)
+    # computed graphframe output
+    computed_graphframe = input_graphframe_a.union(input_graphframe_b)
 
-    # test graph equalities
-    for root_a, root_b in zip(sorted(result_graph.roots),
-                              sorted(unioned_graphframe.graph.roots)):
-        for node_a, node_b in zip(root_a.traverse(), root_b.traverse()):
-            assert node_a.callpath == node_b.callpath
-
-    # test dataframe equalities
-    assert result_dataframe.equals(unioned_graphframe.dataframe)
+    # test graphframe equalities
+    assert computed_graphframe.dataframe.equals(expected_graphframe.dataframe)
+    assert computed_graphframe.graph.roots == expected_graphframe.graph.roots
+    for root_a, root_b in zip(computed_graphframe.graph.roots,
+                              expected_graphframe.graph.roots):
+        assert list(root_a.traverse()) == list(root_b.traverse())
 
 
 def test_union_b():
     """Sanity test GraphFrame.union()."""
-    # hard-coded graphframe a input
-    nodes_a = [Node(callpath_tuple=None, parent=None) for _ in range(2)]
-    nodes_a[0].callpath = ('main',)
-    nodes_a[0].parent = None
-    nodes_a[0].children = [nodes_a[1]]
-    nodes_a[1].callpath = ('main', 'foo',)
-    nodes_a[1].parent = nodes_a[0]
-    nodes_a[1].children = []
-    graph_a = Graph(roots=None)
-    graph_a.roots = [nodes_a[0]]
-    data_a = [[142, 0, 'foo', nodes_a[1]]]
-    columns_a = ['count', 'mpi.rank', 'path', 'node']
-    dataframe_a = pd.DataFrame(data=data_a, columns=columns_a)
-    dataframe_a.set_index(['node', 'mpi.rank'], drop=False, inplace=True)
-    graphframe_a = GraphFrame()
-    graphframe_a.dataframe = dataframe_a
-    graphframe_a.graph = graph_a
+    # graphframe a input
+    input_nodes_a = [Node(callpath_tuple=None, parent=None) for _ in range(2)]
+    input_nodes_a[0].callpath = ('main',)
+    input_nodes_a[0].parent = None
+    input_nodes_a[0].children = [input_nodes_a[1]]
+    input_nodes_a[1].callpath = ('main', 'foo',)
+    input_nodes_a[1].parent = input_nodes_a[0]
+    input_nodes_a[1].children = []
+    input_graph_a = Graph(roots=None)
+    input_graph_a.roots = [input_nodes_a[0]]
+    input_data_a = [[142, 0, 'foo', input_nodes_a[1]]]
+    input_columns_a = ['count', 'mpi.rank', 'path', 'node']
+    input_dataframe_a = pd.DataFrame(data=input_data_a, columns=input_columns_a)
+    input_dataframe_a.set_index(['node', 'mpi.rank'], drop=False, inplace=True)
+    input_graphframe_a = GraphFrame()
+    input_graphframe_a.dataframe = input_dataframe_a
+    input_graphframe_a.graph = input_graph_a
 
-    # hard-coded graphframe b input
-    nodes_b = [Node(callpath_tuple=None, parent=None) for _ in range(2)]
-    nodes_b[0].callpath = ('main',)
-    nodes_b[0].parent = None
-    nodes_b[0].children = [nodes_b[1]]
-    nodes_b[1].callpath = ('main', 'bar',)
-    nodes_b[1].parent = nodes_b[0]
-    nodes_b[1].children = []
-    graph_b = Graph(roots=None)
-    graph_b.roots = [nodes_b[0]]
-    data_b = [[1842, 1, 'main', nodes_b[0]]]
-    columns_b = ['count', 'mpi.rank', 'path', 'node']
-    dataframe_b = pd.DataFrame(data=data_b, columns=columns_b)
-    dataframe_b.set_index(['node', 'mpi.rank'], drop=False, inplace=True)
-    graphframe_b = GraphFrame()
-    graphframe_b.dataframe = dataframe_b
-    graphframe_b.graph = graph_b
+    # graphframe b input
+    input_nodes_b = [Node(callpath_tuple=None, parent=None) for _ in range(2)]
+    input_nodes_b[0].callpath = ('main',)
+    input_nodes_b[0].parent = None
+    input_nodes_b[0].children = [input_nodes_b[1]]
+    input_nodes_b[1].callpath = ('main', 'bar',)
+    input_nodes_b[1].parent = input_nodes_b[0]
+    input_nodes_b[1].children = []
+    input_graph_b = Graph(roots=None)
+    input_graph_b.roots = [input_nodes_b[0]]
+    input_data_b = [[1842, 1, 'main', input_nodes_b[0]]]
+    input_columns_b = ['count', 'mpi.rank', 'path', 'node']
+    input_dataframe_b = pd.DataFrame(data=input_data_b, columns=input_columns_b)
+    input_dataframe_b.set_index(['node', 'mpi.rank'], drop=False, inplace=True)
+    input_graphframe_b = GraphFrame()
+    input_graphframe_b.dataframe = input_dataframe_b
+    input_graphframe_b.graph = input_graph_b
 
-    # hard-coded unioned graphframe output
-    nodes_c = [Node(callpath_tuple=None, parent=None) for _ in range(3)]
-    nodes_c[0].callpath = ('main',)
-    nodes_c[0].parent = None
-    nodes_c[0].children = [nodes_c[1], nodes_c[2]]
-    nodes_c[1].callpath = ('main', 'foo')
-    nodes_c[1].parent = nodes_c[0]
-    nodes_c[1].children = []
-    nodes_c[2].callpath = ('main', 'bar')
-    nodes_c[2].parent = nodes_c[0]
-    nodes_c[2].children = []
-    result_graph = Graph(roots=None)
-    result_graph.roots = [nodes_c[0]]
-    result_data = [[142, 0, 'foo', nodes_c[1]],
-                   [1842, 1, 'main', nodes_c[0]]]
-    result_columns = ['count', 'mpi.rank', 'path', 'node']
-    result_dataframe = pd.DataFrame(data=result_data, columns=result_columns)
-    result_dataframe.set_index(['node', 'mpi.rank'], drop=False, inplace=True)
+    # expected graphframe output
+    expected_nodes = [Node(callpath_tuple=None, parent=None) for _ in range(3)]
+    expected_nodes[0].callpath = ('main',)
+    expected_nodes[0].parent = None
+    expected_nodes[0].children = [expected_nodes[1], expected_nodes[2]]
+    expected_nodes[1].callpath = ('main', 'foo')
+    expected_nodes[1].parent = expected_nodes[0]
+    expected_nodes[1].children = []
+    expected_nodes[2].callpath = ('main', 'bar')
+    expected_nodes[2].parent = expected_nodes[0]
+    expected_nodes[2].children = []
+    expected_graph = Graph(roots=None)
+    expected_graph.roots = [expected_nodes[0]]
+    expected_data = [[142, 0, 'foo', expected_nodes[1]],
+                     [1842, 1, 'main', expected_nodes[0]]]
+    expected_columns = ['count', 'mpi.rank', 'path', 'node']
+    expected_dataframe = pd.DataFrame(data=expected_data,
+                                      columns=expected_columns)
+    expected_dataframe.set_index(['node', 'mpi.rank'], drop=False, inplace=True)
+    expected_graphframe = GraphFrame()
+    expected_graphframe.dataframe = expected_dataframe
+    expected_graphframe.graph = expected_graph
 
-    # get unioned graphframe output
-    unioned_graphframe = graphframe_a.union(graphframe_b)
+    # computed graphframe output
+    computed_graphframe = input_graphframe_a.union(input_graphframe_b)
 
-    # test graph equalities
-    for root_a, root_b in zip(sorted(result_graph.roots),
-                              sorted(unioned_graphframe.graph.roots)):
-        for node_a, node_b in zip(root_a.traverse(), root_b.traverse()):
-            assert node_a.callpath == node_b.callpath
-
-    # test dataframe equalities
-    assert result_dataframe.equals(unioned_graphframe.dataframe)
+    # test graphframe equalities
+    assert computed_graphframe.dataframe.equals(expected_graphframe.dataframe)
+    assert computed_graphframe.graph.roots == expected_graphframe.graph.roots
+    for root_a, root_b in zip(computed_graphframe.graph.roots,
+                              expected_graphframe.graph.roots):
+        assert list(root_a.traverse()) == list(root_b.traverse())

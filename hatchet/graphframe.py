@@ -41,7 +41,9 @@ class GraphFrame:
     def union(self, other):
         """Constructs a new graphframe from self and other.
 
-        Longer description.
+        Unions the graphs of self's graphframe and other's graphframe then
+        concatenates the dataframes. Updates self's and other's dataframes'
+        nodes to point to new nodes in unioned graph.
 
         Args:
             other (:obj:`GraphFrame`): The other graphframe to union with.
@@ -52,29 +54,34 @@ class GraphFrame:
         Raises:
             ValueError: When an argument is invalid.
         """
+        # currently necessary hard-coded values
+        self.node_column_name = 'node'
+
+        # check for invalid arguments
         if not isinstance(other, GraphFrame):
             raise ValueError('other is not a GraphFrame.')
 
         # union the graphs
         old_to_new = {}
-        new_graph = self.graph.union(other.graph, old_to_new)
+        unioned_graph = self.graph.union(other.graph, old_to_new)
 
         # concat both dataframes, map old nodes to new nodes, join indices
-        new_dataframe = pd.concat([self.dataframe.reset_index(drop=True),
-                                   other.dataframe.reset_index(drop=True)],
-                                  ignore_index=True)
-        self.node_column_name = 'node'
-        node_column = new_dataframe[self.node_column_name]
-        old_to_new_map = lambda x: old_to_new[x]
-        new_dataframe[self.node_column_name] = node_column.map(old_to_new_map)
+        unioned_dataframe = pd.concat([self.dataframe.reset_index(drop=True),
+                                       other.dataframe.reset_index(drop=True)],
+                                      ignore_index=True)
+        old_node_column = unioned_dataframe[self.node_column_name]
+        node_column_map = lambda x: old_to_new[x]
+        new_node_column = old_node_column.map(node_column_map)
+        unioned_dataframe[self.node_column_name] = new_node_column
+        unioned_dataframe.reset_index(drop=True, inplace=True)
         indices = list(set(self.dataframe.index.names +
                            other.dataframe.index.names))
         if self.node_column_name in indices:
             indices.insert(0, indices.pop(indices.index(self.node_column_name)))
-        new_dataframe.set_index(indices, drop=False, inplace=True)
+        unioned_dataframe.set_index(indices, drop=False, inplace=True)
 
-        # construct new graphframe out of new dataframe and graph
+        # construct unioned graphframe from unioned dataframe and unioned graph
         unioned_graphframe = GraphFrame()
-        unioned_graphframe.dataframe = new_dataframe
-        unioned_graphframe.graph = new_graph
+        unioned_graphframe.dataframe = unioned_dataframe
+        unioned_graphframe.graph = unioned_graph
         return unioned_graphframe
