@@ -53,44 +53,25 @@ class GraphFrame:
         self.node_column_name = 'node'
 
         # function used to clone, filter, and merge trees in graph
-        def construct_rewiring(root, clone_parent, nodes_to_be_grafted,
-                               old_to_new, grafted_roots):
+        def construct_rewiring(root, clone_parent, nodes_to_be_rewired,
+                               old_to_new, rewired_callpaths, rewired_roots):
             # only clone root if it's included in dataframe
-            if root in nodes_to_be_grafted:
-                # construct clone from clone_parent
-                clone_parent_callpath = ()
-                if clone_parent is not None:
-                    clone_parent_callpath = clone_parent.callpath
-                clone_callpath = clone_parent_callpath + (root.callpath[-1],)
-                clone = Node(clone_callpath, clone_parent)
-
-                # handle the case where clone is a root
-                if clone_parent is None:
-                    if clone in grafted_roots:
-                        # duplicate root, get original to update mapping later
-                        clone = grafted_roots[clone]
-                    else:
-                        # clone root is the original, set as new root
-                        grafted_roots[clone] = clone
-                else:
-                    # clone isn't a root, update parent's children list
-                    clone_parent.add_child(clone)
-
-                # update mapping from old to new
-                old_to_new[root] = clone
+            if root in nodes_to_be_rewired:
+                clone = root.clone(clone_parent, old_to_new, rewired_callpaths,
+                                   rewired_roots)
             else:
                 clone = clone_parent
             for child in root.children:
-                construct_rewiring(child, clone, nodes_to_be_grafted,
-                                   old_to_new, grafted_roots)
+                construct_rewiring(child, clone, nodes_to_be_rewired,
+                                   old_to_new, rewired_callpaths, rewired_roots)
 
         # clone, filter, and merge graph
-        nodes_to_be_grafted = self.dataframe.index.levels[0]
-        grafted_roots, old_to_new = {}, {}
+        nodes_to_be_rewired = self.dataframe.index.levels[0]
+        old_to_new, rewired_callpaths, rewired_roots,  = {}, {}, set()
         for root in self.graph.roots:
-            construct_rewiring(root, None, nodes_to_be_grafted, old_to_new,
-                               grafted_roots)
-        grafted_roots = grafted_roots.keys()
+            construct_rewiring(root, None, nodes_to_be_rewired, old_to_new,
+                               rewired_callpaths, rewired_roots)
+        rewired_roots = list(rewired_roots)
 
         # copy old dataframe, map old nodes to new nodes, reset indices
         remapped_dataframe = self.dataframe.copy()
@@ -104,8 +85,8 @@ class GraphFrame:
             indices.insert(0, indices.pop(indices.index(self.node_column_name)))
         remapped_dataframe.set_index(indices, drop=False, inplace=True)
 
-        # construct grafted graphframe from remapped dataframe and grafted graph
-        grafted_graphframe = GraphFrame()
-        grafted_graphframe.dataframe = remapped_dataframe
-        grafted_graphframe.graph = Graph(roots=list(grafted_roots))
-        return grafted_graphframe
+        # construct rewired graphframe from remapped dataframe and rewired graph
+        rewired_graphframe = GraphFrame()
+        rewired_graphframe.dataframe = remapped_dataframe
+        rewired_graphframe.graph = Graph(roots=rewired_roots)
+        return rewired_graphframe

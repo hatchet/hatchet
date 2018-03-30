@@ -58,7 +58,7 @@ def test_graft_a():
 def test_graft_b():
     """Sanity test GraphFrame.graft()."""
     # graphframe input
-    input_nodes = [Node(callpath_tuple=None, parent=None) for _ in range(6)]
+    input_nodes = [Node(callpath_tuple=None, parent=None) for _ in range(7)]
     input_nodes[0].callpath = ('main',)
     input_nodes[0].parent = None
     input_nodes[0].children = [input_nodes[1], input_nodes[3]]
@@ -73,16 +73,20 @@ def test_graft_b():
     input_nodes[3].children = [input_nodes[4]]
     input_nodes[4].callpath = ('main', 'bar', 'foo')
     input_nodes[4].parent = input_nodes[3]
-    input_nodes[4].children = [input_nodes[5]]
-    input_nodes[5].callpath = ('main', 'bar', 'foo', 'b')
+    input_nodes[4].children = [input_nodes[5], input_nodes[6]]
+    input_nodes[5].callpath = ('main', 'bar', 'foo', 'a')
     input_nodes[5].parent = input_nodes[4]
     input_nodes[5].children = []
+    input_nodes[6].callpath = ('main', 'bar', 'foo', 'b')
+    input_nodes[6].parent = input_nodes[4]
+    input_nodes[6].children = []
     input_graph = Graph(roots=None)
     input_graph.roots = [input_nodes[0]]
     input_data = [[19, 0, 'foo', input_nodes[1]],
                   [27, 0, 'a', input_nodes[2]],
                   [43, 0, 'foo', input_nodes[4]],
-                  [17, 0, 'b', input_nodes[5]]]
+                  [65, 0, 'a', input_nodes[5]],
+                  [17, 0, 'b', input_nodes[6]]]
     input_columns = ['count', 'mpi.rank', 'path', 'node']
     input_dataframe = pd.DataFrame(data=input_data, columns=input_columns)
     input_dataframe.set_index(['node', 'mpi.rank'], drop=False, inplace=True)
@@ -106,6 +110,7 @@ def test_graft_b():
     expected_data = [[19, 0, 'foo', expected_nodes[0]],
                      [27, 0, 'a', expected_nodes[1]],
                      [43, 0, 'foo', expected_nodes[0]],
+                     [65, 0, 'a', expected_nodes[1]],
                      [17, 0, 'b', expected_nodes[2]]]
     expected_columns = ['count', 'mpi.rank', 'path', 'node']
     expected_dataframe = pd.DataFrame(data=expected_data,
