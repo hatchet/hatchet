@@ -57,38 +57,23 @@ class Graph:
             raise ValueError('old_to_new is not a dict of Node to Node.')
 
         # function used to clone and merge trees in graph
-        def construct_union(root, clone_parent, old_to_new, unioned_roots):
-            # construct clone from clone_parent
-            clone_parent_callpath = ()
-            if clone_parent is not None:
-                clone_parent_callpath = clone_parent.callpath
-            clone_callpath = clone_parent_callpath + (root.callpath[-1],)
-            clone = Node(clone_callpath, clone_parent)
-
-            # handle the case where clone is a root
-            if clone_parent is None:
-                if clone in unioned_roots:
-                    # duplicate root, get original to update mapping later
-                    clone = unioned_roots[clone]
-                else:
-                    # clone root is the original, set as new root
-                    unioned_roots[clone] = clone
-            else:
-                # clone isn't a root, update parent's children list
-                clone_parent.add_child(clone)
-
-            # update mapping from old to new
-            old_to_new[root] = clone
+        def construct_union(root, clone_parent, old_to_new, unioned_roots,
+                            unioned_callpaths):
+            # clone root
+            clone = root.clone(clone_parent, old_to_new, unioned_callpaths,
+                               unioned_roots)
 
             # clone and union all children
             for child in root.children:
-                construct_union(child, clone, old_to_new, unioned_roots)
+                construct_union(child, clone, old_to_new, unioned_roots,
+                                unioned_callpaths)
 
         # clone, filter, and merge graphs
-        unioned_roots = {}
+        unioned_callpaths, unioned_roots = {}, set()
         for root in self.roots + other.roots:
-            construct_union(root, None, old_to_new, unioned_roots)
-        unioned_roots = unioned_roots.keys()
+            construct_union(root, None, old_to_new, unioned_roots,
+                            unioned_callpaths)
+        unioned_roots = list(unioned_roots)
 
         return Graph(roots=unioned_roots)
 
