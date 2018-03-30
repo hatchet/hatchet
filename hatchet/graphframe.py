@@ -88,12 +88,14 @@ class GraphFrame:
             while parent_node is not None:
 
                 # build parent row index
-                parent_index = []
+                parent_index, parent_index_dict = [], {}
                 for index_name in self.dataframe.index.names:
                     fill_map = lambda x: None
                     if index_name in fill_maps:
                         fill_map = fill_maps[index_name]
-                    parent_index.append(fill_map(current_row))
+                    parent_fill_value = fill_map(current_row)
+                    parent_index.append(parent_fill_value)
+                    parent_index_dict[index_name] = parent_fill_value
                 parent_index = tuple(parent_index)
 
                 # if parent row in table or filled rows use that, else make it
@@ -110,10 +112,14 @@ class GraphFrame:
 
                     # map all column values from current to parent
                     for column_name in self.dataframe:
-                        fill_map = lambda x: None
-                        if column_name in fill_maps:
-                            fill_map = fill_maps[column_name]
-                        parent_row.loc[column_name] = fill_map(current_row)
+                        if column_name in parent_index_dict:
+                            parent_fill_value = parent_index_dict[column_name]
+                            parent_row.loc[column_name] = parent_fill_value
+                        else:
+                            fill_map = lambda x: None
+                            if column_name in fill_maps:
+                                fill_map = fill_maps[column_name]
+                            parent_row.loc[column_name] = fill_map(current_row)
 
                     # add parent row to filled_rows
                     filled_rows_indices.add(parent_index)
