@@ -19,7 +19,7 @@ class Node:
 
     def __init__(self, callpath_tuple, parent):
         self.callpath = callpath_tuple
-        self.tf_index = hash(callpath_tuple)
+        self.df_index = hash(callpath_tuple)
 
         self.parent = parent
         self.children = []
@@ -44,7 +44,7 @@ class Node:
             yield self
 
     def __hash__(self):
-        return self.tf_index
+        return self.df_index
 
     def __eq__(self, other):
         return (self.callpath == other.callpath)
