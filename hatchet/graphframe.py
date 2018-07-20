@@ -38,3 +38,13 @@ class GraphFrame:
 
         (self.graph, self.dataframe) = reader.create_graph()
 
+    def filter(self, filter_function):
+        """Filter the dataframe using a user supplied function.
+        """
+        filtered_rows = self.dataframe.apply(filter_function, axis = 1)
+        filtered_df = self.dataframe[filtered_rows]
+
+        filtered_gf = GraphFrame()
+        filtered_gf.dataframe = filtered_df
+        filtered_gf.graph = self.graph
+        return filtered_gf
