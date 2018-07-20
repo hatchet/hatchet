@@ -38,3 +38,42 @@ class GraphFrame:
 
         (self.graph, self.dataframe) = reader.create_graph()
 
+    def filter(self, is_row_qualified):
+        """Filters self's dataframe.
+
+        Creates and returns a new graphframe whose dataframe is a copied subset
+        of self's dataframe and whose graph is self's graph.
+
+        Args:
+            is_row_qualified (:obj:`function`): Function that returns True or
+                False if a pandas.Series qualifies.
+
+        Returns:
+            A new graphframe that is the result of filtering self.
+
+        Raises:
+            ValueError: When an argument is invalid.
+        """
+        # currently necessary hard-coded values
+        self.node_column_name = 'node'
+
+        # check for invalid arguments
+        if not callable(is_row_qualified):
+            raise ValueError('is_row_qualified is not a function.')
+
+        # get qualified rows
+        qualified_rows = self.dataframe.apply(is_row_qualified, axis=1)
+
+        # construct copied subset dataframe
+        copied_subset_dataframe = self.dataframe.loc[qualified_rows].copy()
+        copied_subset_dataframe.reset_index(drop=True, inplace=True)
+        indices = list(self.dataframe.index.names)
+        if self.node_column_name in indices:
+            indices.insert(0, indices.pop(indices.index(self.node_column_name)))
+        copied_subset_dataframe.set_index(indices, drop=False, inplace=True)
+
+        # construct filtered graphframe
+        filtered_graphframe = GraphFrame()
+        filtered_graphframe.dataframe = copied_subset_dataframe
+        filtered_graphframe.graph = self.graph
+        return filtered_graphframe
