@@ -128,7 +128,7 @@ class HPCToolkitReader:
         # start graph construction at the root
         self.parse_xml_children(root, graph_root, list(node_callpath))
 
-        index = pd.MultiIndex.from_tuples(self.list_indices, names=['callpath', 'rank'])
+        index = pd.MultiIndex.from_tuples(self.list_indices, names=['node', 'rank'])
         dataframe = pd.DataFrame(data=self.list_dicts, index=index)
         # dataframe.sort_index(level=0, inplace=True, sort_remaining=True)
 
