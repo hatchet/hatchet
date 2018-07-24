@@ -8,7 +8,7 @@ Hatchet Documentation
 
 Hatchet is a Python-based library to analyze performance data that has a
 hierarchy (derived from calling context trees, call graphs, callpath traces,
-nested regions’ timers, etc.). Hatchet implements various operations to analyze
+nested regions' timers, etc.). Hatchet implements various operations to analyze
 a single hierarchical data set or compare multiple data sets.
 
 .. toctree::

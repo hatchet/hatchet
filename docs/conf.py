@@ -20,7 +20,7 @@ sys.path.insert(0, os.path.abspath('../hatchet'))
 # -- Project information -----------------------------------------------------
 
 project = u'hatchet'
-copyright = u'2018, Abhinav Bhatele'
+copyright = u'2017-2018, Lawrence Livermore National Security, LLC'
 author = u'Abhinav Bhatele'
 
 # The short X.Y version
