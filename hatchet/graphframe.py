@@ -14,8 +14,10 @@ from hpctoolkit_reader import HPCToolkitReader
 from caliper_reader import CaliperReader
 import pandas as pd
 
+
 class GraphFrame:
-    """ This class associates the graph with a dataframe.
+    """ An input dataset is read into an object of this type, which includes a
+        graph and a dataframe.
     """
 
     def __init__(self):
@@ -26,6 +28,8 @@ class GraphFrame:
         self.graph = None
 
     def from_hpctoolkit(self, dirname):
+        """ Read in an HPCToolkit database directory.
+        """
         reader = HPCToolkitReader(dirname)
         self.num_pes = reader.num_pes
         self.num_nodes = reader.num_nodes
@@ -34,14 +38,16 @@ class GraphFrame:
         (self.graph, self.dataframe) = reader.create_graph()
 
     def from_caliper(self, filename):
+        """ Read in a Caliper Json-split file.
+        """
         reader = CaliperReader(filename)
 
         (self.graph, self.dataframe) = reader.create_graph()
 
     def filter(self, filter_function):
-        """Filter the dataframe using a user supplied function.
+        """ Filter the dataframe using a user supplied function.
         """
-        filtered_rows = self.dataframe.apply(filter_function, axis = 1)
+        filtered_rows = self.dataframe.apply(filter_function, axis=1)
         filtered_df = self.dataframe[filtered_rows]
 
         filtered_gf = GraphFrame()

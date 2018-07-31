@@ -12,9 +12,10 @@
 
 from functools import total_ordering
 
+
 @total_ordering
 class Node:
-    """ A node in the graph.
+    """ A node in the graph. The node only stores its callpath.
     """
 
     def __init__(self, callpath_tuple, parent):
@@ -25,13 +26,13 @@ class Node:
         self.children = []
 
     def add_child(self, node):
-        """ Adds a child to this node.
+        """ Adds a child to this node's list of children.
         """
         assert isinstance(node, Node)
         self.children.append(node)
 
     def traverse(self, order='pre'):
-        """Traverse the tree depth-first and yield each node.
+        """ Traverse the tree depth-first and yield each node.
         """
         if(order == 'pre'):
             yield self

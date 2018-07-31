@@ -12,8 +12,9 @@
 
 from hatchet.external.printtree import trees_as_text
 
+
 class Graph:
-    """ Class representing a forest of trees from one dataset.
+    """ A possibly multi-rooted tree or graph from one input dataset.
     """
 
     def __init__(self, roots):
@@ -21,10 +22,10 @@ class Graph:
             self.roots = roots
 
     def to_string(self, roots=None, dataframe=None,
-            metric='CPUTIME (usec) (I)', name='name', context='file', rank=0,
-            threshold=0.01, unicode=True, color=True):
-        """ Function to print all trees in a graph with or without some
-            metric attached to each node.
+                  metric='CPUTIME (usec) (I)', name='name', context='file',
+                  rank=0, threshold=0.01, unicode=True, color=True):
+        """ Function to print a graph with or without some metric attached to
+            each node.
         """
         if roots is None:
             roots = self.roots
@@ -37,4 +38,4 @@ class Graph:
     def __str__(self):
         """ Returns a string representation of the graph.
         """
-        return self.graph_as_text().encode('utf-8')
+        return self.to_string()

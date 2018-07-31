@@ -49,8 +49,8 @@ of the node and MPI rank is used to index into the dataframe.
 
 Graph-centric Operations
 ------------------------
-**Prune**: The ``prune`` operation is always performed after a ``filter`` is
-done on the dataframe. ``Prune`` removes nodes from the graph that were
+**Squash**: The ``squash`` operation is always performed after a ``filter`` is
+done on the dataframe. ``Squash`` removes nodes from the graph that were
 filtered out due to a previous ``filter`` operation. When one or more nodes on
 a path are removed from the graph, the nearest alive ancestor is connected by
 an edge to the nearest alive child on the path.
@@ -61,6 +61,9 @@ an edge to the nearest alive child on the path.
 **Diff**:
 
 
+**Groupby and Aggregate**:
+
+
 Dataframe-centric Operations
 ----------------------------
 **Filter**: ``filter`` takes a user supplied function and applies that to all
@@ -69,3 +72,4 @@ dataframe to only return rows that are True. The returned graphframe preserves
 the graph provided as input.
 
 **Fill**:
+
