@@ -112,7 +112,7 @@ class CaliperReader:
         self.dataframe[metadata_column_names] = new_columns
 
         # assign indices for dataframe
-        indices = [self.node_column_name, 'rank']
+        indices = [self.node_column_name, 'mpi.rank']
         self.dataframe.set_index(indices, drop=False, inplace=True)
 
         graph = Graph([self.graph_root])
