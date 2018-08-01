@@ -14,6 +14,8 @@ import glob
 import struct
 import numpy as np
 import pandas as pd
+# from __future__ import print_function
+# import time
 
 from node import Node
 from graph import Graph
@@ -55,15 +57,15 @@ class HPCToolkitReader:
                 self.num_nodes = struct.unpack('>i', metricdb.read(4))[0]
                 self.num_metrics = struct.unpack('>i', metricdb.read(4))[0]
 
-        self.metrics = np.empty([self.num_metrics,
-                                 self.num_nodes,
-                                 self.num_pes])
-        self.metrics_avg = np.empty([self.num_metrics, self.num_nodes])
+        shape = [self.num_nodes * self.num_pes, self.num_metrics + 2]
+        self.metrics = np.empty(shape)
 
         self.load_modules = {}
         self.src_files = {}
         self.procedure_names = {}
         self.metric_names = {}
+
+        self.node_dicts = []
 
     def fill_tables(self):
         # create dicts of load modules, src_files and procedure_names
@@ -91,20 +93,23 @@ class HPCToolkitReader:
                 arr1d = np.fromfile(metricdb, dtype=np.dtype('>f8'),
                                     count=self.num_nodes * self.num_metrics)
 
-                arr2d = arr1d.reshape(self.num_nodes, self.num_metrics)
+            pe_offset = pe * self.num_nodes
 
-                for i in range(0, self.num_metrics):
-                    for j in range(0, self.num_nodes):
-                        self.metrics[i][j][pe] = arr2d[j][i]
+            self.metrics[pe_offset:pe_offset + self.num_nodes, :2].flat = arr1d.flat
+            self.metrics[pe_offset:pe_offset + self.num_nodes, 2] = range(1, self.num_nodes+1)
+            self.metrics[pe_offset:pe_offset + self.num_nodes, 3] = float(pe)
 
-        # Also calculate avg metric per pe for each node
-        self.metrics_avg = np.mean(self.metrics, axis=2)
-
-        return self.metrics
+        df_columnns = self.metric_names.values() + ['nid', 'rank']
+        self.df_metrics = pd.DataFrame(self.metrics, columns=df_columnns)
 
     def create_graph(self):
+        # time1 = time.time()
         self.fill_tables()
+        # time2 = time.time()
+        # print("fill tables ", time2-time1)
         self.read_metricdb()
+        # time3 = time.time()
+        # print("read metric db", time3-time2)
 
         # lists to create a dataframe
         self.list_indices = []
@@ -117,20 +122,25 @@ class HPCToolkitReader:
         node_callpath = []
         node_callpath.append(self.procedure_names[root.get('n')])
         graph_root = Node(tuple(node_callpath), None)
-        indices, dicts = self.create_dataframe_rows(nid, graph_root,
+        node_dict = self.create_node_dict(nid, graph_root,
             self.procedure_names[root.get('n')], 'PF',
             self.src_files[root.get('f')], root.get('l'),
             self.load_modules[root.get('lm')])
 
-        self.list_indices.extend(indices)
-        self.list_dicts.extend(dicts)
+        self.node_dicts.append(node_dict)
 
         # start graph construction at the root
+        # time4 = time.time()
         self.parse_xml_children(root, graph_root, list(node_callpath))
+        self.df_nodes = pd.DataFrame.from_dict(data=self.node_dicts)
+        # time5 = time.time()
+        # print("graph construction", time5-time4)
 
-        index = pd.MultiIndex.from_tuples(self.list_indices, names=['node', 'rank'])
-        dataframe = pd.DataFrame(data=self.list_dicts, index=index)
-        # dataframe.sort_index(level=0, inplace=True, sort_remaining=True)
+        dataframe = pd.merge(self.df_metrics, self.df_nodes, on='nid')
+        indices = ['node', 'rank']
+        dataframe.set_index(indices, drop=False, inplace=True)
+        # time6 = time.time()
+        # print("data frame", time6-time5)
 
         graph = Graph([graph_root])
         return graph, dataframe
@@ -158,7 +168,7 @@ class HPCToolkitReader:
             node_callpath = parent_callpath
             node_callpath.append(self.procedure_names[xml_node.get('n')])
             hnode = Node(tuple(node_callpath), hparent)
-            indices, dicts = self.create_dataframe_rows(nid, hnode,
+            node_dict = self.create_node_dict(nid, hnode,
                 name, xml_tag, self.src_files[src_file], xml_node.get('l'),
                 self.load_modules[xml_node.get('lm')])
 
@@ -170,7 +180,7 @@ class HPCToolkitReader:
             node_callpath = parent_callpath
             node_callpath.append(name)
             hnode = Node(tuple(node_callpath), hparent)
-            indices, dicts = self.create_dataframe_rows(nid, hnode,
+            node_dict = self.create_node_dict(nid, hnode,
                 name, xml_tag, self.src_files[src_file], line, None)
 
         elif xml_tag == 'S':
@@ -181,7 +191,7 @@ class HPCToolkitReader:
             node_callpath = parent_callpath
             node_callpath.append(name)
             hnode = Node(tuple(node_callpath), hparent)
-            indices, dicts = self.create_dataframe_rows(nid, hnode,
+            node_dict = self.create_node_dict(nid, hnode,
                 name, xml_tag, self.src_files[src_file], line, None)
 
         if xml_tag == 'C' or (xml_tag == 'Pr' and
@@ -189,21 +199,12 @@ class HPCToolkitReader:
             # do not add a node to the graph
             self.parse_xml_children(xml_node, hparent, parent_callpath)
         else:
-            self.list_indices.extend(indices)
-            self.list_dicts.extend(dicts)
+            self.node_dicts.append(node_dict)
             hparent.add_child(hnode)
             self.parse_xml_children(xml_node, hnode, list(node_callpath))
 
-    def create_dataframe_rows(self, nid, hnode, name, node_type, src_file,
+    def create_node_dict(self, nid, hnode, name, node_type, src_file,
             line, module):
-        list_indices = []
-        list_dicts = []
+        node_dict = {'nid': nid, 'name': name, 'type': node_type, 'file': src_file, 'line': line, 'module': module, 'node': hnode}
 
-        for pe in range(0, self.num_pes):
-            list_indices.append(tuple([hnode, pe]))
-            node_dict = {'name': name, 'type': node_type, 'file': src_file, 'line': line, 'module': module, 'node': hnode}
-            for metric in range(0, self.num_metrics):
-                node_dict[self.metric_names[str(metric)]] = self.metrics[metric][nid-1][pe]
-            list_dicts.append(node_dict)
-
-        return list_indices, list_dicts
+        return node_dict

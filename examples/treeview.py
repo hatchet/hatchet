@@ -26,8 +26,10 @@ if __name__ == "__main__":
     gf = GraphFrame()
     gf.from_hpctoolkit(dirname)
 
-    grouped_df = gf.dataframe.groupby('module')
-    for key, item in grouped_df:
-        print grouped_df.get_group(key), "\n\n"
+    # grouped_df = gf.dataframe.groupby('module')
+    # for key, item in grouped_df:
+    #     print grouped_df.get_group(key), "\n\n"
+    print gf.dataframe.xs(0, level='rank')
+    print "\n"
 
     print gf.graph.to_string(gf.graph.roots, gf.dataframe, threshold=0.0)
