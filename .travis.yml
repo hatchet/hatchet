@@ -1,0 +1,28 @@
+branches:
+  only:
+    - master
+
+jobs:
+  fast_finish: true
+  include:
+    - python: '2.7'
+      os: linux
+      language: python
+    - python: '3.6'
+      os: linux
+      language: python
+
+install:
+  - pip install --upgrade numpy
+  - pip install --upgrade pandas
+  - pip install --upgrade pytest
+  - python setup.py install
+
+script:
+  - pytest
+
+notifications:
+  email:
+    recipients: bhatele@llnl.gov
+    on_success: change
+    on_failure: always
