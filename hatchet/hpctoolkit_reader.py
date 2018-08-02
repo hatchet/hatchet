@@ -9,16 +9,15 @@
 # For details, see: https://github.com/LLNL/hatchet
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
-
 import glob
 import struct
+
 import numpy as np
 import pandas as pd
-# from __future__ import print_function
-# import time
 
 from node import Node
 from graph import Graph
+from util.timer import Timer
 
 try:
     import xml.etree.cElementTree as ET
@@ -67,6 +66,8 @@ class HPCToolkitReader:
 
         self.node_dicts = []
 
+        self.timer = Timer()
+
     def fill_tables(self):
         # create dicts of load modules, src_files and procedure_names
         for loadm in (self.loadmodule_table).iter('LoadModule'):
@@ -103,13 +104,11 @@ class HPCToolkitReader:
         self.df_metrics = pd.DataFrame(self.metrics, columns=df_columnns)
 
     def create_graph(self):
-        # time1 = time.time()
-        self.fill_tables()
-        # time2 = time.time()
-        # print("fill tables ", time2-time1)
-        self.read_metricdb()
-        # time3 = time.time()
-        # print("read metric db", time3-time2)
+        with self.timer.phase('fill tables'):
+            self.fill_tables()
+
+        with self.timer.phase('read metric db'):
+            self.read_metricdb()
 
         # lists to create a dataframe
         self.list_indices = []
@@ -130,17 +129,14 @@ class HPCToolkitReader:
         self.node_dicts.append(node_dict)
 
         # start graph construction at the root
-        # time4 = time.time()
-        self.parse_xml_children(root, graph_root, list(node_callpath))
-        self.df_nodes = pd.DataFrame.from_dict(data=self.node_dicts)
-        # time5 = time.time()
-        # print("graph construction", time5-time4)
+        with self.timer.phase('graph construction'):
+            self.parse_xml_children(root, graph_root, list(node_callpath))
+            self.df_nodes = pd.DataFrame.from_dict(data=self.node_dicts)
 
-        dataframe = pd.merge(self.df_metrics, self.df_nodes, on='nid')
-        indices = ['node', 'rank']
-        dataframe.set_index(indices, drop=False, inplace=True)
-        # time6 = time.time()
-        # print("data frame", time6-time5)
+        with self.timer.phase('data frame'):
+            dataframe = pd.merge(self.df_metrics, self.df_nodes, on='nid')
+            indices = ['node', 'rank']
+            dataframe.set_index(indices, drop=False, inplace=True)
 
         graph = Graph([graph_root])
         return graph, dataframe
