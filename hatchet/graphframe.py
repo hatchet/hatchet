@@ -9,10 +9,11 @@
 # For details, see: https://github.com/LLNL/hatchet
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
-
-from hpctoolkit_reader import HPCToolkitReader
-from caliper_reader import CaliperReader
 import pandas as pd
+
+from .hpctoolkit_reader import HPCToolkitReader
+from .caliper_reader import CaliperReader
+
 
 
 class GraphFrame:

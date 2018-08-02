@@ -19,7 +19,7 @@ install:
   - python setup.py install
 
 script:
-  - pytest
+  - PYTHONPATH=. pytest
 
 notifications:
   email:

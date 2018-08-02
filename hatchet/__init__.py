@@ -10,4 +10,4 @@
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
 
-from graphframe import *
+from .graphframe import *

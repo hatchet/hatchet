@@ -10,7 +10,7 @@
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
 
-from hatchet.external.printtree import trees_as_text
+from .external.printtree import trees_as_text
 
 
 class Graph:
