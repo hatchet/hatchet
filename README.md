@@ -1,6 +1,8 @@
 Hatchet
 =======
 
+[![Build Status](https://travis-ci.com/LLNL/hatchet.svg?branch=master)](https://travis-ci.org/LLNL/hatchet)
+
 Hatchet analyzes performance data that is organized in a tree hierarchy (such
 as calling context trees, call graphs, nested regions' timers etc.)
 
@@ -19,4 +21,3 @@ Produced at the Lawrence Livermore National Laboratory.
 Created by Abhinav Bhatele <bhatele@llnl.gov>.
 LLNL-CODE-741008. All rights reserved.
 ```
-
