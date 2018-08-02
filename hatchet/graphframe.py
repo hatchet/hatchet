@@ -36,7 +36,7 @@ class GraphFrame:
         self.num_nodes = reader.num_nodes
         self.num_metrics = reader.num_metrics
 
-        (self.graph, self.dataframe) = reader.create_graph()
+        (self.graph, self.dataframe) = reader.create_graphframe()
 
     def from_caliper(self, filename):
         """ Read in a Caliper Json-split file.

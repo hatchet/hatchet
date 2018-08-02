@@ -35,6 +35,8 @@ class HPCToolkitReader:
     """
 
     def __init__(self, dir_name):
+        # this is the name of the HPCToolkit database directory. The directory
+        # contains an experiment.xml and some metric-db files
         self.dir_name = dir_name
 
         root = ET.parse(self.dir_name + '/experiment.xml').getroot()
@@ -44,9 +46,13 @@ class HPCToolkitReader:
         self.metricdb_table = next(root.iter('MetricDBTable'))
         self.callpath_profile = next(root.iter('SecCallPathProfileData'))
 
+        # For a parallel run, there should be one metric-db file per MPI
+        # process
         metricdb_files = glob.glob(self.dir_name + '/*.metric-db')
         self.num_pes = len(metricdb_files)
 
+        # Read one metric-db file to extract the number of nodes in the CCT
+        # and the number of metrics
         with open(metricdb_files[0], "rb") as metricdb:
             tag = metricdb.read(18)
             version = metricdb.read(5)
@@ -59,6 +65,9 @@ class HPCToolkitReader:
                 raise ValueError(
                     "HPCToolkitReader doesn't support endian '%s'" % endian)
 
+        # all the metric data per node and per process is read into the metrics
+        # array below. The two additional columns are for storing the implicit
+        # node id (nid) and MPI process rank.
         shape = [self.num_nodes * self.num_pes, self.num_metrics + 2]
         self.metrics = np.empty(shape)
 
@@ -67,12 +76,16 @@ class HPCToolkitReader:
         self.procedure_names = {}
         self.metric_names = {}
 
+        # this list of dicts will hold all the node information such as
+        # procedure name, load module, filename etc. for all the nodes
         self.node_dicts = []
 
         self.timer = Timer()
 
     def fill_tables(self):
-        # create dicts of load modules, src_files and procedure_names
+        """ Read certain sections of the experiment.xml file to create dicts
+            of load modules, src_files, procedure_names, and metric_names
+        """
         for loadm in (self.loadmodule_table).iter('LoadModule'):
             self.load_modules[loadm.get('i')] = loadm.get('n')
 
@@ -88,39 +101,48 @@ class HPCToolkitReader:
         return self.load_modules, self.src_files, self.procedure_names, self.metric_names
 
     def read_metricdb(self):
+        """ Read all the metric-db files and create a dataframe with num_nodes
+            X num_pes rows and num_metrics columns. Two additional columns
+            store the node id and MPI process rank.
+        """
         metricdb_files = glob.glob(self.dir_name + '/*.metric-db')
 
-        # assumes that glob returns a sorted order
+        # TODO: extract pe number from the filename
         for pe, filename in enumerate(metricdb_files):
+            # read each file into a 1D array
             with open(filename, "rb") as metricdb:
                 metricdb.seek(32)
                 arr1d = np.fromfile(metricdb, dtype=np.dtype('>f8'),
                                     count=self.num_nodes * self.num_metrics)
 
+            # copy the data into the larger 2D array of metrics
             pe_offset = pe * self.num_nodes
-
             self.metrics[pe_offset:pe_offset + self.num_nodes, :2].flat = arr1d.flat
             self.metrics[pe_offset:pe_offset + self.num_nodes, 2] = range(1, self.num_nodes+1)
             self.metrics[pe_offset:pe_offset + self.num_nodes, 3] = float(pe)
 
+        # once all files have been read, create a dataframe of metrics
+        # TODO: make column names consistent across readers
         df_columnns = list(self.metric_names.values()) + ['nid', 'rank']
         self.df_metrics = pd.DataFrame(self.metrics, columns=df_columnns)
 
-    def create_graph(self):
+    def create_graphframe(self):
+        """ Read the experiment.xml file to extract the calling context tree
+            and create a dataframe out of it. Then merge the two dataframes to
+            create the final dataframe.
+        """
         with self.timer.phase('fill tables'):
             self.fill_tables()
 
         with self.timer.phase('read metric db'):
             self.read_metricdb()
 
-        # lists to create a dataframe
-        self.list_indices = []
-        self.list_dicts = []
-
         # parse the ElementTree to generate a calling context tree
         root = self.callpath_profile.findall('PF')[0]
         nid = int(root.get('i'))
 
+        # start with the root and create the callpath and node for the root
+        # also a corresponding node_dict to be inserted into the dataframe
         node_callpath = []
         node_callpath.append(self.procedure_names[root.get('n')])
         graph_root = Node(tuple(node_callpath), None)
@@ -131,13 +153,16 @@ class HPCToolkitReader:
 
         self.node_dicts.append(node_dict)
 
-        # start graph construction at the root
+        # start graph construction at the root and create a dataframe for
+        # all the nodes in the graph
         with self.timer.phase('graph construction'):
             self.parse_xml_children(root, graph_root, list(node_callpath))
             self.df_nodes = pd.DataFrame.from_dict(data=self.node_dicts)
 
+        # merge the metrics and node dataframes
         with self.timer.phase('data frame'):
             dataframe = pd.merge(self.df_metrics, self.df_nodes, on='nid')
+            # set the index to be a MultiIndex
             indices = ['node', 'rank']
             dataframe.set_index(indices, drop=False, inplace=True)
 
@@ -161,6 +186,7 @@ class HPCToolkitReader:
         xml_tag = xml_node.tag
 
         if xml_tag == 'PF' or xml_tag == 'Pr':
+            # procedure
             name = self.procedure_names[xml_node.get('n')]
             src_file = xml_node.get('f')
 
@@ -172,6 +198,7 @@ class HPCToolkitReader:
                 self.load_modules[xml_node.get('lm')])
 
         elif xml_tag == 'L':
+            # loop
             src_file = xml_node.get('f')
             line = xml_node.get('l')
             name = 'Loop@' + (self.src_files[src_file]).rpartition('/')[2] + ':' + line
@@ -183,6 +210,7 @@ class HPCToolkitReader:
                 name, xml_tag, self.src_files[src_file], line, None)
 
         elif xml_tag == 'S':
+            # statement
             line = xml_node.get('l')
             name = 'Stmt' + str(stmt_num) + '@' + (self.src_files[src_file]).rpartition('/')[2] + ':' + line
             stmt_num = stmt_num + 1
@@ -195,7 +223,8 @@ class HPCToolkitReader:
 
         if xml_tag == 'C' or (xml_tag == 'Pr' and
                               self.procedure_names[xml_node.get('n')] == ''):
-            # do not add a node to the graph
+            # do not add a node to the graph if the xml_tag is a callsite
+            # or if its a procedure with no name
             self.parse_xml_children(xml_node, hparent, parent_callpath)
         else:
             self.node_dicts.append(node_dict)
@@ -204,6 +233,8 @@ class HPCToolkitReader:
 
     def create_node_dict(self, nid, hnode, name, node_type, src_file,
             line, module):
+        """ Create a dict with all the node attributes.
+        """
         node_dict = {'nid': nid, 'name': name, 'type': node_type, 'file': src_file, 'line': line, 'module': module, 'node': hnode}
 
         return node_dict
