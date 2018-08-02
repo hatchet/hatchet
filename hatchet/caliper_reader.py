@@ -12,8 +12,9 @@
 
 import json
 import pandas as pd
-from node import Node
-from graph import Graph
+
+from .node import Node
+from .graph import Graph
 
 
 class CaliperReader:

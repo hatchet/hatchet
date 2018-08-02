@@ -15,14 +15,14 @@ import struct
 import numpy as np
 import pandas as pd
 
-from node import Node
-from graph import Graph
-from util.timer import Timer
-
 try:
     import xml.etree.cElementTree as ET
 except ImportError:
     import xml.etree.ElementTree as ET
+
+from .node import Node
+from .graph import Graph
+from .util.timer import Timer
 
 src_file = 0
 stmt_num = 1
@@ -38,11 +38,11 @@ class HPCToolkitReader:
         self.dir_name = dir_name
 
         root = ET.parse(self.dir_name + '/experiment.xml').getroot()
-        self.loadmodule_table = root.iter('LoadModuleTable').next()
-        self.file_table = root.iter('FileTable').next()
-        self.procedure_table = root.iter('ProcedureTable').next()
-        self.metricdb_table = root.iter('MetricDBTable').next()
-        self.callpath_profile = root.iter('SecCallPathProfileData').next()
+        self.loadmodule_table = next(root.iter('LoadModuleTable'))
+        self.file_table = next(root.iter('FileTable'))
+        self.procedure_table = next(root.iter('ProcedureTable'))
+        self.metricdb_table = next(root.iter('MetricDBTable'))
+        self.callpath_profile = next(root.iter('SecCallPathProfileData'))
 
         metricdb_files = glob.glob(self.dir_name + '/*.metric-db')
         self.num_pes = len(metricdb_files)
@@ -52,9 +52,12 @@ class HPCToolkitReader:
             version = metricdb.read(5)
             endian = metricdb.read(1)
 
-            if endian == 'b':
+            if endian == b'b':
                 self.num_nodes = struct.unpack('>i', metricdb.read(4))[0]
                 self.num_metrics = struct.unpack('>i', metricdb.read(4))[0]
+            else:
+                raise ValueError(
+                    "HPCToolkitReader doesn't support endian '%s'" % endian)
 
         shape = [self.num_nodes * self.num_pes, self.num_metrics + 2]
         self.metrics = np.empty(shape)
@@ -100,7 +103,7 @@ class HPCToolkitReader:
             self.metrics[pe_offset:pe_offset + self.num_nodes, 2] = range(1, self.num_nodes+1)
             self.metrics[pe_offset:pe_offset + self.num_nodes, 3] = float(pe)
 
-        df_columnns = self.metric_names.values() + ['nid', 'rank']
+        df_columnns = list(self.metric_names.values()) + ['nid', 'rank']
         self.df_metrics = pd.DataFrame(self.metrics, columns=df_columnns)
 
     def create_graph(self):
