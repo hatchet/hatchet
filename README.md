@@ -2,6 +2,7 @@ Hatchet
 =======
 
 [![Build Status](https://travis-ci.com/LLNL/hatchet.svg?branch=master)](https://travis-ci.org/LLNL/hatchet)
+[![Read the Docs](http://readthedocs.org/projects/hatchet/badge/?version=latest)](http://hatchet.readthedocs.io)
 
 Hatchet analyzes performance data that is organized in a tree hierarchy (such
 as calling context trees, call graphs, nested regions' timers etc.)
