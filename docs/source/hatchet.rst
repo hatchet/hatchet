@@ -60,4 +60,6 @@ Subpackages
 .. toctree::
 
     hatchet.external
+    hatchet.util
+
 

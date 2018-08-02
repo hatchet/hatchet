@@ -1,4 +1,8 @@
 *.pyc
-*.metric-db
-/.cache
+.cache
+.pytest_cache
+
 experiment.xml
+docs/_build
+
+*.metric-db

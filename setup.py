@@ -21,6 +21,6 @@ setup(
         'License :: OSI Approved :: MIT License',
     ],
     keywords='',
-    packages = ['hatchet', 'hatchet.external'],
+    packages = ['hatchet', 'hatchet.util', 'hatchet.external'],
 )
 
