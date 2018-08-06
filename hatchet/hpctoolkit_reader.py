@@ -14,6 +14,8 @@ import struct
 
 import numpy as np
 import pandas as pd
+import multiprocessing as mp
+import multiprocessing.sharedctypes
 
 try:
     import xml.etree.cElementTree as ET
@@ -28,10 +30,32 @@ src_file = 0
 stmt_num = 1
 
 
+def init_shared_array(buf_):
+    """ Initialize shared array """
+    global shared_metrics
+    shared_metrics = buf_
+
+
+def read_metricdb_file(args):
+    """ Read a single metricdb file into a 1D array """
+    pe, filename, num_nodes, num_metrics, shape = args
+    with open(filename, "rb") as metricdb:
+        metricdb.seek(32)
+        arr1d = np.fromfile(metricdb, dtype=np.dtype('>f8'),
+                            count=num_nodes * num_metrics)
+
+    arr = np.frombuffer(shared_metrics).reshape(shape)
+
+    # copy the data in the right place in the larger 2D array of metrics
+    pe_offset = pe * num_nodes
+    arr[pe_offset:pe_offset + num_nodes, :2].flat = arr1d.flat
+    arr[pe_offset:pe_offset + num_nodes, 2] = range(1, num_nodes+1)
+    arr[pe_offset:pe_offset + num_nodes, 3] = float(pe)
+
+
 class HPCToolkitReader:
-    """
-    Read in the various sections of an HPCToolkit experiment.xml file
-    and metric-db files
+    """ Read in the various sections of an HPCToolkit experiment.xml file
+        and metric-db files.
     """
 
     def __init__(self, dir_name):
@@ -65,12 +89,6 @@ class HPCToolkitReader:
                 raise ValueError(
                     "HPCToolkitReader doesn't support endian '%s'" % endian)
 
-        # all the metric data per node and per process is read into the metrics
-        # array below. The two additional columns are for storing the implicit
-        # node id (nid) and MPI process rank.
-        shape = [self.num_nodes * self.num_pes, self.num_metrics + 2]
-        self.metrics = np.empty(shape)
-
         self.load_modules = {}
         self.src_files = {}
         self.procedure_names = {}
@@ -100,26 +118,29 @@ class HPCToolkitReader:
 
         return self.load_modules, self.src_files, self.procedure_names, self.metric_names
 
-    def read_metricdb(self):
+    def read_all_metricdb_files(self):
         """ Read all the metric-db files and create a dataframe with num_nodes
             X num_pes rows and num_metrics columns. Two additional columns
             store the node id and MPI process rank.
         """
         metricdb_files = glob.glob(self.dir_name + '/*.metric-db')
 
-        # TODO: extract pe number from the filename
-        for pe, filename in enumerate(metricdb_files):
-            # read each file into a 1D array
-            with open(filename, "rb") as metricdb:
-                metricdb.seek(32)
-                arr1d = np.fromfile(metricdb, dtype=np.dtype('>f8'),
-                                    count=self.num_nodes * self.num_metrics)
+        # all the metric data per node and per process is read into the metrics
+        # array below. The two additional columns are for storing the implicit
+        # node id (nid) and MPI process rank.
+        shape = [self.num_nodes * self.num_pes, self.num_metrics + 2]
+        size = np.prod(shape)
 
-            # copy the data into the larger 2D array of metrics
-            pe_offset = pe * self.num_nodes
-            self.metrics[pe_offset:pe_offset + self.num_nodes, :2].flat = arr1d.flat
-            self.metrics[pe_offset:pe_offset + self.num_nodes, 2] = range(1, self.num_nodes+1)
-            self.metrics[pe_offset:pe_offset + self.num_nodes, 3] = float(pe)
+        # shared memory buffer for multiprocessing
+        shared_buffer = mp.sharedctypes.RawArray('d', size)
+
+        pool = mp.Pool(initializer=init_shared_array, initargs=(shared_buffer,))
+        self.metrics = np.frombuffer(shared_buffer).reshape(shape)
+
+        # TODO: extract pe number from the filename
+        args = [(pe, filename, self.num_nodes, self.num_metrics, shape)
+                for pe, filename in enumerate(metricdb_files)]
+        pool.map(read_metricdb_file, args)
 
         # once all files have been read, create a dataframe of metrics
         # TODO: make column names consistent across readers
@@ -135,7 +156,7 @@ class HPCToolkitReader:
             self.fill_tables()
 
         with self.timer.phase('read metric db'):
-            self.read_metricdb()
+            self.read_all_metricdb_files()
 
         # parse the ElementTree to generate a calling context tree
         root = self.callpath_profile.findall('PF')[0]
