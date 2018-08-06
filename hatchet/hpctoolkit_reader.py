@@ -144,8 +144,9 @@ class HPCToolkitReader:
 
         # once all files have been read, create a dataframe of metrics
         # TODO: make column names consistent across readers
-        df_columnns = list(self.metric_names.values()) + ['nid', 'rank']
-        self.df_metrics = pd.DataFrame(self.metrics, columns=df_columnns)
+        metric_names = [self.metric_names[key] for key in sorted(self.metric_names.keys())]
+        df_columns = metric_names + ['nid', 'rank']
+        self.df_metrics = pd.DataFrame(self.metrics, columns=df_columns)
 
     def create_graphframe(self):
         """ Read the experiment.xml file to extract the calling context tree
