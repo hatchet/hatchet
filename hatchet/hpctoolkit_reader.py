@@ -129,7 +129,7 @@ class HPCToolkitReader:
         # array below. The two additional columns are for storing the implicit
         # node id (nid) and MPI process rank.
         shape = [self.num_nodes * self.num_pes, self.num_metrics + 2]
-        size = np.prod(shape)
+        size = int(np.prod(shape))
 
         # shared memory buffer for multiprocessing
         shared_buffer = mp.sharedctypes.RawArray('d', size)
