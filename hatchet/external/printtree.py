@@ -50,19 +50,23 @@ def as_text(hnode, root, dataframe, metric, name, context, rank, threshold,
     """
     colors = colors_enabled if color else colors_disabled
     node_time = dataframe.loc[(hnode, rank), metric]
-    root_time = dataframe.loc[(root, rank), metric]
+    max_time = dataframe[metric].max()
 
     time_str = '{:.3f}'.format(node_time)
 
     if color:
-        time_str = ansi_color_for_time(node_time, root_time) + time_str + colors.end
+        time_str = ansi_color_for_time(node_time, max_time) + time_str + colors.end
 
-    result = u'{indent}{time_str} {function}  {c.faint}{code_position}{c.end}\n'.format(indent=indent, time_str=time_str,
-        function=dataframe.loc[(hnode, rank), name],
-        code_position=dataframe.loc[(hnode, rank), context],
-        c=colors_enabled if color else colors_disabled)
+    if context in dataframe.columns:
+        result = u'{indent}{time_str} {function}  {c.faint}{code_position}{c.end}\n'.format(indent=indent, time_str=time_str,
+            function=dataframe.loc[(hnode, rank), name],
+            code_position=dataframe.loc[(hnode, rank), context],
+            c=colors_enabled if color else colors_disabled)
+    else:
+        result = u'{indent}{time_str} {function}\n'.format(indent=indent,
+            time_str=time_str, function=dataframe.loc[(hnode, rank), name])
 
-    children = [child for child in hnode.children if node_time >= threshold * root_time]
+    children = [child for child in hnode.children if node_time >= threshold * max_time]
 
     if children:
         last_child = children[-1]

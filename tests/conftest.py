@@ -89,3 +89,109 @@ def calc_pi_cali_db(data_dir, tmpdir):
     tmpfile = os.path.join(str(tmpdir), 'cpi-sample-callpathprofile.json')
 
     return tmpfile
+
+@pytest.fixture
+def mock_graph_literal():
+    graph_dict = {
+                    'name': 'foo',
+                    'metrics': {'inc': 130.0, 'exc': 0.0},
+                    'children': [
+                        {
+                            'name': 'bar',
+                            'metrics': {'inc': 20.0, 'exc': 5.0},
+                            'children': [
+                                {
+                                    'name': 'baz',
+                                    'metrics': {'inc': 5.0, 'exc': 5.0}
+                                },
+                                {
+                                    'name': 'grault',
+                                    'metrics': {'inc': 10.0, 'exc': 10.0}
+                                }
+                            ]
+                        },
+                        {
+                            'name': 'qux',
+                            'metrics': {'inc': 60.0, 'exc': 0.0},
+                            'children': [
+                                {
+                                    'name': 'quux',
+                                    'metrics': {'inc': 60.0, 'exc': 5.0},
+                                    'children': [
+                                        {
+                                            'name': 'corge',
+                                            'metrics': {'inc': 55.0, 'exc': 10.0},
+                                            'children': [
+                                                {
+                                                    'name': 'bar',
+                                                    'metrics': {'inc': 20.0, 'exc': 5.0},
+                                                    'children': [
+                                                        {
+                                                            'name': 'baz',
+                                                            'metrics': {'inc': 5.0, 'exc': 5.0}
+                                                        },
+                                                        {
+                                                            'name': 'grault',
+                                                            'metrics': {'inc': 10.0, 'exc': 10.0}
+                                                        }
+                                                    ]
+                                                },
+                                                {
+                                                    'name': 'grault',
+                                                    'metrics': {'inc': 10.0, 'exc': 10.0}
+                                                },
+                                                {
+                                                    'name': 'garply',
+                                                    'metrics': {'inc': 15.0, 'exc': 15.0}
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            'name': 'waldo',
+                            'metrics': {'inc': 50.0, 'exc': 0.0},
+                            'children': [
+                                {
+                                    'name': 'fred',
+                                    'metrics': {'inc': 35.0, 'exc': 5.0},
+                                    'children': [
+                                        {
+                                            'name': 'plugh',
+                                            'metrics': {'inc': 5.0, 'exc': 5.0}
+                                        },
+                                        {
+                                            'name': 'xyzzy',
+                                            'metrics': {'inc': 25.0, 'exc': 5.0},
+                                            'children': [
+                                                {
+                                                    'name': 'thud',
+                                                    'metrics': {'inc': 25.0, 'exc': 5.0},
+                                                    'children': [
+                                                        {
+                                                            'name': 'baz',
+                                                            'metrics': {'inc': 5.0, 'exc': 5.0}
+                                                        },
+                                                        {
+                                                            'name': 'garply',
+                                                            'metrics': {'inc': 15.0, 'exc': 15.0}
+                                                        }
+                                                    ]
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    'name': 'garply',
+                                    'metrics': {'inc': 15.0, 'exc': 15.0}
+                                }
+                            ]
+                        }
+                    ]
+               }
+
+    return graph_dict
+

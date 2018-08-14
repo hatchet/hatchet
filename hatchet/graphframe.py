@@ -13,7 +13,8 @@ import pandas as pd
 
 from .hpctoolkit_reader import HPCToolkitReader
 from .caliper_reader import CaliperReader
-
+from .node import Node
+from .graph import Graph
 
 
 class GraphFrame:
@@ -44,6 +45,42 @@ class GraphFrame:
         reader = CaliperReader(filename)
 
         (self.graph, self.dataframe) = reader.create_graph()
+
+    def from_literal(self, graph_dict):
+        """ Read graph from a dict literal.
+        """
+        def parse_node_literal(child_dict, hparent, parent_callpath):
+            """ Create node_dict for one node and then call the function
+                recursively on all children.
+            """
+            node_callpath = parent_callpath
+            node_callpath.append(child_dict['name'])
+            hnode = Node(tuple(node_callpath), hparent)
+
+            node_dicts.append(dict({'node': hnode, 'rank': 0, 'name': child_dict['name']}, **child_dict['metrics']))
+            hparent.add_child(hnode)
+
+            if 'children' in child_dict:
+                for child in child_dict['children']:
+                    parse_node_literal(child, hnode, node_callpath)
+
+        # start with creating a node_dict for the root
+        root_callpath = []
+        root_callpath.append(graph_dict['name'])
+        graph_root = Node(tuple(root_callpath), None)
+
+        node_dicts = []
+        node_dicts.append(dict({'node': graph_root, 'rank': 0, 'name': graph_dict['name']}, **graph_dict['metrics']))
+
+        # call recursively on all children of root
+        if 'children' in graph_dict:
+            for child in graph_dict['children']:
+                parse_node_literal(child, graph_root, root_callpath)
+
+        self.graph = Graph([graph_root])
+        self.dataframe = pd.DataFrame(data=node_dicts)
+        indices = ['node', 'rank']
+        self.dataframe.set_index(indices, drop=False, inplace=True)
 
     def filter(self, filter_function):
         """ Filter the dataframe using a user supplied function.
