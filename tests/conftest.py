@@ -92,6 +92,9 @@ def calc_pi_cali_db(data_dir, tmpdir):
 
 @pytest.fixture
 def mock_graph_literal():
+    """ Creates a mock tree
+        Metasyntactic variables: https://www.ietf.org/rfc/rfc3092.txt
+    """
     graph_dict = {
                     'name': 'foo',
                     'metrics': {'inc': 130.0, 'exc': 0.0},

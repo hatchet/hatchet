@@ -29,24 +29,23 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-def trees_as_text(trees, dataframe, metric, name, context, rank, threshold,
+def trees_as_text(roots, dataframe, metric, name, context, rank, threshold,
                   unicode, color):
     """ Calls as_text in turn for each tree in the graph/forest
     """
     text = ''
-    for tree in trees:
-        text += as_text(tree, tree, dataframe, metric, name, context, rank,
+    for root in roots:
+        text += as_text(root, dataframe, metric, name, context, rank,
                         threshold, unicode=unicode, color=color)
 
     return text
 
 
-def as_text(hnode, root, dataframe, metric, name, context, rank, threshold,
+def as_text(hnode, dataframe, metric, name, context, rank, threshold,
             indent=u'', child_indent=u'', unicode=False, color=False):
     """ Code adapted from https://github.com/joerick/pyinstrument
 
-        The function takes a node and the root, and creates a string for the
-        node
+        The function takes a node, and creates a string for the node.
     """
     colors = colors_enabled if color else colors_disabled
     node_time = dataframe.loc[(hnode, rank), metric]
@@ -78,7 +77,7 @@ def as_text(hnode, root, dataframe, metric, name, context, rank, threshold,
         else:
             c_indent = child_indent + (u'└─ ' if unicode else '`- ')
             cc_indent = child_indent + u'   '
-        result += as_text(child, root, dataframe, metric, name, context, rank,
+        result += as_text(child, dataframe, metric, name, context, rank,
                           threshold, indent=c_indent, child_indent=cc_indent,
                           unicode=unicode, color=color)
 

@@ -51,3 +51,8 @@ class Node:
 
     def __lt__(self, other):
         return (self.callpath < other.callpath)
+
+    def __str__(self):
+        """ Returns a string representation of the node.
+        """
+        return self.callpath[-1]
