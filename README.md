@@ -7,7 +7,9 @@ Hatchet
 Hatchet analyzes performance data that is organized in a tree hierarchy (such
 as calling context trees, call graphs, nested regions' timers etc.)
 
-[![Screenshot](screenshot.png)](https://raw.githubusercontent.com/LLNL/hatchet/master/screenshot.jpg)
+<p align="center">
+  <img src="https://raw.githubusercontent.com/LLNL/hatchet/master/screenshot.png" width=600>
+</p>
 
 ### Running hatchet
 
