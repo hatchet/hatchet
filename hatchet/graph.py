@@ -11,6 +11,7 @@
 ##############################################################################
 
 from .external.printtree import trees_as_text
+from .util.dot import trees_as_dot
 
 
 class Graph:
@@ -24,14 +25,26 @@ class Graph:
     def to_string(self, roots=None, dataframe=None,
                   metric='CPUTIME (usec) (I)', name='name', context='file',
                   rank=0, threshold=0.01, unicode=True, color=True):
-        """ Function to print a graph with or without some metric attached to
-            each node.
+        """ Print the graph with or without some metric attached to each
+            node.
         """
         if roots is None:
             roots = self.roots
 
         result = trees_as_text(roots, dataframe, metric, name, context, rank,
                                threshold, unicode=unicode, color=color)
+
+        return result
+
+    def to_dot(self, roots=None, dataframe=None, metric='inc', name='name',
+               rank=0, threshold=0.0):
+        """ Write the graph in the graphviz dot format:
+            https://www.graphviz.org/doc/info/lang.html
+        """
+        if roots is None:
+            roots = self.roots
+
+        result = trees_as_dot(roots, dataframe, metric, name, rank, threshold)
 
         return result
 
