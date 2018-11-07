@@ -44,7 +44,7 @@ class GraphFrame:
         """
         reader = CaliperReader(filename)
 
-        (self.graph, self.dataframe) = reader.create_graph()
+        (self.graph, self.dataframe) = reader.create_graphframe()
 
     def from_literal(self, graph_dict):
         """ Read graph from a dict literal.

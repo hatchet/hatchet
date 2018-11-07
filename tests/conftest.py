@@ -80,13 +80,13 @@ def calc_pi_hpct_db(data_dir, tmpdir):
 
 
 @pytest.fixture
-def calc_pi_cali_db(data_dir, tmpdir):
-    """Builds a temporary directory containing the calc-pi database."""
-    cali_db_dir = os.path.join(data_dir, 'caliper-cpi-json')
-    cali_db_file = os.path.join(cali_db_dir, 'cpi-sample-callpathprofile.json')
+def lulesh_caliper_json(data_dir, tmpdir):
+    """Builds a temporary directory containing the lulesh JSON file."""
+    cali_json_dir = os.path.join(data_dir, 'caliper-lulesh-json')
+    cali_json_file = os.path.join(cali_json_dir, 'lulesh-sample-annotation-profile.json')
 
-    shutil.copy(cali_db_file, str(tmpdir))
-    tmpfile = os.path.join(str(tmpdir), 'cpi-sample-callpathprofile.json')
+    shutil.copy(cali_json_file, str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), 'lulesh-sample-annotation-profile.json')
 
     return tmpfile
 

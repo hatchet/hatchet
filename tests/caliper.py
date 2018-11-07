@@ -1,53 +1,63 @@
 ##############################################################################
-# Copyright (c) 2018, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 # Produced at the Lawrence Livermore National Laboratory.
 #
-# Written by Matthew Kotila <kotila1@llnl.gov>.
+# This file is part of Hatchet.
+# Created by Abhinav Bhatele <bhatele@llnl.gov>.
 # LLNL-CODE-741008. All rights reserved.
 #
-# This file is part of Hatchet. For details, see:
-# https://github.com/LLNL/hatchet
+# For details, see: https://github.com/LLNL/hatchet
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
 
-import pandas as pd
 from hatchet import GraphFrame, CaliperReader
 
+annotations = ['main',
+               'LagrangeLeapFrog',
+               'LagrangeElements',
+               'ApplyMaterialPropertiesForElems',
+               'EvalEOSForElems',
+               'CalcEnergyForElems',
+               'CalcPressureForElems',
+               'CalcSoundSpeedForElems',
+               'UpdateVolumesForElems',
+               'CalcTimeConstraintsForElems',
+               'CalcCourantConstraintForElems',
+               'CalcHydroConstraintForElems',
+               'TimeIncrement',
+               'LagrangeNodal',
+               'CalcForceForNodes',
+               'CalcVolumeForceForElems',
+               'IntegrateStressForElems',
+               'CalcHourglassControlForElems',
+               'CalcFBHourglassForceForElems',
+               'CalcLagrangeElements',
+               'CalcKinematicsForElems',
+               'CalcQForElems',
+               'CalcMonotonicQGradientsForElems',
+               'CalcMonotonicQRegionForElems']
 
-def num_nodes(root):
-    count = 1
-    for child in root.children:
-        count = count + num_nodes(child)
-    return count
 
-
-def tree_height(root):
-    if len(root.children) == 0:
-        return 0
-    height = 0
-    for child in root.children:
-        child_height = tree_height(child)
-        if child_height > height:
-            height = child_height
-    return 1 + height
-
-
-def test_graphframe(calc_pi_cali_db):
+def test_graphframe(lulesh_caliper_json):
     """Sanity test a GraphFrame object with known data."""
 
     gf = GraphFrame()
-    gf.from_caliper(str(calc_pi_cali_db))
+    gf.from_caliper(str(lulesh_caliper_json))
 
-    assert num_nodes(gf.graph.roots[0]) == 34
-    assert tree_height(gf.graph.roots[0]) == 19
+    assert len(gf.dataframe.groupby('name')) == 24
+
+    # TODO: add tests for dataframe
 
 
-def test_dataframe(calc_pi_cali_db):
-    """Sanity test a pandas.DataFrame object with known data."""
+def test_read_calc_pi_database(lulesh_caliper_json):
+    """Sanity check the Caliper reader by examining a known input."""
+    reader = CaliperReader(str(lulesh_caliper_json))
+    reader.read_json_sections()
 
-    (_, dataframe) = CaliperReader(str(calc_pi_cali_db)).create_graph()
+    assert len(reader.json_data) == 200
+    assert len(reader.json_cols) == 4
+    assert len(reader.json_cols_mdata) == 4
+    assert len(reader.json_nodes) == 24
 
-    assert isinstance(dataframe, pd.DataFrame)
-    assert len(dataframe.groupby('source.line#cali.sampler.pc')) == 7
-    assert len(dataframe.groupby('source.file#cali.sampler.pc')) == 7
-    assert len(dataframe.groupby('source.function#callpath.address')) == 8
+    reader.create_graph()
+    assert all(an in reader.idx_to_label.values() for an in annotations)
