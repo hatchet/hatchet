@@ -21,8 +21,16 @@ class Node:
         self.callpath = callpath_tuple
         self.df_index = hash(callpath_tuple)
 
-        self.parent = parent
+        self.parents = []
+        if parent is not None:
+            self.add_parent(parent)
         self.children = []
+
+    def add_parent(self, node):
+        """ Adds a parent to this node's list of parents.
+        """
+        assert isinstance(node, Node)
+        self.parents.append(node)
 
     def add_child(self, node):
         """ Adds a child to this node's list of children.
