@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 import multiprocessing as mp
 import multiprocessing.sharedctypes
+import re
 
 try:
     import xml.etree.cElementTree as ET
@@ -38,7 +39,11 @@ def init_shared_array(buf_):
 
 def read_metricdb_file(args):
     """ Read a single metricdb file into a 1D array """
-    pe, filename, num_nodes, num_metrics, shape = args
+    filename, num_nodes, num_metrics, shape = args
+    rank = int(re.search('\-(\d+)\-(\d+)\-([\w\d]+)\-(\d+)\-\d.metric-db$',
+                       filename).group(1))
+    print rank
+
     with open(filename, "rb") as metricdb:
         metricdb.seek(32)
         arr1d = np.fromfile(metricdb, dtype=np.dtype('>f8'),
@@ -47,10 +52,10 @@ def read_metricdb_file(args):
     arr = np.frombuffer(shared_metrics).reshape(shape)
 
     # copy the data in the right place in the larger 2D array of metrics
-    pe_offset = pe * num_nodes
-    arr[pe_offset:pe_offset + num_nodes, :2].flat = arr1d.flat
-    arr[pe_offset:pe_offset + num_nodes, 2] = range(1, num_nodes+1)
-    arr[pe_offset:pe_offset + num_nodes, 3] = float(pe)
+    rank_offset = rank * num_nodes
+    arr[rank_offset:rank_offset + num_nodes, :2].flat = arr1d.flat
+    arr[rank_offset:rank_offset + num_nodes, 2] = range(1, num_nodes+1)
+    arr[rank_offset:rank_offset + num_nodes, 3] = float(rank)
 
 
 class HPCToolkitReader:
@@ -124,6 +129,7 @@ class HPCToolkitReader:
             store the node id and MPI process rank.
         """
         metricdb_files = glob.glob(self.dir_name + '/*.metric-db')
+        metricdb_files.sort()
 
         # all the metric data per node and per process is read into the metrics
         # array below. The two additional columns are for storing the implicit
@@ -137,9 +143,8 @@ class HPCToolkitReader:
         pool = mp.Pool(initializer=init_shared_array, initargs=(shared_buffer,))
         self.metrics = np.frombuffer(shared_buffer).reshape(shape)
 
-        # TODO: extract pe number from the filename
-        args = [(pe, filename, self.num_nodes, self.num_metrics, shape)
-                for pe, filename in enumerate(metricdb_files)]
+        args = [(filename, self.num_nodes, self.num_metrics, shape)
+                for filename in metricdb_files]
         pool.map(read_metricdb_file, args)
 
         # once all files have been read, create a dataframe of metrics
