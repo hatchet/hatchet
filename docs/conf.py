@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 ##############################################################################
-# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
 # Produced at the Lawrence Livermore National Laboratory.
 #
 # This file is part of Hatchet.
@@ -32,7 +32,7 @@ sys.path.insert(0, os.path.abspath('../hatchet'))
 # -- Project information -----------------------------------------------------
 
 project = u'hatchet'
-copyright = u'2017-2018, Lawrence Livermore National Security, LLC'
+copyright = u'2017-2019, Lawrence Livermore National Security, LLC'
 author = u'Abhinav Bhatele'
 
 # The short X.Y version

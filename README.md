@@ -18,7 +18,7 @@ To use hatchet, add the cloned directory to your PYTHONPATH.
 ### Copyright
 
 ```
-Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
+Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
 Produced at the Lawrence Livermore National Laboratory.
 
 Created by Abhinav Bhatele <bhatele@llnl.gov>.
