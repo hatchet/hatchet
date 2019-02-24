@@ -39,11 +39,14 @@ class CaliperReader:
         with open(self.file_name) as cali_json:
             json_obj = json.load(cali_json)
 
+        # read various sections of the Caliper JSON file
         self.json_data = json_obj["data"]
         self.json_cols = json_obj["columns"]
         self.json_cols_mdata = json_obj["column_metadata"]
         self.json_nodes = json_obj["nodes"]
 
+        # decide which column to use as the primary path hierarchy
+        # first preference to callpath if available
         if 'source.function#callpath.address' in self.json_cols:
             self.path_col_name = 'source.function#callpath.address'
         elif 'path' in self.json_cols:
@@ -52,15 +55,14 @@ class CaliperReader:
             sys.exit('No hierarchy column in input file')
 
     def create_graph(self):
-        # find the first node in the nodes section that is a
-        # source.function#callpath.address or path
+        # find nodes in the nodes section that represent the path hierarchy
         for idx, node in enumerate(self.json_nodes):
             node_label = node['label']
             self.idx_to_label[idx] = node_label
 
             if node['column'] == self.path_col_name:
                 if 'parent' not in node:
-                    # this is the root
+                    # since this node does not have a parent, this is the root
                     node_callpath = []
                     node_callpath.append(node_label)
                     graph_root = Node(tuple(node_callpath), None)
@@ -87,16 +89,22 @@ class CaliperReader:
         with self.timer.phase('graph construction'):
             graph_root = self.create_graph()
 
+        # create a dataframe with all nodes in the call graph
         self.df_nodes = pd.DataFrame.from_dict(data=self.idx_to_node.values())
 
+        # change column names
         for idx, item in enumerate(self.json_cols):
             if item == self.path_col_name:
+                # this column is just a pointer into the nodes section
                 self.json_cols[idx] = 'idx'
             if item == 'mpi.rank':
+                # make it consistent with other readers
                 self.json_cols[idx] = 'rank'
 
+        # create a dataframe of metrics from the data section
         self.df_metrics = pd.DataFrame(self.json_data, columns=self.json_cols)
 
+        # merge the metrics and node dataframes on the idx column
         with self.timer.phase('data frame'):
             dataframe = pd.merge(self.df_metrics, self.df_nodes, on='idx')
             # set the index to be a MultiIndex
