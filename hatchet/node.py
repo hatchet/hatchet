@@ -51,6 +51,10 @@ class Node:
         if(order == 'post'):
             yield self
 
+    def set_callpath(self, callpath):
+        self.callpath = callpath
+        self.df_index = hash(callpath)
+
     def __hash__(self):
         return self.df_index
 
