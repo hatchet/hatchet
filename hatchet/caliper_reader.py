@@ -108,7 +108,9 @@ class CaliperReader:
         with self.timer.phase('data frame'):
             dataframe = pd.merge(self.df_metrics, self.df_nodes, on='idx')
             # set the index to be a MultiIndex
-            indices = ['node', 'rank']
+            indices = ['node']
+            if 'rank' in self.json_cols:
+                indices.append('rank')
             dataframe.set_index(indices, drop=False, inplace=True)
 
         graph = Graph([graph_root])
