@@ -12,6 +12,7 @@
 import json
 import pandas as pd
 import sys
+import re
 
 from .node import Node
 from .graph import Graph
@@ -97,12 +98,25 @@ class CaliperReader:
             if item == self.path_col_name:
                 # this column is just a pointer into the nodes section
                 self.json_cols[idx] = 'idx'
+            # make other columns consistent with other readers
             if item == 'mpi.rank':
-                # make it consistent with other readers
                 self.json_cols[idx] = 'rank'
+            if item == 'module#cali.sampler.pc':
+                self.json_cols[idx] = 'module'
 
         # create a dataframe of metrics from the data section
         self.df_metrics = pd.DataFrame(self.json_data, columns=self.json_cols)
+
+        # map non-numeric columns to their mappings in the nodes section
+        for idx, item in enumerate(self.json_cols_mdata):
+            if item['is_value'] is False and self.json_cols[idx] != 'idx':
+                if self.json_cols[idx] == 'sourceloc#cali.sampler.pc':
+                    # split source file and line number into two columns
+                    self.df_metrics['file'] = self.df_metrics[self.json_cols[idx]].apply(lambda x: re.match('(.*):(\d+)', self.json_nodes[x]['label']).group(1))
+                    self.df_metrics['line'] = self.df_metrics[self.json_cols[idx]].apply(lambda x: re.match('(.*):(\d+)', self.json_nodes[x]['label']).group(2))
+                    self.df_metrics.drop(self.json_cols[idx], axis=1, inplace=True)
+                else:
+                    self.df_metrics[self.json_cols[idx]] = self.df_metrics[self.json_cols[idx]].apply(lambda x: self.json_nodes[x]['label'])
 
         # merge the metrics and node dataframes on the idx column
         with self.timer.phase('data frame'):

@@ -42,7 +42,6 @@ def read_metricdb_file(args):
     filename, num_nodes, num_metrics, shape = args
     rank = int(re.search('\-(\d+)\-(\d+)\-([\w\d]+)\-(\d+)\-\d.metric-db$',
                        filename).group(1))
-    print rank
 
     with open(filename, "rb") as metricdb:
         metricdb.seek(32)
