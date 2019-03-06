@@ -40,9 +40,14 @@ def to_dot(hnode, dataframe, metric, name, rank, threshold):
     max_time = dataframe[metric].max()
 
     def add_nodes_and_edges(hnode):
-        weight = (dataframe.loc[(hnode, rank), metric] - min_time) / (max_time - min_time)
+        if 'rank' in dataframe.index.names:
+            df_index = (hnode, rank)
+        else:
+            df_index = hnode
+
+        weight = (dataframe.loc[df_index, metric] - min_time) / (max_time - min_time)
         color = matplotlib.colors.rgb2hex(colormap(1-weight))
-        node_name = dataframe.loc[(hnode, rank), name]
+        node_name = dataframe.loc[df_index, name]
 
         node_string = '"{0}" [color="{1}"];\n'.format(node_name, color)
         edge_string = ''
