@@ -56,6 +56,8 @@ class CaliperReader:
             sys.exit('No hierarchy column in input file')
 
     def create_graph(self):
+        list_roots = []
+
         # find nodes in the nodes section that represent the path hierarchy
         for idx, node in enumerate(self.json_nodes):
             node_label = node['label']
@@ -63,10 +65,12 @@ class CaliperReader:
 
             if node['column'] == self.path_col_name:
                 if 'parent' not in node:
-                    # since this node does not have a parent, this is the root
+                    # since this node does not have a parent, this is a root
                     node_callpath = []
                     node_callpath.append(node_label)
                     graph_root = Node(tuple(node_callpath), None)
+                    list_roots.append(graph_root)
+
                     node_dict = {'idx': idx, 'name': node_label, 'node': graph_root}
                     self.idx_to_node[idx] = node_dict
                 else:
@@ -79,7 +83,7 @@ class CaliperReader:
                     node_dict = {'idx': idx, 'name': node_label, 'node': hnode}
                     self.idx_to_node[idx] = node_dict
 
-        return graph_root
+        return list_roots
 
     def create_graphframe(self):
         """ Read the caliper JSON file to extract the calling context tree.
@@ -88,7 +92,7 @@ class CaliperReader:
             self.read_json_sections()
 
         with self.timer.phase('graph construction'):
-            graph_root = self.create_graph()
+            list_roots = self.create_graph()
 
         # create a dataframe with all nodes in the call graph
         self.df_nodes = pd.DataFrame.from_dict(data=self.idx_to_node.values())
@@ -105,18 +109,47 @@ class CaliperReader:
                 self.json_cols[idx] = 'module'
 
         # create a dataframe of metrics from the data section
-        self.df_metrics = pd.DataFrame(self.json_data, columns=self.json_cols)
+        self.df_samples = pd.DataFrame(self.json_data, columns=self.json_cols)
 
         # map non-numeric columns to their mappings in the nodes section
         for idx, item in enumerate(self.json_cols_mdata):
             if item['is_value'] is False and self.json_cols[idx] != 'idx':
                 if self.json_cols[idx] == 'sourceloc#cali.sampler.pc':
                     # split source file and line number into two columns
-                    self.df_metrics['file'] = self.df_metrics[self.json_cols[idx]].apply(lambda x: re.match('(.*):(\d+)', self.json_nodes[x]['label']).group(1))
-                    self.df_metrics['line'] = self.df_metrics[self.json_cols[idx]].apply(lambda x: re.match('(.*):(\d+)', self.json_nodes[x]['label']).group(2))
-                    self.df_metrics.drop(self.json_cols[idx], axis=1, inplace=True)
+                    self.df_samples['file'] = self.df_samples[self.json_cols[idx]].apply(lambda x: re.match('(.*):(\d+)', self.json_nodes[x]['label']).group(1))
+                    self.df_samples['line'] = self.df_samples[self.json_cols[idx]].apply(lambda x: re.match('(.*):(\d+)', self.json_nodes[x]['label']).group(2))
+                    self.df_samples.drop(self.json_cols[idx], axis=1, inplace=True)
                 else:
-                    self.df_metrics[self.json_cols[idx]] = self.df_metrics[self.json_cols[idx]].apply(lambda x: self.json_nodes[x]['label'])
+                    self.df_samples[self.json_cols[idx]] = self.df_samples[self.json_cols[idx]].apply(lambda x: self.json_nodes[x]['label'])
+
+        # add missing intermediate nodes to the df_samples dataframe
+        if 'rank' in self.json_cols:
+            self.num_ranks =  self.df_samples['rank'].max() + 1
+
+        # create a standard dict to be used for filling all missing rows
+        default_metric_dict = {}
+        for idx, item in enumerate(self.json_cols_mdata):
+            if self.json_cols[idx] != 'idx':
+                if item['is_value'] is True:
+                    default_metric_dict[self.json_cols[idx]] = 0
+                else:
+                    default_metric_dict[self.json_cols[idx]] = None
+
+        # create a list of dicts, one dict for each missing row
+        missing_nodes = []
+        for iteridx, row in self.df_nodes.iterrows():
+            # check if df_nodes row exists in df_samples
+            metric_rows = self.df_samples.loc[self.df_samples['idx'] == row['idx']]
+            if 'rank' not in self.json_cols:
+                if metric_rows.empty:
+                    # add a single row
+                    node_dict = dict(default_metric_dict)
+                    node_dict['idx'] = row['idx']
+                    missing_nodes.append(node_dict)
+            # TODO: implement the else (when there are multiple ranks)
+
+        self.df_missing = pd.DataFrame.from_dict(data=missing_nodes)
+        self.df_metrics = pd.concat([self.df_samples, self.df_missing])
 
         # merge the metrics and node dataframes on the idx column
         with self.timer.phase('data frame'):
@@ -127,5 +160,5 @@ class CaliperReader:
                 indices.append('rank')
             dataframe.set_index(indices, drop=False, inplace=True)
 
-        graph = Graph([graph_root])
+        graph = Graph(list_roots)
         return graph, dataframe
