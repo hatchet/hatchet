@@ -149,6 +149,12 @@ class HPCToolkitReader:
         # once all files have been read, create a dataframe of metrics
         # TODO: make column names consistent across readers
         metric_names = [self.metric_names[key] for key in sorted(self.metric_names.keys())]
+        for idx, name in enumerate(metric_names):
+            if name == 'CPUTIME (usec) (E)':
+                metric_names[idx] = 'time'
+            if name == 'CPUTIME (usec) (I)':
+                metric_names[idx] = 'time (inc)'
+
         df_columns = metric_names + ['nid', 'rank']
         self.df_metrics = pd.DataFrame(self.metrics, columns=df_columns)
 

@@ -82,7 +82,7 @@ class GprofDotReader:
                         # create a dict with node properties
                         inc_time = float(re.match('(.*)\%', node_details[2]).group(1))
                         exc_time = float(re.match('\((.*)\%\)', node_details[3]).group(1))
-                        node_dict = {'module': node_details[0], 'name': node_name, 'inc-time': inc_time, 'exc-time': exc_time, 'node': hnode}
+                        node_dict = {'module': node_details[0], 'name': node_name, 'time (inc)': inc_time, 'time': exc_time, 'node': hnode}
                         self.name_to_dict[node_name] = node_dict
 
         # add all nodes with no parents to the list of roots

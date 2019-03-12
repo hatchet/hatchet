@@ -23,8 +23,8 @@ class Graph:
             self.roots = roots
 
     def to_string(self, roots=None, dataframe=None,
-                  metric='CPUTIME (usec) (I)', name='name', context='file',
-                  rank=0, threshold=0.01, unicode=True, color=True):
+                  metric='time', name='name', context='file', rank=0,
+                  threshold=0.01, unicode=True, color=True):
         """ Print the graph with or without some metric attached to each
             node.
         """

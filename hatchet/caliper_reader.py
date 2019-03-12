@@ -35,6 +35,8 @@ class CaliperReader:
         self.idx_to_node = {}
 
         self.timer = Timer()
+        self.nid_col_name = 'nid'
+
 
     def read_json_sections(self):
         with open(self.file_name) as cali_json:
@@ -71,7 +73,7 @@ class CaliperReader:
                     graph_root = Node(tuple(node_callpath), None)
                     list_roots.append(graph_root)
 
-                    node_dict = {'idx': idx, 'name': node_label, 'node': graph_root}
+                    node_dict = {self.nid_col_name: idx, 'name': node_label, 'node': graph_root}
                     self.idx_to_node[idx] = node_dict
                 else:
                     parent_hnode = (self.idx_to_node[node['parent']])['node']
@@ -80,7 +82,7 @@ class CaliperReader:
                     hnode = Node(tuple(node_callpath), parent_hnode)
                     parent_hnode.add_child(hnode)
 
-                    node_dict = {'idx': idx, 'name': node_label, 'node': hnode}
+                    node_dict = {self.nid_col_name: idx, 'name': node_label, 'node': hnode}
                     self.idx_to_node[idx] = node_dict
 
         return list_roots
@@ -101,19 +103,23 @@ class CaliperReader:
         for idx, item in enumerate(self.json_cols):
             if item == self.path_col_name:
                 # this column is just a pointer into the nodes section
-                self.json_cols[idx] = 'idx'
+                self.json_cols[idx] = self.nid_col_name
             # make other columns consistent with other readers
             if item == 'mpi.rank':
                 self.json_cols[idx] = 'rank'
             if item == 'module#cali.sampler.pc':
                 self.json_cols[idx] = 'module'
+            if item == 'sum#time.duration':
+                self.json_cols[idx] = 'time'
+            if item == 'inclusive#sum#time.duration':
+                self.json_cols[idx] = 'time (inc)'
 
         # create a dataframe of metrics from the data section
         self.df_samples = pd.DataFrame(self.json_data, columns=self.json_cols)
 
         # map non-numeric columns to their mappings in the nodes section
         for idx, item in enumerate(self.json_cols_mdata):
-            if item['is_value'] is False and self.json_cols[idx] != 'idx':
+            if item['is_value'] is False and self.json_cols[idx] != self.nid_col_name:
                 if self.json_cols[idx] == 'sourceloc#cali.sampler.pc':
                     # split source file and line number into two columns
                     self.df_samples['file'] = self.df_samples[self.json_cols[idx]].apply(lambda x: re.match('(.*):(\d+)', self.json_nodes[x]['label']).group(1))
@@ -129,7 +135,7 @@ class CaliperReader:
         # create a standard dict to be used for filling all missing rows
         default_metric_dict = {}
         for idx, item in enumerate(self.json_cols_mdata):
-            if self.json_cols[idx] != 'idx':
+            if self.json_cols[idx] != self.nid_col_name:
                 if item['is_value'] is True:
                     default_metric_dict[self.json_cols[idx]] = 0
                 else:
@@ -139,12 +145,12 @@ class CaliperReader:
         missing_nodes = []
         for iteridx, row in self.df_nodes.iterrows():
             # check if df_nodes row exists in df_samples
-            metric_rows = self.df_samples.loc[self.df_samples['idx'] == row['idx']]
+            metric_rows = self.df_samples.loc[self.df_samples[self.nid_col_name] == row[self.nid_col_name]]
             if 'rank' not in self.json_cols:
                 if metric_rows.empty:
                     # add a single row
                     node_dict = dict(default_metric_dict)
-                    node_dict['idx'] = row['idx']
+                    node_dict[self.nid_col_name] = row[self.nid_col_name]
                     missing_nodes.append(node_dict)
             # TODO: implement the else (when there are multiple ranks)
 
@@ -153,7 +159,7 @@ class CaliperReader:
 
         # merge the metrics and node dataframes on the idx column
         with self.timer.phase('data frame'):
-            dataframe = pd.merge(self.df_metrics, self.df_nodes, on='idx')
+            dataframe = pd.merge(self.df_metrics, self.df_nodes, on=self.nid_col_name)
             # set the index to be a MultiIndex
             indices = ['node']
             if 'rank' in self.json_cols:
