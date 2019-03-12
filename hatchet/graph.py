@@ -22,9 +22,9 @@ class Graph:
         if roots is not None:
             self.roots = roots
 
-    def to_string(self, roots=None, dataframe=None,
-                  metric='time', name='name', context='file', rank=0,
-                  threshold=0.01, unicode=True, color=True):
+    def to_string(self, roots=None, dataframe=None, metric='time', name='name',
+                  context='file', rank=0, threshold=0.01, expand_names=False,
+                  unicode=True, color=True):
         """ Print the graph with or without some metric attached to each
             node.
         """
@@ -32,7 +32,8 @@ class Graph:
             roots = self.roots
 
         result = trees_as_text(roots, dataframe, metric, name, context, rank,
-                               threshold, unicode=unicode, color=color)
+                               threshold, expand_names, unicode=unicode,
+                               color=color)
 
         return result
 

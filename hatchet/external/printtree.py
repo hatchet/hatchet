@@ -30,19 +30,20 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 def trees_as_text(roots, dataframe, metric, name, context, rank, threshold,
-                  unicode, color):
+                  expand_names, unicode, color):
     """ Calls as_text in turn for each tree in the graph/forest
     """
     text = ''
     for root in roots:
         text += as_text(root, dataframe, metric, name, context, rank,
-                        threshold, unicode=unicode, color=color)
+                        threshold, expand_names, unicode=unicode, color=color)
 
     return text
 
 
 def as_text(hnode, dataframe, metric, name, context, rank, threshold,
-            indent=u'', child_indent=u'', unicode=False, color=False):
+            expand_names, indent=u'', child_indent=u'', unicode=False,
+            color=False):
     """ Code adapted from https://github.com/joerick/pyinstrument
 
         The function takes a node, and creates a string for the node.
@@ -57,18 +58,22 @@ def as_text(hnode, dataframe, metric, name, context, rank, threshold,
     max_time = dataframe[metric].max()
 
     time_str = '{:.3f}'.format(node_time)
+    func_name = dataframe.loc[df_index, name]
+
+    if expand_names is False:
+        if len(func_name) > 42:
+            func_name = func_name[:19] + ' ... ' + func_name[len(func_name)-18:]
 
     if color:
         time_str = ansi_color_for_time(node_time, max_time) + time_str + colors.end
 
     if context in dataframe.columns:
         result = u'{indent}{time_str} {function}  {c.faint}{code_position}{c.end}\n'.format(indent=indent, time_str=time_str,
-            function=dataframe.loc[df_index, name],
-            code_position=dataframe.loc[df_index, context],
+            function=func_name, code_position=dataframe.loc[df_index, context],
             c=colors_enabled if color else colors_disabled)
     else:
         result = u'{indent}{time_str} {function}\n'.format(indent=indent,
-            time_str=time_str, function=dataframe.loc[df_index, name])
+            time_str=time_str, function=func_name)
 
     children = [child for child in hnode.children if node_time >= threshold * max_time]
 
@@ -83,8 +88,8 @@ def as_text(hnode, dataframe, metric, name, context, rank, threshold,
             c_indent = child_indent + (u'└─ ' if unicode else '`- ')
             cc_indent = child_indent + u'   '
         result += as_text(child, dataframe, metric, name, context, rank,
-                          threshold, indent=c_indent, child_indent=cc_indent,
-                          unicode=unicode, color=color)
+                          threshold, expand_names, indent=c_indent,
+                          child_indent=cc_indent, unicode=unicode, color=color)
 
     return result
 
