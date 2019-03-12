@@ -90,6 +90,19 @@ def lulesh_caliper_json(data_dir, tmpdir):
 
     return tmpfile
 
+
+@pytest.fixture
+def calc_pi_callgrind_dot(data_dir, tmpdir):
+    """Builds a temporary directory containing the calc-pi callgrind DOt file."""
+    gprof_dot_dir = os.path.join(data_dir, 'gprof2dot-cpi')
+    gprof_dot_file = os.path.join(gprof_dot_dir, 'callgrind.dot.64042.0.1')
+
+    shutil.copy(gprof_dot_file, str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), 'callgrind.dot.64042.0.1')
+
+    return tmpfile
+
+
 @pytest.fixture
 def mock_graph_literal():
     """ Creates a mock tree
