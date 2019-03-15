@@ -34,6 +34,8 @@ def trees_as_text(roots, dataframe, metric, name, context, rank, threshold,
     """ Calls as_text in turn for each tree in the graph/forest
     """
     text = ''
+
+    # call as_text for each root in the graph
     for root in roots:
         text += as_text(root, dataframe, metric, name, context, rank,
                         threshold, expand_names, unicode=unicode, color=color)
@@ -48,6 +50,7 @@ def as_text(hnode, dataframe, metric, name, context, rank, threshold,
 
         The function takes a node, and creates a string for the node.
     """
+    # set dataframe index based on if rank is a part of the index
     if 'rank' in dataframe.index.names:
         df_index = (hnode, rank)
     else:
@@ -57,39 +60,55 @@ def as_text(hnode, dataframe, metric, name, context, rank, threshold,
     node_time = dataframe.loc[df_index, metric]
     max_time = dataframe[metric].max()
 
-    time_str = '{:.3f}'.format(node_time)
-    func_name = dataframe.loc[df_index, name]
+    # only display nodes whose metric is greater than some threshold
+    if node_time >= threshold * max_time:
+        time_str = '{:.3f}'.format(node_time)
+        func_name = dataframe.loc[df_index, name]
 
-    if expand_names is False:
-        if len(func_name) > 42:
-            func_name = func_name[:19] + ' ... ' + func_name[len(func_name)-18:]
+        # shorten names longer than 39 characters
+        if expand_names is False:
+            if len(func_name) > 39:
+                func_name = func_name[:18] + '...' + func_name[len(func_name)-18:]
 
-    if color:
-        time_str = ansi_color_for_time(node_time, max_time) + time_str + colors.end
+        if color:
+            time_str = ansi_color_for_time(node_time, max_time) + time_str + colors.end
 
-    if context in dataframe.columns:
-        result = u'{indent}{time_str} {function}  {c.faint}{code_position}{c.end}\n'.format(indent=indent, time_str=time_str,
-            function=func_name, code_position=dataframe.loc[df_index, context],
-            c=colors_enabled if color else colors_disabled)
-    else:
-        result = u'{indent}{time_str} {function}\n'.format(indent=indent,
-            time_str=time_str, function=func_name)
-
-    children = [child for child in hnode.children if node_time >= threshold * max_time]
-
-    if children:
-        last_child = children[-1]
-
-    for child in children:
-        if child is not last_child:
-            c_indent = child_indent + (u'├─ ' if unicode else '|- ')
-            cc_indent = child_indent + (u'│  ' if unicode else '|  ')
+        # add context (filename etc.) if requested
+        if context in dataframe.columns:
+            result = u'{indent}{time_str} {function}  {c.faint}{code_position}{c.end}\n'.format(indent=indent, time_str=time_str, function=func_name,
+                code_position=dataframe.loc[df_index, context],
+                c=colors_enabled if color else colors_disabled)
         else:
-            c_indent = child_indent + (u'└─ ' if unicode else '`- ')
-            cc_indent = child_indent + u'   '
-        result += as_text(child, dataframe, metric, name, context, rank,
-                          threshold, expand_names, indent=c_indent,
-                          child_indent=cc_indent, unicode=unicode, color=color)
+            result = u'{indent}{time_str} {function}\n'.format(indent=indent,
+                time_str=time_str, function=func_name)
+
+        # only display those edges where child's metric is greater than
+        # threshold
+        children = []
+        for child in hnode.children:
+            if 'rank' in dataframe.index.names:
+                df_index = (child, rank)
+            else:
+                df_index = hnode
+            child_time = dataframe.loc[df_index, metric]
+            if child_time >= threshold * max_time:
+                children.append(child)
+
+        if children:
+            last_child = children[-1]
+
+        for child in children:
+            if child is not last_child:
+                c_indent = child_indent + (u'├─ ' if unicode else '|- ')
+                cc_indent = child_indent + (u'│  ' if unicode else '|  ')
+            else:
+                c_indent = child_indent + (u'└─ ' if unicode else '`- ')
+                cc_indent = child_indent + u'   '
+            result += as_text(child, dataframe, metric, name, context, rank,
+                              threshold, expand_names, indent=c_indent,
+                              child_indent=cc_indent, unicode=unicode, color=color)
+    else:
+        result = ''
 
     return result
 

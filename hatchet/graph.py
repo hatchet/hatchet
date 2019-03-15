@@ -11,7 +11,7 @@
 ##############################################################################
 
 from .external.printtree import trees_as_text
-from .util.dot import trees_as_dot
+from .util.dot import trees_to_dot
 
 
 class Graph:
@@ -23,7 +23,7 @@ class Graph:
             self.roots = roots
 
     def to_string(self, roots=None, dataframe=None, metric='time', name='name',
-                  context='file', rank=0, threshold=0.01, expand_names=False,
+                  context='file', rank=0, threshold=0.0, expand_names=False,
                   unicode=True, color=True):
         """ Print the graph with or without some metric attached to each
             node.
@@ -37,7 +37,7 @@ class Graph:
 
         return result
 
-    def to_dot(self, roots=None, dataframe=None, metric='inc', name='name',
+    def to_dot(self, roots=None, dataframe=None, metric='time', name='name',
                rank=0, threshold=0.0):
         """ Write the graph in the graphviz dot format:
             https://www.graphviz.org/doc/info/lang.html
@@ -45,7 +45,7 @@ class Graph:
         if roots is None:
             roots = self.roots
 
-        result = trees_as_dot(roots, dataframe, metric, name, rank, threshold)
+        result = trees_to_dot(roots, dataframe, metric, name, rank, threshold)
 
         return result
 
