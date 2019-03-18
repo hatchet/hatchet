@@ -53,3 +53,14 @@ class Graph:
         """ Returns a string representation of the graph.
         """
         return self.to_string()
+
+    def __len__(self):
+        """ Size of the graph in terms of number of nodes.
+        """
+        num_nodes = 0
+
+        for root in self.roots:
+            num_nodes = sum(1 for n in root.traverse())
+
+        return num_nodes
+
