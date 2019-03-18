@@ -1,5 +1,5 @@
 ##############################################################################
-# Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 # Produced at the Lawrence Livermore National Laboratory.
 #
 # This file is part of Hatchet.
@@ -16,20 +16,20 @@ from hatchet import *
 import sys
 
 import pandas as pd
-pd.set_option('display.width', 500)
-pd.set_option('display.max_colwidth', 30)
+pd.set_option('display.width', 1500)
+pd.set_option('display.max_colwidth', 20)
+pd.set_option('display.max_rows', None)
 
 
 if __name__ == "__main__":
-    dirname = sys.argv[1]
+    filename = '../tests/data/caliper-lulesh-json/lulesh-sample-annotation-profile.json'
 
     gf = GraphFrame()
-    gf.from_hpctoolkit(dirname)
+    gf.from_caliper(filename)
 
-    # grouped_df = gf.dataframe.groupby('module')
-    # for key, item in grouped_df:
-    #     print grouped_df.get_group(key), "\n\n"
-    print gf.dataframe.xs(0, level='rank')
+    print gf.dataframe
     print "\n"
 
-    print gf.graph.to_string(gf.graph.roots, gf.dataframe, threshold=0.0)
+    print gf.graph.to_string(gf.graph.roots, gf.dataframe)
+    with open("test.dot", "w") as fileh:
+        fileh.write(gf.graph.to_dot(gf.graph.roots, gf.dataframe))
