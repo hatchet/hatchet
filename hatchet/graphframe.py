@@ -70,7 +70,7 @@ class GraphFrame:
 
             if 'children' in child_dict:
                 for child in child_dict['children']:
-                    parse_node_literal(child, hnode, node_callpath)
+                    parse_node_literal(child, hnode, list(node_callpath))
 
         # start with creating a node_dict for the root
         root_callpath = []
@@ -83,7 +83,7 @@ class GraphFrame:
         # call recursively on all children of root
         if 'children' in graph_dict:
             for child in graph_dict['children']:
-                parse_node_literal(child, graph_root, root_callpath)
+                parse_node_literal(child, graph_root, list(root_callpath))
 
         self.graph = Graph([graph_root])
         self.dataframe = pd.DataFrame(data=node_dicts)
