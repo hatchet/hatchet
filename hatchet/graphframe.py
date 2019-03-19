@@ -65,7 +65,7 @@ class GraphFrame:
             node_callpath.append(child_dict['name'])
             hnode = Node(tuple(node_callpath), hparent)
 
-            node_dicts.append(dict({'node': hnode, 'rank': 0, 'name': child_dict['name']}, **child_dict['metrics']))
+            node_dicts.append(dict({'node': hnode, 'name': child_dict['name']}, **child_dict['metrics']))
             hparent.add_child(hnode)
 
             if 'children' in child_dict:
@@ -78,7 +78,7 @@ class GraphFrame:
         graph_root = Node(tuple(root_callpath), None)
 
         node_dicts = []
-        node_dicts.append(dict({'node': graph_root, 'rank': 0, 'name': graph_dict['name']}, **graph_dict['metrics']))
+        node_dicts.append(dict({'node': graph_root, 'name': graph_dict['name']}, **graph_dict['metrics']))
 
         # call recursively on all children of root
         if 'children' in graph_dict:
@@ -87,8 +87,7 @@ class GraphFrame:
 
         self.graph = Graph([graph_root])
         self.dataframe = pd.DataFrame(data=node_dicts)
-        indices = ['node', 'rank']
-        self.dataframe.set_index(indices, drop=False, inplace=True)
+        self.dataframe.set_index(['node'], drop=False, inplace=True)
 
     def filter(self, filter_function):
         """ Filter the dataframe using a user supplied function.
@@ -100,3 +99,4 @@ class GraphFrame:
         filtered_gf.dataframe = filtered_df
         filtered_gf.graph = self.graph
         return filtered_gf
+
