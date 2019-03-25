@@ -100,3 +100,82 @@ class GraphFrame:
         filtered_gf.graph = self.graph
         return filtered_gf
 
+    def graft(self):
+        """ Graft the graph after a filtering operation on the graphframe.
+        """
+        num_nodes = len(self.graph)
+
+        # calculate number of unique nodes in the dataframe
+        if 'rank' in self.dataframe.columns:
+            num_rows_df = len(self.dataframe.groupby(['rank']))
+        else:
+            num_rows_df = len(self.dataframe.index)
+
+        # the dataframe should already have a filtered set of nodes
+        filtered_nodes = self.dataframe.index
+        node_clone = {}
+        new_roots = []
+
+        # function to connect a node to the nearest descendants that are in the
+        # list of filtered nodes
+        def rewire_tree(node, clone, is_root):
+            cur_children = node.children
+            new_children = []
+
+            # iteratively go over the children of a node
+            while(cur_children):
+                for child in cur_children:
+                    cur_children.remove(child)
+                    if child in filtered_nodes:
+                        new_children.append(child)
+                    else:
+                        for grandchild in child.children:
+                            cur_children.append(grandchild)
+
+            if node in filtered_nodes:
+                # create new clones for each child in new_children and rewire
+                # with this node
+                for new_child in new_children:
+                    new_child_callpath = list(clone.callpath)
+                    new_child_callpath.append(new_child.callpath[-1])
+                    new_child_clone = Node(tuple(new_child_callpath), clone)
+                    node_clone[new_child] = new_child_clone
+                    clone.add_child(new_child_clone)
+                    rewire_tree(new_child, new_child_clone, False)
+            elif is_root:
+                # if we reach here, this root is not in the graph anymore
+                # make all its nearest descendants roots in the new graph
+                for new_child in new_children:
+                    new_child_clone = Node(tuple([new_child.callpath[-1]]), None)
+                    node_clone[new_child] = new_child_clone
+                    new_roots.append(new_child_clone)
+                    rewire_tree(new_child, new_child_clone, False)
+
+        # only do a graft if a filtering operation has been applied
+        if num_nodes != num_rows_df:
+            for root in self.graph.roots:
+                if root in filtered_nodes:
+                    clone = Node(tuple(root.callpath[-1],), None)
+                    new_roots.append(clone)
+                    node_clone[node] = clone
+                    rewire_tree(root, clone, True)
+                else:
+                    rewire_tree(root, None, True)
+
+        for root in new_roots:
+            print '1',
+            print root.callpath
+            for child in root.children:
+                print '\t2',
+                print child.callpath
+
+        new_dataframe = self.dataframe.copy()
+        new_dataframe['node'] = new_dataframe['node'].apply(lambda x: node_clone[x])
+        new_dataframe.set_index(['node'], drop=False, inplace=True)
+        print new_dataframe
+
+        new_graphframe = GraphFrame()
+        new_graphframe.dataframe = new_dataframe
+        new_graphframe.graph = Graph(new_roots)
+
+        return new_graphframe
