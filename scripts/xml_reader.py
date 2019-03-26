@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 ##############################################################################
 # Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
 # Produced at the Lawrence Livermore National Laboratory.
@@ -9,8 +10,6 @@
 # For details, see: https://github.com/LLNL/hatchet
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
-
-#!/usr/bin/env python
 
 try:
     import xml.etree.cElementTree as ET
@@ -56,3 +55,4 @@ print ""
 # Root[1][1] - SecCallPathProfileData
 for elem in root[1][1].iter():
     print elem.tag, elem.attrib
+#!/usr/bin/env python

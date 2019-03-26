@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 ##############################################################################
 # Copyright (c) 2017-2018, Lawrence Livermore National Security, LLC.
 # Produced at the Lawrence Livermore National Laboratory.
@@ -9,8 +10,6 @@
 # For details, see: https://github.com/LLNL/hatchet
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
-
-#!/usr/bin/env python
 
 from hatchet import *
 import sys
@@ -65,15 +64,15 @@ if __name__ == "__main__":
                                                                 'metrics': {'time (inc)': 10.0, 'time': 10.0}
                                                             }
                                                         ]
-                                                    },  
+                                                    },
                                                     {
                                                         'name': 'grault',
                                                         'metrics': {'time (inc)': 10.0, 'time': 10.0}
-                                                    },  
+                                                    },
                                                     {
                                                         'name': 'garply',
                                                         'metrics': {'time (inc)': 15.0, 'time': 15.0}
-                                                    }  
+                                                    }
                                                 ]
                                             }
                                         ]
