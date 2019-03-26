@@ -55,4 +55,3 @@ print ""
 # Root[1][1] - SecCallPathProfileData
 for elem in root[1][1].iter():
     print elem.tag, elem.attrib
-#!/usr/bin/env python

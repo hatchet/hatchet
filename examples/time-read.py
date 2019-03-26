@@ -10,6 +10,7 @@
 # For details, see: https://github.com/LLNL/hatchet
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
+
 from __future__ import print_function
 import argparse
 
