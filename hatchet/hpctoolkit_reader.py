@@ -257,7 +257,7 @@ class HPCToolkitReader:
                               self.procedure_names[xml_node.get('n')] == ''):
             # do not add a node to the graph if the xml_tag is a callsite
             # or if its a procedure with no name
-            self.parse_xml_children(xml_node, hparent, parent_callpath)
+            self.parse_xml_children(xml_node, hparent, list(parent_callpath))
         else:
             self.node_dicts.append(node_dict)
             hparent.add_child(hnode)
