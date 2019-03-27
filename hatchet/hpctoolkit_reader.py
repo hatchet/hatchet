@@ -156,7 +156,8 @@ class HPCToolkitReader:
             if name == 'CPUTIME (usec) (I)':
                 metric_names[idx] = 'time (inc)'
 
-        df_columns = metric_names + ['nid', 'rank']
+        self.metric_columns = metric_names
+        df_columns = self.metric_columns + ['nid', 'rank']
         self.df_metrics = pd.DataFrame(self.metrics, columns=df_columns)
 
     def create_graphframe(self):
@@ -189,7 +190,7 @@ class HPCToolkitReader:
         # start graph construction at the root and create a dataframe for
         # all the nodes in the graph
         with self.timer.phase('graph construction'):
-            self.parse_xml_children(root, graph_root, list(node_callpath), root.get('l'))
+            self.parse_xml_children(root, graph_root, list(node_callpath))
             self.df_nodes = pd.DataFrame.from_dict(data=self.node_dicts)
 
         # merge the metrics and node dataframes
@@ -202,14 +203,17 @@ class HPCToolkitReader:
         graph = Graph([graph_root])
         return graph, dataframe
 
-    def parse_xml_children(self, xml_node, hnode, parent_callpath, parent_line):
+    def parse_xml_children(self, xml_node, hnode, callpath):
         """ Parses all children of an XML node.
         """
         for xml_child in xml_node.getchildren():
             if xml_child.tag != 'M':
-                self.parse_xml_node(xml_child, hnode, parent_callpath, parent_line)
+                nid = int(xml_node.get('i'))
+                line = xml_node.get('l')
+                self.parse_xml_node(xml_child, nid, line, hnode, callpath)
 
-    def parse_xml_node(self, xml_node, hparent, parent_callpath, parent_line):
+    def parse_xml_node(self, xml_node, parent_nid, parent_line, hparent,
+            parent_callpath):
         """ Parses an XML node and its children recursively.
         """
         nid = int(xml_node.get('i'))
@@ -265,6 +269,12 @@ class HPCToolkitReader:
             node_dict = self.create_node_dict(nid, hnode, name, xml_tag,
                 self.src_files[src_file], line, None)
 
+            # when we reach statement nodes, we subtract their exclusive
+            # metric values from the parent's values
+            for column in self.metric_columns:
+                if '(inc)' not in column:
+                    self.df_metrics.loc[self.df_metrics['nid'] == parent_nid, column] = self.df_metrics.loc[self.df_metrics['nid'] == parent_nid, column] - self.df_metrics.loc[self.df_metrics['nid'] == nid, column].values
+
         if xml_tag == 'C' or (xml_tag == 'Pr' and
                               self.procedure_names[xml_node.get('n')] == ''):
             # do not add a node to the graph if the xml_tag is a callsite
@@ -272,11 +282,11 @@ class HPCToolkitReader:
             # for Prs, the preceding Pr has the calling line number and for
             # PFs, the preceding C has the line number
             line = xml_node.get('l')
-            self.parse_xml_children(xml_node, hparent, list(parent_callpath), line)
+            self.parse_xml_children(xml_node, hparent, list(parent_callpath))
         else:
             self.node_dicts.append(node_dict)
             hparent.add_child(hnode)
-            self.parse_xml_children(xml_node, hnode, list(node_callpath), line)
+            self.parse_xml_children(xml_node, hnode, list(node_callpath))
 
     def create_node_dict(self, nid, hnode, name, node_type, src_file,
             line, module):
