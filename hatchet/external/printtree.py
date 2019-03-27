@@ -89,7 +89,7 @@ def as_text(hnode, dataframe, metric, name, context, rank, threshold,
             if 'rank' in dataframe.index.names:
                 df_index = (child, rank)
             else:
-                df_index = hnode
+                df_index = child
             child_time = dataframe.loc[df_index, metric]
             if child_time >= threshold * max_time:
                 children.append(child)
