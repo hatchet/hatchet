@@ -148,7 +148,6 @@ class HPCToolkitReader:
         pool.map(read_metricdb_file, args)
 
         # once all files have been read, create a dataframe of metrics
-        # TODO: make column names consistent across readers
         metric_names = [self.metric_names[key] for key in sorted(self.metric_names.keys())]
         for idx, name in enumerate(metric_names):
             if name == 'CPUTIME (usec) (E)':
@@ -159,6 +158,8 @@ class HPCToolkitReader:
         self.metric_columns = metric_names
         df_columns = self.metric_columns + ['nid', 'rank']
         self.df_metrics = pd.DataFrame(self.metrics, columns=df_columns)
+        self.df_metrics['nid'] = self.df_metrics['nid'].astype(int, copy=False)
+        self.df_metrics['rank'] = self.df_metrics['rank'].astype(int, copy=False)
 
     def create_graphframe(self):
         """ Read the experiment.xml file to extract the calling context tree
