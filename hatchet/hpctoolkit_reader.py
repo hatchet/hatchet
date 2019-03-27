@@ -29,6 +29,7 @@ from .util.timer import Timer
 
 src_file = 0
 stmt_num = 1
+proc_num = 1
 
 
 def init_shared_array(buf_):
@@ -188,7 +189,7 @@ class HPCToolkitReader:
         # start graph construction at the root and create a dataframe for
         # all the nodes in the graph
         with self.timer.phase('graph construction'):
-            self.parse_xml_children(root, graph_root, list(node_callpath))
+            self.parse_xml_children(root, graph_root, list(node_callpath), root.get('l'))
             self.df_nodes = pd.DataFrame.from_dict(data=self.node_dicts)
 
         # merge the metrics and node dataframes
@@ -201,32 +202,39 @@ class HPCToolkitReader:
         graph = Graph([graph_root])
         return graph, dataframe
 
-    def parse_xml_children(self, xml_node, hnode, parent_callpath):
+    def parse_xml_children(self, xml_node, hnode, parent_callpath, parent_line):
         """ Parses all children of an XML node.
         """
         for xml_child in xml_node.getchildren():
             if xml_child.tag != 'M':
-                self.parse_xml_node(xml_child, hnode, parent_callpath)
+                self.parse_xml_node(xml_child, hnode, parent_callpath, parent_line)
 
-    def parse_xml_node(self, xml_node, hparent, parent_callpath):
+    def parse_xml_node(self, xml_node, hparent, parent_callpath, parent_line):
         """ Parses an XML node and its children recursively.
         """
         nid = int(xml_node.get('i'))
 
         global src_file
         global stmt_num
+        global proc_num
         xml_tag = xml_node.tag
 
         if xml_tag == 'PF' or xml_tag == 'Pr':
             # procedure
             name = self.procedure_names[xml_node.get('n')]
+            if name == '<unknown procedure>':
+                name = '<unknown procedure ' + str(proc_num) + '>'
+                proc_num += 1
+            if parent_line != '0':
+                name = parent_line + ':' + name
             src_file = xml_node.get('f')
+            line = xml_node.get('l')
 
             node_callpath = parent_callpath
-            node_callpath.append(self.procedure_names[xml_node.get('n')])
+            node_callpath.append(name)
             hnode = Node(tuple(node_callpath), hparent)
-            node_dict = self.create_node_dict(nid, hnode,
-                name, xml_tag, self.src_files[src_file], xml_node.get('l'),
+            node_dict = self.create_node_dict(nid, hnode, name, xml_tag,
+                self.src_files[src_file], line,
                 self.load_modules[xml_node.get('lm')])
 
         elif xml_tag == 'L':
@@ -238,30 +246,37 @@ class HPCToolkitReader:
             node_callpath = parent_callpath
             node_callpath.append(name)
             hnode = Node(tuple(node_callpath), hparent)
-            node_dict = self.create_node_dict(nid, hnode,
-                name, xml_tag, self.src_files[src_file], line, None)
+            node_dict = self.create_node_dict(nid, hnode, name, xml_tag,
+                self.src_files[src_file], line, None)
 
         elif xml_tag == 'S':
             # statement
             line = xml_node.get('l')
-            name = 'Stmt' + str(stmt_num) + '@' + (self.src_files[src_file]).rpartition('/')[2] + ':' + line
-            stmt_num = stmt_num + 1
+            # this might not be required for resolving conflicts
+            if self.src_files[src_file] == '<unknown file>':
+                name = '<unknown file ' + str(stmt_num) + '>' + ':' + line
+                stmt_num += 1
+            else:
+                name = (self.src_files[src_file]).rpartition('/')[2] + ':' + line
 
             node_callpath = parent_callpath
             node_callpath.append(name)
             hnode = Node(tuple(node_callpath), hparent)
-            node_dict = self.create_node_dict(nid, hnode,
-                name, xml_tag, self.src_files[src_file], line, None)
+            node_dict = self.create_node_dict(nid, hnode, name, xml_tag,
+                self.src_files[src_file], line, None)
 
         if xml_tag == 'C' or (xml_tag == 'Pr' and
                               self.procedure_names[xml_node.get('n')] == ''):
             # do not add a node to the graph if the xml_tag is a callsite
             # or if its a procedure with no name
-            self.parse_xml_children(xml_node, hparent, list(parent_callpath))
+            # for Prs, the preceding Pr has the calling line number and for
+            # PFs, the preceding C has the line number
+            line = xml_node.get('l')
+            self.parse_xml_children(xml_node, hparent, list(parent_callpath), line)
         else:
             self.node_dicts.append(node_dict)
             hparent.add_child(hnode)
-            self.parse_xml_children(xml_node, hnode, list(node_callpath))
+            self.parse_xml_children(xml_node, hnode, list(node_callpath), line)
 
     def create_node_dict(self, nid, hnode, name, node_type, src_file,
             line, module):
