@@ -18,6 +18,7 @@ from .node import Node
 from .graph import Graph
 from .util.timer import Timer
 
+stmt_num = 1
 
 class CaliperReader:
     """ Read in a Caliper split JSON file.
@@ -56,6 +57,28 @@ class CaliperReader:
             self.path_col_name = 'path'
         else:
             sys.exit('No hierarchy column in input file')
+
+        # change column names
+        for idx, item in enumerate(self.json_cols):
+            if item == self.path_col_name:
+                # this column is just a pointer into the nodes section
+                self.json_cols[idx] = self.nid_col_name
+            # make other columns consistent with other readers
+            if item == 'mpi.rank':
+                self.json_cols[idx] = 'rank'
+            if item == 'module#cali.sampler.pc':
+                self.json_cols[idx] = 'module'
+            if item == 'sum#time.duration':
+                self.json_cols[idx] = 'time'
+            if item == 'inclusive#sum#time.duration':
+                self.json_cols[idx] = 'time (inc)'
+
+        # make list of metric columns
+        self.metric_columns = []
+        for idx, item in enumerate(self.json_cols_mdata):
+            if self.json_cols[idx] != 'rank' and item['is_value'] is True:
+                self.metric_columns.append(self.json_cols[idx])
+
 
     def create_graph(self):
         list_roots = []
@@ -96,41 +119,85 @@ class CaliperReader:
         with self.timer.phase('graph construction'):
             list_roots = self.create_graph()
 
-        # create a dataframe with all nodes in the call graph
-        self.df_nodes = pd.DataFrame.from_dict(data=self.idx_to_node.values())
-
-        # change column names
-        for idx, item in enumerate(self.json_cols):
-            if item == self.path_col_name:
-                # this column is just a pointer into the nodes section
-                self.json_cols[idx] = self.nid_col_name
-            # make other columns consistent with other readers
-            if item == 'mpi.rank':
-                self.json_cols[idx] = 'rank'
-            if item == 'module#cali.sampler.pc':
-                self.json_cols[idx] = 'module'
-            if item == 'sum#time.duration':
-                self.json_cols[idx] = 'time'
-            if item == 'inclusive#sum#time.duration':
-                self.json_cols[idx] = 'time (inc)'
-
         # create a dataframe of metrics from the data section
-        self.df_samples = pd.DataFrame(self.json_data, columns=self.json_cols)
+        self.df_json_data = pd.DataFrame(self.json_data, columns=self.json_cols)
 
         # map non-numeric columns to their mappings in the nodes section
         for idx, item in enumerate(self.json_cols_mdata):
             if item['is_value'] is False and self.json_cols[idx] != self.nid_col_name:
                 if self.json_cols[idx] == 'sourceloc#cali.sampler.pc':
                     # split source file and line number into two columns
-                    self.df_samples['file'] = self.df_samples[self.json_cols[idx]].apply(lambda x: re.match('(.*):(\d+)', self.json_nodes[x]['label']).group(1))
-                    self.df_samples['line'] = self.df_samples[self.json_cols[idx]].apply(lambda x: re.match('(.*):(\d+)', self.json_nodes[x]['label']).group(2))
-                    self.df_samples.drop(self.json_cols[idx], axis=1, inplace=True)
+                    self.df_json_data['file'] = self.df_json_data[self.json_cols[idx]].apply(lambda x: re.match('(.*):(\d+)', self.json_nodes[x]['label']).group(1))
+                    self.df_json_data['line'] = self.df_json_data[self.json_cols[idx]].apply(lambda x: re.match('(.*):(\d+)', self.json_nodes[x]['label']).group(2))
+                    self.df_json_data.drop(self.json_cols[idx], axis=1, inplace=True)
+                    sourceloc_idx = idx
                 else:
-                    self.df_samples[self.json_cols[idx]] = self.df_samples[self.json_cols[idx]].apply(lambda x: self.json_nodes[x]['label'])
+                    self.df_json_data[self.json_cols[idx]] = self.df_json_data[self.json_cols[idx]].apply(lambda x: self.json_nodes[x]['label'])
 
-        # add missing intermediate nodes to the df_samples dataframe
+        # since we split sourceloc, we should update json_cols and
+        # json_cols_mdata
+        if 'sourceloc#cali.sampler.pc' in self.json_cols:
+            self.json_cols.pop(sourceloc_idx)
+            self.json_cols_mdata.pop(sourceloc_idx)
+            self.json_cols.append('file')
+            self.json_cols.append('line')
+            self.json_cols_mdata.append({'is_value': False})
+            self.json_cols_mdata.append({'is_value': False})
+
+        max_nid = self.df_json_data[self.nid_col_name].max()
+
+        global stmt_num
+
+        if 'line' in self.df_json_data.columns:
+            # split nodes that have multiple file:line numbers to have a child
+            # each with a unique file:line number
+            unique_nodes = self.df_json_data.groupby(self.nid_col_name)
+            df_concat = [self.df_json_data]
+
+            for nid, super_node in unique_nodes:
+                line_groups = super_node.groupby('line')
+                # only need to do something if there are more than one
+                # file:line number entries for the node
+                if len(line_groups.size()) > 1:
+                    sn_hnode = self.idx_to_node[nid]['node']
+
+                    for line, line_group in line_groups:
+                        # create the node label
+                        file_name = (line_group.head(1))['file'].item()
+                        file_name = file_name.rpartition('/')[2]
+                        if file_name == 'UNKNOWN':
+                            file_name = '<unknown file ' + str(stmt_num) + '>'
+                        node_label = file_name + ':' + line
+
+                        # create a new hatchet node
+                        node_callpath = list(sn_hnode.callpath)
+                        node_callpath.append(node_label)
+                        hnode = Node(tuple(node_callpath), sn_hnode)
+                        sn_hnode.add_child(hnode)
+
+                        max_nid += 1
+                        node_dict = {self.nid_col_name: max_nid, 'name': node_label, 'node': hnode}
+                        self.idx_to_node[max_nid] = node_dict
+
+                        # change nid of the original node to new node in place
+                        for index, row in line_group.iterrows():
+                            self.df_json_data.loc[index, 'nid'] = max_nid
+
+                    # add new row for original node
+                    node_copy = super_node.head(1).copy()
+                    for cols in self.metric_columns:
+                        node_copy[cols] = 0
+                    df_concat.append(node_copy)
+
+        # concatenate all the newly created dataframes with self.df_json_data
+        self.df_fixed_data = pd.concat(df_concat)
+
+        # create a dataframe with all nodes in the call graph
+        self.df_nodes = pd.DataFrame.from_dict(data=self.idx_to_node.values())
+
+        # add missing intermediate nodes to the df_fixed_data dataframe
         if 'rank' in self.json_cols:
-            self.num_ranks =  self.df_samples['rank'].max() + 1
+            self.num_ranks = self.df_fixed_data['rank'].max() + 1
 
         # create a standard dict to be used for filling all missing rows
         default_metric_dict = {}
@@ -143,19 +210,36 @@ class CaliperReader:
 
         # create a list of dicts, one dict for each missing row
         missing_nodes = []
+        rank_list = range(0, self.num_ranks)
         for iteridx, row in self.df_nodes.iterrows():
-            # check if df_nodes row exists in df_samples
-            metric_rows = self.df_samples.loc[self.df_samples[self.nid_col_name] == row[self.nid_col_name]]
+            # check if df_nodes row exists in df_fixed_data
+            metric_rows = self.df_fixed_data.loc[self.df_fixed_data[self.nid_col_name] == row[self.nid_col_name]]
             if 'rank' not in self.json_cols:
                 if metric_rows.empty:
                     # add a single row
                     node_dict = dict(default_metric_dict)
                     node_dict[self.nid_col_name] = row[self.nid_col_name]
                     missing_nodes.append(node_dict)
-            # TODO: implement the else (when there are multiple ranks)
+            else:
+                if metric_rows.empty:
+                    # add a row per MPI rank
+                    for rank in rank_list:
+                        node_dict = dict(default_metric_dict)
+                        node_dict[self.nid_col_name] = row[self.nid_col_name]
+                        node_dict['rank'] = rank
+                        missing_nodes.append(node_dict)
+                elif len(metric_rows) < self.num_ranks:
+                    # add a row for each missing MPI rank
+                    present_ranks = metric_rows['rank'].values
+                    missing_ranks = [x for x in rank_list if x not in present_ranks]
+                    for rank in missing_ranks:
+                        node_dict = dict(default_metric_dict)
+                        node_dict[self.nid_col_name] = row[self.nid_col_name]
+                        node_dict['rank'] = rank
+                        missing_nodes.append(node_dict)
 
         self.df_missing = pd.DataFrame.from_dict(data=missing_nodes)
-        self.df_metrics = pd.concat([self.df_samples, self.df_missing])
+        self.df_metrics = pd.concat([self.df_fixed_data, self.df_missing])
 
         # merge the metrics and node dataframes on the idx column
         with self.timer.phase('data frame'):
