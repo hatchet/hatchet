@@ -189,8 +189,11 @@ class CaliperReader:
                         node_copy[cols] = 0
                     df_concat.append(node_copy)
 
-        # concatenate all the newly created dataframes with self.df_json_data
-        self.df_fixed_data = pd.concat(df_concat)
+            # concatenate all the newly created dataframes with
+            # self.df_json_data
+            self.df_fixed_data = pd.concat(df_concat)
+        else:
+            self.df_fixed_data = self.df_json_data
 
         # create a dataframe with all nodes in the call graph
         self.df_nodes = pd.DataFrame.from_dict(data=self.idx_to_node.values())
@@ -198,6 +201,7 @@ class CaliperReader:
         # add missing intermediate nodes to the df_fixed_data dataframe
         if 'rank' in self.json_cols:
             self.num_ranks = self.df_fixed_data['rank'].max() + 1
+            rank_list = range(0, self.num_ranks)
 
         # create a standard dict to be used for filling all missing rows
         default_metric_dict = {}
@@ -210,7 +214,6 @@ class CaliperReader:
 
         # create a list of dicts, one dict for each missing row
         missing_nodes = []
-        rank_list = range(0, self.num_ranks)
         for iteridx, row in self.df_nodes.iterrows():
             # check if df_nodes row exists in df_fixed_data
             metric_rows = self.df_fixed_data.loc[self.df_fixed_data[self.nid_col_name] == row[self.nid_col_name]]
