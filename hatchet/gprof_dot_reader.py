@@ -115,4 +115,4 @@ class GprofDotReader:
             index = ['node']
             dataframe.set_index(index, drop=False, inplace=True)
 
-        return graph, dataframe
+        return graph, dataframe, ['time'], ['time (inc)']

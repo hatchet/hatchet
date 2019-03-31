@@ -201,8 +201,17 @@ class HPCToolkitReader:
             indices = ['node', 'rank']
             dataframe.set_index(indices, drop=False, inplace=True)
 
+        # create list of exclusive and inclusive metric columns
+        exc_metrics = []
+        inc_metrics = []
+        for column in self.metric_columns:
+            if '(inc)' in column:
+                inc_metrics.append(column)
+            else:
+                exc_metrics.append(column)
+
         graph = Graph([graph_root])
-        return graph, dataframe
+        return graph, dataframe, exc_metrics, inc_metrics
 
     def parse_xml_children(self, xml_node, hnode, callpath):
         """ Parses all children of an XML node.
