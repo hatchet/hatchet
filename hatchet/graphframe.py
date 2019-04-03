@@ -23,8 +23,9 @@ class GraphFrame:
         graph and a dataframe.
     """
 
-    def __init__(self):
-        self.graph = None
+    def __init__(self, graph=None, dataframe=pd.DataFrame()):
+        self.graph = graph
+        self.dataframe = dataframe
 
     def from_hpctoolkit(self, dirname):
         """ Read in an HPCToolkit database directory.
@@ -189,12 +190,8 @@ class GraphFrame:
         """
         # res_df = self_df - other_df
         new_dataframe = self.dataframe.copy()
-        for i in self.exc_metrics:
-            new_dataframe[i] = self.dataframe[i].subtract(other.dataframe[i])
+        for metric in self.exc_metrics + self.inc_metrics:
+            new_dataframe[metric] = self.dataframe[metric].subtract(other.dataframe[metric])
 
-        new_graphframe = GraphFrame()
-        new_graphframe.dataframe = new_dataframe
-        new_graphframe.graph = self.graph
-
-        return new_graphframe
+        return GraphFrame(new_dataframe, self.graph)
 
