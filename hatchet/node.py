@@ -59,7 +59,7 @@ class Node:
         return self.df_index
 
     def __eq__(self, other):
-        return (self.callpath == other.callpath)
+        return (id(self) == id(other) and self.callpath == other.callpath)
 
     def __lt__(self, other):
         return (self.callpath < other.callpath)

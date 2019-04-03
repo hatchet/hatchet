@@ -28,8 +28,6 @@ from .graph import Graph
 from .util.timer import Timer
 
 src_file = 0
-stmt_num = 1
-proc_num = 1
 
 
 def init_shared_array(buf_):
@@ -229,16 +227,11 @@ class HPCToolkitReader:
         nid = int(xml_node.get('i'))
 
         global src_file
-        global stmt_num
-        global proc_num
         xml_tag = xml_node.tag
 
         if xml_tag == 'PF' or xml_tag == 'Pr':
             # procedure
             name = self.procedure_names[xml_node.get('n')]
-            if name == '<unknown procedure>':
-                name = '<unknown procedure ' + str(proc_num) + '>'
-                proc_num += 1
             if parent_line != '0':
                 name = parent_line + ':' + name
             src_file = xml_node.get('f')
@@ -267,11 +260,7 @@ class HPCToolkitReader:
             # statement
             line = xml_node.get('l')
             # this might not be required for resolving conflicts
-            if self.src_files[src_file] == '<unknown file>':
-                name = '<unknown file ' + str(stmt_num) + '>' + ':' + line
-                stmt_num += 1
-            else:
-                name = (self.src_files[src_file]).rpartition('/')[2] + ':' + line
+            name = (self.src_files[src_file]).rpartition('/')[2] + ':' + line
 
             node_callpath = parent_callpath
             node_callpath.append(name)

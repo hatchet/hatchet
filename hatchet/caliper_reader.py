@@ -18,7 +18,6 @@ from .node import Node
 from .graph import Graph
 from .util.timer import Timer
 
-stmt_num = 1
 
 class CaliperReader:
     """ Read in a Caliper split JSON file.
@@ -146,8 +145,6 @@ class CaliperReader:
 
         max_nid = self.df_json_data[self.nid_col_name].max()
 
-        global stmt_num
-
         if 'line' in self.df_json_data.columns:
             # split nodes that have multiple file:line numbers to have a child
             # each with a unique file:line number
@@ -165,8 +162,6 @@ class CaliperReader:
                         # create the node label
                         file_name = (line_group.head(1))['file'].item()
                         file_name = file_name.rpartition('/')[2]
-                        if file_name == 'UNKNOWN':
-                            file_name = '<unknown file ' + str(stmt_num) + '>'
                         node_label = file_name + ':' + line
 
                         # create a new hatchet node
