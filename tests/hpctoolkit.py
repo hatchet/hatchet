@@ -66,7 +66,7 @@ def test_graphframe(calc_pi_hpct_db):
 
     assert len(gf.dataframe.groupby('module')) == 5
     assert len(gf.dataframe.groupby('file')) == 11
-    assert len(gf.dataframe.groupby('name')) == 33
+    assert len(gf.dataframe.groupby('name')) == 20
 
     # TODO: add tests for dataframe
 
