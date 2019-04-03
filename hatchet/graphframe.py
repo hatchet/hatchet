@@ -183,3 +183,18 @@ class GraphFrame:
         new_graphframe.graph = Graph(new_roots)
 
         return new_graphframe
+
+    def scalar_diff(self, other):
+        """ Compute the scalar difference of exclusive metrics with identical graphs
+        """
+        # res_df = self_df - other_df
+        new_dataframe = self.dataframe.copy()
+        for i in self.exc_metrics:
+            new_dataframe[i] = self.dataframe[i].subtract(other.dataframe[i])
+
+        new_graphframe = GraphFrame()
+        new_graphframe.dataframe = new_dataframe
+        new_graphframe.graph = self.graph
+
+        return new_graphframe
+
