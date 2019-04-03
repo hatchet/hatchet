@@ -170,27 +170,31 @@ class HPCToolkitReader:
         with self.timer.phase('read metric db'):
             self.read_all_metricdb_files()
 
+        list_roots = []
+
         # parse the ElementTree to generate a calling context tree
-        root = self.callpath_profile.findall('PF')[0]
-        nid = int(root.get('i'))
+        for root in self.callpath_profile.findall('PF'):
+            nid = int(root.get('i'))
 
-        # start with the root and create the callpath and node for the root
-        # also a corresponding node_dict to be inserted into the dataframe
-        node_callpath = []
-        node_callpath.append(self.procedure_names[root.get('n')])
-        graph_root = Node(tuple(node_callpath), None)
-        node_dict = self.create_node_dict(nid, graph_root,
-            self.procedure_names[root.get('n')], 'PF',
-            self.src_files[root.get('f')], root.get('l'),
-            self.load_modules[root.get('lm')])
+            # start with the root and create the callpath and node for the root
+            # also a corresponding node_dict to be inserted into the dataframe
+            node_callpath = []
+            node_callpath.append(self.procedure_names[root.get('n')])
+            graph_root = Node(tuple(node_callpath), None)
+            node_dict = self.create_node_dict(nid, graph_root,
+                self.procedure_names[root.get('n')], 'PF',
+                self.src_files[root.get('f')], root.get('l'),
+                self.load_modules[root.get('lm')])
 
-        self.node_dicts.append(node_dict)
+            self.node_dicts.append(node_dict)
+            list_roots.append(graph_root)
 
-        # start graph construction at the root and create a dataframe for
-        # all the nodes in the graph
-        with self.timer.phase('graph construction'):
-            self.parse_xml_children(root, graph_root, list(node_callpath))
-            self.df_nodes = pd.DataFrame.from_dict(data=self.node_dicts)
+            # start graph construction at the root
+            with self.timer.phase('graph construction'):
+                self.parse_xml_children(root, graph_root, list(node_callpath))
+
+        # create a dataframe for all the nodes in the graph
+        self.df_nodes = pd.DataFrame.from_dict(data=self.node_dicts)
 
         # merge the metrics and node dataframes
         with self.timer.phase('data frame'):
@@ -208,7 +212,7 @@ class HPCToolkitReader:
             else:
                 exc_metrics.append(column)
 
-        graph = Graph([graph_root])
+        graph = Graph(list_roots)
         return graph, dataframe, exc_metrics, inc_metrics
 
     def parse_xml_children(self, xml_node, hnode, callpath):
