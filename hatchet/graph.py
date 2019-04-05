@@ -12,6 +12,7 @@
 
 from .external.printtree import trees_as_text
 from .util.dot import trees_to_dot
+from .node import Node
 
 
 class Graph:
@@ -21,6 +22,35 @@ class Graph:
     def __init__(self, roots):
         if roots is not None:
             self.roots = roots
+
+    def copy(self):
+        """ Returns a copy of the graph and a mapping of old to new nodes.
+        """
+        list_roots = []
+        node_clone = {}
+
+        if self.roots:
+            for root in self.roots:
+                # do a breadth-first traversal of the tree
+                for node in root.traverse_bf():
+                    if node.parents is None:
+                        clone = Node(node.nid, tuple(node.callpath), None)
+                        list_roots.append(node_clone)
+                    else:
+                        # make a list of new parents to make connections with
+                        new_parents = []
+                        for parent in node.parents:
+                            new_parents.append(node_clone[parent])
+                        clone = Node(node.nid, tuple(node.callpath), None)
+
+                        # connect child to parents and vice-versa
+                        for parent in new_parents:
+                            clone.add_parent(parent)
+                            parent.add_child(clone)
+
+                    node_clone[node] = clone
+
+        return Graph(list_roots), node_clone
 
     def to_string(self, roots=None, dataframe=None, metric='time', name='name',
                   context='file', rank=0, threshold=0.0, expand_names=False,

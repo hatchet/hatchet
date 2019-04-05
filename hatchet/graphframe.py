@@ -105,6 +105,18 @@ class GraphFrame:
         self.dataframe = pd.DataFrame(data=node_dicts)
         self.dataframe.set_index(['node'], drop=False, inplace=True)
 
+    def copy(self):
+        """ Return a copy of the graphframe.
+        """
+        graph_copy, node_clone = self.graph.copy()
+        dataframe_copy = self.dataframe.copy()
+
+        dataframe_copy['node'] = dataframe_copy['node'].apply(lambda x: node_clone[x])
+        index_names = self.dataframe.index.names
+        dataframe_copy.set_index(index_names, inplace=True, drop=False)
+
+        return GraphFrame(graph_copy, dataframe_copy)
+
     def filter(self, filter_function):
         """ Filter the dataframe using a user supplied function.
         """
