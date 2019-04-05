@@ -39,18 +39,27 @@ class Node:
         assert isinstance(node, Node)
         self.children.append(node)
 
-    def traverse(self, order='pre'):
+    def traverse(self):
         """ Traverse the tree depth-first and yield each node.
         """
-        if(order == 'pre'):
-            yield self
+        yield self
 
         for child in self.children:
             for item in child.traverse():
                 yield item
 
-        if(order == 'post'):
-            yield self
+    def traverse_bf(self):
+        """ Traverse the tree breadth-first and yield each node.
+        """
+        yield self
+        last = self
+
+        for node in self.traverse_bf():
+            for child in node.children:
+                yield child
+                last = child
+            if last == node:
+                return
 
     def set_callpath(self, callpath):
         self.callpath = callpath
