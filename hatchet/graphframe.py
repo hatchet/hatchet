@@ -18,6 +18,8 @@ from .gprof_dot_reader import GprofDotReader
 from .node import Node
 from .graph import Graph
 
+lit_idx = 0
+
 
 class GraphFrame:
     """ An input dataset is read into an object of this type, which includes a
@@ -55,15 +57,20 @@ class GraphFrame:
     def from_literal(self, graph_dict):
         """ Read graph from a dict literal.
         """
+        global lit_idx
+
         def parse_node_literal(child_dict, hparent, parent_callpath):
             """ Create node_dict for one node and then call the function
                 recursively on all children.
             """
+            global lit_idx
+
             node_callpath = parent_callpath
             node_callpath.append(child_dict['name'])
-            hnode = Node(tuple(node_callpath), hparent)
+            hnode = Node(lit_idx, tuple(node_callpath), hparent)
 
-            node_dicts.append(dict({'node': hnode, 'name': child_dict['name']}, **child_dict['metrics']))
+            node_dicts.append(dict({'nid': lit_idx, 'node': hnode, 'name': child_dict['name']}, **child_dict['metrics']))
+            lit_idx += 1
             hparent.add_child(hnode)
 
             if 'children' in child_dict:
@@ -73,10 +80,11 @@ class GraphFrame:
         # start with creating a node_dict for the root
         root_callpath = []
         root_callpath.append(graph_dict['name'])
-        graph_root = Node(tuple(root_callpath), None)
+        graph_root = Node(lit_idx, tuple(root_callpath), None)
 
         node_dicts = []
-        node_dicts.append(dict({'node': graph_root, 'name': graph_dict['name']}, **graph_dict['metrics']))
+        node_dicts.append(dict({'nid': lit_idx, 'node': graph_root, 'name': graph_dict['name']}, **graph_dict['metrics']))
+        lit_idx += 1
 
         # call recursively on all children of root
         if 'children' in graph_dict:

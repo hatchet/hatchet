@@ -180,7 +180,7 @@ class HPCToolkitReader:
             # also a corresponding node_dict to be inserted into the dataframe
             node_callpath = []
             node_callpath.append(self.procedure_names[root.get('n')])
-            graph_root = Node(tuple(node_callpath), None)
+            graph_root = Node(nid, tuple(node_callpath), None)
             node_dict = self.create_node_dict(nid, graph_root,
                 self.procedure_names[root.get('n')], 'PF',
                 self.src_files[root.get('f')], root.get('l'),
@@ -243,7 +243,7 @@ class HPCToolkitReader:
 
             node_callpath = parent_callpath
             node_callpath.append(name)
-            hnode = Node(tuple(node_callpath), hparent)
+            hnode = Node(nid, tuple(node_callpath), hparent)
             node_dict = self.create_node_dict(nid, hnode, name, xml_tag,
                 self.src_files[src_file], line,
                 self.load_modules[xml_node.get('lm')])
@@ -256,7 +256,7 @@ class HPCToolkitReader:
 
             node_callpath = parent_callpath
             node_callpath.append(name)
-            hnode = Node(tuple(node_callpath), hparent)
+            hnode = Node(nid, tuple(node_callpath), hparent)
             node_dict = self.create_node_dict(nid, hnode, name, xml_tag,
                 self.src_files[src_file], line, None)
 
@@ -268,7 +268,7 @@ class HPCToolkitReader:
 
             node_callpath = parent_callpath
             node_callpath.append(name)
-            hnode = Node(tuple(node_callpath), hparent)
+            hnode = Node(nid, tuple(node_callpath), hparent)
             node_dict = self.create_node_dict(nid, hnode, name, xml_tag,
                 self.src_files[src_file], line, None)
 

@@ -46,7 +46,8 @@ class GprofDotReader:
 
                     if src_name not in self.name_to_hnode.keys():
                         # create a node if it doesn't exist yet
-                        src_hnode = Node((src_name,), None)
+                        src_hnode = Node(idx, (src_name,), None)
+                        idx += 1
                         self.name_to_hnode[src_name] = src_hnode
                     else:
                         # else retrieve node from dict
@@ -54,7 +55,8 @@ class GprofDotReader:
 
                     if dst_name not in self.name_to_hnode.keys():
                         # create a node if it doesn't exist yet
-                        dst_hnode = Node((dst_name,), src_hnode)
+                        dst_hnode = Node(idx, (dst_name,), src_hnode)
+                        idx += 1
                         self.name_to_hnode[dst_name] = dst_hnode
                     else:
                         # else retrieve node from dict and add source node
@@ -74,15 +76,18 @@ class GprofDotReader:
 
                         if node_name not in self.name_to_hnode.keys():
                             # create a node if it doesn't exist yet
-                            hnode = Node((node_name,), None)
+                            hnode = Node(idx, (node_name,), None)
+                            nid = idx
+                            idx += 1
                             self.name_to_hnode[node_name] = hnode
                         else:
                             hnode = self.name_to_hnode[node_name]
+                            nid = hnode.nid
 
                         # create a dict with node properties
                         inc_time = float(re.match('(.*)\%', node_details[2]).group(1))
                         exc_time = float(re.match('\((.*)\%\)', node_details[3]).group(1))
-                        node_dict = {'module': node_details[0], 'name': node_name, 'time (inc)': inc_time, 'time': exc_time, 'node': hnode}
+                        node_dict = {'nid': nid, 'module': node_details[0], 'name': node_name, 'time (inc)': inc_time, 'time': exc_time, 'node': hnode}
                         self.name_to_dict[node_name] = node_dict
 
         # add all nodes with no parents to the list of roots

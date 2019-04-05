@@ -17,7 +17,8 @@ class Node:
     """ A node in the graph. The node only stores its callpath.
     """
 
-    def __init__(self, callpath_tuple, parent):
+    def __init__(self, nid, callpath_tuple, parent):
+        self.nid = nid
         self.callpath = callpath_tuple
         self.df_index = hash(callpath_tuple)
 
@@ -59,7 +60,7 @@ class Node:
         return self.df_index
 
     def __eq__(self, other):
-        return (id(self) == id(other) or self.callpath == other.callpath)
+        return (id(self) == id(other) or (self.nid == other.nid and self.callpath == other.callpath))
 
     def __lt__(self, other):
         return (self.callpath < other.callpath)
