@@ -10,6 +10,7 @@
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
 import pandas as pd
+import numpy
 
 from .hpctoolkit_reader import HPCToolkitReader
 from .caliper_reader import CaliperReader
@@ -100,24 +101,26 @@ class GraphFrame:
         filtered_rows = self.dataframe.apply(filter_function, axis=1)
         filtered_df = self.dataframe[filtered_rows]
 
-        filtered_gf = GraphFrame()
-        filtered_gf.dataframe = filtered_df
-        filtered_gf.graph = self.graph
+        filtered_gf = GraphFrame(self.graph, filtered_df)
+        filtered_gf.exc_metrics = self.exc_metrics
+        filtered_gf.inc_metrics = self.inc_metrics
+
         return filtered_gf
 
-    def graft(self):
-        """ Graft the graph after a filtering operation on the graphframe.
+    def squash(self):
+        """ Squash the graph after a filtering operation on the graphframe.
         """
         num_nodes = len(self.graph)
 
         # calculate number of unique nodes in the dataframe
-        if 'rank' in self.dataframe.columns:
-            num_rows_df = len(self.dataframe.groupby(['rank']))
+        # and a set of filtered nodes
+        if 'rank' in self.dataframe.index.names:
+            num_rows_df = len(self.dataframe.groupby(['node']))
+            filtered_nodes = self.dataframe.index.levels[0]
         else:
             num_rows_df = len(self.dataframe.index)
+            filtered_nodes = self.dataframe.index
 
-        # the dataframe should already have a filtered set of nodes
-        filtered_nodes = self.dataframe.index
         node_clone = {}
         new_roots = []
 
@@ -137,15 +140,23 @@ class GraphFrame:
                         for grandchild in child.children:
                             cur_children.append(grandchild)
 
+            label_to_new_child = {}
             if node in filtered_nodes:
                 # create new clones for each child in new_children and rewire
                 # with this node
                 for new_child in new_children:
-                    new_child_callpath = list(clone.callpath)
-                    new_child_callpath.append(new_child.callpath[-1])
-                    new_child_clone = Node(tuple(new_child_callpath), clone)
+                    node_label = new_child.callpath[-1]
+                    if node_label not in label_to_new_child.keys():
+                        new_child_callpath = list(clone.callpath)
+                        new_child_callpath.append(new_child.callpath[-1])
+
+                        new_child_clone = Node(tuple(new_child_callpath), clone)
+                        clone.add_child(new_child_clone)
+                        label_to_new_child[node_label] = new_child_clone
+                    else:
+                        new_child_clone = label_to_new_child[node_label]
+
                     node_clone[new_child] = new_child_clone
-                    clone.add_child(new_child_clone)
                     rewire_tree(new_child, new_child_clone, False)
             elif is_root:
                 # if we reach here, this root is not in the graph anymore
@@ -156,32 +167,35 @@ class GraphFrame:
                     new_roots.append(new_child_clone)
                     rewire_tree(new_child, new_child_clone, False)
 
-        # only do a graft if a filtering operation has been applied
+        # only do a squash if a filtering operation has been applied
         if num_nodes != num_rows_df:
             for root in self.graph.roots:
                 if root in filtered_nodes:
-                    clone = Node(tuple(root.callpath[-1],), None)
+                    clone = Node((root.callpath[-1],), None)
                     new_roots.append(clone)
-                    node_clone[node] = clone
+                    node_clone[root] = clone
                     rewire_tree(root, clone, True)
                 else:
                     rewire_tree(root, None, True)
 
-        for root in new_roots:
-            print '1',
-            print root.callpath
-            for child in root.children:
-                print '\t2',
-                print child.callpath
-
+        # create new dataframe that cloned nodes
         new_dataframe = self.dataframe.copy()
         new_dataframe['node'] = new_dataframe['node'].apply(lambda x: node_clone[x])
-        new_dataframe.set_index(['node'], drop=False, inplace=True)
-        print new_dataframe
+        new_dataframe.reset_index(level='node', inplace=True, drop=True)
 
-        new_graphframe = GraphFrame()
-        new_graphframe.dataframe = new_dataframe
-        new_graphframe.graph = Graph(new_roots)
+        # create dict that stores aggregation function for each column
+        agg_dict = {}
+        for col in new_dataframe.columns.tolist():
+            if col in self.exc_metrics + self.inc_metrics:
+                agg_dict[col] = numpy.sum
+            else:
+                agg_dict[col] = lambda x: x.iloc[0]
+
+        # perform a group to merge nodes with the same callpath
+        index_names = self.dataframe.index.names
+        agg_df = new_dataframe.groupby(index_names).agg(agg_dict)
+
+        new_graphframe = GraphFrame(Graph(new_roots), agg_df)
 
         return new_graphframe
 
