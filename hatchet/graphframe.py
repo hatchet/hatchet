@@ -237,13 +237,20 @@ class GraphFrame:
         return new_graphframe
 
     def __isub__(self, other):
-        for metric in self.exc_metrics + self.inc_metrics:
-            self.dataframe[metric] = self.dataframe[metric].subtract(other.dataframe[metric])
-        return GraphFrame(self.graph, self.dataframe)
-
-    def __sub__(self, other):
-        """ Compute the scalar difference of two data frames with identical
+        """ Computes column-wise difference of two dataframes with identical
             graphs
         """
-        res_gf = self.__isub__(other)
-        return GraphFrame(res_gf.graph, res_gf.dataframe)
+        for metric in self.exc_metrics + self.inc_metrics:
+            self.dataframe[metric] = self.dataframe[metric].subtract(other.dataframe[metric])
+
+        return self
+
+    def __sub__(self, other):
+        """ Computes column-wise difference of two dataframes with identical
+            graphs
+        """
+        gf_copy = self.copy()
+        for metric in self.exc_metrics + self.inc_metrics:
+            gf_copy.dataframe[metric] = gf_copy.dataframe[metric].subtract(other.dataframe[metric])
+
+        return gf_copy
