@@ -23,8 +23,9 @@ class GraphFrame:
         graph and a dataframe.
     """
 
-    def __init__(self):
-        self.graph = None
+    def __init__(self, graph=None, dataframe=pd.DataFrame()):
+        self.graph = graph
+        self.dataframe = dataframe
 
     def from_hpctoolkit(self, dirname):
         """ Read in an HPCToolkit database directory.
@@ -183,3 +184,15 @@ class GraphFrame:
         new_graphframe.graph = Graph(new_roots)
 
         return new_graphframe
+
+    def __isub__(self, other):
+        for metric in self.exc_metrics + self.inc_metrics:
+            self.dataframe[metric] = self.dataframe[metric].subtract(other.dataframe[metric])
+        return GraphFrame(self.graph, self.dataframe)
+
+    def __sub__(self, other):
+        """ Compute the scalar difference of two data frames with identical
+            graphs
+        """
+        res_gf = self.__isub__(other)
+        return GraphFrame(res_gf.graph, res_gf.dataframe)
