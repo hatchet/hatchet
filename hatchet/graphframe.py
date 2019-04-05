@@ -19,6 +19,7 @@ from .node import Node
 from .graph import Graph
 
 lit_idx = 0
+squ_idx = 0
 
 
 class GraphFrame:
@@ -80,6 +81,7 @@ class GraphFrame:
         # start with creating a node_dict for the root
         root_callpath = []
         root_callpath.append(graph_dict['name'])
+        lit_idx = 0
         graph_root = Node(lit_idx, tuple(root_callpath), None)
 
         node_dicts = []
@@ -118,6 +120,7 @@ class GraphFrame:
     def squash(self):
         """ Squash the graph after a filtering operation on the graphframe.
         """
+        global squ_idx
         num_nodes = len(self.graph)
 
         # calculate number of unique nodes in the dataframe
@@ -130,11 +133,14 @@ class GraphFrame:
             filtered_nodes = self.dataframe.index
 
         node_clone = {}
+        old_to_new_id = {}
         new_roots = []
 
         # function to connect a node to the nearest descendants that are in the
         # list of filtered nodes
         def rewire_tree(node, clone, is_root):
+            global squ_idx
+
             cur_children = node.children
             new_children = []
 
@@ -158,30 +164,40 @@ class GraphFrame:
                         new_child_callpath = list(clone.callpath)
                         new_child_callpath.append(new_child.callpath[-1])
 
-                        new_child_clone = Node(tuple(new_child_callpath), clone)
+                        new_child_clone = Node(squ_idx, tuple(new_child_callpath), clone)
+                        idx = squ_idx
+                        squ_idx += 1
                         clone.add_child(new_child_clone)
                         label_to_new_child[node_label] = new_child_clone
                     else:
                         new_child_clone = label_to_new_child[node_label]
+                        idx = new_child_clone.nid
 
                     node_clone[new_child] = new_child_clone
+                    old_to_new_id[new_child.nid] = idx
                     rewire_tree(new_child, new_child_clone, False)
             elif is_root:
                 # if we reach here, this root is not in the graph anymore
                 # make all its nearest descendants roots in the new graph
                 for new_child in new_children:
-                    new_child_clone = Node(tuple([new_child.callpath[-1]]), None)
+                    new_child_clone = Node(squ_idx, tuple([new_child.callpath[-1]]), None)
                     node_clone[new_child] = new_child_clone
+                    old_to_new_id[new_child.nid] = squ_idx
+                    squ_idx += 1
                     new_roots.append(new_child_clone)
                     rewire_tree(new_child, new_child_clone, False)
+
+        squ_idx = 0
 
         # only do a squash if a filtering operation has been applied
         if num_nodes != num_rows_df:
             for root in self.graph.roots:
                 if root in filtered_nodes:
-                    clone = Node((root.callpath[-1],), None)
+                    clone = Node(squ_idx, (root.callpath[-1],), None)
                     new_roots.append(clone)
                     node_clone[root] = clone
+                    old_to_new_id[new_child.nid] = squ_idx
+                    squ_idx += 1
                     rewire_tree(root, clone, True)
                 else:
                     rewire_tree(root, None, True)
@@ -189,6 +205,7 @@ class GraphFrame:
         # create new dataframe that cloned nodes
         new_dataframe = self.dataframe.copy()
         new_dataframe['node'] = new_dataframe['node'].apply(lambda x: node_clone[x])
+        new_dataframe['nid'] = new_dataframe['nid'].apply(lambda x: old_to_new_id[x])
         new_dataframe.reset_index(level='node', inplace=True, drop=True)
 
         # create dict that stores aggregation function for each column
