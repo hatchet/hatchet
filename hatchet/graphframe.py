@@ -146,11 +146,10 @@ class GraphFrame:
 
         node_clone = {}
         old_to_new_id = {}
-        new_roots = []
 
         # function to connect a node to the nearest descendants that are in the
         # list of filtered nodes
-        def rewire_tree(node, clone, is_root):
+        def rewire_tree(node, clone, is_root, roots):
             global squ_idx
 
             cur_children = node.children
@@ -187,7 +186,7 @@ class GraphFrame:
 
                     node_clone[new_child] = new_child_clone
                     old_to_new_id[new_child.nid] = idx
-                    rewire_tree(new_child, new_child_clone, False)
+                    rewire_tree(new_child, new_child_clone, False, roots)
             elif is_root:
                 # if we reach here, this root is not in the graph anymore
                 # make all its nearest descendants roots in the new graph
@@ -196,11 +195,12 @@ class GraphFrame:
                     node_clone[new_child] = new_child_clone
                     old_to_new_id[new_child.nid] = squ_idx
                     squ_idx += 1
-                    new_roots.append(new_child_clone)
-                    rewire_tree(new_child, new_child_clone, False)
+                    roots.append(new_child_clone)
+                    rewire_tree(new_child, new_child_clone, False, roots)
 
         squ_idx = 0
 
+        new_roots = []
         # only do a squash if a filtering operation has been applied
         if num_nodes != num_rows_df:
             for root in self.graph.roots:
@@ -210,9 +210,9 @@ class GraphFrame:
                     node_clone[root] = clone
                     old_to_new_id[new_child.nid] = squ_idx
                     squ_idx += 1
-                    rewire_tree(root, clone, True)
+                    rewire_tree(root, clone, True, new_roots)
                 else:
-                    rewire_tree(root, None, True)
+                    rewire_tree(root, None, True, new_roots)
 
         # create new dataframe that cloned nodes
         new_dataframe = self.dataframe.copy()
@@ -233,6 +233,9 @@ class GraphFrame:
         agg_df = new_dataframe.groupby(index_names).agg(agg_dict)
 
         new_graphframe = GraphFrame(Graph(new_roots), agg_df)
+        new_graphframe.exc_metrics = self.exc_metrics
+        new_graphframe.inc_metrics = self.inc_metrics
+        new_graphframe.update_inclusive_columns()
 
         return new_graphframe
 
