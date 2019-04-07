@@ -117,6 +117,40 @@ class GraphFrame:
 
         return GraphFrame(graph_copy, dataframe_copy)
 
+    def update_inclusive_columns(self):
+        """ Update inclusive columns (typically after operations that rewire
+            the graph.
+        """
+        for root in self.graph.roots:
+            for node in root.traverse(order='post'):
+                for metric in self.exc_metrics:
+                    val = self.dataframe.loc[node, metric]
+                    for child in node.children:
+                        val += self.dataframe.loc[child, metric]
+                    inc_metric = metric + ' (inc)'
+                    self.dataframe.loc[node, inc_metric] = val
+
+    def drop_index_levels(self, function=numpy.mean):
+        """ Drop all index levels but 'node'
+        """
+        index_names = list(self.dataframe.index.names)
+        index_names.remove('node')
+
+        # create dict that stores aggregation function for each column
+        agg_dict = {}
+        for col in self.dataframe.columns.tolist():
+            if col in self.exc_metrics + self.inc_metrics:
+                agg_dict[col] = function
+            else:
+                agg_dict[col] = lambda x: x.iloc[0]
+
+        # perform a groupby to merge nodes that just differ in index columns
+        self.dataframe.reset_index(level='node', inplace=True, drop=True)
+        agg_df = self.dataframe.groupby('node').agg(agg_dict)
+        agg_df.drop(index_names, axis=1, inplace=True)
+
+        self.dataframe = agg_df
+
     def filter(self, filter_function):
         """ Filter the dataframe using a user supplied function.
         """
@@ -228,7 +262,7 @@ class GraphFrame:
             else:
                 agg_dict[col] = lambda x: x.iloc[0]
 
-        # perform a group to merge nodes with the same callpath
+        # perform a groupby to merge nodes with the same callpath
         index_names = self.dataframe.index.names
         agg_df = new_dataframe.groupby(index_names).agg(agg_dict)
 
