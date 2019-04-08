@@ -242,7 +242,7 @@ class GraphFrame:
                     clone = Node(squ_idx, (root.callpath[-1],), None)
                     new_roots.append(clone)
                     node_clone[root] = clone
-                    old_to_new_id[new_child.nid] = squ_idx
+                    old_to_new_id[root.nid] = squ_idx
                     squ_idx += 1
                     rewire_tree(root, clone, True, new_roots)
                 else:
