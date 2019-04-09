@@ -273,6 +273,25 @@ class GraphFrame:
 
         return new_graphframe
 
+    def __iadd__(self, other):
+        """ Computes column-wise sum of two dataframes with identical
+            graphs
+        """
+        for metric in self.exc_metrics + self.inc_metrics:
+            self.dataframe[metric] = self.dataframe[metric].add(other.dataframe[metric])
+
+        return self
+
+    def __add__(self, other):
+        """ Computes column-wise sum of two dataframes with identical
+            graphs
+        """
+        gf_copy = self.copy()
+        for metric in self.exc_metrics + self.inc_metrics:
+            gf_copy.dataframe[metric] = gf_copy.dataframe[metric].add(other.dataframe[metric])
+
+        return gf_copy
+
     def __isub__(self, other):
         """ Computes column-wise difference of two dataframes with identical
             graphs
