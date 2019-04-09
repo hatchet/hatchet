@@ -192,7 +192,7 @@ class CaliperReader:
             self.df_fixed_data = self.df_json_data
 
         # create a dataframe with all nodes in the call graph
-        self.df_nodes = pd.DataFrame.from_dict(data=self.idx_to_node.values())
+        self.df_nodes = pd.DataFrame.from_dict(data=list(self.idx_to_node.values()))
 
         # add missing intermediate nodes to the df_fixed_data dataframe
         if 'rank' in self.json_cols:
