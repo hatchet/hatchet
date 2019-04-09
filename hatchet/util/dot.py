@@ -48,6 +48,7 @@ def to_dot(hnode, dataframe, metric, name, rank, threshold):
             df_index = hnode
         node_time = dataframe.loc[df_index, metric]
         node_name = dataframe.loc[df_index, name]
+        node_id = dataframe.loc[df_index, 'nid']
         # shorten names longer than 15 characters
         # if len(node_name) > 15:
         #     node_name = node_name[:6] + '...' + node_name[len(node_name)-6:]
@@ -57,7 +58,7 @@ def to_dot(hnode, dataframe, metric, name, rank, threshold):
 
         # only display nodes whose metric is greater than some threshold
         if node_time >= threshold * max_time:
-            node_string = '"{0}" [color="{1}"];\n'.format(node_name, color)
+            node_string = '"{0}" [color="{1}", label="{2}"];\n'.format(node_id, color, node_name)
             edge_string = ''
 
             # only display those edges where child's metric is greater than
@@ -75,13 +76,11 @@ def to_dot(hnode, dataframe, metric, name, rank, threshold):
             for child in children:
                 # add edges
                 if 'rank' in dataframe.index.names:
-                    child_name = dataframe.loc[(child, rank), name]
+                    child_id = dataframe.loc[(child, rank), 'nid']
                 else:
-                    child_name = dataframe.loc[child, name]
-                # if len(child_name) > 15:
-                #     child_name = child_name[:7] + ' ... ' + child_name[len(child_name)-6:]
+                    child_id = dataframe.loc[child, 'nid']
 
-                edge_string += '"{0}" -> "{1}";\n'.format(node_name, child_name)
+                edge_string += '"{0}" -> "{1}";\n'.format(node_id, child_id)
 
                 (nodes, edges) = add_nodes_and_edges(child)
                 node_string += nodes
