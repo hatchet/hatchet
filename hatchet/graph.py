@@ -33,9 +33,9 @@ class Graph:
             for root in self.roots:
                 # do a breadth-first traversal of the tree
                 for node in root.traverse_bf():
-                    if node.parents is None:
+                    if not node.parents:
                         clone = Node(node.nid, tuple(node.callpath), None)
-                        list_roots.append(node_clone)
+                        list_roots.append(clone)
                     else:
                         # make a list of new parents to make connections with
                         new_parents = []
@@ -50,7 +50,7 @@ class Graph:
 
                     node_clone[node] = clone
 
-        return Graph(list_roots), node_clone
+        return (Graph(list_roots), node_clone)
 
     def to_string(self, roots=None, dataframe=None, metric='time', name='name',
                   context='file', rank=0, threshold=0.0, expand_names=False,
