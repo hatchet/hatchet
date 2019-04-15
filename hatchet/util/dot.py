@@ -36,7 +36,7 @@ def trees_to_dot(roots, dataframe, metric, name, rank, threshold):
 
 def to_dot(hnode, dataframe, metric, name, rank, threshold):
     """ Write to graphviz dot format """
-    colormap = matplotlib.cm.RdYlBu
+    colormap = matplotlib.cm.Reds
     min_time = dataframe[metric].min()
     max_time = dataframe[metric].max()
 
@@ -54,11 +54,11 @@ def to_dot(hnode, dataframe, metric, name, rank, threshold):
         #     node_name = node_name[:6] + '...' + node_name[len(node_name)-6:]
 
         weight = (node_time - min_time) / (max_time - min_time)
-        color = matplotlib.colors.rgb2hex(colormap(1-weight))
+        color = matplotlib.colors.rgb2hex(colormap(weight))
 
         # only display nodes whose metric is greater than some threshold
         if node_time >= threshold * max_time:
-            node_string = '"{0}" [color="{1}", label="{2}"];\n'.format(node_id, color, node_name)
+            node_string = '"{0}" [color="{1}", label="{2}" shape=oval];\n'.format(node_id, color, node_name)
             edge_string = ''
 
             # only display those edges where child's metric is greater than
