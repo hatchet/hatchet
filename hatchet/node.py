@@ -20,7 +20,6 @@ class Node:
     def __init__(self, nid, callpath_tuple, parent):
         self.nid = nid
         self.callpath = callpath_tuple
-        self.df_index = hash(callpath_tuple)
 
         self.parents = []
         if parent is not None:
@@ -67,13 +66,12 @@ class Node:
 
     def set_callpath(self, callpath):
         self.callpath = callpath
-        self.df_index = hash(callpath)
 
     def __hash__(self):
-        return self.df_index
+        return hash(id(self))
 
     def __eq__(self, other):
-        return (id(self) == id(other) or (self.nid == other.nid and self.callpath == other.callpath))
+        return (id(self) == id(other))
 
     def __lt__(self, other):
         return (self.callpath < other.callpath)
