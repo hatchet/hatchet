@@ -10,6 +10,7 @@
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
 from functools import total_ordering
+from .frameID import FrameID
 
 
 @total_ordering
@@ -20,6 +21,7 @@ class Node:
     def __init__(self, nid, callpath_tuple, parent):
         self.nid = nid
         self.callpath = callpath_tuple
+        self.frame = FrameID()
 
         self.parents = []
         if parent is not None:
