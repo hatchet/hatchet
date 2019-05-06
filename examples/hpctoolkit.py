@@ -11,6 +11,7 @@
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
 
+from __future__ import print_function
 from hatchet import *
 import sys
 
@@ -25,7 +26,7 @@ if __name__ == "__main__":
     gf = GraphFrame()
     gf.from_hpctoolkit(dirname)
 
-    print gf.dataframe.xs(0, level='rank')
-    print "\n"
+    print(gf.dataframe.xs(0, level='rank'))
+    print("\n")
 
-    print gf.graph.to_string(gf.graph.roots, gf.dataframe)
+    print(gf.graph.to_string(gf.graph.roots, gf.dataframe))
