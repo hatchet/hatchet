@@ -11,11 +11,11 @@
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
 
-from __future__ import print_function
 from hatchet import *
 import sys
-
 import pandas as pd
+from __future__ import print_function
+
 pd.set_option('display.width', 1500)
 pd.set_option('display.max_colwidth', 20)
 pd.set_option('display.max_rows', None)
