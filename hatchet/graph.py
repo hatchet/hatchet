@@ -16,8 +16,6 @@ from .external.printtree import trees_as_text
 from .util.dot import trees_to_dot
 from .node import Node
 
-PY3 = sys.version_info >= (3, 0, 0)
-
 class Graph:
     """ A possibly multi-rooted tree or graph from one input dataset.
     """
@@ -57,7 +55,7 @@ class Graph:
 
     def to_string(self, roots=None, dataframe=None, metric='time', name='name',
                   context='file', rank=0, threshold=0.0, expand_names=False,
-                  unicode=True, color=True):
+                  color=True):
         """ Print the graph with or without some metric attached to each
             node.
         """
@@ -65,13 +63,9 @@ class Graph:
             roots = self.roots
 
         result = trees_as_text(roots, dataframe, metric, name, context, rank,
-                               threshold, expand_names, unicode=unicode,
-                               color=color)
+                               threshold, expand_names, color=color)
 
-        if PY3:
-            return result
-        else:
-            return result.encode('utf-8')
+        return result
 
     def to_dot(self, roots=None, dataframe=None, metric='time', name='name',
                rank=0, threshold=0.0):

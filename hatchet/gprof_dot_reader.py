@@ -72,7 +72,7 @@ class GprofDotReader:
         for node_obj in graph.get_node_list():
             node_name = node_obj.get_name().strip('"')
 
-            if node_name not in self.name_to_hnode.keys():
+            if node_name not in self.name_to_hnode:
                 # create a node if it doesn't exist yet
                 hnode = Node(idx, (node_name,), None)
                 nid = idx
@@ -95,8 +95,8 @@ class GprofDotReader:
                     'nid': nid,
                     'module': mod,
                     'name': node_name,
-                    'time (inc)': inc,
-                    'time': exc,
+                    'time (inc)': float(re.sub(r'\%', '', inc)),
+                    'time': float(re.sub(r'[\(\%\)]', '', exc)),
                     'node': hnode
                 }
                 self.name_to_dict[node_name] = node_dict
@@ -127,8 +127,7 @@ class GprofDotReader:
             graph = Graph(roots)
 
         with self.timer.phase('data frame'):
-            dataframe = pd.DataFrame.from_dict(
-                data=list(self.name_to_dict.values()))
+            dataframe = pd.DataFrame.from_dict(data=list(self.name_to_dict.values()))
             index = ['node']
             dataframe.set_index(index, drop=False, inplace=True)
 
