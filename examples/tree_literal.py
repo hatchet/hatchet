@@ -13,8 +13,9 @@
 
 from hatchet import *
 import sys
-
 import pandas as pd
+from __future__ import print_function
+
 pd.set_option('display.width', 500)
 pd.set_option('display.max_colwidth', 30)
 
@@ -122,7 +123,7 @@ if __name__ == "__main__":
                         ]
                     })
 
-    print gf.dataframe
-    print "\n"
+    print(gf.dataframe)
+    print("\n")
 
-    print gf.graph.to_string(gf.graph.roots, gf.dataframe, threshold=0.0)
+    print(gf.graph.to_string(gf.graph.roots, gf.dataframe, threshold=0.0))

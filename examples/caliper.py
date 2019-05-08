@@ -13,8 +13,9 @@
 
 from hatchet import *
 import sys
-
 import pandas as pd
+from __future__ import print_function
+
 pd.set_option('display.width', 1500)
 pd.set_option('display.max_colwidth', 20)
 pd.set_option('display.max_rows', None)
@@ -26,9 +27,9 @@ if __name__ == "__main__":
     gf = GraphFrame()
     gf.from_caliper(filename)
 
-    print gf.dataframe
-    print "\n"
+    print(gf.dataframe)
+    print("\n")
 
-    print gf.graph.to_string(gf.graph.roots, gf.dataframe)
+    print(gf.graph.to_string(gf.graph.roots, gf.dataframe))
     with open("test.dot", "w") as fileh:
         fileh.write(gf.graph.to_dot(gf.graph.roots, gf.dataframe))
