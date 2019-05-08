@@ -34,7 +34,14 @@ class GprofDotReader:
         """ Read the DOT files to create a graph.
         """
         idx = 0
-        dot_keywords = ['graph', 'subgraph', 'digraph', 'node', 'edge', 'strict']
+        dot_keywords = [
+            'graph',
+            'subgraph',
+            'digraph',
+            'node',
+            'edge',
+            'strict'
+        ]
 
         (graph,) = pydot.graph_from_dot_file(self.dotfile, encoding='utf-8')
 
@@ -42,24 +49,21 @@ class GprofDotReader:
             src_name = edge_obj.get_source().strip('"')
             dst_name = edge_obj.get_destination().strip('"')
 
-            if src_name not in self.name_to_hnode.keys():
+            src_hnode = self.name_to_hnode.get(src_name)
+            if not src_hnode:
                 # create a node if it doesn't exist yet
                 src_hnode = Node(idx, (src_name,), None)
                 idx += 1
                 self.name_to_hnode[src_name] = src_hnode
-            else:
-                # else retrieve node from dict
-                src_hnode = self.name_to_hnode[src_name]
 
-            if dst_name not in self.name_to_hnode.keys():
+            dst_hnode = self.name_to_hnode.get(dst_name)
+            if not dst_hnode:
                 # create a node if it doesn't exist yet
                 dst_hnode = Node(idx, (dst_name,), src_hnode)
                 idx += 1
                 self.name_to_hnode[dst_name] = dst_hnode
             else:
-                # else retrieve node from dict and add source node
-                # as parent
-                dst_hnode = self.name_to_hnode[dst_name]
+                # else add source node as parent
                 dst_hnode.add_parent(src_hnode)
 
             # add destination node as child
@@ -82,13 +86,19 @@ class GprofDotReader:
                 # DOT keywords do not have a label tag
                 continue
             else:
-                split_label = node_obj.obj_dict['attributes'].get("label").strip('"').split(r'\n')
+                attrs = node_obj.obj_dict['attributes']
 
                 # create a dict with node properties
-                inc_time = float(re.match(r'(.*)%', split_label[2]).group(1))
-                exc_time = float(re.match(r'\((.*)%\)', split_label[3]).group(1))
+                mod, _, inc, exc, _ = attrs.get("label").strip('"').split(r'\n')
 
-                node_dict = {'nid': nid, 'module': split_label[0], 'name': node_name, 'time (inc)': inc_time, 'time': exc_time, 'node': hnode}
+                node_dict = {
+                    'nid': nid,
+                    'module': mod,
+                    'name': node_name,
+                    'time (inc)': inc,
+                    'time': exc,
+                    'node': hnode
+                }
                 self.name_to_dict[node_name] = node_dict
 
         # add all nodes with no parents to the list of roots
@@ -103,7 +113,7 @@ class GprofDotReader:
             for node in root.traverse():
                 if node.parents:
                     parent_callpath = node.parents[0].callpath
-                    node_callpath =  parent_callpath + node.callpath
+                    node_callpath = parent_callpath + node.callpath
                     node.set_callpath(node_callpath)
 
         return list_roots
@@ -117,7 +127,8 @@ class GprofDotReader:
             graph = Graph(roots)
 
         with self.timer.phase('data frame'):
-            dataframe = pd.DataFrame.from_dict(data=list(self.name_to_dict.values()))
+            dataframe = pd.DataFrame.from_dict(
+                data=list(self.name_to_dict.values()))
             index = ['node']
             dataframe.set_index(index, drop=False, inplace=True)
 

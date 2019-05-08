@@ -13,6 +13,7 @@
 from setuptools import setup, find_packages
 from codecs import open
 from os import path
+import pydot
 
 here = path.abspath(path.dirname(__file__))
 
