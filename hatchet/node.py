@@ -10,18 +10,15 @@
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
 from functools import total_ordering
-from .frameID import FrameID
 
 
 @total_ordering
 class Node:
-    """ A node in the graph. The node only stores its callpath.
+    """ A node in the graph. The node only stores its frame.
     """
 
-    def __init__(self, nid, callpath_tuple, parent):
-        self.nid = nid
-        self.callpath = callpath_tuple
-        self.frame = FrameID()
+    def __init__(self, frame_obj, parent):
+        self.frame = frame_obj
 
         self.parents = []
         if parent is not None:
@@ -66,9 +63,6 @@ class Node:
             if last == node:
                 return
 
-    def set_callpath(self, callpath):
-        self.callpath = callpath
-
     def __hash__(self):
         return hash(id(self))
 
@@ -76,9 +70,11 @@ class Node:
         return (id(self) == id(other))
 
     def __lt__(self, other):
-        return (self.callpath < other.callpath)
+        return (self.frame < other.frame)
 
     def __str__(self):
         """ Returns a string representation of the node.
         """
-        return self.callpath[-1]
+        # how should we store the node field in the data frame if it contains
+        # multiple attributes?
+        return self.frame.attrs["function"]

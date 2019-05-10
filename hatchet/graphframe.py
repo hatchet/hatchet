@@ -17,6 +17,7 @@ from .caliper_reader import CaliperReader
 from .gprof_dot_reader import GprofDotReader
 from .node import Node
 from .graph import Graph
+from .frameindex import FrameIndex
 
 lit_idx = 0
 squ_idx = 0
@@ -60,15 +61,14 @@ class GraphFrame:
         """
         global lit_idx
 
-        def parse_node_literal(child_dict, hparent, parent_callpath):
+        def parse_node_literal(child_dict, hparent):
             """ Create node_dict for one node and then call the function
                 recursively on all children.
             """
             global lit_idx
 
-            node_callpath = parent_callpath
-            node_callpath.append(child_dict['name'])
-            hnode = Node(lit_idx, tuple(node_callpath), hparent)
+            hnode = Node(FrameIndex({"function": child_dict['name']}, ["function"]),
+                         hparent)
 
             node_dicts.append(dict({'nid': lit_idx, 'node': hnode, 'name': child_dict['name']}, **child_dict['metrics']))
             lit_idx += 1
@@ -76,13 +76,12 @@ class GraphFrame:
 
             if 'children' in child_dict:
                 for child in child_dict['children']:
-                    parse_node_literal(child, hnode, list(node_callpath))
+                    parse_node_literal(child, hnode)
 
         # start with creating a node_dict for the root
-        root_callpath = []
-        root_callpath.append(graph_dict['name'])
         lit_idx = 0
-        graph_root = Node(lit_idx, tuple(root_callpath), None)
+        graph_root = Node(FrameIndex({"function": graph_dict['name']}, ["function"]),
+                          None)
 
         node_dicts = []
         node_dicts.append(dict({'nid': lit_idx, 'node': graph_root, 'name': graph_dict['name']}, **graph_dict['metrics']))
@@ -91,7 +90,7 @@ class GraphFrame:
         # call recursively on all children of root
         if 'children' in graph_dict:
             for child in graph_dict['children']:
-                parse_node_literal(child, graph_root, list(root_callpath))
+                parse_node_literal(child, graph_root)
 
         self.exc_metrics = []
         self.inc_metrics = []
@@ -209,7 +208,7 @@ class GraphFrame:
                         new_child_callpath = list(clone.callpath)
                         new_child_callpath.append(new_child.callpath[-1])
 
-                        new_child_clone = Node(squ_idx, tuple(new_child_callpath), clone)
+                        new_child_clone = Node(tuple(new_child.callpath[-1]), clone)
                         idx = squ_idx
                         squ_idx += 1
                         clone.add_child(new_child_clone)
@@ -225,7 +224,7 @@ class GraphFrame:
                 # if we reach here, this root is not in the graph anymore
                 # make all its nearest descendants roots in the new graph
                 for new_child in new_children:
-                    new_child_clone = Node(squ_idx, tuple([new_child.callpath[-1]]), None)
+                    new_child_clone = Node(tuple([new_child.callpath[-1]]), None)
                     node_clone[new_child] = new_child_clone
                     old_to_new_id[new_child.nid] = squ_idx
                     squ_idx += 1
@@ -239,7 +238,7 @@ class GraphFrame:
         if num_nodes != num_rows_df:
             for root in self.graph.roots:
                 if root in filtered_nodes:
-                    clone = Node(squ_idx, (root.callpath[-1],), None)
+                    clone = Node((root.callpath[-1],), None)
                     new_roots.append(clone)
                     node_clone[root] = clone
                     old_to_new_id[root.nid] = squ_idx
