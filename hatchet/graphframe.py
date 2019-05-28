@@ -17,7 +17,7 @@ from .caliper_reader import CaliperReader
 from .gprof_dot_reader import GprofDotReader
 from .node import Node
 from .graph import Graph
-from .frameindex import FrameIndex
+from .frame import Frame
 
 lit_idx = 0
 squ_idx = 0
