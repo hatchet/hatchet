@@ -16,6 +16,7 @@ install:
   - pip install --upgrade matplotlib
   - pip install --upgrade numpy
   - pip install --upgrade pandas
+  - pip install --upgrade pydot
   - pip install --upgrade pytest
   - pip install --upgrade codecov
   - python setup.py install

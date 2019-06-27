@@ -11,6 +11,7 @@
 ##############################################################################
 import re
 import pandas as pd
+import pydot
 
 from .node import Node
 from .graph import Graph
@@ -36,75 +37,81 @@ class GprofDotReader:
         """
         idx = 0
 
-        with open(self.dotfile) as stream:
-            for line in stream:
-                match_edge = re.match(r'^\s[\"]?([\w\(\ \)@\.\']+)[\"]?\s->\s[\"]?([\w\(\ \)@\.\']+)[\"]?\s\[.*label=\"(.*)\xc3\x97\".*\];', line)
-                # found an edge:
-                if match_edge:
-                    src_name = match_edge.group(1)
-                    dst_name = match_edge.group(2)
-                    edge_details = match_edge.group(3).split('\\n')
+        graphs = pydot.graph_from_dot_file(self.dotfile)
 
-                    if src_name not in self.name_to_hnode.keys():
-                        # create a node if it doesn't exist yet
-                        src_hnode = Node(Frame({'type': 'function',
-                                                'name': src_name}),
-                                         None)
-                        idx += 1
-                        self.name_to_hnode[src_name] = src_hnode
-                    else:
-                        # else retrieve node from dict
-                        src_hnode = self.name_to_hnode[src_name]
+        for graph in graphs:
+            for edge in graph.get_edges():
+                src_name = edge.get_source().strip('"')
+                dst_name = edge.get_destination().strip('"')
 
-                    if dst_name not in self.name_to_hnode.keys():
-                        # create a node if it doesn't exist yet
-                        dst_hnode = Node(Frame({'type': 'function',
-                                                'name': dst_name}),
-                                         src_hnode)
-                        idx += 1
-                        self.name_to_hnode[dst_name] = dst_hnode
-                    else:
-                        # else retrieve node from dict and add source node
-                        # as parent
-                        dst_hnode = self.name_to_hnode[dst_name]
-                        dst_hnode.add_parent(src_hnode)
-
-                    # add destination node as child
-                    src_hnode.add_child(dst_hnode)
-
+                if src_name not in self.name_to_hnode:
+                    # create a node if it doesn't exist yet
+                    src_hnode = Node(idx, (src_name,), None)
+                    idx += 1
+                    self.name_to_hnode[src_name] = src_hnode
                 else:
-                    match_node = re.match(r'^\s[\"]?([\w\(\ \)@\.\']+)[\"]?\s\[.*label=\"(.*)\xc3\x97\".*\];', line)
-                    # found a node
-                    if match_node:
-                        node_name = match_node.group(1)
-                        node_details = match_node.group(2).split('\\n')
+                    src_hnode = self.name_to_hnode[src_name]
 
-                        if node_name not in self.name_to_hnode.keys():
-                            # create a node if it doesn't exist yet
-                            hnode = Node(Frame({'type': 'function',
-                                                'name': node_name}),
-                                         None)
-                            idx += 1
-                            self.name_to_hnode[node_name] = hnode
-                        else:
-                            hnode = self.name_to_hnode[node_name]
+                if dst_name not in self.name_to_hnode:
+                    # create a node if it doesn't exist yet
+                    dst_hnode = Node(idx, (dst_name,), src_hnode)
+                    idx += 1
+                    self.name_to_hnode[dst_name] = dst_hnode
+                else:
+                    # add source node as parent
+                    dst_hnode = self.name_to_hnode[dst_name]
+                    dst_hnode.add_parent(src_hnode)
 
-                        # create a dict with node properties
-                        inc_time = float(re.match('(.*)\%', node_details[2]).group(1))
-                        exc_time = float(re.match('\((.*)\%\)', node_details[3]).group(1))
-                        node_dict = {'module': node_details[0],
-                                     'name': node_name,
-                                     'time (inc)': inc_time,
-                                     'time': exc_time,
-                                     'node': hnode
-                        }
-                        self.name_to_dict[node_name] = node_dict
+                # add destination node as child
+                src_hnode.add_child(dst_hnode)
+
+            for node in graph.get_nodes():
+                node_name = node.get_name().strip('"')
+                dot_keywords = ['graph', 'subgraph', 'digraph', 'node',
+	                'edge', 'strict' ]
+
+                if node_name not in dot_keywords:
+                    if node_name not in self.name_to_hnode:
+                        # create a node if it doesn't exist yet
+                        hnode = Node(idx, (node_name,), None)
+                        nid = idx
+                        idx += 1
+                        self.name_to_hnode[node_name] = hnode
+                    else:
+                        hnode = self.name_to_hnode[node_name]
+                        nid = hnode.nid
+
+                    node_label = node.obj_dict['attributes'].get('label').strip('"')
+
+                    module, _, inc, exc, _ = node_label.split(r'\n')
+
+                    inc_time = float(re.match('(.*)\%', inc).group(1))
+                    exc_time = float(re.match('\((.*)\%\)', exc).group(1))
+
+                    # create a dict with node properties
+                    node_dict = {
+                        'nid': nid,
+                        'module': module,
+                        'name': node_name,
+                        'time (inc)': inc_time,
+                        'time': exc_time,
+                        'node': hnode
+                    }
+                    self.name_to_dict[node_name] = node_dict
 
         # add all nodes with no parents to the list of roots
         list_roots = []
         for (key, val) in self.name_to_hnode.items():
             if not val.parents:
                 list_roots.append(val)
+
+        # correct callpaths of all nodes
+        for root in list_roots:
+            for node in root.traverse():
+                if node.parents:
+                    parent_callpath = node.parents[0].callpath
+                    node_callpath = parent_callpath + node.callpath
+                    node.set_callpath(node_callpath)
 
         return list_roots
 
@@ -118,7 +125,7 @@ class GprofDotReader:
             graph = Graph(roots)
 
         with self.timer.phase('data frame'):
-            dataframe = pd.DataFrame.from_dict(data=self.name_to_dict.values())
+            dataframe = pd.DataFrame.from_dict(data=list(self.name_to_dict.values()))
             index = ['node']
             dataframe.set_index(index, drop=False, inplace=True)
 
