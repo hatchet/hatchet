@@ -26,6 +26,7 @@ except ImportError:
 from .node import Node
 from .graph import Graph
 from .util.timer import Timer
+from .frame import Frame
 
 src_file = 0
 
@@ -40,7 +41,7 @@ def read_metricdb_file(args):
     """ Read a single metricdb file into a 1D array """
     filename, num_nodes, num_metrics, shape = args
     rank = int(re.search('\-(\d+)\-(\d+)\-([\w\d]+)\-(\d+)\-\d.metric-db$',
-                       filename).group(1))
+                         filename).group(1))
 
     with open(filename, "rb") as metricdb:
         metricdb.seek(32)
@@ -98,7 +99,7 @@ class HPCToolkitReader:
         self.metric_names = {}
 
         # this list of dicts will hold all the node information such as
-        # procedure name, load module, filename etc. for all the nodes
+        # procedure name, load module, filename, etc. for all the nodes
         self.node_dicts = []
 
         self.timer = Timer()
@@ -129,7 +130,7 @@ class HPCToolkitReader:
         metricdb_files = glob.glob(self.dir_name + '/*.metric-db')
         metricdb_files.sort()
 
-        # all the metric data per node and per process is read into the metrics
+        # All the metric data per node and per process is read into the metrics
         # array below. The two additional columns are for storing the implicit
         # node id (nid) and MPI process rank.
         shape = [self.num_nodes * self.num_pes, self.num_metrics + 2]
@@ -180,11 +181,15 @@ class HPCToolkitReader:
             # also a corresponding node_dict to be inserted into the dataframe
             node_callpath = []
             node_callpath.append(self.procedure_names[root.get('n')])
-            graph_root = Node(nid, tuple(node_callpath), None)
+            graph_root = Node(Frame({'nid': nid,
+                                     'procedure': self.procedure_names[root.get('n')]},
+                                    ['procedure']),
+                              None)
             node_dict = self.create_node_dict(nid, graph_root,
-                self.procedure_names[root.get('n')], 'PF',
-                self.src_files[root.get('f')], root.get('l'),
-                self.load_modules[root.get('lm')])
+                                              self.procedure_names[root.get('n')],
+                                              'PF', self.src_files[root.get('f')],
+                                              root.get('l'),
+                                              self.load_modules[root.get('lm')])
 
             self.node_dicts.append(node_dict)
             list_roots.append(graph_root)
@@ -225,7 +230,7 @@ class HPCToolkitReader:
                 self.parse_xml_node(xml_child, nid, line, hnode, callpath)
 
     def parse_xml_node(self, xml_node, parent_nid, parent_line, hparent,
-            parent_callpath):
+                       parent_callpath):
         """ Parses an XML node and its children recursively.
         """
         nid = int(xml_node.get('i'))
@@ -243,10 +248,15 @@ class HPCToolkitReader:
 
             node_callpath = parent_callpath
             node_callpath.append(name)
-            hnode = Node(nid, tuple(node_callpath), hparent)
+            hnode = Node(Frame({'nid': nid,
+                                'procedure': name,
+                                'file': src_file,
+                                'line': line},
+                               ['procedure']),
+                         hparent)
             node_dict = self.create_node_dict(nid, hnode, name, xml_tag,
-                self.src_files[src_file], line,
-                self.load_modules[xml_node.get('lm')])
+                                              self.src_files[src_file], line,
+                                              self.load_modules[xml_node.get('lm')])
 
         elif xml_tag == 'L':
             # loop
@@ -256,9 +266,14 @@ class HPCToolkitReader:
 
             node_callpath = parent_callpath
             node_callpath.append(name)
-            hnode = Node(nid, tuple(node_callpath), hparent)
+            hnode = Node(Frame({'nid': nid,
+                                'file': (self.src_files[src_file]).rpartition('/')[2],
+                                'line': line},
+                               ['file', 'line']),
+                         hparent)
             node_dict = self.create_node_dict(nid, hnode, name, xml_tag,
-                self.src_files[src_file], line, None)
+                                              self.src_files[src_file], line,
+                                              None)
 
         elif xml_tag == 'S':
             # statement
@@ -268,9 +283,14 @@ class HPCToolkitReader:
 
             node_callpath = parent_callpath
             node_callpath.append(name)
-            hnode = Node(nid, tuple(node_callpath), hparent)
+            hnode = Node(Frame({'nid': nid,
+                                'line': line,
+                                'file': (self.src_files[src_file]).rpartition('/')[2]},
+                               ['file', 'line']),
+                         hparent)
             node_dict = self.create_node_dict(nid, hnode, name, xml_tag,
-                self.src_files[src_file], line, None)
+                                              self.src_files[src_file], line,
+                                              None)
 
             # when we reach statement nodes, we subtract their exclusive
             # metric values from the parent's values
@@ -291,10 +311,16 @@ class HPCToolkitReader:
             hparent.add_child(hnode)
             self.parse_xml_children(xml_node, hnode, list(node_callpath))
 
-    def create_node_dict(self, nid, hnode, name, node_type, src_file,
-            line, module):
+    def create_node_dict(self, nid, hnode, name, node_type, src_file, line,
+                         module):
         """ Create a dict with all the node attributes.
         """
-        node_dict = {'nid': nid, 'name': name, 'type': node_type, 'file': src_file, 'line': line, 'module': module, 'node': hnode}
+        node_dict = {'nid': nid,
+                     'name': name,
+                     'type': node_type,
+                     'file': src_file,
+                     'line': line,
+                     'module': module,
+                     'node': hnode}
 
         return node_dict
