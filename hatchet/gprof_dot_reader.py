@@ -17,6 +17,7 @@ from .node import Node
 from .graph import Graph
 from .frame import Frame
 from .util.timer import Timer
+from .util.config import *
 
 
 class GprofDotReader:
@@ -37,7 +38,7 @@ class GprofDotReader:
         """
         idx = 0
 
-        graphs = pydot.graph_from_dot_file(self.dotfile)
+        graphs = pydot.graph_from_dot_file(self.dotfile, encoding='utf-8')
 
         for graph in graphs:
             for edge in graph.get_edges():
@@ -67,8 +68,6 @@ class GprofDotReader:
 
             for node in graph.get_nodes():
                 node_name = node.get_name().strip('"')
-                dot_keywords = ['graph', 'subgraph', 'digraph', 'node',
-	                'edge', 'strict' ]
 
                 if node_name not in dot_keywords:
                     if node_name not in self.name_to_hnode:
@@ -85,8 +84,8 @@ class GprofDotReader:
 
                     module, _, inc, exc, _ = node_label.split(r'\n')
 
-                    inc_time = float(re.match('(.*)\%', inc).group(1))
-                    exc_time = float(re.match('\((.*)\%\)', exc).group(1))
+                    inc_time = float(re.sub(r'\%', '', inc))
+                    exc_time = float(re.sub(r'[\(\%\)]', '', exc))
 
                     # create a dict with node properties
                     node_dict = {
