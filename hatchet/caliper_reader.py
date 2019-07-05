@@ -16,6 +16,7 @@ import re
 
 from .node import Node
 from .graph import Graph
+from .frame import Frame
 from .util.timer import Timer
 
 
@@ -90,21 +91,25 @@ class CaliperReader:
             if node['column'] == self.path_col_name:
                 if 'parent' not in node:
                     # since this node does not have a parent, this is a root
-                    node_callpath = []
-                    node_callpath.append(node_label)
-                    graph_root = Node(idx, tuple(node_callpath), None)
+                    graph_root = Node(Frame({'function': node_label},
+                                            ['function']),
+                                      None)
                     list_roots.append(graph_root)
 
-                    node_dict = {self.nid_col_name: idx, 'name': node_label, 'node': graph_root}
+                    node_dict = {self.nid_col_name: idx,
+                                 'name': node_label,
+                                 'node': graph_root}
                     self.idx_to_node[idx] = node_dict
                 else:
                     parent_hnode = (self.idx_to_node[node['parent']])['node']
-                    node_callpath = list(parent_hnode.callpath)
-                    node_callpath.append(node_label)
-                    hnode = Node(idx, tuple(node_callpath), parent_hnode)
+                    hnode = Node(Frame({'function': node_label},
+                                       ['function']),
+                                 parent_hnode)
                     parent_hnode.add_child(hnode)
 
-                    node_dict = {self.nid_col_name: idx, 'name': node_label, 'node': hnode}
+                    node_dict = {self.nid_col_name: idx,
+                                 'name': node_label,
+                                 'node': hnode}
                     self.idx_to_node[idx] = node_dict
 
         return list_roots
@@ -165,14 +170,17 @@ class CaliperReader:
                         node_label = file_name + ':' + line
 
                         # create a new hatchet node
-                        node_callpath = list(sn_hnode.callpath)
-                        node_callpath.append(node_label)
                         max_nid += 1
                         idx = max_nid
-                        hnode = Node(idx, tuple(node_callpath), sn_hnode)
+                        hnode = Node(Frame({'file': file_name,
+                                            'line': line},
+                                           ['file', 'line']),
+                                     sn_hnode)
                         sn_hnode.add_child(hnode)
 
-                        node_dict = {self.nid_col_name: idx, 'name': node_label, 'node': hnode}
+                        node_dict = {self.nid_col_name: idx,
+                                     'name': node_label,
+                                     'node': hnode }
                         self.idx_to_node[idx] = node_dict
 
                         # change nid of the original node to new node in place
