@@ -14,6 +14,7 @@ import pandas as pd
 
 from .node import Node
 from .graph import Graph
+from .frame import Frame
 from .util.timer import Timer
 
 
@@ -28,13 +29,13 @@ class GprofDotReader:
         self.name_to_dict = {}
 
         self.timer = Timer()
- 
+
 
     def create_graph(self):
         """ Read the DOT files to create a graph.
         """
         idx = 0
-       
+
         with open(self.dotfile) as stream:
             for line in stream:
                 match_edge = re.match(r'^\s[\"]?([\w\(\ \)@\.\']+)[\"]?\s->\s[\"]?([\w\(\ \)@\.\']+)[\"]?\s\[.*label=\"(.*)\xc3\x97\".*\];', line)
@@ -46,7 +47,9 @@ class GprofDotReader:
 
                     if src_name not in self.name_to_hnode.keys():
                         # create a node if it doesn't exist yet
-                        src_hnode = Node(idx, (src_name,), None)
+                        src_hnode = Node(Frame({'function': src_name}
+                                               ['function']),
+                                         None)
                         idx += 1
                         self.name_to_hnode[src_name] = src_hnode
                     else:
@@ -55,7 +58,9 @@ class GprofDotReader:
 
                     if dst_name not in self.name_to_hnode.keys():
                         # create a node if it doesn't exist yet
-                        dst_hnode = Node(idx, (dst_name,), src_hnode)
+                        dst_hnode = Node(Frame({'function': dst_name},
+                                               ['function']),
+                                         src_hnode)
                         idx += 1
                         self.name_to_hnode[dst_name] = dst_hnode
                     else:
@@ -76,18 +81,23 @@ class GprofDotReader:
 
                         if node_name not in self.name_to_hnode.keys():
                             # create a node if it doesn't exist yet
-                            hnode = Node(idx, (node_name,), None)
-                            nid = idx
+                            hnode = Node(Frame({'name': node_name},
+                                               ['name']),
+                                         None)
                             idx += 1
                             self.name_to_hnode[node_name] = hnode
                         else:
                             hnode = self.name_to_hnode[node_name]
-                            nid = hnode.nid
 
                         # create a dict with node properties
                         inc_time = float(re.match('(.*)\%', node_details[2]).group(1))
                         exc_time = float(re.match('\((.*)\%\)', node_details[3]).group(1))
-                        node_dict = {'nid': nid, 'module': node_details[0], 'name': node_name, 'time (inc)': inc_time, 'time': exc_time, 'node': hnode}
+                        node_dict = {'module': node_details[0],
+                                     'name': node_name,
+                                     'time (inc)': inc_time,
+                                     'time': exc_time,
+                                     'node': hnode
+                        }
                         self.name_to_dict[node_name] = node_dict
 
         # add all nodes with no parents to the list of roots
@@ -95,14 +105,6 @@ class GprofDotReader:
         for (key, val) in self.name_to_hnode.items():
             if not val.parents:
                 list_roots.append(val)
-
-        # correct callpaths of all nodes
-        for root in list_roots:
-            for node in root.traverse():
-                if node.parents:
-                    parent_callpath = node.parents[0].callpath
-                    node_callpath =  parent_callpath + node.callpath
-                    node.set_callpath(node_callpath)
 
         return list_roots
 
