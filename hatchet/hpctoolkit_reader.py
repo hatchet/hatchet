@@ -181,8 +181,9 @@ class HPCToolkitReader:
             # also a corresponding node_dict to be inserted into the dataframe
             node_callpath = []
             node_callpath.append(self.procedure_names[root.get('n')])
-            graph_root = Node(Frame({'nid': nid,
-                                     'procedure': self.procedure_names[root.get('n')]},
+            graph_root = Node(Frame({'procedure': self.procedure_names[root.get('n')]
+                                     'file': self.src_files[root.get('f')],
+                                     'line': root.get('l')},
                                     ['procedure']),
                               None)
             node_dict = self.create_node_dict(nid, graph_root,
@@ -248,8 +249,7 @@ class HPCToolkitReader:
 
             node_callpath = parent_callpath
             node_callpath.append(name)
-            hnode = Node(Frame({'nid': nid,
-                                'procedure': name,
+            hnode = Node(Frame({'procedure': name,
                                 'file': src_file,
                                 'line': line},
                                ['procedure']),
@@ -266,8 +266,7 @@ class HPCToolkitReader:
 
             node_callpath = parent_callpath
             node_callpath.append(name)
-            hnode = Node(Frame({'nid': nid,
-                                'file': (self.src_files[src_file]).rpartition('/')[2],
+            hnode = Node(Frame({'file': self.src_files[src_file],
                                 'line': line},
                                ['file', 'line']),
                          hparent)
@@ -283,9 +282,8 @@ class HPCToolkitReader:
 
             node_callpath = parent_callpath
             node_callpath.append(name)
-            hnode = Node(Frame({'nid': nid,
-                                'line': line,
-                                'file': (self.src_files[src_file]).rpartition('/')[2]},
+            hnode = Node(Frame({'file': self.src_files[src_file],
+                                'line': line},
                                ['file', 'line']),
                          hparent)
             node_dict = self.create_node_dict(nid, hnode, name, xml_tag,
