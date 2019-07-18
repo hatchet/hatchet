@@ -181,7 +181,7 @@ class HPCToolkitReader:
             # also a corresponding node_dict to be inserted into the dataframe
             node_callpath = []
             node_callpath.append(self.procedure_names[root.get('n')])
-            graph_root = Node(Frame({'procedure': self.procedure_names[root.get('n')]
+            graph_root = Node(Frame({'procedure': self.procedure_names[root.get('n')],
                                      'file': self.src_files[root.get('f')],
                                      'line': root.get('l')},
                                     ['procedure']),
