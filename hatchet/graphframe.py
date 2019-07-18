@@ -17,6 +17,7 @@ from .caliper_reader import CaliperReader
 from .gprof_dot_reader import GprofDotReader
 from .node import Node
 from .graph import Graph
+from .frame import Frame
 
 lit_idx = 0
 squ_idx = 0
@@ -60,38 +61,42 @@ class GraphFrame:
         """
         global lit_idx
 
-        def parse_node_literal(child_dict, hparent, parent_callpath):
+        def parse_node_literal(child_dict, hparent):
             """ Create node_dict for one node and then call the function
                 recursively on all children.
             """
             global lit_idx
 
-            node_callpath = parent_callpath
-            node_callpath.append(child_dict['name'])
-            hnode = Node(lit_idx, tuple(node_callpath), hparent)
+            hnode = Node(Frame({'name': child_dict['name']},
+                               ['name']),
+                         hparent)
 
-            node_dicts.append(dict({'nid': lit_idx, 'node': hnode, 'name': child_dict['name']}, **child_dict['metrics']))
+            node_dicts.append(dict({'node': hnode,
+                                    'name': child_dict['name']},
+                                    **child_dict['metrics']))
             lit_idx += 1
             hparent.add_child(hnode)
 
             if 'children' in child_dict:
                 for child in child_dict['children']:
-                    parse_node_literal(child, hnode, list(node_callpath))
+                    parse_node_literal(child, hnode)
 
         # start with creating a node_dict for the root
-        root_callpath = []
-        root_callpath.append(graph_dict['name'])
         lit_idx = 0
-        graph_root = Node(lit_idx, tuple(root_callpath), None)
+        graph_root = Node(Frame({'name': graph_dict['name']},
+                                ['name']),
+                          None)
 
         node_dicts = []
-        node_dicts.append(dict({'nid': lit_idx, 'node': graph_root, 'name': graph_dict['name']}, **graph_dict['metrics']))
+        node_dicts.append(dict({'node': graph_root,
+                                'name': graph_dict['name']},
+                                **graph_dict['metrics']))
         lit_idx += 1
 
         # call recursively on all children of root
         if 'children' in graph_dict:
             for child in graph_dict['children']:
-                parse_node_literal(child, graph_root, list(root_callpath))
+                parse_node_literal(child, graph_root)
 
         self.exc_metrics = []
         self.inc_metrics = []
@@ -204,30 +209,24 @@ class GraphFrame:
                 # create new clones for each child in new_children and rewire
                 # with this node
                 for new_child in new_children:
-                    node_label = new_child.callpath[-1]
+                    node_label = new_child.frame
                     if node_label not in label_to_new_child.keys():
-                        new_child_callpath = list(clone.callpath)
-                        new_child_callpath.append(new_child.callpath[-1])
-
-                        new_child_clone = Node(squ_idx, tuple(new_child_callpath), clone)
+                        new_child_clone = Node(new_child.frame, clone)
                         idx = squ_idx
                         squ_idx += 1
                         clone.add_child(new_child_clone)
                         label_to_new_child[node_label] = new_child_clone
                     else:
                         new_child_clone = label_to_new_child[node_label]
-                        idx = new_child_clone.nid
 
                     node_clone[new_child] = new_child_clone
-                    old_to_new_id[new_child.nid] = idx
                     rewire_tree(new_child, new_child_clone, False, roots)
             elif is_root:
                 # if we reach here, this root is not in the graph anymore
                 # make all its nearest descendants roots in the new graph
                 for new_child in new_children:
-                    new_child_clone = Node(squ_idx, tuple([new_child.callpath[-1]]), None)
+                    new_child_clone = Node(new_child.frame, None)
                     node_clone[new_child] = new_child_clone
-                    old_to_new_id[new_child.nid] = squ_idx
                     squ_idx += 1
                     roots.append(new_child_clone)
                     rewire_tree(new_child, new_child_clone, False, roots)
@@ -239,10 +238,9 @@ class GraphFrame:
         if num_nodes != num_rows_df:
             for root in self.graph.roots:
                 if root in filtered_nodes:
-                    clone = Node(squ_idx, (root.callpath[-1],), None)
+                    clone = Node(root.frame, None)
                     new_roots.append(clone)
                     node_clone[root] = clone
-                    old_to_new_id[root.nid] = squ_idx
                     squ_idx += 1
                     rewire_tree(root, clone, True, new_roots)
                 else:
@@ -251,7 +249,6 @@ class GraphFrame:
         # create new dataframe that cloned nodes
         new_dataframe = self.dataframe.copy()
         new_dataframe['node'] = new_dataframe['node'].apply(lambda x: node_clone[x])
-        new_dataframe['nid'] = new_dataframe['nid'].apply(lambda x: old_to_new_id[x])
         new_dataframe.reset_index(level='node', inplace=True, drop=True)
 
         # create dict that stores aggregation function for each column
