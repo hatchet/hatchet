@@ -222,7 +222,7 @@ class HPCToolkitReader:
     def parse_xml_children(self, xml_node, hnode, callpath):
         """ Parses all children of an XML node.
         """
-        for xml_child in xml_node.getchildren():
+        for xml_child in xml_node:
             if xml_child.tag != 'M':
                 nid = int(xml_node.get('i'))
                 line = xml_node.get('l')
