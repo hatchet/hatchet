@@ -39,6 +39,6 @@ def test_read_calc_pi_database(calc_pi_callgrind_dot):
     list_roots = reader.create_graph()
     root_names = []
     for root in list_roots:
-        root_names.append(root.callpath[-1])
+        root_names.append(root.frame.attrs['name'])
 
     assert all(rt in root_names for rt in roots)
