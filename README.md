@@ -2,6 +2,7 @@ Hatchet
 =======
 
 [![Build Status](https://travis-ci.com/LLNL/hatchet.svg?branch=master)](https://travis-ci.com/LLNL/hatchet)
+[![codecov](https://codecov.io/gh/LLNL/hatchet/branch/master/graph/badge.svg)](https://codecov.io/gh/LLNL/hatchet)
 [![Read the Docs](http://readthedocs.org/projects/hatchet/badge/?version=latest)](http://hatchet.readthedocs.io)
 
 Hatchet analyzes performance data that is organized in a tree hierarchy (such

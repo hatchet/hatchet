@@ -17,10 +17,14 @@ install:
   - pip install --upgrade numpy
   - pip install --upgrade pandas
   - pip install --upgrade pytest
+  - pip install --upgrade codecov
   - python setup.py install
 
 script:
-  - PYTHONPATH=. pytest
+  - PYTHONPATH=. coverage run $(which pytest)
+
+after_success:
+  - codecov --env PYTHON_VERSION --required --flags "${TEST_SUITE}${TRAVIS_OS_NAME}"
 
 notifications:
   email:
