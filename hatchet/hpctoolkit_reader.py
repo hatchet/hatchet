@@ -181,10 +181,9 @@ class HPCToolkitReader:
             # also a corresponding node_dict to be inserted into the dataframe
             node_callpath = []
             node_callpath.append(self.procedure_names[root.get('n')])
-            graph_root = Node(Frame({'procedure': self.procedure_names[root.get('n')],
-                                     'file': self.src_files[root.get('f')],
-                                     'line': root.get('l')},
-                                    ['procedure']),
+            graph_root = Node(Frame({'type': 'function',
+                                     'name': self.procedure_names[root.get('n')]},
+                                    ['name']),
                               None)
             node_dict = self.create_node_dict(nid, graph_root,
                                               self.procedure_names[root.get('n')],
@@ -249,10 +248,9 @@ class HPCToolkitReader:
 
             node_callpath = parent_callpath
             node_callpath.append(name)
-            hnode = Node(Frame({'procedure': name,
-                                'file': src_file,
-                                'line': line},
-                               ['procedure']),
+            hnode = Node(Frame({'type': 'function',
+                                'name': name},
+                               ['name']),
                          hparent)
             node_dict = self.create_node_dict(nid, hnode, name, xml_tag,
                                               self.src_files[src_file], line,
@@ -266,7 +264,8 @@ class HPCToolkitReader:
 
             node_callpath = parent_callpath
             node_callpath.append(name)
-            hnode = Node(Frame({'file': self.src_files[src_file],
+            hnode = Node(Frame({'type': 'loop',
+                                'file': self.src_files[src_file],
                                 'line': line},
                                ['file', 'line']),
                          hparent)
@@ -282,7 +281,8 @@ class HPCToolkitReader:
 
             node_callpath = parent_callpath
             node_callpath.append(name)
-            hnode = Node(Frame({'file': self.src_files[src_file],
+            hnode = Node(Frame({'type': 'statement',
+                                'file': self.src_files[src_file],
                                 'line': line},
                                ['file', 'line']),
                          hparent)
