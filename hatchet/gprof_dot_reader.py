@@ -47,8 +47,9 @@ class GprofDotReader:
 
                     if src_name not in self.name_to_hnode.keys():
                         # create a node if it doesn't exist yet
-                        src_hnode = Node(Frame({'function': src_name}
-                                               ['function']),
+                        src_hnode = Node(Frame({'type': 'function',
+                                                'name': src_name}
+                                               ['name']),
                                          None)
                         idx += 1
                         self.name_to_hnode[src_name] = src_hnode
@@ -58,8 +59,9 @@ class GprofDotReader:
 
                     if dst_name not in self.name_to_hnode.keys():
                         # create a node if it doesn't exist yet
-                        dst_hnode = Node(Frame({'function': dst_name},
-                                               ['function']),
+                        dst_hnode = Node(Frame({'type': 'function',
+                                                'name': dst_name},
+                                               ['name']),
                                          src_hnode)
                         idx += 1
                         self.name_to_hnode[dst_name] = dst_hnode
@@ -81,7 +83,8 @@ class GprofDotReader:
 
                         if node_name not in self.name_to_hnode.keys():
                             # create a node if it doesn't exist yet
-                            hnode = Node(Frame({'name': node_name},
+                            hnode = Node(Frame({'type': 'function',
+                                                'name': node_name},
                                                ['name']),
                                          None)
                             idx += 1
