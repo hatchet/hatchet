@@ -21,35 +21,25 @@ class Frame:
 
         Args:
             attrs (dict): Dictionary of attributes and values.
-            index_attrs (list): List of index attributes.
     """
 
-    def __init__(self, attrs_dict, index_list):
-        # Check that all index attributes are in attribute dictionary
-        if not all(k in attrs_dict for k in index_list):
-            raise KeyError("Invalid index attribute(s)")
-
+    def __init__(self, attrs_dict):
         self.attrs = attrs_dict
-        self.index_attrs = index_list
 
     def __eq__(self, other):
-        return (self._cmp_key() == other._cmp_key())
+        return (self.tuple_repr() == other.tuple_repr())
 
     def __lt__(self, other):
-        return (self._cmp_key() < other._cmp_key())
+        return (self.tuple_repr() < other.tuple_repr())
 
     def __gt__(self, other):
-        return (self._cmp_key() > other._cmp_key())
+        return (self.tuple_repr() > other.tuple_repr())
 
     def __str__(self):
-        ret = {}
-        for i in self.index_attrs:
-            if i in self.attrs:
-                ret[i] = self.attrs[i]
-        return str(ret)
+        return str(self.attrs)
 
     @memoized
-    def _cmp_key(self):
+    def tuple_repr(self):
         """ Make a tuple of attributes and values based on reader
         """
-        return tuple((k, self.attrs[k]) for k in sorted(self.index_attrs))
+        return tuple((k, self.attrs[k]) for k in sorted(self.attrs))

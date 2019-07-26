@@ -67,8 +67,7 @@ class GraphFrame:
             """
             global lit_idx
 
-            hnode = Node(Frame({'name': child_dict['name']},
-                               ['name']),
+            hnode = Node(Frame({'name': child_dict['name']}),
                          hparent)
 
             node_dicts.append(dict({'node': hnode,
@@ -83,8 +82,7 @@ class GraphFrame:
 
         # start with creating a node_dict for the root
         lit_idx = 0
-        graph_root = Node(Frame({'name': graph_dict['name']},
-                                ['name']),
+        graph_root = Node(Frame({'name': graph_dict['name']}),
                           None)
 
         node_dicts = []
