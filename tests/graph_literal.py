@@ -18,5 +18,5 @@ def test_graphframe(mock_graph_literal):
     gf = GraphFrame()
     gf.from_literal(mock_graph_literal)
 
-    assert len(gf.dataframe) == 20
+    assert len(gf.dataframe) == 24
 
