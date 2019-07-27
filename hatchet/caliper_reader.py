@@ -91,8 +91,7 @@ class CaliperReader:
             if node['column'] == self.path_col_name:
                 if 'parent' not in node:
                     # since this node does not have a parent, this is a root
-                    graph_root = Node(Frame({'function': node_label},
-                                            ['function']),
+                    graph_root = Node(Frame({'function': node_label}),
                                       None)
                     list_roots.append(graph_root)
 
@@ -102,8 +101,7 @@ class CaliperReader:
                     self.idx_to_node[idx] = node_dict
                 else:
                     parent_hnode = (self.idx_to_node[node['parent']])['node']
-                    hnode = Node(Frame({'function': node_label},
-                                       ['function']),
+                    hnode = Node(Frame({'function': node_label}),
                                  parent_hnode)
                     parent_hnode.add_child(hnode)
 
@@ -173,8 +171,7 @@ class CaliperReader:
                         max_nid += 1
                         idx = max_nid
                         hnode = Node(Frame({'file': file_name,
-                                            'line': line},
-                                           ['file', 'line']),
+                                            'line': line}),
                                      sn_hnode)
                         sn_hnode.add_child(hnode)
 
