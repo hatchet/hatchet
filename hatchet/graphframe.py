@@ -57,15 +57,13 @@ class GraphFrame:
             self.inc_metrics) = reader.create_graphframe()
 
     def from_literal(self, graph_dict):
-        """ Read graph from a dict literal.
+        """ Read graph from a list of dicts literal.
         """
-        global lit_idx
 
         def parse_node_literal(child_dict, hparent):
             """ Create node_dict for one node and then call the function
                 recursively on all children.
             """
-            global lit_idx
 
             hnode = Node(Frame({'name': child_dict['name']}),
                          hparent)
@@ -73,38 +71,39 @@ class GraphFrame:
             node_dicts.append(dict({'node': hnode,
                                     'name': child_dict['name']},
                                     **child_dict['metrics']))
-            lit_idx += 1
             hparent.add_child(hnode)
 
             if 'children' in child_dict:
                 for child in child_dict['children']:
                     parse_node_literal(child, hnode)
 
-        # start with creating a node_dict for the root
-        lit_idx = 0
-        graph_root = Node(Frame({'name': graph_dict['name']}),
-                          None)
-
+        list_roots = []
         node_dicts = []
-        node_dicts.append(dict({'node': graph_root,
-                                'name': graph_dict['name']},
-                                **graph_dict['metrics']))
-        lit_idx += 1
 
-        # call recursively on all children of root
-        if 'children' in graph_dict:
-            for child in graph_dict['children']:
-                parse_node_literal(child, graph_root)
+        # start with creating a node_dict for each root
+        for i in range(len(graph_dict)):
+            graph_root = Node(Frame({'name': graph_dict[i]['name']}),
+                              None)
+
+            node_dicts.append(dict({'node': graph_root,
+                                    'name': graph_dict[i]['name']},
+                                    **graph_dict[i]['metrics']))
+            list_roots.append(graph_root)
+
+            # call recursively on all children of root
+            if 'children' in graph_dict[i]:
+                for child in graph_dict[i]['children']:
+                    parse_node_literal(child, graph_root)
 
         self.exc_metrics = []
         self.inc_metrics = []
-        for key in graph_dict['metrics'].keys():
+        for key in graph_dict[i]['metrics'].keys():
             if '(inc)' in key:
                 self.inc_metrics.append(key)
             else:
                 self.exc_metrics.append(key)
 
-        self.graph = Graph([graph_root])
+        self.graph = Graph(list_roots)
         self.dataframe = pd.DataFrame(data=node_dicts)
         self.dataframe.set_index(['node'], drop=False, inplace=True)
 

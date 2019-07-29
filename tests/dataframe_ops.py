@@ -19,5 +19,5 @@ def test_filter(mock_graph_literal):
     gf.from_literal(mock_graph_literal)
 
     filtered_gf = gf.filter(lambda x: x['time'] > 5.0)
-    assert len(filtered_gf.dataframe) == 7
+    assert len(filtered_gf.dataframe) == 9
 
