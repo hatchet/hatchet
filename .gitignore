@@ -6,3 +6,4 @@ experiment.xml
 docs/_build
 
 *.metric-db
+*.egg-info
