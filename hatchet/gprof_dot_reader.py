@@ -43,41 +43,39 @@ class GprofDotReader:
                 src_name = edge.get_source().strip('"')
                 dst_name = edge.get_destination().strip('"')
 
-                if src_name not in self.name_to_hnode:
+                src_hnode = self.name_to_hnode.get(src_name)
+                if not src_hnode:
                     # create a node if it doesn't exist yet
                     src_hnode = Node(Frame({'type': 'function',
                                             'name': src_name}),
                                      None)
                     self.name_to_hnode[src_name] = src_hnode
-                else:
-                    src_hnode = self.name_to_hnode[src_name]
 
-                if dst_name not in self.name_to_hnode:
+                dst_hnode = self.name_to_hnode.get(dst_name)
+                if not dst_hnode:
                     # create a node if it doesn't exist yet
                     dst_hnode = Node(Frame({'type': 'function',
                                             'name': dst_name}),
                                      src_hnode)
                     self.name_to_hnode[dst_name] = dst_hnode
-                else:
-                    # add source node as parent
-                    dst_hnode = self.name_to_hnode[dst_name]
-                    dst_hnode.add_parent(src_hnode)
+                # add source node as parent
+                dst_hnode.add_parent(src_hnode)
 
                 # add destination node as child
                 src_hnode.add_child(dst_hnode)
 
             for node in graph.get_nodes():
-                node_name = node.get_name().strip('"')
+                node_name = node.get_name()
 
                 if node_name not in dot_keywords:
-                    if node_name not in self.name_to_hnode:
+                    node_name = node_name.strip('"')
+                    hnode = self.name_to_hnode.get(node_name)
+                    if not hnode:
                         # create a node if it doesn't exist yet
                         hnode = Node(Frame({'type': 'function',
                                             'name': node_name}),
                                      None)
                         self.name_to_hnode[node_name] = hnode
-                    else:
-                        hnode = self.name_to_hnode[node_name]
 
                     node_label = node.obj_dict['attributes'].get('label').strip('"')
 
