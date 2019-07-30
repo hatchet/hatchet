@@ -3,7 +3,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-from hatchet import GraphFrame, HPCToolkitReader
+from hatchet import GraphFrame
+from hatchet.readers.hpctoolkit_reader import HPCToolkitReader
 
 modules = [
     "cpi",

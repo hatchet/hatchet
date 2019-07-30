@@ -3,7 +3,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-from hatchet import GraphFrame, GprofDotReader
+from hatchet import GraphFrame
+from hatchet.readers.gprof_dot_reader import GprofDotReader
 
 roots = [
     "psm_no_lock",

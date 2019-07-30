@@ -8,7 +8,7 @@
 from __future__ import print_function
 import argparse
 
-from hatchet.hpctoolkit_reader import HPCToolkitReader
+from hatchet.readers.hpctoolkit_reader import HPCToolkitReader
 
 
 if __name__ == "__main__":

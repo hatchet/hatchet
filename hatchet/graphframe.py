@@ -6,9 +6,9 @@
 import pandas as pd
 import numpy
 
-from .hpctoolkit_reader import HPCToolkitReader
-from .caliper_reader import CaliperReader
-from .gprof_dot_reader import GprofDotReader
+from .readers.hpctoolkit_reader import HPCToolkitReader
+from .readers.caliper_reader import CaliperReader
+from .readers.gprof_dot_reader import GprofDotReader
 from .node import Node
 from .graph import Graph
 from .frame import Frame
