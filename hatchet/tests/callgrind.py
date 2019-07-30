@@ -10,9 +10,6 @@
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
 
-import sys
-import pytest
-
 from hatchet import GraphFrame, GprofDotReader
 
 roots = [

@@ -10,7 +10,7 @@
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
 
-from setuptools import setup, find_packages
+from setuptools import setup
 from codecs import open
 from os import path
 

@@ -73,8 +73,8 @@ def as_text(
     rank,
     threshold,
     expand_names,
-    indent=u"",
-    child_indent=u"",
+    indent="",
+    child_indent="",
     unicode=False,
     color=False,
 ):
@@ -107,7 +107,7 @@ def as_text(
 
         # add context (filename etc.) if requested
         if context in dataframe.columns:
-            result = u"{indent}{time_str} {function}  {c.faint}{code_position}{c.end}\n".format(
+            result = "{indent}{time_str} {function}  {c.faint}{code_position}{c.end}\n".format(
                 indent=indent,
                 time_str=time_str,
                 function=func_name,
@@ -115,7 +115,7 @@ def as_text(
                 c=colors_enabled if color else colors_disabled,
             )
         else:
-            result = u"{indent}{time_str} {function}\n".format(
+            result = "{indent}{time_str} {function}\n".format(
                 indent=indent, time_str=time_str, function=func_name
             )
 
@@ -136,11 +136,11 @@ def as_text(
 
         for child in children:
             if child is not last_child:
-                c_indent = child_indent + (u"├─ " if unicode else "|- ")
-                cc_indent = child_indent + (u"│  " if unicode else "|  ")
+                c_indent = child_indent + ("├─ " if unicode else "|- ")
+                cc_indent = child_indent + ("│  " if unicode else "|  ")
             else:
-                c_indent = child_indent + (u"└─ " if unicode else "`- ")
-                cc_indent = child_indent + u"   "
+                c_indent = child_indent + ("└─ " if unicode else "`- ")
+                cc_indent = child_indent + "   "
             result += as_text(
                 child,
                 dataframe,

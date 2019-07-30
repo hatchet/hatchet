@@ -97,12 +97,10 @@ class GraphFrame:
         for i in range(len(graph_dict)):
             graph_root = Node(Frame({"name": graph_dict[i]["name"]}), None)
 
-            node_dicts.append(
-                dict(
-                    {"node": graph_root, "name": graph_dict[i]["name"]},
-                    **graph_dict[i]["metrics"]
-                )
-            )
+            node_dict = {"node": graph_root, "name": graph_dict[i]["name"]}
+            node_dict.update(**graph_dict[i]["metrics"])
+            node_dicts.append(node_dict)
+
             list_roots.append(graph_root)
 
             # call recursively on all children of root
@@ -196,7 +194,6 @@ class GraphFrame:
             filtered_nodes = self.dataframe.index
 
         node_clone = {}
-        old_to_new_id = {}
 
         # function to connect a node to the nearest descendants that are in the
         # list of filtered nodes
@@ -224,7 +221,6 @@ class GraphFrame:
                     node_label = new_child.frame
                     if node_label not in label_to_new_child.keys():
                         new_child_clone = Node(new_child.frame, clone)
-                        idx = squ_idx
                         squ_idx += 1
                         clone.add_child(new_child_clone)
                         label_to_new_child[node_label] = new_child_clone

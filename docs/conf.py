@@ -32,14 +32,14 @@ sys.path.insert(0, os.path.abspath("../hatchet"))
 
 # -- Project information -----------------------------------------------------
 
-project = u"hatchet"
-copyright = u"2017-2019, Lawrence Livermore National Security, LLC"
-author = u"Abhinav Bhatele"
+project = "hatchet"
+copyright = "2017-2019, Lawrence Livermore National Security, LLC"
+author = "Abhinav Bhatele"
 
 # The short X.Y version
-version = u""
+version = ""
 # The full version, including alpha/beta/rc tags
-release = u""
+release = ""
 
 
 # -- General configuration ---------------------------------------------------
@@ -81,7 +81,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = [u"_build", "Thumbs.db", ".DS_Store"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = "sphinx"
@@ -159,7 +159,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "hatchet.tex", u"hatchet Documentation", u"Abhinav Bhatele", "manual")
+    (master_doc, "hatchet.tex", "hatchet Documentation", "Abhinav Bhatele", "manual")
 ]
 
 
@@ -167,7 +167,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [(master_doc, "hatchet", u"hatchet Documentation", [author], 1)]
+man_pages = [(master_doc, "hatchet", "hatchet Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output ----------------------------------------------
@@ -179,7 +179,7 @@ texinfo_documents = [
     (
         master_doc,
         "hatchet",
-        u"hatchet Documentation",
+        "hatchet Documentation",
         author,
         "hatchet",
         "One line description of project.",
