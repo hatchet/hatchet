@@ -231,3 +231,88 @@ def mock_graph_literal():
 
     return graph_dict
 
+@pytest.fixture
+def mock_dag_literal1():
+    """ Creates a mock DAG
+    """
+    dag_ldict = [{
+                    'name': 'A',
+                    'metrics': {'time (inc)': 130.0, 'time': 0.0},
+                    'children': [
+                        {
+                            'name': 'B',
+                            'metrics': {'time (inc)': 20.0, 'time': 5.0},
+                            'children': [
+                                {
+                                    'name': 'C',
+                                    'metrics': {'time (inc)': 5.0, 'time': 5.0},
+                                    'children': [
+                                        {
+                                            'name': 'D',
+                                            'metrics': {'time (inc)': 8.0, 'time': 1.0}
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            'name': 'E',
+                            'metrics': {'time (inc)': 55.0, 'time': 10.0},
+                            'children': [
+                                {
+                                    'name': 'C',
+                                    'metrics': {'time (inc)': 5.0, 'time': 5.0}
+                                },
+                                {
+                                    'name': 'F',
+                                    'metrics': {'time (inc)': 1.0, 'time': 9.0}
+                                }
+                            ]
+                        }
+                    ]
+                }]
+
+    return dag_ldict
+
+@pytest.fixture
+def mock_dag_literal2():
+    """ Creates a mock DAG
+    """
+    dag_ldict = [{
+                    'name': 'A',
+                    'metrics': {'time (inc)': 130.0, 'time': 0.0},
+                    'children': [
+                        {
+                            'name': 'B',
+                            'metrics': {'time (inc)': 20.0, 'time': 5.0},
+                            'children': [
+                                {
+                                    'name': 'C',
+                                    'metrics': {'time (inc)': 5.0, 'time': 5.0},
+                                    'children': [
+                                        {
+                                            'name': 'D',
+                                            'metrics': {'time (inc)': 8.0, 'time': 1.0}
+                                        }
+                                    ]
+                                }
+                            ]
+                        },
+                        {
+                            'name': 'E',
+                            'metrics': {'time (inc)': 55.0, 'time': 10.0},
+                            'children': [
+                                {
+                                    'name': 'D',
+                                    'metrics': {'time (inc)': 8.0, 'time': 1.0}
+                                },
+                                {
+                                    'name': 'F',
+                                    'metrics': {'time (inc)': 1.0, 'time': 9.0}
+                                }
+                            ]
+                        }
+                    ]
+                }]
+
+    return dag_ldict

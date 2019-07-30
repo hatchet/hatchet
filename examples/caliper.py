@@ -22,7 +22,7 @@ pd.set_option('display.max_rows', None)
 
 
 if __name__ == "__main__":
-    filename = 'tests/data/caliper-lulesh-json/lulesh-sample-annotation-profile.json'
+    filename = 'hatchet/tests/data/caliper-lulesh-json/lulesh-sample-annotation-profile.json'
 
     gf = GraphFrame()
     gf.from_caliper(filename)
