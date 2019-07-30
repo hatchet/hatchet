@@ -99,7 +99,8 @@ class Graph:
         return num_nodes
 
     def __eq__(self, other):
-        """ Check if two graphs are equivalent by comparing frame at each node.
+        """ Check if two graphs have the same structure by comparing frame at
+            each node.
         """
         vs = set()
         vo = set()
@@ -112,16 +113,19 @@ class Graph:
         if len(self.roots) != len(other.roots):
             return False
 
+        if len(self) != len(other):
+            return False
+
         # sort roots by its frame
         ssorted = sorted(self.roots, key=lambda x: x.frame)
         osorted = sorted(other.roots, key=lambda x: x.frame)
 
-        for self_root,other_root in zip(ssorted, osorted):
+        for self_root, other_root in zip(ssorted, osorted):
             # if frames do not match, then nodes are not equal
             if self_root.frame != other_root.frame:
                 return False
 
-            if not self_root.equal(other_root, vs, vo):
+            if not self_root.check_dag_equal(other_root, vs, vo):
                 return False
 
         return True
