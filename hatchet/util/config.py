@@ -1,3 +1,1 @@
-dot_keywords = ['graph', 'subgraph', 'digraph',
-                'node', 'edge', 'strict' ]
-
+dot_keywords = ["graph", "subgraph", "digraph", "node", "edge", "strict"]

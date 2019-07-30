@@ -53,26 +53,52 @@ class Graph:
 
         return (Graph(list_roots), node_clone)
 
-    def to_string(self, roots=None, dataframe=None, metric='time', name='name',
-                  context='file', rank=0, threshold=0.0, expand_names=False,
-                  unicode=True, color=True):
+    def to_string(
+        self,
+        roots=None,
+        dataframe=None,
+        metric="time",
+        name="name",
+        context="file",
+        rank=0,
+        threshold=0.0,
+        expand_names=False,
+        unicode=True,
+        color=True,
+    ):
         """ Print the graph with or without some metric attached to each
             node.
         """
         if roots is None:
             roots = self.roots
 
-        result = trees_as_text(roots, dataframe, metric, name, context, rank,
-                               threshold, expand_names, unicode=unicode,
-                               color=color)
+        result = trees_as_text(
+            roots,
+            dataframe,
+            metric,
+            name,
+            context,
+            rank,
+            threshold,
+            expand_names,
+            unicode=unicode,
+            color=color,
+        )
 
-        if sys.version_info >= (3,0,0):
+        if sys.version_info >= (3, 0, 0):
             return result
         else:
-            return result.encode('utf-8')
+            return result.encode("utf-8")
 
-    def to_dot(self, roots=None, dataframe=None, metric='time', name='name',
-               rank=0, threshold=0.0):
+    def to_dot(
+        self,
+        roots=None,
+        dataframe=None,
+        metric="time",
+        name="name",
+        rank=0,
+        threshold=0.0,
+    ):
         """ Write the graph in the graphviz dot format:
             https://www.graphviz.org/doc/info/lang.html
         """
@@ -130,5 +156,5 @@ class Graph:
 
         return True
 
-    def  __ne__(self, other):
+    def __ne__(self, other):
         return not (self == other)
