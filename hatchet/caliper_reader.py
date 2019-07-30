@@ -91,7 +91,8 @@ class CaliperReader:
             if node['column'] == self.path_col_name:
                 if 'parent' not in node:
                     # since this node does not have a parent, this is a root
-                    graph_root = Node(Frame({'function': node_label}),
+                    graph_root = Node(Frame({'type': 'function',
+                                             'name': node_label}),
                                       None)
                     list_roots.append(graph_root)
 
@@ -101,7 +102,8 @@ class CaliperReader:
                     self.idx_to_node[idx] = node_dict
                 else:
                     parent_hnode = (self.idx_to_node[node['parent']])['node']
-                    hnode = Node(Frame({'function': node_label}),
+                    hnode = Node(Frame({'type': 'function',
+                                        'name': node_label}),
                                  parent_hnode)
                     parent_hnode.add_child(hnode)
 
@@ -163,14 +165,15 @@ class CaliperReader:
 
                     for line, line_group in line_groups:
                         # create the node label
-                        file_name = (line_group.head(1))['file'].item()
-                        file_name = file_name.rpartition('/')[2]
+                        file_path = (line_group.head(1))['file'].item()
+                        file_name = file_path.rpartition('/')[2]
                         node_label = file_name + ':' + line
 
                         # create a new hatchet node
                         max_nid += 1
                         idx = max_nid
-                        hnode = Node(Frame({'file': file_name,
+                        hnode = Node(Frame({'type': 'statement',
+                                            'file': file_path,
                                             'line': line}),
                                      sn_hnode)
                         sn_hnode.add_child(hnode)
