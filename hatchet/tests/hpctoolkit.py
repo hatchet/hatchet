@@ -12,50 +12,53 @@
 
 from hatchet import GraphFrame, HPCToolkitReader
 
-modules = ['cpi',
-           '/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/'
-           'hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0',
-           '/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5',
-           '/lib64/libc-2.12.so',
-           '/usr/lib64/libpsm_infinipath.so.1.14']
+modules = [
+    "cpi",
+    "/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/"
+    "hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0",
+    "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5",
+    "/lib64/libc-2.12.so",
+    "/usr/lib64/libpsm_infinipath.so.1.14",
+]
 
-src_files = ['./src/cpi.c',
-             '<unknown file>',
-             '/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/'
-             'init/init.c',
-             '/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/'
-             'init/initthread.c',
-             '/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/'
-             'ch3/src/mpid_init.c',
-             '/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/'
-             'ch3/channels/psm/src/mpidi_calls.c',
-             '/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/'
-             'ch3/channels/psm/src/psm_entry.c',
-             '/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/'
-             'init/finalize.c',
-             '/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/'
-             'ch3/src/mpid_finalize.c',
-             '/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/'
-             'ch3/channels/psm/src/psm_exit.c',
-             'interp.c',
-             '<unknown file>']
+src_files = [
+    "./src/cpi.c",
+    "<unknown file>",
+    "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/" "init/init.c",
+    "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/" "init/initthread.c",
+    "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/"
+    "ch3/src/mpid_init.c",
+    "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/"
+    "ch3/channels/psm/src/mpidi_calls.c",
+    "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/"
+    "ch3/channels/psm/src/psm_entry.c",
+    "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/" "init/finalize.c",
+    "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/"
+    "ch3/src/mpid_finalize.c",
+    "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/"
+    "ch3/channels/psm/src/psm_exit.c",
+    "interp.c",
+    "<unknown file>",
+]
 
-procedures = ['main',
-              '<program root>',
-              'MPI_Init',
-              'pthread_create',
-              'MPI_Finalize',
-              'PMPI_Init',
-              'MPIR_Init_thread',
-              'MPID_Init',
-              'MPIDI_CH3_Init',
-              'MPIDI_CH3_Finalize',
-              'psm_doinit',
-              'PMPI_Finalize',
-              'MPID_Finalize',
-              'psm_dofinalize',
-              '__GI_sched_yield',
-              '<unknown procedure>']
+procedures = [
+    "main",
+    "<program root>",
+    "MPI_Init",
+    "pthread_create",
+    "MPI_Finalize",
+    "PMPI_Init",
+    "MPIR_Init_thread",
+    "MPID_Init",
+    "MPIDI_CH3_Init",
+    "MPIDI_CH3_Finalize",
+    "psm_doinit",
+    "PMPI_Finalize",
+    "MPID_Finalize",
+    "psm_dofinalize",
+    "__GI_sched_yield",
+    "<unknown procedure>",
+]
 
 
 def test_graphframe(calc_pi_hpct_db):
@@ -64,9 +67,9 @@ def test_graphframe(calc_pi_hpct_db):
     gf = GraphFrame()
     gf.from_hpctoolkit(str(calc_pi_hpct_db))
 
-    assert len(gf.dataframe.groupby('module')) == 5
-    assert len(gf.dataframe.groupby('file')) == 11
-    assert len(gf.dataframe.groupby('name')) == 20
+    assert len(gf.dataframe.groupby("module")) == 5
+    assert len(gf.dataframe.groupby("file")) == 11
+    assert len(gf.dataframe.groupby("name")) == 20
 
     # TODO: add tests for dataframe
 

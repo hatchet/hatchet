@@ -12,30 +12,32 @@
 
 from hatchet import GraphFrame, CaliperReader
 
-annotations = ['main',
-               'LagrangeLeapFrog',
-               'LagrangeElements',
-               'ApplyMaterialPropertiesForElems',
-               'EvalEOSForElems',
-               'CalcEnergyForElems',
-               'CalcPressureForElems',
-               'CalcSoundSpeedForElems',
-               'UpdateVolumesForElems',
-               'CalcTimeConstraintsForElems',
-               'CalcCourantConstraintForElems',
-               'CalcHydroConstraintForElems',
-               'TimeIncrement',
-               'LagrangeNodal',
-               'CalcForceForNodes',
-               'CalcVolumeForceForElems',
-               'IntegrateStressForElems',
-               'CalcHourglassControlForElems',
-               'CalcFBHourglassForceForElems',
-               'CalcLagrangeElements',
-               'CalcKinematicsForElems',
-               'CalcQForElems',
-               'CalcMonotonicQGradientsForElems',
-               'CalcMonotonicQRegionForElems']
+annotations = [
+    "main",
+    "LagrangeLeapFrog",
+    "LagrangeElements",
+    "ApplyMaterialPropertiesForElems",
+    "EvalEOSForElems",
+    "CalcEnergyForElems",
+    "CalcPressureForElems",
+    "CalcSoundSpeedForElems",
+    "UpdateVolumesForElems",
+    "CalcTimeConstraintsForElems",
+    "CalcCourantConstraintForElems",
+    "CalcHydroConstraintForElems",
+    "TimeIncrement",
+    "LagrangeNodal",
+    "CalcForceForNodes",
+    "CalcVolumeForceForElems",
+    "IntegrateStressForElems",
+    "CalcHourglassControlForElems",
+    "CalcFBHourglassForceForElems",
+    "CalcLagrangeElements",
+    "CalcKinematicsForElems",
+    "CalcQForElems",
+    "CalcMonotonicQGradientsForElems",
+    "CalcMonotonicQRegionForElems",
+]
 
 
 def test_graphframe(lulesh_caliper_json):
@@ -44,7 +46,7 @@ def test_graphframe(lulesh_caliper_json):
     gf = GraphFrame()
     gf.from_caliper(str(lulesh_caliper_json))
 
-    assert len(gf.dataframe.groupby('name')) == 24
+    assert len(gf.dataframe.groupby("name")) == 24
 
     # TODO: add tests for dataframe
 

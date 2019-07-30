@@ -79,17 +79,17 @@ class Node:
 
         return True
 
-    def traverse(self, order='pre'):
+    def traverse(self, order="pre"):
         """ Traverse the tree depth-first and yield each node.
         """
-        if order == 'pre':
+        if order == "pre":
             yield self
 
         for child in self.children:
             for item in child.traverse(order):
                 yield item
 
-        if order == 'post':
+        if order == "post":
             yield self
 
     def traverse_bf(self):
@@ -109,10 +109,10 @@ class Node:
         return hash(id(self))
 
     def __eq__(self, other):
-        return (id(self) == id(other))
+        return id(self) == id(other)
 
     def __lt__(self, other):
-        return (id(self) < id(other))
+        return id(self) < id(other)
 
     def __str__(self):
         """ Returns a string representation of the node.

@@ -12,6 +12,7 @@
 
 from hatchet import GraphFrame
 
+
 def test_graphframe(mock_graph_literal):
     """Sanity test a GraphFrame object with known data."""
 
@@ -19,4 +20,3 @@ def test_graphframe(mock_graph_literal):
     gf.from_literal(mock_graph_literal)
 
     assert len(gf.dataframe) == 24
-

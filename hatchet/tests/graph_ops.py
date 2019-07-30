@@ -12,6 +12,7 @@
 
 from hatchet import GraphFrame
 
+
 def test_graph_equal(mock_graph_literal):
     gf = GraphFrame()
     gf.from_literal(mock_graph_literal)

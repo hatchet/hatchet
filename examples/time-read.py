@@ -17,11 +17,13 @@ import argparse
 from hatchet.hpctoolkit_reader import HPCToolkitReader
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        description='print timings for reading an HPCToolkit database')
-    parser.add_argument('directory', metavar='DIRECTORY', action='store',
-                        help='directory to read')
+        description="print timings for reading an HPCToolkit database"
+    )
+    parser.add_argument(
+        "directory", metavar="DIRECTORY", action="store", help="directory to read"
+    )
     args = parser.parse_args()
 
     reader = HPCToolkitReader(args.directory)

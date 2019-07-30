@@ -49,7 +49,7 @@ class Timer(object):
         out = StringIO()
         out.write(u"Times:\n")
         for phase, delta in self._times.items():
-            out.write(u'    %-20s %.2fs\n' % (phase + ':', delta.total_seconds()))
+            out.write(u"    %-20s %.2fs\n" % (phase + ":", delta.total_seconds()))
         return out.getvalue()
 
     @contextmanager

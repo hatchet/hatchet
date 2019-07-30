@@ -16,13 +16,15 @@ from hatchet import *
 import sys
 import pandas as pd
 
-pd.set_option('display.width', 1500)
-pd.set_option('display.max_colwidth', 20)
-pd.set_option('display.max_rows', None)
+pd.set_option("display.width", 1500)
+pd.set_option("display.max_colwidth", 20)
+pd.set_option("display.max_rows", None)
 
 
 if __name__ == "__main__":
-    filename = 'hatchet/tests/data/caliper-lulesh-json/lulesh-sample-annotation-profile.json'
+    filename = (
+        "hatchet/tests/data/caliper-lulesh-json/lulesh-sample-annotation-profile.json"
+    )
 
     gf = GraphFrame()
     gf.from_caliper(filename)

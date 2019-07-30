@@ -27,13 +27,13 @@ class Frame:
         self._tuple_repr = None
 
     def __eq__(self, other):
-        return (self.tuple_repr == other.tuple_repr)
+        return self.tuple_repr == other.tuple_repr
 
     def __lt__(self, other):
-        return (self.tuple_repr < other.tuple_repr)
+        return self.tuple_repr < other.tuple_repr
 
     def __gt__(self, other):
-        return (self.tuple_repr > other.tuple_repr)
+        return self.tuple_repr > other.tuple_repr
 
     def __hash__(self):
         return hash(self.tuple_repr)
@@ -46,6 +46,5 @@ class Frame:
         """ Make a tuple of attributes and values based on reader
         """
         if not self._tuple_repr:
-            self._tuple_repr = tuple(
-                (k, self.attrs[k]) for k in sorted(self.attrs))
+            self._tuple_repr = tuple((k, self.attrs[k]) for k in sorted(self.attrs))
         return self._tuple_repr
