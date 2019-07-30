@@ -12,7 +12,6 @@
 import sys
 
 from functools import total_ordering
-from .util.lang import memoized
 
 
 @total_ordering
@@ -25,21 +24,28 @@ class Frame:
 
     def __init__(self, attrs_dict):
         self.attrs = attrs_dict
+        self._tuple_repr = None
 
     def __eq__(self, other):
-        return (self.tuple_repr() == other.tuple_repr())
+        return (self.tuple_repr == other.tuple_repr)
 
     def __lt__(self, other):
-        return (self.tuple_repr() < other.tuple_repr())
+        return (self.tuple_repr < other.tuple_repr)
 
     def __gt__(self, other):
-        return (self.tuple_repr() > other.tuple_repr())
+        return (self.tuple_repr > other.tuple_repr)
+
+    def __hash__(self):
+        return hash(self.tuple_repr)
 
     def __str__(self):
         return str(self.attrs)
 
-    @memoized
+    @property
     def tuple_repr(self):
         """ Make a tuple of attributes and values based on reader
         """
-        return tuple((k, self.attrs[k]) for k in sorted(self.attrs))
+        if not self._tuple_repr:
+            self._tuple_repr = tuple(
+                (k, self.attrs[k]) for k in sorted(self.attrs))
+        return self._tuple_repr
