@@ -137,14 +137,14 @@ class CaliperReader:
                         self.json_cols[idx]
                     ].apply(
                         lambda x: re.match(
-                            "(.*):(\d+)", self.json_nodes[x]["label"]
+                            r"(.*):(\d+)", self.json_nodes[x]["label"]
                         ).group(1)
                     )
                     self.df_json_data["line"] = self.df_json_data[
                         self.json_cols[idx]
                     ].apply(
                         lambda x: re.match(
-                            "(.*):(\d+)", self.json_nodes[x]["label"]
+                            r"(.*):(\d+)", self.json_nodes[x]["label"]
                         ).group(2)
                     )
                     self.df_json_data.drop(self.json_cols[idx], axis=1, inplace=True)

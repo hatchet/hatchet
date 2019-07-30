@@ -41,7 +41,7 @@ def read_metricdb_file(args):
     """ Read a single metricdb file into a 1D array """
     filename, num_nodes, num_metrics, shape = args
     rank = int(
-        re.search("\-(\d+)\-(\d+)\-([\w\d]+)\-(\d+)\-\d.metric-db$", filename).group(1)
+        re.search(r"\-(\d+)\-(\d+)\-([\w\d]+)\-(\d+)\-\d.metric-db$", filename).group(1)
     )
 
     with open(filename, "rb") as metricdb:
@@ -84,8 +84,8 @@ class HPCToolkitReader:
         # Read one metric-db file to extract the number of nodes in the CCT
         # and the number of metrics
         with open(metricdb_files[0], "rb") as metricdb:
-            tag = metricdb.read(18)
-            version = metricdb.read(5)
+            metricdb.read(18)  # skip tag
+            metricdb.read(5)  # skip version TODO: should we?
             endian = metricdb.read(1)
 
             if endian == b"b":

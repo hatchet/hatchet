@@ -10,4 +10,10 @@
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
 
-from .graphframe import *
+# make flake8 unused names in this file.
+# flake8: noqa: F401
+
+from .graphframe import GraphFrame
+from .hpctoolkit_reader import HPCToolkitReader
+from .caliper_reader import CaliperReader
+from .gprof_dot_reader import GprofDotReader

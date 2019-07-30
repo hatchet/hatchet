@@ -17,7 +17,7 @@ from .node import Node
 from .graph import Graph
 from .frame import Frame
 from .util.timer import Timer
-from .util.config import *
+from .util.config import dot_keywords
 
 
 class GprofDotReader:
