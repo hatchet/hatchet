@@ -36,8 +36,6 @@ class GprofDotReader:
     def create_graph(self):
         """ Read the DOT files to create a graph.
         """
-        idx = 0
-
         graphs = pydot.graph_from_dot_file(self.dotfile, encoding='utf-8')
 
         for graph in graphs:
@@ -47,16 +45,18 @@ class GprofDotReader:
 
                 if src_name not in self.name_to_hnode:
                     # create a node if it doesn't exist yet
-                    src_hnode = Node(idx, (src_name,), None)
-                    idx += 1
+                    src_hnode = Node(Frame({'type': 'function',
+                                            'name': src_name}),
+                                     None)
                     self.name_to_hnode[src_name] = src_hnode
                 else:
                     src_hnode = self.name_to_hnode[src_name]
 
                 if dst_name not in self.name_to_hnode:
                     # create a node if it doesn't exist yet
-                    dst_hnode = Node(idx, (dst_name,), src_hnode)
-                    idx += 1
+                    dst_hnode = Node(Frame({'type': 'function',
+                                            'name': dst_name}),
+                                     src_hnode)
                     self.name_to_hnode[dst_name] = dst_hnode
                 else:
                     # add source node as parent
@@ -72,13 +72,12 @@ class GprofDotReader:
                 if node_name not in dot_keywords:
                     if node_name not in self.name_to_hnode:
                         # create a node if it doesn't exist yet
-                        hnode = Node(idx, (node_name,), None)
-                        nid = idx
-                        idx += 1
+                        hnode = Node(Frame({'type': 'function',
+                                            'name': node_name}),
+                                     None)
                         self.name_to_hnode[node_name] = hnode
                     else:
                         hnode = self.name_to_hnode[node_name]
-                        nid = hnode.nid
 
                     node_label = node.obj_dict['attributes'].get('label').strip('"')
 
@@ -89,7 +88,6 @@ class GprofDotReader:
 
                     # create a dict with node properties
                     node_dict = {
-                        'nid': nid,
                         'module': module,
                         'name': node_name,
                         'time (inc)': inc_time,
@@ -103,14 +101,6 @@ class GprofDotReader:
         for (key, val) in self.name_to_hnode.items():
             if not val.parents:
                 list_roots.append(val)
-
-        # correct callpaths of all nodes
-        for root in list_roots:
-            for node in root.traverse():
-                if node.parents:
-                    parent_callpath = node.parents[0].callpath
-                    node_callpath = parent_callpath + node.callpath
-                    node.set_callpath(node_callpath)
 
         return list_roots
 
