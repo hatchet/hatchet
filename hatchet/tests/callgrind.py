@@ -26,8 +26,6 @@ roots = ['psm_no_lock',
 
 def test_graphframe(calc_pi_callgrind_dot):
     """Sanity test a GraphFrame object with known data."""
-    if sys.version_info >= (3, 0, 0):
-        pytest.xfail("callgrind tests currently do not work with Python 3")
 
     gf = GraphFrame()
     gf.from_gprof_dot(str(calc_pi_callgrind_dot))
@@ -39,8 +37,6 @@ def test_graphframe(calc_pi_callgrind_dot):
 
 def test_read_calc_pi_database(calc_pi_callgrind_dot):
     """Sanity check the GprofDot reader by examining a known input."""
-    if sys.version_info >= (3, 0, 0):
-        pytest.xfail("callgrind tests currently do not work with Python 3")
 
     reader = GprofDotReader(str(calc_pi_callgrind_dot))
 
