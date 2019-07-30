@@ -37,27 +37,33 @@ class Node:
         assert isinstance(node, Node)
         self.children.append(node)
 
-    def equal(self, other, vs, vo):
-        """ Recursive helper for check_equal to traverse DAG.
+    def check_dag_equal(self, other, vs=None, vo=None):
+        """ Check if DAG rooted at self has the same structure as that rooted
+            at other
         """
-        vs.add(self.frame)
-        vo.add(other.frame)
+        if vs is None:
+            vs = set()
+        if vo is None:
+            vo = set()
+
+        vs.add(id(self))
+        vo.add(id(other))
+
+        # if number of children do not match, then nodes are not equal
+        if len(self.children) != len(other.children):
+            return False
 
         # sort children of each node by its frame
         ssorted = sorted(self.children, key=lambda x: x.frame)
         osorted = sorted(other.children, key=lambda x: x.frame)
 
-        for self_node,other_node in zip(ssorted, osorted):
-            # if number of children do not match, then nodes are not equal
-            if len(self_node.children) != len(other_node.children):
-                return False
-
+        for self_child, other_child in zip(ssorted, osorted):
             # if frames do not match, then nodes are not equal
-            if self_node.frame != other_node.frame:
+            if self_child.frame != other_child.frame:
                 return False
 
-            visited_s = self_node.frame in vs
-            visited_o = other_node.frame in vo
+            visited_s = id(self_child) in vs
+            visited_o = id(other_child) in vo
 
             # check for duplicate nodes
             if visited_s != visited_o:
@@ -68,7 +74,7 @@ class Node:
                 continue
 
             # recursive check for node equality
-            if not self_node.equal(other_node, vs, vo):
+            if not self_child.check_dag_equal(other_child, vs, vo):
                 return False
 
         return True
