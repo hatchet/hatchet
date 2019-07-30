@@ -1,3 +1,14 @@
+[tool.poetry]
+name = "hatchet"
+version = "0.0.2"
+description = "A Python library for analyzing hierarchical performance data."
+authors = [
+    "Abhinav Bhatele <bhatele@cs.umd.edu>",
+    "Stephanie Brink <brink2@llnl.gov>",
+    "Todd Gamblin <tgamblin@llnl.gov>",
+]
+license = "MIT"
+
 [tool.black]
 line-length = 88
 target-version = ['py36', 'py37', 'py38']

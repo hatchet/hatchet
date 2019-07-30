@@ -9,7 +9,9 @@ jobs:
       python: '3.7'
       os: linux
       language: python
-      script: flake8
+      script:
+        - black --check .
+        - flake8
     - stage: "unit tests"
       python: '2.7'
       os: linux
@@ -25,14 +27,10 @@ jobs:
       language: python
 
 install:
-  - pip install --upgrade matplotlib
-  - pip install --upgrade numpy
-  - pip install --upgrade pandas
-  - pip install --upgrade pydot
-  - pip install --upgrade pytest
-  - pip install --upgrade codecov
-  - pip install --upgrade flake8
-  - pip install --upgrade pep8-naming
+  - pip install --upgrade -r requirements.txt
+  - if [[ "$TRAVIS_PYTHON_VERSION" == "3.7" ]]; then
+        pip install --upgrade black;
+    fi
   - python setup.py install
 
 script:
