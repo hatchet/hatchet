@@ -37,6 +37,42 @@ class Node:
         assert isinstance(node, Node)
         self.children.append(node)
 
+    def equal(self, other, vs, vo):
+        """ Recursive helper for check_equal to traverse DAG.
+        """
+        vs.add(self.frame)
+        vo.add(other.frame)
+
+        # sort children of each node by its frame
+        ssorted = sorted(self.children, key=lambda x: x.frame)
+        osorted = sorted(other.children, key=lambda x: x.frame)
+
+        for self_node,other_node in zip(ssorted, osorted):
+            # if number of children do not match, then nodes are not equal
+            if len(self_node.children) != len(other_node.children):
+                return False
+
+            # if frames do not match, then nodes are not equal
+            if self_node.frame != other_node.frame:
+                return False
+
+            visited_s = self_node.frame in vs
+            visited_o = other_node.frame in vo
+
+            # check for duplicate nodes
+            if visited_s != visited_o:
+                return False
+
+            # skip visited nodes
+            if visited_s or visited_o:
+                continue
+
+            # recursive check for node equality
+            if not self_node.equal(other_node, vs, vo):
+                return False
+
+        return True
+
     def traverse(self, order='pre'):
         """ Traverse the tree depth-first and yield each node.
         """
