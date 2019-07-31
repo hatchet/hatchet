@@ -32,9 +32,12 @@ class CaliperReader:
         self.timer = Timer()
         self.nid_col_name = "nid"
 
-    def read_json_sections(self):
-        with open(self.file_name) as cali_json:
-            json_obj = json.load(cali_json)
+    def read_json_sections(self, input_type="file"):
+        if input_type == "file":
+            with open(self.file_name) as cali_json:
+                json_obj = json.load(cali_json)
+        elif input_type == "literal":
+            json_obj = json.loads(self.file_name)
 
         # read various sections of the Caliper JSON file
         self.json_data = json_obj["data"]
@@ -110,10 +113,11 @@ class CaliperReader:
 
         return list_roots
 
-    def create_graphframe(self):
-        """ Read the caliper JSON file to extract the calling context tree. """
+    def create_graphframe(self, input_type="file"):
+        """ Read the caliper JSON file to extract the calling context tree.
+        """
         with self.timer.phase("read json"):
-            self.read_json_sections()
+            self.read_json_sections(input_type)
 
         with self.timer.phase("graph construction"):
             list_roots = self.create_graph()
