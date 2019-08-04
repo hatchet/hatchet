@@ -9,6 +9,7 @@
 # For details, see: https://github.com/LLNL/hatchet
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
+
 from collections import OrderedDict
 from contextlib import contextmanager
 from datetime import datetime

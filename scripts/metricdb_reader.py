@@ -12,9 +12,9 @@
 ##############################################################################
 
 from __future__ import print_function
-
 import glob
 import struct
+
 import numpy as np
 
 # np.set_printoptions(threshold=np.inf)

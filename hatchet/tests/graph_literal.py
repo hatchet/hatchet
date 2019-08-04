@@ -15,7 +15,6 @@ from hatchet import GraphFrame
 
 def test_graphframe(mock_graph_literal):
     """Sanity test a GraphFrame object with known data."""
-
     gf = GraphFrame()
     gf.from_literal(mock_graph_literal)
 

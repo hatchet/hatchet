@@ -15,8 +15,7 @@ import matplotlib.colors
 
 
 def trees_to_dot(roots, dataframe, metric, name, rank, threshold):
-    """ Calls to_dot in turn for each tree in the graph/forest
-    """
+    """Calls to_dot in turn for each tree in the graph/forest."""
     text = (
         "strict digraph {\n"
         "graph [bgcolor=transparent];\n"
@@ -38,7 +37,7 @@ def trees_to_dot(roots, dataframe, metric, name, rank, threshold):
 
 
 def to_dot(hnode, dataframe, metric, name, rank, threshold):
-    """ Write to graphviz dot format """
+    """Write to graphviz dot format."""
     colormap = matplotlib.cm.Reds
     min_time = dataframe[metric].min()
     max_time = dataframe[metric].max()

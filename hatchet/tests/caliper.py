@@ -42,7 +42,6 @@ annotations = [
 
 def test_graphframe(lulesh_caliper_json):
     """Sanity test a GraphFrame object with known data."""
-
     gf = GraphFrame()
     gf.from_caliper(str(lulesh_caliper_json))
 

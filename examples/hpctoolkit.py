@@ -12,7 +12,9 @@
 ##############################################################################
 
 from __future__ import print_function
+
 import pandas as pd
+
 import hatchet as ht
 
 pd.set_option("display.width", 500)
