@@ -96,7 +96,7 @@ def lulesh_caliper_json(data_dir, tmpdir):
 
 @pytest.fixture
 def calc_pi_callgrind_dot(data_dir, tmpdir):
-    """Builds a temporary directory containing the calc-pi callgrind DOt file."""
+    """Builds a temporary directory containing the calc-pi callgrind DOT file."""
     gprof_dot_dir = os.path.join(data_dir, "gprof2dot-cpi")
     gprof_dot_file = os.path.join(gprof_dot_dir, "callgrind.dot.64042.0.1")
 
@@ -109,7 +109,8 @@ def calc_pi_callgrind_dot(data_dir, tmpdir):
 @pytest.fixture
 def mock_graph_literal():
     """ Creates a mock tree
-        Metasyntactic variables: https://www.ietf.org/rfc/rfc3092.txt
+
+    Metasyntactic variables: https://www.ietf.org/rfc/rfc3092.txt
     """
     graph_dict = [
         {
@@ -257,8 +258,7 @@ def mock_graph_literal():
 
 @pytest.fixture
 def mock_dag_literal1():
-    """ Creates a mock DAG
-    """
+    """Creates a mock DAG."""
     dag_ldict = [
         {
             "name": "A",
@@ -297,8 +297,7 @@ def mock_dag_literal1():
 
 @pytest.fixture
 def mock_dag_literal2():
-    """ Creates a mock DAG
-    """
+    """Creates a mock DAG."""
     dag_ldict = [
         {
             "name": "A",

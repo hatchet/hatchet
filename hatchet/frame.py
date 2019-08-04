@@ -15,10 +15,10 @@ from functools import total_ordering
 
 @total_ordering
 class Frame:
-    """ The frame index for a node. The node only stores its frame.
+    """The frame index for a node. The node only stores its frame.
 
-        Args:
-            attrs (dict): Dictionary of attributes and values.
+    Args:
+       attrs (dict): Dictionary of attributes and values.
     """
 
     def __init__(self, attrs_dict):
@@ -42,8 +42,7 @@ class Frame:
 
     @property
     def tuple_repr(self):
-        """ Make a tuple of attributes and values based on reader
-        """
+        """Make a tuple of attributes and values based on reader."""
         if not self._tuple_repr:
             self._tuple_repr = tuple((k, self.attrs[k]) for k in sorted(self.attrs))
         return self._tuple_repr

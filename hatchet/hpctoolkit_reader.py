@@ -9,14 +9,15 @@
 # For details, see: https://github.com/LLNL/hatchet
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
+
 import glob
 import struct
+import re
 
 import numpy as np
 import pandas as pd
 import multiprocessing as mp
 import multiprocessing.sharedctypes
-import re
 
 try:
     import xml.etree.cElementTree as ET
@@ -32,13 +33,13 @@ src_file = 0
 
 
 def init_shared_array(buf_):
-    """ Initialize shared array """
+    """Initialize shared array."""
     global shared_metrics
     shared_metrics = buf_
 
 
 def read_metricdb_file(args):
-    """ Read a single metricdb file into a 1D array """
+    """Read a single metricdb file into a 1D array."""
     filename, num_nodes, num_metrics, shape = args
     rank = int(
         re.search(r"\-(\d+)\-(\d+)\-([\w\d]+)\-(\d+)\-\d.metric-db$", filename).group(1)
@@ -60,8 +61,8 @@ def read_metricdb_file(args):
 
 
 class HPCToolkitReader:
-    """ Read in the various sections of an HPCToolkit experiment.xml file
-        and metric-db files.
+    """Read in the various sections of an HPCToolkit experiment.xml file and
+    metric-db files.
     """
 
     def __init__(self, dir_name):
@@ -108,8 +109,8 @@ class HPCToolkitReader:
         self.timer = Timer()
 
     def fill_tables(self):
-        """ Read certain sections of the experiment.xml file to create dicts
-            of load modules, src_files, procedure_names, and metric_names
+        """Read certain sections of the experiment.xml file to create dicts of load
+        modules, src_files, procedure_names, and metric_names.
         """
         for loadm in (self.loadmodule_table).iter("LoadModule"):
             self.load_modules[loadm.get("i")] = loadm.get("n")
@@ -131,9 +132,9 @@ class HPCToolkitReader:
         )
 
     def read_all_metricdb_files(self):
-        """ Read all the metric-db files and create a dataframe with num_nodes
-            X num_pes rows and num_metrics columns. Two additional columns
-            store the node id and MPI process rank.
+        """Read all the metric-db files and create a dataframe with num_nodes X
+        num_pes rows and num_metrics columns. Two additional columns store the node
+        id and MPI process rank.
         """
         metricdb_files = glob.glob(self.dir_name + "/*.metric-db")
         metricdb_files.sort()
@@ -173,9 +174,9 @@ class HPCToolkitReader:
         self.df_metrics["rank"] = self.df_metrics["rank"].astype(int, copy=False)
 
     def create_graphframe(self):
-        """ Read the experiment.xml file to extract the calling context tree
-            and create a dataframe out of it. Then merge the two dataframes to
-            create the final dataframe.
+        """Read the experiment.xml file to extract the calling context tree and create
+        a dataframe out of it. Then merge the two dataframes to create the final
+        dataframe.
         """
         with self.timer.phase("fill tables"):
             self.fill_tables()
@@ -239,8 +240,7 @@ class HPCToolkitReader:
         return graph, dataframe, exc_metrics, inc_metrics
 
     def parse_xml_children(self, xml_node, hnode, callpath):
-        """ Parses all children of an XML node.
-        """
+        """Parses all children of an XML node."""
         for xml_child in xml_node:
             if xml_child.tag != "M":
                 nid = int(xml_node.get("i"))
@@ -250,8 +250,7 @@ class HPCToolkitReader:
     def parse_xml_node(
         self, xml_node, parent_nid, parent_line, hparent, parent_callpath
     ):
-        """ Parses an XML node and its children recursively.
-        """
+        """Parses an XML node and its children recursively."""
         nid = int(xml_node.get("i"))
 
         global src_file
@@ -346,8 +345,7 @@ class HPCToolkitReader:
             self.parse_xml_children(xml_node, hnode, list(node_callpath))
 
     def create_node_dict(self, nid, hnode, name, node_type, src_file, line, module):
-        """ Create a dict with all the node attributes.
-        """
+        """Create a dict with all the node attributes."""
         node_dict = {
             "nid": nid,
             "name": name,

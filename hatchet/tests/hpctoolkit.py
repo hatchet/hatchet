@@ -63,7 +63,6 @@ procedures = [
 
 def test_graphframe(calc_pi_hpct_db):
     """Sanity test a GraphFrame object with known data."""
-
     gf = GraphFrame()
     gf.from_hpctoolkit(str(calc_pi_hpct_db))
 

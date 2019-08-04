@@ -42,8 +42,7 @@ def trees_as_text(
     unicode,
     color,
 ):
-    """ Calls as_text in turn for each tree in the graph/forest
-    """
+    """Calls as_text in turn for each tree in the graph/forest."""
     text = ""
 
     # call as_text for each root in the graph
@@ -78,9 +77,9 @@ def as_text(
     unicode=False,
     color=False,
 ):
-    """ Code adapted from https://github.com/joerick/pyinstrument
+    """Code adapted from https://github.com/joerick/pyinstrument
 
-        The function takes a node, and creates a string for the node.
+    The function takes a node, and creates a string for the node.
     """
     # set dataframe index based on if rank is a part of the index
     if "rank" in dataframe.index.names:

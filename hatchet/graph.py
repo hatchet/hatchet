@@ -9,6 +9,7 @@
 # For details, see: https://github.com/LLNL/hatchet
 # Please also read the LICENSE file for the MIT License notice.
 ##############################################################################
+
 import sys
 
 from .external.printtree import trees_as_text
@@ -17,16 +18,14 @@ from .node import Node
 
 
 class Graph:
-    """ A possibly multi-rooted tree or graph from one input dataset.
-    """
+    """A possibly multi-rooted tree or graph from one input dataset."""
 
     def __init__(self, roots):
         if roots is not None:
             self.roots = roots
 
     def copy(self):
-        """ Returns a copy of the graph and a mapping of old to new nodes.
-        """
+        """Returns a copy of the graph and a mapping of old to new nodes."""
         list_roots = []
         node_clone = {}
 
@@ -66,9 +65,7 @@ class Graph:
         unicode=True,
         color=True,
     ):
-        """ Print the graph with or without some metric attached to each
-            node.
-        """
+        """Print the graph with or without some metric attached to each node."""
         if roots is None:
             roots = self.roots
 
@@ -99,8 +96,8 @@ class Graph:
         rank=0,
         threshold=0.0,
     ):
-        """ Write the graph in the graphviz dot format:
-            https://www.graphviz.org/doc/info/lang.html
+        """Write the graph in the graphviz dot format:
+        https://www.graphviz.org/doc/info/lang.html
         """
         if roots is None:
             roots = self.roots
@@ -110,13 +107,11 @@ class Graph:
         return result
 
     def __str__(self):
-        """ Returns a string representation of the graph.
-        """
+        """Returns a string representation of the graph."""
         return self.to_string()
 
     def __len__(self):
-        """ Size of the graph in terms of number of nodes.
-        """
+        """Size of the graph in terms of number of nodes."""
         num_nodes = 0
 
         for root in self.roots:
@@ -125,8 +120,8 @@ class Graph:
         return num_nodes
 
     def __eq__(self, other):
-        """ Check if two graphs have the same structure by comparing frame at
-            each node.
+        """Check if two graphs have the same structure by comparing frame at each
+        node.
         """
         vs = set()
         vo = set()
