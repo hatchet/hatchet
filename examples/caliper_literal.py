@@ -35,8 +35,7 @@ if __name__ == "__main__":
     )
 
     cali_json = subprocess.Popen(
-        [cali_query, "-q", query, cali_file],
-        stdout=subprocess.PIPE,
+        [cali_query, "-q", query, cali_file], stdout=subprocess.PIPE
     )
 
     gf = GraphFrame()

@@ -4,10 +4,12 @@
 # SPDX-License-Identifier: MIT
 
 import subprocess
-import sys
+
+import pytest
 
 from hatchet import GraphFrame
 from hatchet.readers.caliper_reader import CaliperReader
+from executable import which
 
 annotations = [
     "main",
@@ -61,9 +63,10 @@ def test_read_calc_pi_database(lulesh_caliper_json):
     assert all(an in reader.idx_to_label.values() for an in annotations)
 
 
+@pytest.mark.skipif(not which("cali-query"), reason="needs cali-query to be in path")
 def test_json_string_literal(sample_caliper_raw_cali):
     """Sanity check the Caliper reader ingesting a JSON string literal."""
-    cali_query = "/usr/gapps/spot/caliper/bin/cali-query"
+    cali_query = which("cali-query")
     grouping_attribute = "function"
     default_metric = "sum(sum#time.duration),inclusive_sum(sum#time.duration)"
     query = "select function,%s group by %s format json-split" % (
@@ -72,8 +75,7 @@ def test_json_string_literal(sample_caliper_raw_cali):
     )
 
     cali_json = subprocess.Popen(
-        [cali_query, "-q", query, sample_caliper_raw_cali],
-        stdout=subprocess.PIPE,
+        [cali_query, "-q", query, sample_caliper_raw_cali], stdout=subprocess.PIPE
     )
 
     gf = GraphFrame()
