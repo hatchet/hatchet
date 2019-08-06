@@ -12,10 +12,11 @@
 ##############################################################################
 
 from __future__ import print_function
-from hatchet import *
-import sys
-import pandas as pd
 import subprocess
+
+import pandas as pd
+
+from hatchet import *
 
 pd.set_option("display.width", 1500)
 pd.set_option("display.max_colwidth", 20)
@@ -33,21 +34,13 @@ if __name__ == "__main__":
         grouping_attribute,
     )
 
-    gf = GraphFrame()
+    cali_json = subprocess.Popen(
+        [cali_query, "-q", query, cali_file],
+        stdout=subprocess.PIPE,
+    )
 
-    if sys.version_info >= (3, 0, 0):
-        cali_json = subprocess.run(
-            [cali_query, "-q", query, cali_file],
-            check=True,
-            stdout=subprocess.PIPE,
-            universal_newlines=True,
-        )
-        gf.from_caliper(cali_json.stdout, "literal")
-    else:
-        cali_json = subprocess.check_output(
-            [cali_query, "-q", query, cali_file], universal_newlines=True
-        )
-        gf.from_caliper(cali_json, "literal")
+    gf = GraphFrame()
+    gf.from_caliper(cali_json.stdout)
 
     print(gf.dataframe)
     print("\n")

@@ -9,7 +9,6 @@ import sys
 from hatchet import GraphFrame
 from hatchet.readers.caliper_reader import CaliperReader
 
-
 annotations = [
     "main",
     "LagrangeLeapFrog",
@@ -62,7 +61,7 @@ def test_read_calc_pi_database(lulesh_caliper_json):
     assert all(an in reader.idx_to_label.values() for an in annotations)
 
 
-def test_json_string_literal(caliper_raw_cali):
+def test_json_string_literal(sample_caliper_raw_cali):
     """Sanity check the Caliper reader ingesting a JSON string literal."""
     cali_query = "/usr/gapps/spot/caliper/bin/cali-query"
     grouping_attribute = "function"
@@ -72,19 +71,20 @@ def test_json_string_literal(caliper_raw_cali):
         grouping_attribute,
     )
 
-    gf = GraphFrame()
+    cali_json = subprocess.Popen(
+        [cali_query, "-q", query, sample_caliper_raw_cali],
+        stdout=subprocess.PIPE,
+    )
 
-    if sys.version_info >= (3, 0, 0):
-        cali_json = subprocess.run(
-            [cali_query, "-q", query, str(caliper_raw_cali)],
-            stdout=subprocess.PIPE,
-            universal_newlines=True,
-        )
-        gf.from_caliper(cali_json.stdout, "literal")
-    else:
-        cali_json = subprocess.check_output(
-            [cali_query, "-q", query, str(caliper_raw_cali)], universal_newlines=True
-        )
-        gf.from_caliper(cali_json, "literal")
+    gf = GraphFrame()
+    gf.from_caliper(cali_json.stdout)
+
+    assert len(gf.dataframe.groupby("name")) == 18
+
+
+def test_sample_json(sample_caliper_json):
+    """Sanity check the Caliper reader ingesting a JSON string literal."""
+    gf = GraphFrame()
+    gf.from_caliper(str(sample_caliper_json))
 
     assert len(gf.dataframe.groupby("name")) == 18

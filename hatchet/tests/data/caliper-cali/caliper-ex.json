@@ -1,0 +1,28 @@
+{
+  "data": [
+    [ 0.001297, 0.001297, null ],
+    [ 0.492491, 0.025327, 0 ],
+    [ 0.000102, 0.000102, 1 ],
+    [ 0.467062, 0.000226, 2 ],
+    [ 0.213027, 0.012400, 3 ],
+    [ 0.200627, 0.001854, 4 ],
+    [ 0.198773, 0.001841, 5 ],
+    [ 0.056681, 0.056681, 6 ],
+    [ 0.140251, 0.059643, 7 ],
+    [ 0.080608, 0.080608, 8 ],
+    [ 0.249181, 0.001367, 9 ],
+    [ 0.058562, 0.002862, 10 ],
+    [ 0.055700, 0.055700, 11 ],
+    [ 0.046019, 0.031685, 12 ],
+    [ 0.014334, 0.014334, 13 ],
+    [ 0.143233, 0.002410, 14 ],
+    [ 0.140823, 0.044917, 15 ],
+    [ 0.095906, 0.095906, 16 ],
+    [ 0.004628, 0.004628, 17 ]
+  ],
+  "columns": [ "inclusive#sum#time.duration", "sum#time.duration", "path" ],
+  "column_metadata": [ { "is_value": true }, { "is_value": true }, { "is_value": false }  ],
+  "nodes": [ { "label": "main", "column": "path" }, { "label": "TimeIncrement", "column": "path", "parent": 0 }, { "label": "LagrangeLeapFrog", "column": "path", "parent": 0 }, { "label": "LagrangeNodal", "column": "path", "parent": 2 }, { "label": "CalcForceForNodes", "column": "path", "parent": 3 }, { "label": "CalcVolumeForceForElems", "column": "path", "parent": 4 }, { "label": "IntegrateStressForElems", "column": "path", "parent": 5 }, { "label": "CalcHourglassControlForElems", "column": "path", "parent": 5 }, { "label": "CalcFBHourglassForceForElems", "column": "path", "parent": 7 }, { "label": "LagrangeElements", "column": "path", "parent": 2 }, { "label": "CalcLagrangeElements", "column": "path", "parent": 9 }, { "label": "CalcKinematicsForElems", "column": "path", "parent": 10 }, { "label": "CalcQForElems", "column": "path", "parent": 9 }, { "label": "CalcMonotonicQForElems", "column": "path", "parent": 12 }, { "label": "ApplyMaterialPropertiesForElems", "column": "path", "parent": 9 }, { "label": "EvalEOSForElems", "column": "path", "parent": 14 }, { "label": "CalcEnergyForElems", "column": "path", "parent": 15 }, { "label": "CalcTimeConstraintsForElems", "column": "path", "parent": 2 } ],
+  "cali.channel": "default",
+  "cali.caliper.version": "2.2.0-dev"
+}
