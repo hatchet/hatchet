@@ -15,6 +15,7 @@ import sys
 from .external.printtree import trees_as_text
 from .util.dot import trees_to_dot
 from .node import Node
+from .frame import Frame
 
 
 class Graph:
