@@ -88,13 +88,25 @@ def lulesh_caliper_json(data_dir, tmpdir):
 
 
 @pytest.fixture
-def caliper_raw_cali(data_dir, tmpdir):
+def sample_caliper_raw_cali(data_dir, tmpdir):
     """Builds a temporary directory containing the raw cali file."""
     cali_dir = os.path.join(data_dir, "caliper-cali")
     cali_file = os.path.join(cali_dir, "caliper-ex.cali")
 
     shutil.copy(cali_file, str(tmpdir))
     tmpfile = os.path.join(str(tmpdir), "caliper-ex.cali")
+
+    return tmpfile
+
+
+@pytest.fixture
+def sample_caliper_json(data_dir, tmpdir):
+    """Builds a temporary directory containing the sample cali-query JSON file."""
+    cali_dir = os.path.join(data_dir, "caliper-cali")
+    cali_file = os.path.join(cali_dir, "caliper-ex.json")
+
+    shutil.copy(cali_file, str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), "caliper-ex.json")
 
     return tmpfile
 

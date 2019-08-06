@@ -8,6 +8,7 @@ import sys
 import re
 
 import pandas as pd
+import six
 
 from ..node import Node
 from ..graph import Graph
@@ -39,7 +40,9 @@ class CaliperReader:
         self.nid_col_name = "nid"
 
     def read_json_sections(self):
-        if isinstance(self.filename_or_stream, basestring):
+        # if filename_or_stream is a str, then open the file, otherwise
+        # directly load the file-like object
+        if isinstance(self.filename_or_stream, str):
             with open(self.filename_or_stream) as cali_json:
                 json_obj = json.load(cali_json)
         else:
