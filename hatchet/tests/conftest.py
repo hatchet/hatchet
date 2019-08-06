@@ -284,8 +284,7 @@ def mock_dag_literal1():
                     "name": "E",
                     "metrics": {"time (inc)": 55.0, "time": 10.0},
                     "children": [
-                        {"name": "C", "metrics": {"time (inc)": 5.0, "time": 5.0}},
-                        {"name": "F", "metrics": {"time (inc)": 1.0, "time": 9.0}},
+                        {"name": "F", "metrics": {"time (inc)": 1.0, "time": 9.0}}
                     ],
                 },
             ],
@@ -323,8 +322,7 @@ def mock_dag_literal2():
                     "name": "E",
                     "metrics": {"time (inc)": 55.0, "time": 10.0},
                     "children": [
-                        {"name": "D", "metrics": {"time (inc)": 8.0, "time": 1.0}},
-                        {"name": "F", "metrics": {"time (inc)": 1.0, "time": 9.0}},
+                        {"name": "H", "metrics": {"time (inc)": 1.0, "time": 9.0}}
                     ],
                 },
             ],

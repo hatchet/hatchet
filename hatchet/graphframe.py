@@ -119,7 +119,8 @@ class GraphFrame:
 
     def copy(self):
         """Return a copy of the graphframe."""
-        graph_copy, node_clone = self.graph.copy()
+        node_clone = {}
+        graph_copy = self.graph.copy(node_clone)
         dataframe_copy = self.dataframe.copy()
 
         dataframe_copy["node"] = dataframe_copy["node"].apply(lambda x: node_clone[x])
@@ -273,6 +274,26 @@ class GraphFrame:
         new_graphframe.update_inclusive_columns()
 
         return new_graphframe
+
+    def unify(self, other):
+        """Returns a unified graphframe.
+
+        Ensure self and other have the same graph and same node IDs. This may
+        change the node IDs in the dataframe.
+
+        Update the graphs in the graphframe if they differ.
+        """
+        if self.graph is other.graph:
+            return
+
+        node_map = {}
+        union_graph = self.graph.union(other.graph, node_map)
+
+        self.dataframe["node"] = self.dataframe["node"].apply(lambda x: node_map[x])
+        other.dataframe["node"] = other.dataframe["node"].apply(lambda x: node_map[x])
+
+        self.graph = union_graph
+        other.graph = union_graph
 
     def __iadd__(self, other):
         """Computes column-wise sum of two dataframes with identical graphs."""

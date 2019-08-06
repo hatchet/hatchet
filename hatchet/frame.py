@@ -17,12 +17,12 @@ from functools import total_ordering
 class Frame:
     """The frame index for a node. The node only stores its frame.
 
-    Args:
+    Arguments:
        attrs (dict): Dictionary of attributes and values.
     """
 
     def __init__(self, attrs=None, **kwargs):
-        """Construt a frame from a dictionary, or from immediate kwargs.
+        """Construct a frame from a dictionary, or from immediate kwargs.
 
         Arguments:
             attrs (dict, optional): dictionary of attributes for this

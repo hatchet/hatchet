@@ -72,7 +72,7 @@ def test_getitem():
     assert f.get("b") == 2
     assert f.get("c") == 3
 
-    assert f.get("d") == None
+    assert f.get("d") is None
     assert f.get("d", "foo") == "foo"
 
     with pytest.raises(KeyError):

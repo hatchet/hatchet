@@ -41,3 +41,23 @@ def test_dag_not_equal(mock_dag_literal1, mock_dag_literal2):
     other.from_literal(mock_dag_literal2)
 
     assert gf.graph != other.graph
+
+
+def test_union_dag_same_structure(mock_dag_literal1):
+    # make graphs g1 and g2 that you know are equal
+    gf = GraphFrame()
+    gf.from_literal(mock_dag_literal1)
+
+    other = GraphFrame()
+    other.from_literal(mock_dag_literal1)
+
+    g1 = gf.graph
+    g2 = other.graph
+
+    assert g1 == g2
+
+    g3 = g1.union(g2)
+    assert g3 is not g1
+    assert g3 is not g2
+    assert g3 == g1
+    assert g3 == g2
