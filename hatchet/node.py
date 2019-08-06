@@ -130,7 +130,7 @@ class Node:
 
     @classmethod
     def from_lists(cls, lists):
-        """Construct a hierarchy of nodes from recursive lists.
+        r"""Construct a hierarchy of nodes from recursive lists.
 
         For example, this will construct a simple tree:
 
@@ -147,7 +147,7 @@ class Node:
              / |   | \
             d  e   f  g
 
-        And this will construct a simple diamond DAG::
+        And this will construct a simple diamond DAG:
 
             d = Node(Frame(name="d"))
             Node.from_lists(
@@ -165,7 +165,6 @@ class Node:
 
         In the above examples, the 'a' represents a Node with its
         frame == Frame(name="a").
-
         """
 
         def _from_lists(lists, parent):
@@ -173,13 +172,13 @@ class Node:
                 node = Node(Frame(name=lists[0]))
                 children = lists[1:]
                 for val in children:
-                    child = _from_lists(val, node)
+                    _ = _from_lists(val, node)
             elif isinstance(lists, str):
                 node = Node(Frame(name=lists))
             elif isinstance(lists, Node):
                 node = lists
             else:
-                raise ValueError("Argument must be str or list: %s" % lists)
+                raise ValueError("Argument must be str, list, or Node: %s" % lists)
 
             if parent:
                 node.add_parent(parent)
@@ -188,3 +187,8 @@ class Node:
             return node
 
         return _from_lists(lists, None)
+
+    def __repr__(self):
+        return "Node({%s})" % ", ".join(
+            "%s: %s" % (repr(k), repr(v)) for k, v in sorted(self.frame.attrs.items())
+        )

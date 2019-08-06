@@ -51,3 +51,8 @@ def test_traverse_dag():
     d = Node(Frame(name="d"))
     node = Node.from_lists(["a", ["b", d], ["c", d]])
     assert list(node.traverse(attrs="name")) == ["a", "b", "d", "c"]
+
+
+def test_node_repr():
+    d = Node(Frame(a=1, b=2, c=3))
+    assert repr(d) == "Node({'a': 1, 'b': 2, 'c': 3})"
