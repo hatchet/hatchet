@@ -17,16 +17,19 @@ pd.set_option("display.max_rows", None)
 
 
 if __name__ == "__main__":
-    filename = (
-        "hatchet/tests/data/caliper-lulesh-json/lulesh-sample-annotation-profile.json"
+    cali_file = "hatchet/tests/data/caliper-cali/caliper-ex.cali"
+
+    grouping_attribute = "function"
+    default_metric = "sum(sum#time.duration),inclusive_sum(sum#time.duration)"
+    query = "select function,%s group by %s format json-split" % (
+        default_metric,
+        grouping_attribute,
     )
 
     gf = ht.GraphFrame()
-    gf.from_caliper_json(filename)
+    gf.from_caliper(cali_file, query)
 
     print(gf.dataframe)
     print("\n")
 
     print(gf.graph.to_string(gf.graph.roots, gf.dataframe))
-    with open("test.dot", "w") as fileh:
-        fileh.write(gf.graph.to_dot(gf.graph.roots, gf.dataframe))

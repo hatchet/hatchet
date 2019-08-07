@@ -6,27 +6,32 @@
 import json
 import sys
 import re
+import subprocess
+import os
 
 import pandas as pd
-import six
 
 from ..node import Node
 from ..graph import Graph
 from ..frame import Frame
 from ..util.timer import Timer
+from ..util.executable import which
 
 
 class CaliperReader:
-    """Read in a Caliper split JSON file."""
+    """Read in a Caliper file (`cali` or split JSON) or file-like object."""
 
-    def __init__(self, filename_or_stream):
-        """Read from a cali_query JSON file.
+    def __init__(self, filename_or_stream, query=""):
+        """Read from Caliper files (`cali` or split JSON).
 
-        Arguments:
-            filename_or_stream (str or file-like): name of a
-                cali_query JSON file, OR an open file object.
+        Args:
+            filename_or_stream (str or file-like): name of a `cali` or
+                `cali-query` split JSON file, OR an open file object
+            query (str): cali-query arguments (for cali file)
         """
         self.filename_or_stream = filename_or_stream
+        self.filename_ext = ""
+        self.query = query
 
         self.json_data = {}
         self.json_cols = {}
@@ -39,7 +44,23 @@ class CaliperReader:
         self.timer = Timer()
         self.nid_col_name = "nid"
 
+        print(self.query)
+        if isinstance(self.filename_or_stream, str):
+            _, self.filename_ext = os.path.splitext(filename_or_stream)
+
     def read_json_sections(self):
+        # if cali-query exists, extract data from .cali to a file-like object
+        print(self.filename_ext)
+        if self.filename_ext == ".cali":
+            cali_query = which("cali-query")
+            if not cali_query:
+                raise ValueError("from_caliper() needs cali-query to query .cali file")
+            cali_json = subprocess.Popen(
+                [cali_query, "-q", self.query, self.filename_or_stream],
+                stdout=subprocess.PIPE,
+            )
+            self.filename_or_stream = cali_json.stdout
+
         # if filename_or_stream is a str, then open the file, otherwise
         # directly load the file-like object
         if isinstance(self.filename_or_stream, str):

@@ -37,9 +37,30 @@ class GraphFrame:
             self.inc_metrics,
         ) = reader.create_graphframe()
 
-    def from_caliper(self, filename):
-        """ Read in a Caliper cali_query JSON-split file or an open file object."""
-        reader = CaliperReader(filename)
+    def from_caliper(self, filename, query):
+        """Read in a Caliper `cali` file.
+
+        Args:
+            filename (str): name of a Caliper output file in `.cali` format.
+            query (str): cali-query in CalQL format.
+        """
+        reader = CaliperReader(filename, query)
+
+        (
+            self.graph,
+            self.dataframe,
+            self.exc_metrics,
+            self.inc_metrics,
+        ) = reader.create_graphframe()
+
+    def from_caliper_json(self, filename_or_stream):
+        """Read in a Caliper `cali-query` JSON-split file or an open file object.
+
+        Args:
+            filename_or_stream (str or file-like): name of a Caliper JSON-split
+                output file, or an open file object to read one
+        """
+        reader = CaliperReader(filename_or_stream)
 
         (
             self.graph,
