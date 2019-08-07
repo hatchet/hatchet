@@ -9,7 +9,7 @@ import pytest
 
 from hatchet import GraphFrame
 from hatchet.readers.caliper_reader import CaliperReader
-from executable import which
+from hatchet.util.executable import which
 
 annotations = [
     "main",
@@ -42,7 +42,7 @@ annotations = [
 def test_graphframe(lulesh_caliper_json):
     """Sanity test a GraphFrame object with known data."""
     gf = GraphFrame()
-    gf.from_caliper(str(lulesh_caliper_json))
+    gf.from_caliper_json(str(lulesh_caliper_json))
 
     assert len(gf.dataframe.groupby("name")) == 24
 
@@ -64,6 +64,22 @@ def test_read_calc_pi_database(lulesh_caliper_json):
 
 
 @pytest.mark.skipif(not which("cali-query"), reason="needs cali-query to be in path")
+def test_sample_cali(sample_caliper_raw_cali):
+    """Sanity check the Caliper reader ingesting a .cali file."""
+    grouping_attribute = "function"
+    default_metric = "sum(sum#time.duration),inclusive_sum(sum#time.duration)"
+    query = "select function,%s group by %s format json-split" % (
+        default_metric,
+        grouping_attribute,
+    )
+
+    gf = GraphFrame()
+    gf.from_caliper(str(sample_caliper_raw_cali), query)
+
+    assert len(gf.dataframe.groupby("name")) == 18
+
+
+@pytest.mark.skipif(not which("cali-query"), reason="needs cali-query to be in path")
 def test_json_string_literal(sample_caliper_raw_cali):
     """Sanity check the Caliper reader ingesting a JSON string literal."""
     cali_query = which("cali-query")
@@ -79,7 +95,7 @@ def test_json_string_literal(sample_caliper_raw_cali):
     )
 
     gf = GraphFrame()
-    gf.from_caliper(cali_json.stdout)
+    gf.from_caliper_json(cali_json.stdout)
 
     assert len(gf.dataframe.groupby("name")) == 18
 
@@ -87,6 +103,6 @@ def test_json_string_literal(sample_caliper_raw_cali):
 def test_sample_json(sample_caliper_json):
     """Sanity check the Caliper reader ingesting a JSON string literal."""
     gf = GraphFrame()
-    gf.from_caliper(str(sample_caliper_json))
+    gf.from_caliper_json(str(sample_caliper_json))
 
     assert len(gf.dataframe.groupby("name")) == 18
