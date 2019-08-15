@@ -12,12 +12,14 @@
 
 from functools import total_ordering
 
+from .frame import Frame
+
 
 @total_ordering
 class Node:
     """A node in the graph. The node only stores its frame."""
 
-    def __init__(self, frame_obj, parent):
+    def __init__(self, frame_obj, parent=None):
         self.frame = frame_obj
 
         self.parents = []
@@ -77,29 +79,37 @@ class Node:
 
         return True
 
-    def traverse(self, order="pre"):
-        """Traverse the tree depth-first and yield each node."""
+    def traverse(self, order="pre", attrs=None, visited=None):
+        """Traverse the tree depth-first and yield each node.
+
+        Arguments:
+            order (str):  "pre" or "post" for preorder or postorder (default pre)
+            attrs (list or str, optional): If provided, extract these fields
+                from nodes while traversing and yield them.
+        """
+        if order not in ("pre", "post"):
+            raise ValueError("order must be one of 'pre' or 'post'")
+
+        if visited is None:
+            visited = set()
+
+        key = id(self)
+        if key in visited:
+            return
+        visited.add(key)
+
+        def value(node):
+            return node if attrs is None else node.frame.values(attrs)
+
         if order == "pre":
-            yield self
+            yield value(self)
 
         for child in self.children:
-            for item in child.traverse(order):
+            for item in child.traverse(order, attrs, visited):
                 yield item
 
         if order == "post":
-            yield self
-
-    def traverse_bf(self):
-        """Traverse the tree breadth-first and yield each node."""
-        yield self
-        last = self
-
-        for node in self.traverse_bf():
-            for child in node.children:
-                yield child
-                last = child
-            if last == node:
-                return
+            yield value(self)
 
     def __hash__(self):
         return hash(id(self))
@@ -113,3 +123,68 @@ class Node:
     def __str__(self):
         """Returns a string representation of the node."""
         return str(self.frame)
+
+    def copy(self):
+        """Copy this node without preserving parents or children."""
+        return Node(self.frame.copy())
+
+    @classmethod
+    def from_lists(cls, lists):
+        """Construct a hierarchy of nodes from recursive lists.
+
+        For example, this will construct a simple tree:
+
+            Node.from_lists(
+                ["a",
+                    ["b", "d", "e"],
+                    ["c", "f", "g"],
+                ]
+            )
+
+                 a
+                / \
+               b   c
+             / |   | \
+            d  e   f  g
+
+        And this will construct a simple diamond DAG::
+
+            d = Node(Frame(name="d"))
+            Node.from_lists(
+                ["a",
+                    ["b", d],
+                    ["c", d]
+                ]
+            )
+
+                 a
+                / \
+               b   c
+                \ /
+                 d
+
+        In the above examples, the 'a' represents a Node with its
+        frame == Frame(name="a").
+
+        """
+
+        def _from_lists(lists, parent):
+            if isinstance(lists, (tuple, list)):
+                node = Node(Frame(name=lists[0]))
+                children = lists[1:]
+                for val in children:
+                    child = _from_lists(val, node)
+            elif isinstance(lists, str):
+                node = Node(Frame(name=lists))
+            elif isinstance(lists, Node):
+                node = lists
+            else:
+                raise ValueError("Argument must be str or list: %s" % lists)
+
+            if parent:
+                node.add_parent(parent)
+                parent.add_child(node)
+
+            return node
+
+        return _from_lists(lists, None)
