@@ -17,10 +17,10 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ET
 
-from .node import Node
-from .graph import Graph
-from .util.timer import Timer
-from .frame import Frame
+from ..node import Node
+from ..graph import Graph
+from ..util.timer import Timer
+from ..frame import Frame
 
 src_file = 0
 

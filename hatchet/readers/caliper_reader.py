@@ -9,10 +9,10 @@ import re
 
 import pandas as pd
 
-from .node import Node
-from .graph import Graph
-from .frame import Frame
-from .util.timer import Timer
+from ..node import Node
+from ..graph import Graph
+from ..frame import Frame
+from ..util.timer import Timer
 
 
 class CaliperReader:

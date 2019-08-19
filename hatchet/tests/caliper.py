@@ -3,7 +3,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-from hatchet import GraphFrame, CaliperReader
+from hatchet import GraphFrame
+from hatchet.readers.caliper_reader import CaliperReader
 
 annotations = [
     "main",
