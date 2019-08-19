@@ -15,6 +15,7 @@ import sys
 from .external.printtree import trees_as_text
 from .util.dot import trees_to_dot
 from .node import Node
+from .frame import Frame
 
 
 class Graph:
@@ -34,14 +35,14 @@ class Graph:
                 # do a breadth-first traversal of the tree
                 for node in root.traverse_bf():
                     if not node.parents:
-                        clone = Node(node.nid, tuple(node.callpath), None)
+                        clone = Node(Frame(node.frame.attrs.copy()), None)
                         list_roots.append(clone)
                     else:
                         # make a list of new parents to make connections with
                         new_parents = []
                         for parent in node.parents:
                             new_parents.append(node_clone[parent])
-                        clone = Node(node.nid, tuple(node.callpath), None)
+                        clone = Node(Frame(node.frame.attrs.copy()), None)
 
                         # connect child to parents and vice-versa
                         for parent in new_parents:
