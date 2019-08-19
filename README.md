@@ -23,6 +23,6 @@ To use hatchet, add the cloned directory to your PYTHONPATH.
 Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
 Produced at the Lawrence Livermore National Laboratory.
 
-Created by Abhinav Bhatele <bhatele@llnl.gov>.
+Created by Abhinav Bhatele <bhatele@cs.umd.edu>.
 LLNL-CODE-741008. All rights reserved.
 ```
