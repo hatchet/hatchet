@@ -309,38 +309,123 @@ class GraphFrame:
         self.graph = union_graph
         other.graph = union_graph
 
-    def __iadd__(self, other):
-        """Computes column-wise sum of two dataframes with identical graphs."""
-        for metric in self.exc_metrics + self.inc_metrics:
-            self.dataframe[metric] = self.dataframe[metric].add(other.dataframe[metric])
+    def _operator(self, other, op, *args, **kwargs):
+        """Generic function to apply operator to two dataframes and store
+        result in self.
+
+        Arguments:
+            self (graphframe): self's graphframe
+            other (graphframe): other's graphframe
+            op (operator): pandas arithmetic operator
+
+        Return:
+            (GraphFrame): self's graphframe modified
+        """
+        # unioned set of self and other exclusive and inclusive metrics
+        all_metrics = list(
+            set().union(
+                self.exc_metrics, self.inc_metrics, other.exc_metrics, other.inc_metrics
+            )
+        )
+
+        self.dataframe.update(op(other.dataframe[all_metrics], *args, **kwargs))
 
         return self
+
+    def add(self, other, *args, **kwargs):
+        """Returns the column-wise sum of two graphframes as a new graphframe.
+
+        This graphframe is the union of self's and other's graphs, and does not
+        modify self or other.
+
+        Return:
+            (GraphFrame): new graphframe
+        """
+        # create a copy of both graphframes
+        self_copy = self.copy()
+        other_copy = other.copy()
+
+        # unify copies of graphframes
+        self_copy.unify(other_copy)
+
+        return self_copy._operator(other_copy, self_copy.dataframe.add, *args, **kwargs)
+
+    def sub(self, other, *args, **kwargs):
+        """Returns the column-wise difference of two graphframes as a new
+        graphframe.
+
+        This graphframe is the union of self's and other's graphs, and does not
+        modify self or other.
+
+        Return:
+            (GraphFrame): new graphframe
+        """
+        # create a copy of both graphframes
+        self_copy = self.copy()
+        other_copy = other.copy()
+
+        # unify copies of graphframes
+        self_copy.unify(other_copy)
+
+        return self_copy._operator(other_copy, self_copy.dataframe.sub, *args, **kwargs)
+
+    def __iadd__(self, other):
+        """Computes column-wise sum of two graphframes and stores the result in
+        self.
+
+        Self's graphframe is the union of self's and other's graphs, and the
+        node handles from self will be rewritten with this operation. This
+        operation does not modify other.
+
+        Return:
+            (GraphFrame): self's graphframe modified
+        """
+        # create a copy of other's graphframe
+        other_copy = other.copy()
+
+        # unify self graphframe and copy of other graphframe
+        self.unify(other_copy)
+
+        return self._operator(other_copy, self.dataframe.add)
 
     def __add__(self, other):
-        """Computes column-wise sum of two dataframes with identical graphs."""
-        gf_copy = self.copy()
-        for metric in self.exc_metrics + self.inc_metrics:
-            gf_copy.dataframe[metric] = gf_copy.dataframe[metric].add(
-                other.dataframe[metric]
-            )
+        """Returns the column-wise sum of two graphframes as a new graphframe.
 
-        return gf_copy
+        This graphframe is the union of self's and other's graphs, and does not
+        modify self or other.
+
+        Return:
+            (GraphFrame): new graphframe
+        """
+        return self.add(other)
 
     def __isub__(self, other):
-        """Computes column-wise difference of two dataframes with identical graphs."""
-        for metric in self.exc_metrics + self.inc_metrics:
-            self.dataframe[metric] = self.dataframe[metric].subtract(
-                other.dataframe[metric]
-            )
+        """Computes column-wise difference of two graphframes and stores the
+        result in self.
 
-        return self
+        Self's graphframe is the union of self's and other's graphs, and the
+        node handles from self will be rewritten with this operation. This
+        operation does not modify other.
+
+        Return:
+            (GraphFrame): self's graphframe modified
+        """
+        # create a copy of other's graphframe
+        other_copy = other.copy()
+
+        # unify self graphframe and other graphframe
+        self.unify(other_copy)
+
+        return self._operator(other_copy, self.dataframe.sub)
 
     def __sub__(self, other):
-        """Computes column-wise difference of two dataframes with identical graphs."""
-        gf_copy = self.copy()
-        for metric in self.exc_metrics + self.inc_metrics:
-            gf_copy.dataframe[metric] = gf_copy.dataframe[metric].subtract(
-                other.dataframe[metric]
-            )
+        """Returns the column-wise difference of two graphframes as a new
+        graphframe.
 
-        return gf_copy
+        This graphframe is the union of self's and other's graphs, and does not
+        modify self or other.
+
+        Return:
+            (GraphFrame): new graphframe
+        """
+        return self.sub(other)
