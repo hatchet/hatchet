@@ -19,4 +19,3 @@ def test_copy(mock_graph_literal):
     other = gf.copy()
 
     assert gf.graph == other.graph
-
