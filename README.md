@@ -6,23 +6,54 @@ Hatchet
 [![Read the Docs](http://readthedocs.org/projects/hatchet/badge/?version=latest)](http://hatchet.readthedocs.io)
 [![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-Hatchet analyzes performance data that is organized in a tree hierarchy (such
-as calling context trees, call graphs, nested regions' timers etc.)
+Hatchet allows [Pandas](https://pandas.pydata.org/) dataframes to be
+indexed by structured tree and graph data.  It is intended for analyzing
+sequential and parallel profile data.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/LLNL/hatchet/master/screenshot.png" width=600>
 </p>
 
-### Running hatchet
+### Installing hatchet
 
-To use hatchet, add the cloned directory to your PYTHONPATH.
-
-### Copyright
+To use hatchet, install it with pip:
 
 ```
-Copyright (c) 2017-2019, Lawrence Livermore National Security, LLC.
-Produced at the Lawrence Livermore National Laboratory.
+$ pip install hatchet
+``
 
-Created by Abhinav Bhatele <bhatele@cs.umd.edu>.
-LLNL-CODE-741008. All rights reserved.
-```
+Or, if you want to develop with this repo directly, add the cloned
+directory to your `PYTHONPATH`.
+
+Authors
+----------------
+
+Many thanks go to Hatchet's
+[contributors](https://github.com/llnl/hatchet/graphs/contributors).
+
+Hatchet was originally written by Abhinav Bhatele, bhatele@cs.umd.edu.
+
+### Citing Hatchet
+
+If you are referencing Hatchet in a publication, please cite the
+following paper:
+
+ * Abhinav Bhatele, Stephanie Brink, and Todd Gamblin. Hatchet: Pruning
+   the Overgrowth in Parallel Profiles.  In *Supercomputing 2019
+   (SC'19)*, Denver, Colorado, November 17-22 2019. LLNL-CONF-772402.
+
+License
+----------------
+
+Hatchet is distributed under the terms of the MIT license.
+
+All contributions must be made under the MIT license.  Copyrights in the
+Hatchet project are retained by contributors.  No copyright assignment is
+required to contribute to Hatchet.
+
+See [LICENSE](https://github.com/llnl/hatchet/blob/master/LICENSE) and
+[NOTICE](https://github.com/llnl/hatchet/blob/master/NOTICE) for details.
+
+SPDX-License-Identifier: MIT
+
+LLNL-CODE-741008
