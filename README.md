@@ -20,13 +20,13 @@ To use hatchet, install it with pip:
 
 ```
 $ pip install hatchet
-``
+```
 
 Or, if you want to develop with this repo directly, add the cloned
 directory to your `PYTHONPATH`.
 
-Authors
-----------------
+### Authors
+
 
 Many thanks go to Hatchet's
 [contributors](https://github.com/llnl/hatchet/graphs/contributors).
@@ -42,8 +42,8 @@ following paper:
    the Overgrowth in Parallel Profiles.  In *Supercomputing 2019
    (SC'19)*, Denver, Colorado, November 17-22 2019. LLNL-CONF-772402.
 
-License
-----------------
+### License
+
 
 Hatchet is distributed under the terms of the MIT license.
 
