@@ -126,7 +126,10 @@ class GraphFrame:
         index_names = self.dataframe.index.names
         dataframe_copy.set_index(index_names, inplace=True, drop=False)
 
-        return GraphFrame(graph_copy, dataframe_copy)
+        gf_copy = GraphFrame(graph_copy, dataframe_copy)
+        gf_copy.exc_metrics = self.exc_metrics
+        gf_copy.inc_metrics = self.inc_metrics
+        return gf_copy
 
     def update_inclusive_columns(self):
         """Update inclusive columns (typically after operations that rewire the
