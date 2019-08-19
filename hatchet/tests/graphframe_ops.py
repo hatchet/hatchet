@@ -19,6 +19,8 @@ def test_copy(mock_graph_literal):
     other = gf.copy()
 
     assert gf.graph == other.graph
+    assert gf.inc_metrics == other.inc_metrics
+    assert gf.exc_metrics == other.exc_metrics
 
 
 def test_drop_index_levels(calc_pi_hpct_db):
