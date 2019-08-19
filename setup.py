@@ -26,7 +26,7 @@ setup(
     description="A Python library for analyzing hierarchical performance data",
     url="https://github.com/LLNL/hatchet",
     author="Abhinav Bhatele",
-    author_email="bhatele@llnl.gov",
+    author_email="bhatele@cs.umd.edu",
     license="MIT",
     classifiers=[
         "Development Status :: 3 - Alpha",
