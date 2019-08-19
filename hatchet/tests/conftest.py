@@ -235,10 +235,7 @@ def mock_graph_literal():
                     "name": "bar",
                     "metrics": {"time (inc)": 20.0, "time": 5.0},
                     "children": [
-                        {
-                            "name": "baz",
-                            "metrics": {"time (inc)": 5.0, "time": 5.0}
-                        },
+                        {"name": "baz", "metrics": {"time (inc)": 5.0, "time": 5.0}},
                         {
                             "name": "grault",
                             "metrics": {"time (inc)": 10.0, "time": 10.0},
