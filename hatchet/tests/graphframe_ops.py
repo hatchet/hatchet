@@ -26,3 +26,13 @@ def test_drop_index_levels(calc_pi_hpct_db):
     num_rows = len(gf.dataframe.index)
 
     assert num_nodes == num_rows
+
+def test_squash(mock_graph_literal):
+    """Test the squash operation with a foo-bar tree."""
+    gf = GraphFrame()
+    gf.from_literal(mock_graph_literal)
+
+    filtered_gf = gf.filter(lambda x: x["time"] > 5.0)
+
+    squashed_gf = filtered_gf.squash()
+    assert len(squashed_gf.dataframe) == 5

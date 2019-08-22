@@ -14,7 +14,6 @@ from .graph import Graph
 from .frame import Frame
 
 lit_idx = 0
-squ_idx = 0
 
 
 class GraphFrame:
@@ -192,7 +191,6 @@ class GraphFrame:
 
     def squash(self):
         """Squash the graph after a filtering operation on the graphframe."""
-        global squ_idx
         num_nodes = len(self.graph)
 
         # calculate number of unique nodes in the dataframe
@@ -209,9 +207,7 @@ class GraphFrame:
         # function to connect a node to the nearest descendants that are in the
         # list of filtered nodes
         def rewire_tree(node, clone, is_root, roots):
-            global squ_idx
-
-            cur_children = node.children
+            cur_children = list(node.children)
             new_children = []
 
             # iteratively go over the children of a node
@@ -224,19 +220,19 @@ class GraphFrame:
                         for grandchild in child.children:
                             cur_children.append(grandchild)
 
-            label_to_new_child = {}
+            frame_to_new_child = {}
             if node in filtered_nodes:
                 # create new clones for each child in new_children and rewire
                 # with this node
                 for new_child in new_children:
-                    node_label = new_child.frame
-                    if node_label not in label_to_new_child.keys():
-                        new_child_clone = Node(new_child.frame, clone)
-                        squ_idx += 1
+                    node_frame = new_child.frame
+                    if node_frame not in frame_to_new_child.keys():
+                        new_child_clone = Node(new_child.frame.copy(), clone)
                         clone.add_child(new_child_clone)
-                        label_to_new_child[node_label] = new_child_clone
+
+                        frame_to_new_child[node_frame] = new_child_clone
                     else:
-                        new_child_clone = label_to_new_child[node_label]
+                        new_child_clone = frame_to_new_child[node_frame]
 
                     node_clone[new_child] = new_child_clone
                     rewire_tree(new_child, new_child_clone, False, roots)
@@ -244,31 +240,30 @@ class GraphFrame:
                 # if we reach here, this root is not in the graph anymore
                 # make all its nearest descendants roots in the new graph
                 for new_child in new_children:
-                    new_child_clone = Node(new_child.frame, None)
+                    new_child_clone = Node(new_child.frame.copy(), None)
                     node_clone[new_child] = new_child_clone
-                    squ_idx += 1
                     roots.append(new_child_clone)
                     rewire_tree(new_child, new_child_clone, False, roots)
 
-        squ_idx = 0
 
         new_roots = []
         # only do a squash if a filtering operation has been applied
         if num_nodes != num_rows_df:
             for root in self.graph.roots:
                 if root in filtered_nodes:
-                    clone = Node(root.frame, None)
+                    clone = Node(root.frame.copy(), None)
                     new_roots.append(clone)
                     node_clone[root] = clone
-                    squ_idx += 1
                     rewire_tree(root, clone, True, new_roots)
                 else:
                     rewire_tree(root, None, True, new_roots)
 
-        # create new dataframe that cloned nodes
+
+        # create new dataframe with cloned nodes
         new_dataframe = self.dataframe.copy()
         new_dataframe["node"] = new_dataframe["node"].apply(lambda x: node_clone[x])
-        new_dataframe.reset_index(level="node", inplace=True, drop=True)
+        index_names = self.dataframe.index.names
+        new_dataframe.set_index(index_names, inplace=True, drop=False)
 
         # create dict that stores aggregation function for each column
         agg_dict = {}
@@ -279,8 +274,12 @@ class GraphFrame:
                 agg_dict[col] = lambda x: x.iloc[0]
 
         # perform a groupby to merge nodes with the same callpath
-        index_names = self.dataframe.index.names
-        agg_df = new_dataframe.groupby(index_names).agg(agg_dict)
+        new_dataframe["framepath"] = new_dataframe["node"].apply(lambda x: x.path())
+        print(new_dataframe)
+
+        agg_df = new_dataframe.groupby("framepath").agg(agg_dict)
+        agg_df.set_index(index_names, inplace=True, drop=False)
+        print(agg_df)
 
         new_graphframe = GraphFrame(Graph(new_roots), agg_df)
         new_graphframe.exc_metrics = self.exc_metrics
