@@ -60,6 +60,9 @@ class Frame:
     def __str__(self):
         return str(self.attrs)
 
+    def __repr__(self):
+        return "Frame(%s)" % str(self.attrs)
+
     @property
     def tuple_repr(self):
         """Make a tuple of attributes and values based on reader."""
