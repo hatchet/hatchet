@@ -83,3 +83,11 @@ def test_values():
     assert f.values("c") == 3
 
     assert f.values(["foo", "a", "bar", "c"]) == (None, 1, None, 3)
+
+
+def test_repr():
+    assert repr(Frame(foo="baz", bar="quux")) == "Frame({'foo': 'baz', 'bar': 'quux'})"
+
+
+def test_str():
+    assert str(Frame(foo="baz", bar="quux")) == "{'foo': 'baz', 'bar': 'quux'}"

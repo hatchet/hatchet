@@ -30,6 +30,43 @@ class Node:
         assert isinstance(node, Node)
         self.children.append(node)
 
+    def paths(self, attrs=None):
+        """List of tuples, one for each path from this node to any root.
+
+        Arguments:
+            attrs (str or list, optional): attribute(s) to extract from Frames.
+
+        Paths are tuples of Frame objects, or, if attrs is provided, they
+        are paths containing the requested attributes.
+
+        """
+        node_value = (self.frame,) if attrs is None else (self.frame.values(attrs),)
+        if not self.parents:
+            return [node_value]
+        else:
+            paths = []
+            for parent in self.parents:
+                parent_paths = parent.paths(attrs)
+                paths.extend([path + node_value for path in parent_paths])
+            return paths
+
+    def path(self, attrs=None):
+        """"Path to this node from root. Raises if there are multiple paths.
+
+        Arguments:
+            attrs (str or list, optional): attribute(s) to extract from Frames.
+
+        This is useful for trees (where each node only has one path), as
+        it just gets the only element from ``self.paths``.  This will
+        fail with a MultiplePathError if there is more than one path to
+        this node.
+
+        """
+        paths = self.paths(attrs)
+        if len(paths) > 1:
+            raise MultiplePathError("Node has more than one path: " % paths)
+        return paths[0]
+
     def check_dag_equal(self, other, vs=None, vo=None):
         """Check if DAG rooted at self has the same structure as that rooted at
         other.
@@ -185,3 +222,7 @@ class Node:
         return "Node({%s})" % ", ".join(
             "%s: %s" % (repr(k), repr(v)) for k, v in sorted(self.frame.attrs.items())
         )
+
+
+class MultiplePathError(Exception):
+    """Raised when a node is asked for a single path but has multiple."""
