@@ -304,7 +304,10 @@ class GraphFrame:
         union_graph = self.graph.union(other.graph, node_map)
 
         self.dataframe["node"] = self.dataframe["node"].apply(lambda x: node_map[x])
+        self.dataframe.set_index(self.dataframe.index.names, inplace=True, drop=False)
+
         other.dataframe["node"] = other.dataframe["node"].apply(lambda x: node_map[x])
+        other.dataframe.set_index(other.dataframe.index.names, inplace=True, drop=False)
 
         self.graph = union_graph
         other.graph = union_graph
