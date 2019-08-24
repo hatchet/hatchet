@@ -58,10 +58,13 @@ class Frame:
         return hash(self.tuple_repr)
 
     def __str__(self):
-        return str(self.attrs)
+        """str() wtih sorted attributes, so output is deterministic."""
+        return "{%s}" % ", ".join(
+            "'%s': '%s'" % (k, v) for k, v in sorted(self.attrs.items())
+        )
 
     def __repr__(self):
-        return "Frame(%s)" % str(self.attrs)
+        return "Frame(%s)" % self
 
     @property
     def tuple_repr(self):
