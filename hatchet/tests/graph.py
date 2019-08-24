@@ -19,6 +19,22 @@ def test_from_lists():
     assert list(g.traverse(attrs="name")) == ["e", "f", "a", "b", "d", "c", "g", "h"]
 
 
+def test_len_chain():
+    graph = Graph.from_lists(("a", "b", "c", "d", "e"))
+    assert len(graph) == 5
+
+
+def test_len_diamond():
+    d = Node(Frame(name="d"))
+    graph = Graph.from_lists(("a", ("b", d), ("c", d)))
+    assert len(graph) == 4
+
+
+def test_len_tree():
+    graph = Graph.from_lists(("a", ("b", "d"), ("c", "d")))
+    assert len(graph) == 5
+
+
 def test_copy():
     d = Node(Frame(name="d"))
     diamond_subdag = Node.from_lists(("a", ("b", d), ("c", d)))
