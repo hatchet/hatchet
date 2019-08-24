@@ -21,8 +21,7 @@ if __name__ == "__main__":
         "hatchet/tests/data/caliper-lulesh-json/lulesh-sample-annotation-profile.json"
     )
 
-    gf = ht.GraphFrame()
-    gf.from_caliper_json(filename)
+    gf = ht.GraphFrame.from_caliper_json(filename)
 
     print(gf.dataframe)
     print("\n")

@@ -5,13 +5,14 @@
 
 import pytest
 
+import pandas as pd
+
 from hatchet import GraphFrame
+from hatchet.graph import Graph
 
 
 def test_copy(mock_graph_literal):
-    gf = GraphFrame()
-    gf.from_literal(mock_graph_literal)
-
+    gf = GraphFrame.from_literal(mock_graph_literal)
     other = gf.copy()
 
     assert gf.graph == other.graph
@@ -20,8 +21,7 @@ def test_copy(mock_graph_literal):
 
 
 def test_drop_index_levels(calc_pi_hpct_db):
-    gf = GraphFrame()
-    gf.from_hpctoolkit(str(calc_pi_hpct_db))
+    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
     num_nodes = len(gf.graph)
 
     gf.drop_index_levels()
@@ -31,11 +31,8 @@ def test_drop_index_levels(calc_pi_hpct_db):
 
 
 def test_unify_hpctoolkit_data(calc_pi_hpct_db):
-    gf1 = GraphFrame()
-    gf1.from_hpctoolkit(str(calc_pi_hpct_db))
-
-    gf2 = GraphFrame()
-    gf2.from_hpctoolkit(str(calc_pi_hpct_db))
+    gf1 = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+    gf2 = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
 
     assert gf1.graph is not gf2.graph
     with pytest.raises(ValueError):
@@ -49,3 +46,17 @@ def test_unify_hpctoolkit_data(calc_pi_hpct_db):
     assert gf1.graph is gf2.graph
     assert all(gf1.dataframe["node"].apply(id) == gf2.dataframe["node"].apply(id))
     assert all(gf1.dataframe.index == gf2.dataframe.index)
+
+
+def test_invalid_constructor():
+    # bad Graph
+    with pytest.raises(ValueError):
+        GraphFrame(None, None)
+
+    # bad dataframe
+    with pytest.raises(ValueError):
+        GraphFrame(Graph([]), None)
+
+    # dataframe has no "node" index
+    with pytest.raises(ValueError):
+        GraphFrame(Graph([]), pd.DataFrame())

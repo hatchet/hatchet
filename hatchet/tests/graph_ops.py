@@ -7,42 +7,30 @@ from hatchet import GraphFrame
 
 
 def test_graph_equal(mock_graph_literal):
-    gf = GraphFrame()
-    gf.from_literal(mock_graph_literal)
-
-    other = GraphFrame()
-    other.from_literal(mock_graph_literal)
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    other = GraphFrame.from_literal(mock_graph_literal)
 
     assert gf.graph == other.graph
 
 
 def test_graph_not_equal(mock_graph_literal, calc_pi_hpct_db):
-    gf = GraphFrame()
-    gf.from_literal(mock_graph_literal)
-
-    other = GraphFrame()
-    other.from_hpctoolkit(str(calc_pi_hpct_db))
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    other = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
 
     assert gf.graph != other.graph
 
 
 def test_dag_not_equal(mock_dag_literal1, mock_dag_literal2):
-    gf = GraphFrame()
-    gf.from_literal(mock_dag_literal1)
-
-    other = GraphFrame()
-    other.from_literal(mock_dag_literal2)
+    gf = GraphFrame.from_literal(mock_dag_literal1)
+    other = GraphFrame.from_literal(mock_dag_literal2)
 
     assert gf.graph != other.graph
 
 
 def test_union_dag_same_structure(mock_dag_literal1):
     # make graphs g1 and g2 that you know are equal
-    gf = GraphFrame()
-    gf.from_literal(mock_dag_literal1)
-
-    other = GraphFrame()
-    other.from_literal(mock_dag_literal1)
+    gf = GraphFrame.from_literal(mock_dag_literal1)
+    other = GraphFrame.from_literal(mock_dag_literal1)
 
     g1 = gf.graph
     g2 = other.graph

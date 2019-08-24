@@ -32,8 +32,7 @@ if __name__ == "__main__":
         [cali_query, "-q", query, cali_file], stdout=subprocess.PIPE
     )
 
-    gf = ht.GraphFrame()
-    gf.from_caliper_json(cali_json.stdout)
+    gf = ht.GraphFrame.from_caliper_json(cali_json.stdout)
 
     print(gf.dataframe)
     print("\n")

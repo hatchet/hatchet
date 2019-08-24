@@ -8,8 +8,7 @@ from hatchet import GraphFrame
 
 def test_filter(mock_graph_literal):
     """Test the filter operation with a foo-bar tree."""
-    gf = GraphFrame()
-    gf.from_literal(mock_graph_literal)
+    gf = GraphFrame.from_literal(mock_graph_literal)
 
     filtered_gf = gf.filter(lambda x: x["time"] > 5.0)
     assert len(filtered_gf.dataframe) == 9
@@ -21,11 +20,8 @@ def test_filter(mock_graph_literal):
 
 
 def test_add(mock_graph_literal):
-    gf1 = GraphFrame()
-    gf1.from_literal(mock_graph_literal)
-
-    gf2 = GraphFrame()
-    gf2.from_literal(mock_graph_literal)
+    gf1 = GraphFrame.from_literal(mock_graph_literal)
+    gf2 = GraphFrame.from_literal(mock_graph_literal)
 
     assert gf1.graph is not gf2.graph
 
@@ -44,11 +40,8 @@ def test_add(mock_graph_literal):
 
 
 def test_sub(mock_graph_literal):
-    gf1 = GraphFrame()
-    gf1.from_literal(mock_graph_literal)
-
-    gf2 = GraphFrame()
-    gf2.from_literal(mock_graph_literal)
+    gf1 = GraphFrame.from_literal(mock_graph_literal)
+    gf2 = GraphFrame.from_literal(mock_graph_literal)
 
     assert gf1.graph is not gf2.graph
 
@@ -67,11 +60,8 @@ def test_sub(mock_graph_literal):
 
 
 def test_add_operator(mock_graph_literal):
-    gf1 = GraphFrame()
-    gf1.from_literal(mock_graph_literal)
-
-    gf2 = GraphFrame()
-    gf2.from_literal(mock_graph_literal)
+    gf1 = GraphFrame.from_literal(mock_graph_literal)
+    gf2 = GraphFrame.from_literal(mock_graph_literal)
 
     assert gf1.graph is not gf2.graph
 
@@ -90,11 +80,8 @@ def test_add_operator(mock_graph_literal):
 
 
 def test_sub_operator(mock_graph_literal):
-    gf1 = GraphFrame()
-    gf1.from_literal(mock_graph_literal)
-
-    gf2 = GraphFrame()
-    gf2.from_literal(mock_graph_literal)
+    gf1 = GraphFrame.from_literal(mock_graph_literal)
+    gf2 = GraphFrame.from_literal(mock_graph_literal)
 
     assert gf1.graph is not gf2.graph
 
@@ -114,11 +101,8 @@ def test_sub_operator(mock_graph_literal):
 
 
 def test_iadd_operator(mock_graph_literal):
-    gf1 = GraphFrame()
-    gf1.from_literal(mock_graph_literal)
-
-    gf2 = GraphFrame()
-    gf2.from_literal(mock_graph_literal)
+    gf1 = GraphFrame.from_literal(mock_graph_literal)
+    gf2 = GraphFrame.from_literal(mock_graph_literal)
 
     assert gf1.graph is not gf2.graph
 
@@ -138,11 +122,8 @@ def test_iadd_operator(mock_graph_literal):
 
 
 def test_isub_operator(mock_graph_literal):
-    gf1 = GraphFrame()
-    gf1.from_literal(mock_graph_literal)
-
-    gf2 = GraphFrame()
-    gf2.from_literal(mock_graph_literal)
+    gf1 = GraphFrame.from_literal(mock_graph_literal)
+    gf2 = GraphFrame.from_literal(mock_graph_literal)
 
     assert gf1.graph is not gf2.graph
 
