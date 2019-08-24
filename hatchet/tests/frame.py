@@ -86,8 +86,8 @@ def test_values():
 
 
 def test_repr():
-    assert repr(Frame(foo="baz", bar="quux")) == "Frame({'foo': 'baz', 'bar': 'quux'})"
+    assert repr(Frame(foo="baz", bar="quux")) == "Frame({'bar': 'quux', 'foo': 'baz'})"
 
 
 def test_str():
-    assert str(Frame(foo="baz", bar="quux")) == "{'foo': 'baz', 'bar': 'quux'}"
+    assert str(Frame(foo="baz", bar="quux")) == "{'bar': 'quux', 'foo': 'baz'}"
