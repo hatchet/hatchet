@@ -3,9 +3,10 @@
 [run]
 parallel = True
 branch = True
-source = hatchet
+source = .
 omit =
-     tests/*
+     hatchet/tests/*
+     examples/*
 
 [report]
 # Regexes for lines to exclude from consideration

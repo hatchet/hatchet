@@ -7,7 +7,7 @@ coverage:
       default: yes
 
 ignore:
-  - hatchet/tests/**/*
+  - hatchet/tests/.*
   - examples
 
 comment: off
