@@ -19,8 +19,7 @@ roots = [
 
 def test_graphframe(calc_pi_callgrind_dot):
     """Sanity test a GraphFrame object with known data."""
-    gf = GraphFrame()
-    gf.from_gprof_dot(str(calc_pi_callgrind_dot))
+    gf = GraphFrame.from_gprof_dot(str(calc_pi_callgrind_dot))
 
     assert len(gf.dataframe.groupby("name")) == 105
 

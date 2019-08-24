@@ -57,8 +57,7 @@ procedures = [
 
 def test_graphframe(calc_pi_hpct_db):
     """Sanity test a GraphFrame object with known data."""
-    gf = GraphFrame()
-    gf.from_hpctoolkit(str(calc_pi_hpct_db))
+    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
 
     assert len(gf.dataframe.groupby("module")) == 5
     assert len(gf.dataframe.groupby("file")) == 11

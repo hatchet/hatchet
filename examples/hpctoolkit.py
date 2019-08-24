@@ -18,8 +18,7 @@ pd.set_option("display.max_colwidth", 30)
 if __name__ == "__main__":
     dirname = "hatchet/tests/data/hpctoolkit-cpi-database"
 
-    gf = ht.GraphFrame()
-    gf.from_hpctoolkit(dirname)
+    gf = ht.GraphFrame.from_hpctoolkit(dirname)
 
     print(gf.dataframe.xs(0, level="rank"))
     print("\n")

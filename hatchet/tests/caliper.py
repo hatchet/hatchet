@@ -41,8 +41,7 @@ annotations = [
 
 def test_graphframe(lulesh_caliper_json):
     """Sanity test a GraphFrame object with known data."""
-    gf = GraphFrame()
-    gf.from_caliper_json(str(lulesh_caliper_json))
+    gf = GraphFrame.from_caliper_json(str(lulesh_caliper_json))
 
     assert len(gf.dataframe.groupby("name")) == 24
 
@@ -73,8 +72,7 @@ def test_sample_cali(sample_caliper_raw_cali):
         grouping_attribute,
     )
 
-    gf = GraphFrame()
-    gf.from_caliper(str(sample_caliper_raw_cali), query)
+    gf = GraphFrame.from_caliper(str(sample_caliper_raw_cali), query)
 
     assert len(gf.dataframe.groupby("name")) == 18
 
@@ -94,15 +92,13 @@ def test_json_string_literal(sample_caliper_raw_cali):
         [cali_query, "-q", query, sample_caliper_raw_cali], stdout=subprocess.PIPE
     )
 
-    gf = GraphFrame()
-    gf.from_caliper_json(cali_json.stdout)
+    gf = GraphFrame.from_caliper_json(cali_json.stdout)
 
     assert len(gf.dataframe.groupby("name")) == 18
 
 
 def test_sample_json(sample_caliper_json):
     """Sanity check the Caliper reader ingesting a JSON string literal."""
-    gf = GraphFrame()
-    gf.from_caliper_json(str(sample_caliper_json))
+    gf = GraphFrame.from_caliper_json(str(sample_caliper_json))
 
     assert len(gf.dataframe.groupby("name")) == 18

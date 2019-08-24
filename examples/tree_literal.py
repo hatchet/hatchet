@@ -16,8 +16,7 @@ pd.set_option("display.max_colwidth", 30)
 
 
 if __name__ == "__main__":
-    gf = ht.GraphFrame()
-    gf.from_literal(
+    gf = ht.GraphFrame.from_literal(
         [
             {
                 "name": "foo",

@@ -11,11 +11,12 @@ import os
 
 import pandas as pd
 
-from ..node import Node
-from ..graph import Graph
-from ..frame import Frame
-from ..util.timer import Timer
-from ..util.executable import which
+import hatchet.graphframe
+from hatchet.node import Node
+from hatchet.graph import Graph
+from hatchet.frame import Frame
+from hatchet.util.timer import Timer
+from hatchet.util.executable import which
 
 
 class CaliperReader:
@@ -143,7 +144,7 @@ class CaliperReader:
 
         return list_roots
 
-    def create_graphframe(self):
+    def read(self):
         """ Read the caliper JSON file to extract the calling context tree.
         """
         with self.timer.phase("read json"):
@@ -315,5 +316,6 @@ class CaliperReader:
             else:
                 exc_metrics.append(column)
 
-        graph = Graph(list_roots)
-        return graph, dataframe, exc_metrics, inc_metrics
+        return hatchet.graphframe.GraphFrame(
+            Graph(list_roots), dataframe, inc_metrics, exc_metrics
+        )

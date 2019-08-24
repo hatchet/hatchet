@@ -17,10 +17,11 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ET
 
-from ..node import Node
-from ..graph import Graph
-from ..util.timer import Timer
-from ..frame import Frame
+import hatchet.graphframe
+from hatchet.node import Node
+from hatchet.graph import Graph
+from hatchet.util.timer import Timer
+from hatchet.frame import Frame
 
 src_file = 0
 
@@ -166,10 +167,13 @@ class HPCToolkitReader:
         self.df_metrics["nid"] = self.df_metrics["nid"].astype(int, copy=False)
         self.df_metrics["rank"] = self.df_metrics["rank"].astype(int, copy=False)
 
-    def create_graphframe(self):
+    def read(self):
         """Read the experiment.xml file to extract the calling context tree and create
         a dataframe out of it. Then merge the two dataframes to create the final
         dataframe.
+
+        Return:
+            (GraphFrame): new GraphFrame with HPCToolkit data.
         """
         with self.timer.phase("fill tables"):
             self.fill_tables()
@@ -229,8 +233,9 @@ class HPCToolkitReader:
             else:
                 exc_metrics.append(column)
 
-        graph = Graph(list_roots)
-        return graph, dataframe, exc_metrics, inc_metrics
+        return hatchet.graphframe.GraphFrame(
+            Graph(list_roots), dataframe, exc_metrics, inc_metrics
+        )
 
     def parse_xml_children(self, xml_node, hnode, callpath):
         """Parses all children of an XML node."""

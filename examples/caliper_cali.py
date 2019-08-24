@@ -26,8 +26,7 @@ if __name__ == "__main__":
         grouping_attribute,
     )
 
-    gf = ht.GraphFrame()
-    gf.from_caliper(cali_file, query)
+    gf = ht.GraphFrame.from_caliper(cali_file, query)
 
     print(gf.dataframe)
     print("\n")
