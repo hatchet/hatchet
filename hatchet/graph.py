@@ -3,11 +3,24 @@
 #
 # SPDX-License-Identifier: MIT
 
+from collections import defaultdict
 import sys
 
 from .external.printtree import trees_as_text
 from .util.dot import trees_to_dot
 from .node import Node
+
+
+def index_by(attr, objects):
+    """Put objects into lists based on the value of an attribute.
+
+    Returns:
+        (dict): dictionary of lists of objects, keyed by attribute value.
+    """
+    index = defaultdict(lambda: [])
+    for obj in objects:
+        index[getattr(obj, attr)].append(obj)
+    return index
 
 
 class Graph:
@@ -34,6 +47,63 @@ class Graph:
         for root in self.roots:
             for value in root.traverse(attrs=attrs, visited=visited):
                 yield value
+
+    def find_merges(self):
+        """Find nodes that have the same parent and frame.
+
+        Find nodes that have the same parent and duplicate frame, and
+        return a mapping from nodes that shoudl be eliminated to nodes
+        they should be merged into.
+
+        Return:
+            (dict): dictionary from nodes to their merge targets.
+
+        """
+        merges = {}  # old_node -> merged_node
+
+        def _find_child_merges(node_list):
+            index = index_by("frame", node_list)
+            for frame, children in index.items():
+                if len(children) > 1:
+                    min_id = min(children, key=id)
+                    for child in children:
+                        prev_min = merges.get(child, min_id)
+                        merges[child] = min([min_id, prev_min], key=id)
+
+        _find_child_merges(self.roots)
+        for node in self.traverse():
+            _find_child_merges(node.children)
+
+        return merges
+
+    def merge_nodes(self, merges):
+        """Merge some nodes in a graph into others.
+
+        ``merges`` is a dictionary keyed by old nodes, with values equal
+        to the nodes that they need to be merged into.  Old nodes'
+        parents and children are connected to the new node.
+
+        Arguments:
+            merges (dict): dictionary from source nodes -> targets
+
+        """
+
+        def transform(node_list):
+            return sorted(set(merges.get(n, n) for n in node_list))
+
+        for old, new in merges.items():
+            new.parents = transform(new.parents + old.parents)
+            for parent in new.parents:
+                parent.children = transform(parent.children)
+            new.children = transform(new.children + old.children)
+            for child in new.children:
+                child.parents = transform(child.parents)
+        self.roots = transform(self.roots)
+
+    def normalize(self):
+        merges = self.find_merges()
+        self.merge_nodes(merges)
+        return merges
 
     def copy(self, old_to_new=None):
         """Create and return a copy of this graph.
