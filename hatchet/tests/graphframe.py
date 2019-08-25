@@ -8,7 +8,9 @@ import pytest
 import pandas as pd
 
 from hatchet import GraphFrame
+from hatchet.frame import Frame
 from hatchet.graph import Graph
+from hatchet.node import Node
 
 
 def test_copy(mock_graph_literal):
@@ -60,3 +62,145 @@ def test_invalid_constructor():
     # dataframe has no "node" index
     with pytest.raises(ValueError):
         GraphFrame(Graph([]), pd.DataFrame())
+
+
+def test_from_lists():
+    gf = GraphFrame.from_lists(("a", ("b", "c"), ("d", "e")))
+
+    assert list(gf.graph.traverse(attrs="name")) == ["a", "b", "c", "d", "e"]
+
+    assert all(gf.dataframe["time"] == ([1.0] * 5))
+
+    nodes = set(gf.graph.traverse())
+    assert all(node in gf.dataframe["node"] for node in nodes)
+
+
+def check_filter_squash(gf, filter_func, expected_graph):
+    """Ensure filtering and squashing results in the right Graph and GraphFrame."""
+    orig_graph = gf.graph.copy()
+
+    filtered = gf.filter(filter_func)
+    assert filtered.graph is gf.graph
+    assert filtered.graph == orig_graph
+    assert all(n in filtered.graph.traverse() for n in filtered.dataframe["node"])
+
+    squashed = filtered.squash()
+    assert filtered.graph is gf.graph
+    assert filtered.graph is not squashed.graph
+    assert all(n not in gf.graph.traverse() for n in squashed.dataframe["node"])
+
+    assert len(squashed.dataframe.index) == len(expected_graph)
+    assert squashed.graph == expected_graph
+    squashed_node_names = list(expected_graph.traverse(attrs="name"))
+    assert all(
+        n.frame["name"] in squashed_node_names for n in squashed.dataframe["node"]
+    )
+
+
+def test_filter_squash():
+    r"""Test squash on a simple tree with one root.
+
+          a
+         / \      remove bd     a
+        b   d    ---------->   / \
+       /      \               c   e
+      c        e
+
+    """
+    check_filter_squash(
+        GraphFrame.from_lists(("a", ("b", "c"), ("d", "e"))),
+        lambda row: row["node"].frame["name"] in ("a", "c", "e"),
+        Graph.from_lists(("a", "c", "e")),
+    )
+
+
+def test_filter_squash_different_roots():
+    r"""Test squash on a simple tree with one root but make multiple roots.
+
+          a
+         / \      remove a     b  d
+        b   d    --------->   /    \
+       /      \              c      e
+      c        e
+
+    """
+    check_filter_squash(
+        GraphFrame.from_lists(("a", ("b", "c"), ("d", "e"))),
+        lambda row: row["node"].frame["name"] != "a",
+        Graph.from_lists(("b", "c"), ("d", "e")),
+    )
+
+
+def test_filter_squash_diamond():
+    r"""Test taht diamond edges are collapsed when squashing.
+
+    Ensure we can handle the most basic DAG.
+
+            a
+           / \      remove bc     a
+          b   c    ---------->    |
+           \ /                    d
+            d
+
+    """
+    d = Node(Frame(name="d"))
+    check_filter_squash(
+        GraphFrame.from_lists(("a", ("b", d), ("c", d))),
+        lambda row: row["node"].frame["name"] not in ("b", "c"),
+        Graph.from_lists(("a", "d")),
+    )
+
+
+def test_filter_squash_bunny():
+    r"""Test squash on a complicated "bunny" shaped graph.
+
+    This has multiple roots as well as multiple parents that themselves
+    have parents.
+
+          e   g
+         / \ / \
+        f   a   h    remove abc     e   g
+           / \      ----------->   / \ / \
+          b   c                   f   d   h
+           \ /
+            d
+
+    """
+    d = Node(Frame(name="d"))
+    diamond = Node.from_lists(("a", ("b", d), ("c", d)))
+
+    new_d = Node(Frame(name="d"))
+
+    check_filter_squash(
+        GraphFrame.from_lists(("e", "f", diamond), ("g", diamond, "h")),
+        lambda row: row["node"].frame["name"] not in ("a", "b", "c"),
+        Graph.from_lists(("e", "f", new_d), ("g", new_d, "h")),
+    )
+
+
+def test_filter_squash_bunny_to_goat():
+    r"""Test squash on a "bunny" shaped graph:
+
+    This one is more complex because there are more transitive edges to
+    maintain between the roots (e, g) and b and c.
+
+          e   g                     e   g
+         / \ / \                   /|\ /|\
+        f   a   h    remove ac    f | b | h
+           / \      ---------->     | | |
+          b   c                      \|/
+           \ /                        d
+            d
+
+    """
+    d = Node(Frame(name="d"))
+    diamond = Node.from_lists(("a", ("b", d), ("c", d)))
+
+    new_d = Node(Frame(name="d"))
+    new_b = Node.from_lists(("b", new_d))
+
+    check_filter_squash(
+        GraphFrame.from_lists(("e", "f", diamond), ("g", diamond, "h")),
+        lambda row: row["node"].frame["name"] not in ("a", "c"),
+        Graph.from_lists(("e", "f", new_d, new_b), ("g", new_b, new_d, "h")),
+    )

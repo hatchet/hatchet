@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+from collections import defaultdict
 import pandas as pd
 import numpy
 
@@ -192,6 +193,23 @@ class GraphFrame:
 
         return GraphFrame(Graph(list_roots), dataframe, exc_metrics, inc_metrics)
 
+    @staticmethod
+    def from_lists(*lists):
+        """Make a simple GraphFrame from lists.
+
+        This creates a Graph from lists (see Graph.from_lists) and uses
+        it as the index for a new GraphFrame.  Every node in the new
+        graph has exclusive time of 1 and no inclusive time.
+
+        """
+        graph = Graph.from_lists(*lists)
+
+        df = pd.DataFrame({"node": graph.traverse()})
+        df.set_index(["node"], inplace=True, drop=False)
+        df["time"] = [1.0] * len(graph)
+
+        return GraphFrame(graph, df, ["time"], [])
+
     def copy(self):
         """Return a copy of the graphframe."""
         node_clone = {}
@@ -251,103 +269,65 @@ class GraphFrame:
         return filtered_gf
 
     def squash(self):
-        """Squash the graph after a filtering operation on the graphframe."""
-        global squ_idx
-        num_nodes = len(self.graph)
+        """Rewrite the Graph to include only nodes present in the DataFrame's rows.
 
-        # calculate number of unique nodes in the dataframe
-        # and a set of filtered nodes
-        if "rank" in self.dataframe.index.names:
-            num_rows_df = len(self.dataframe.groupby(["node"]))
-            filtered_nodes = self.dataframe.index.levels[0]
-        else:
-            num_rows_df = len(self.dataframe.index)
-            filtered_nodes = self.dataframe.index
+        This can be used to simplify the Graph, or to normalize Graph
+        indexes between two GraphFrames.
+        """
+        # create new nodes for each unique node in the old dataframe
+        old_to_new = {n: n.copy() for n in set(self.dataframe["node"])}
 
-        node_clone = {}
+        # Maintain sets of connections to make for each old node.
+        # Start with old -> new mapping and update as we traverse subgraphs.
+        connections = defaultdict(lambda: set())
+        connections.update({k: {v} for k, v in old_to_new.items()})
 
-        # function to connect a node to the nearest descendants that are in the
-        # list of filtered nodes
-        def rewire_tree(node, clone, is_root, roots):
-            global squ_idx
+        new_roots = []  # list of new roots
 
-            cur_children = node.children
-            new_children = []
+        # connect new nodes to children according to transitive
+        # relationships in the old graph.
+        def rewire(node, new_parent, visited):
+            # make all transitive connections for the node we're visiting
+            for n in connections[node]:
+                if new_parent:
+                    # there is a parent in the new graph; connect it
+                    if n not in new_parent.children:
+                        new_parent.add_child(n)
+                        n.add_parent(new_parent)
 
-            # iteratively go over the children of a node
-            while cur_children:
-                for child in cur_children:
-                    cur_children.remove(child)
-                    if child in filtered_nodes:
-                        new_children.append(child)
-                    else:
-                        for grandchild in child.children:
-                            cur_children.append(grandchild)
+                elif n not in new_roots:
+                    # this is a new root
+                    new_roots.append(n)
 
-            label_to_new_child = {}
-            if node in filtered_nodes:
-                # create new clones for each child in new_children and rewire
-                # with this node
-                for new_child in new_children:
-                    node_label = new_child.frame
-                    if node_label not in label_to_new_child.keys():
-                        new_child_clone = Node(new_child.frame, clone)
-                        squ_idx += 1
-                        clone.add_child(new_child_clone)
-                        label_to_new_child[node_label] = new_child_clone
-                    else:
-                        new_child_clone = label_to_new_child[node_label]
+            new_node = old_to_new.get(node)
+            transitive = set()
+            if node not in visited:
+                visited.add(node)
+                for child in node.children:
+                    transitive |= rewire(child, new_node or new_parent, visited)
 
-                    node_clone[new_child] = new_child_clone
-                    rewire_tree(new_child, new_child_clone, False, roots)
-            elif is_root:
-                # if we reach here, this root is not in the graph anymore
-                # make all its nearest descendants roots in the new graph
-                for new_child in new_children:
-                    new_child_clone = Node(new_child.frame, None)
-                    node_clone[new_child] = new_child_clone
-                    squ_idx += 1
-                    roots.append(new_child_clone)
-                    rewire_tree(new_child, new_child_clone, False, roots)
-
-        squ_idx = 0
-
-        new_roots = []
-        # only do a squash if a filtering operation has been applied
-        if num_nodes != num_rows_df:
-            for root in self.graph.roots:
-                if root in filtered_nodes:
-                    clone = Node(root.frame, None)
-                    new_roots.append(clone)
-                    node_clone[root] = clone
-                    squ_idx += 1
-                    rewire_tree(root, clone, True, new_roots)
-                else:
-                    rewire_tree(root, None, True, new_roots)
-
-        # create new dataframe that cloned nodes
-        new_dataframe = self.dataframe.copy()
-        new_dataframe["node"] = new_dataframe["node"].apply(lambda x: node_clone[x])
-        new_dataframe.reset_index(level="node", inplace=True, drop=True)
-
-        # create dict that stores aggregation function for each column
-        agg_dict = {}
-        for col in new_dataframe.columns.tolist():
-            if col in self.exc_metrics + self.inc_metrics:
-                agg_dict[col] = numpy.sum
+            if new_node:
+                # since new_node exists in the squashed graph, we only
+                # need to connect new_node
+                return {new_node}
             else:
-                agg_dict[col] = lambda x: x.iloc[0]
+                # connect parents to the first transitively reachable
+                # new_nodes of nodes we're removing with this squash
+                connections[node] |= transitive
+                return connections[node]
 
-        # perform a groupby to merge nodes with the same callpath
-        index_names = self.dataframe.index.names
-        agg_df = new_dataframe.groupby(index_names).agg(agg_dict)
+        # kick off rewire from each root, using a common visited set.
+        visited = set()
+        for root in self.graph.roots:
+            rewire(root, None, visited)
 
-        new_graphframe = GraphFrame(Graph(new_roots), agg_df)
-        new_graphframe.exc_metrics = self.exc_metrics
-        new_graphframe.inc_metrics = self.inc_metrics
-        new_graphframe.update_inclusive_columns()
+        # reindex new dataframe with new nodes
+        new_df = self.dataframe.copy()
+        new_df["node"] = new_df["node"].apply(lambda x: old_to_new[x])
+        new_df.set_index(self.dataframe.index.names, inplace=True, drop=False)
 
-        return new_graphframe
+        # put it all together
+        return GraphFrame(Graph(new_roots), new_df, self.exc_metrics, self.inc_metrics)
 
     def unify(self, other):
         """Returns a unified graphframe.
