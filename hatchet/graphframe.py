@@ -316,18 +316,30 @@ class GraphFrame:
                 connections[node] |= transitive
                 return connections[node]
 
-        # kick off rewire from each root, using a common visited set.
+        # run rewire for each root and make a new graph
         visited = set()
         for root in self.graph.roots:
             rewire(root, None, visited)
+        graph = Graph(new_roots)
 
         # reindex new dataframe with new nodes
-        new_df = self.dataframe.copy()
-        new_df["node"] = new_df["node"].apply(lambda x: old_to_new[x])
-        new_df.set_index(self.dataframe.index.names, inplace=True, drop=False)
+        df = self.dataframe.copy()
+        df["node"] = df["node"].apply(lambda x: old_to_new[x])
+        df.set_index(self.dataframe.index.names, inplace=True, drop=False)
+
+        # at this point, the graph is potentially invalid, as some nodes
+        # may have children with identical frames.
+        merges = graph.normalize()
+        df["node"] = df["node"].apply(lambda n: merges.get(n, n))
+
+        # aggregate metrics from old nodes into new nodes, then restore the index
+        index_names = df.index.names
+        df.reset_index(inplace=True, drop=True)
+        df = df.groupby("node", as_index=False).agg("sum")
+        df.set_index(index_names, drop=False, inplace=True)
 
         # put it all together
-        return GraphFrame(Graph(new_roots), new_df, self.exc_metrics, self.inc_metrics)
+        return GraphFrame(graph, df, self.exc_metrics, self.inc_metrics)
 
     def unify(self, other):
         """Returns a unified graphframe.

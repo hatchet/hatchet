@@ -89,8 +89,8 @@ def check_filter_squash(gf, filter_func, expected_graph):
     assert filtered.graph is not squashed.graph
     assert all(n not in gf.graph.traverse() for n in squashed.dataframe["node"])
 
-    assert len(squashed.dataframe.index) == len(expected_graph)
     assert squashed.graph == expected_graph
+    assert len(squashed.dataframe.index) == len(expected_graph)
     squashed_node_names = list(expected_graph.traverse(attrs="name"))
     assert all(
         n.frame["name"] in squashed_node_names for n in squashed.dataframe["node"]
@@ -111,6 +111,50 @@ def test_filter_squash():
         GraphFrame.from_lists(("a", ("b", "c"), ("d", "e"))),
         lambda row: row["node"].frame["name"] in ("a", "c", "e"),
         Graph.from_lists(("a", "c", "e")),
+    )
+
+
+def test_filter_squash_with_merge():
+    r"""Test squash with a simple node merge.
+
+          a
+         / \      remove bd     a
+        b   d    ---------->    |
+       /      \                 c
+      c        c
+
+    Note that here, because b and d have been removed, a will have only
+    one child called c, which will contain merged (summed) data from the
+    original c rows.
+
+    """
+    check_filter_squash(
+        GraphFrame.from_lists(("a", ("b", "c"), ("d", "c"))),
+        lambda row: row["node"].frame["name"] in ("a", "c"),
+        Graph.from_lists(("a", "c")),
+    )
+
+
+def test_filter_squash_with_rootless_merge():
+    r"""Test squash on a simple tree with several rootless node merges.
+
+               a
+          ___/ | \___     remove abcd
+         b     c     d   ------------>  e f g
+        /|\   /|\   /|\
+       e f g e f g e f g
+
+    Note that here, because b and d have been removed, a will have only
+    one child called c, which will contain merged (summed) data from the
+    original c rows.
+
+    """
+    check_filter_squash(
+        GraphFrame.from_lists(
+            ("a", ("b", "e", "f", "g"), ("c", "e", "f", "g"), ("d", "e", "f", "g"))
+        ),
+        lambda row: row["node"].frame["name"] not in ("a", "b", "c", "d"),
+        Graph.from_lists(["e"], ["f"], ["g"]),
     )
 
 
