@@ -248,3 +248,31 @@ def test_filter_squash_bunny_to_goat():
         lambda row: row["node"].frame["name"] not in ("a", "c"),
         Graph.from_lists(("e", "f", new_d, new_b), ("g", new_b, new_d, "h")),
     )
+
+
+@pytest.mark.xfail
+def test_filter_squash_bunny_to_goat_with_merge():
+    r"""Test squash on a "bunny" shaped graph:
+
+    This one is more complex because there are more transitive edges to
+    maintain between the roots (e, g) and b and c.
+
+          e   g
+         / \ / \
+        f   a   h    remove ac      e   g
+           / \      ---------->    / \ / \
+          b   c                   f   b   h
+           \ /
+            b
+
+    """
+    b = Node(Frame(name="b"))
+    diamond = Node.from_lists(("a", ("b", b), ("c", b)))
+
+    new_b = Node(Frame(name="b"))
+
+    check_filter_squash(
+        GraphFrame.from_lists(("e", "f", diamond), ("g", diamond, "h")),
+        lambda row: row["node"].frame["name"] not in ("a", "c"),
+        Graph.from_lists(("e", "f", new_b), ("g", new_b, "h")),
+    )
