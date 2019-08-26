@@ -214,6 +214,19 @@ class GraphFrame:
         return gf
 
     def copy(self):
+        """Return a shallow copy of the graphframe.
+
+        This copies the DataFrame, but the Graph is shared between `self` and
+        the new GraphFrame.
+        """
+        return GraphFrame(
+            self.graph,
+            self.dataframe.copy(),
+            list(self.exc_metrics),
+            list(self.inc_metrics),
+        )
+
+    def deepcopy(self):
         """Return a copy of the graphframe."""
         node_clone = {}
         graph_copy = self.graph.copy(node_clone)
