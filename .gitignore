@@ -4,6 +4,7 @@
 
 experiment.xml
 docs/_build
+examples/test.dot
 
 *.metric-db
 *.egg-info
