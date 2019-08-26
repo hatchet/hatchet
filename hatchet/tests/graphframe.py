@@ -18,7 +18,19 @@ def test_copy(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
     other = gf.copy()
 
+    assert gf.graph is other.graph
+    assert gf.dataframe is not other.dataframe
+    assert gf.dataframe.equals(other.dataframe)
+    assert gf.inc_metrics == other.inc_metrics
+    assert gf.exc_metrics == other.exc_metrics
+
+
+def test_deepcopy(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    other = gf.deepcopy()
+
     assert gf.graph == other.graph
+    assert gf.dataframe is not other.dataframe
     assert gf.inc_metrics == other.inc_metrics
     assert gf.exc_metrics == other.exc_metrics
 

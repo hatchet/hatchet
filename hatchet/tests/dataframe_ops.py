@@ -33,7 +33,7 @@ def test_add(mock_graph_literal):
     assert gf3.dataframe["time (inc)"].sum() == 1280
 
     gf4 = gf3.copy()
-    assert gf4.graph == gf3.graph
+    assert gf4.graph is gf3.graph
 
     gf5 = gf3.add(gf4)
     assert gf5.graph == gf3.graph == gf4.graph
@@ -53,7 +53,7 @@ def test_sub(mock_graph_literal):
         assert gf3.dataframe[metric].sum() == 0
 
     gf4 = gf3.copy()
-    assert gf4.graph == gf3.graph
+    assert gf4.graph is gf3.graph
 
     gf5 = gf3.sub(gf4)
     assert gf5.graph == gf3.graph == gf4.graph
@@ -73,7 +73,7 @@ def test_add_operator(mock_graph_literal):
     assert gf3.dataframe["time (inc)"].sum() == 1280
 
     gf4 = gf3.copy()
-    assert gf4.graph == gf3.graph
+    assert gf4.graph is gf3.graph
 
     gf5 = gf3 + gf4
     assert gf5.graph == gf3.graph == gf4.graph
@@ -93,7 +93,7 @@ def test_sub_operator(mock_graph_literal):
         assert gf3.dataframe[metric].sum() == 0
 
     gf4 = gf3.copy()
-    assert gf4.graph == gf3.graph
+    assert gf4.graph is gf3.graph
 
     gf5 = gf3.sub(gf4)
 
@@ -114,7 +114,7 @@ def test_iadd_operator(mock_graph_literal):
     assert gf1.dataframe["time (inc)"].sum() == 1280
 
     gf3 = gf1.copy()
-    assert gf3.graph == gf1.graph
+    assert gf3.graph is gf1.graph
 
     gf3 += gf1
 
@@ -135,7 +135,7 @@ def test_isub_operator(mock_graph_literal):
         assert gf1.dataframe[metric].sum() == 0
 
     gf3 = gf1.copy()
-    assert gf3.graph == gf1.graph
+    assert gf3.graph is gf1.graph
 
     gf3 -= gf1
 
