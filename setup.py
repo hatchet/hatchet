@@ -26,6 +26,12 @@ setup(
         "License :: OSI Approved :: MIT License",
     ],
     keywords="",
-    packages=["hatchet", "hatchet.readers", "hatchet.util", "hatchet.external", "hatchet.tests"],
+    packages=[
+        "hatchet",
+        "hatchet.readers",
+        "hatchet.util",
+        "hatchet.external",
+        "hatchet.tests",
+    ],
     install_requires=["pydot"],
 )
