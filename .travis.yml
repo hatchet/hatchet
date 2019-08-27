@@ -10,7 +10,7 @@ jobs:
       os: linux
       language: python
       script:
-        - black --check .
+        - black --diff --check .
         - flake8
     - stage: "unit tests"
       python: '2.7'
