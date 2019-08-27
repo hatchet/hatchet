@@ -348,3 +348,18 @@ def test_filter_squash_bunny_to_goat_with_merge():
         Graph.from_lists(("e", new_b, "f"), ("g", new_b, "h")),
         [4, 2, 1, 4, 1],  # e, b, f, g, h
     )
+
+
+def test_filter_squash_mock_literal(mock_graph_literal):
+    """Test the squash operation with a foo-bar tree."""
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    print(gf.dataframe)
+    nodes = list(gf.graph.traverse())
+    assert not all(gf.dataframe.loc[nodes, "time"] > 5.0)
+    filtered_gf = gf.filter(lambda x: x["time"] > 5.0)
+
+    squashed_gf = filtered_gf.squash()
+    print(squashed_gf.dataframe)
+    squashed_nodes = list(squashed_gf.graph.traverse())
+    assert all(squashed_gf.dataframe.loc[squashed_nodes, "time"] > 5.0)
+    assert len(squashed_gf.graph) == 7
