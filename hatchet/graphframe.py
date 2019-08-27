@@ -5,7 +5,7 @@
 
 from collections import defaultdict
 import pandas as pd
-import numpy
+import numpy as np
 
 from .node import Node
 from .graph import Graph
@@ -199,7 +199,8 @@ class GraphFrame:
 
         This creates a Graph from lists (see Graph.from_lists) and uses
         it as the index for a new GraphFrame.  Every node in the new
-        graph has exclusive time of 1 and no inclusive time.
+        graph has exclusive time of 1 and inclusive time is computed
+        automatically.
 
         """
         graph = Graph.from_lists(*lists)
@@ -208,7 +209,9 @@ class GraphFrame:
         df.set_index(["node"], inplace=True, drop=False)
         df["time"] = [1.0] * len(graph)
 
-        return GraphFrame(graph, df, ["time"], [])
+        gf = GraphFrame(graph, df, ["time"], [])
+        gf.update_inclusive_columns()
+        return gf
 
     def copy(self):
         """Return a copy of the graphframe."""
@@ -224,20 +227,7 @@ class GraphFrame:
             graph_copy, dataframe_copy, list(self.exc_metrics), list(self.inc_metrics)
         )
 
-    def update_inclusive_columns(self):
-        """Update inclusive columns (typically after operations that rewire the
-        graph.
-        """
-        for root in self.graph.roots:
-            for node in root.traverse(order="post"):
-                for metric in self.exc_metrics:
-                    val = self.dataframe.loc[node, metric]
-                    for child in node.children:
-                        val += self.dataframe.loc[child, metric]
-                    inc_metric = metric + " (inc)"
-                    self.dataframe.loc[node, inc_metric] = val
-
-    def drop_index_levels(self, function=numpy.mean):
+    def drop_index_levels(self, function=np.mean):
         """Drop all index levels but 'node'."""
         index_names = list(self.dataframe.index.names)
         index_names.remove("node")
@@ -339,7 +329,47 @@ class GraphFrame:
         df.set_index(index_names, drop=False, inplace=True)
 
         # put it all together
-        return GraphFrame(graph, df, self.exc_metrics, self.inc_metrics)
+        new_gf = GraphFrame(graph, df, self.exc_metrics, self.inc_metrics)
+        new_gf.update_inclusive_columns()
+        return new_gf
+
+    def subtree_sum(self, columns, out_columns=None, function=np.sum):
+        """Compute sub of elements in subtrees.  Valid only for trees.
+
+        Output columns will contain the sum of values in the specified
+        columns all nodes in its children and their descendants.
+
+        Arguments:
+            columns (list of str):  names of columns to sum (default: all columns)
+            out_columns (list of str): names of columns to store results
+                (default: in place)
+            function (callable): associative operator used to sum
+                elements (default: sum)
+
+        """
+        if out_columns is None:
+            out_columns = columns
+        else:
+            # init out columns with input columns in case they are not there.
+            for col, out in zip(columns, out_columns):
+                self.dataframe[out] = self.dataframe[col]
+
+        if len(columns) != len(out_columns):
+            raise ValueError("columns out_columns must be the same length!")
+
+        # sum over the output columns
+        for node in self.graph.traverse(order="post"):
+            if node.children:
+                self.dataframe.loc[node, out_columns] = function(
+                    self.dataframe.loc[[node] + node.children, out_columns]
+                )
+
+    def update_inclusive_columns(self):
+        """Update inclusive columns (typically after operations that rewire the
+        graph.
+        """
+        self.inc_metrics = ["%s (inc)" % s for s in self.exc_metrics]
+        self.subtree_sum(self.exc_metrics, self.inc_metrics)
 
     def unify(self, other):
         """Returns a unified graphframe.

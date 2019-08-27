@@ -30,13 +30,16 @@ class Graph:
         assert roots is not None
         self.roots = roots
 
-    def traverse(self, attrs=None):
+    def traverse(self, attrs=None, **kwargs):
         """Preorder traversal of all roots of this Graph.
 
         Arguments:
             attrs (list or str, optional): If provided, extract these
                 fields from nodes while traversing and yield them. See
                 node.traverse() for details.
+
+        Keyword Args:
+            see Node.traverse()
 
         Only preorder traversal is currently supported.
         """
@@ -45,7 +48,7 @@ class Graph:
 
         # iterate over roots in order
         for root in self.roots:
-            for value in root.traverse(attrs=attrs, visited=visited):
+            for value in root.traverse(attrs=attrs, visited=visited, **kwargs):
                 yield value
 
     def find_merges(self):
