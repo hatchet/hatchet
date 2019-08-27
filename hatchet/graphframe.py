@@ -205,7 +205,7 @@ class GraphFrame:
         """
         graph = Graph.from_lists(*lists)
 
-        df = pd.DataFrame({"node": graph.traverse()})
+        df = pd.DataFrame({"node": list(graph.traverse())})
         df.set_index(["node"], inplace=True, drop=False)
         df["time"] = [1.0] * len(graph)
 
