@@ -26,6 +26,9 @@ def test_from_lists():
 
 
 def test_traverse_pre():
+    node = Node(Frame(name="a"))
+    assert list(node.traverse(attrs="name")) == ["a"]
+
     node = Node.from_lists(["a", ["b", "d", "e"], ["c", "f", "g"]])
     assert list(node.traverse(attrs="name")) == ["a", "b", "d", "e", "c", "f", "g"]
 
@@ -86,4 +89,4 @@ def test_traverse_paths():
     diamond_subdag = Node.from_lists(("a", ("b", d), ("c", d)))
 
     g = Graph.from_lists(("e", "f", diamond_subdag), ("g", diamond_subdag, "h"))
-    assert list(g.traverse(attrs="name")) == ["e", "f", "a", "b", "d", "c", "g", "h"]
+    assert list(g.traverse(attrs="name")) == ["e", "a", "b", "d", "c", "f", "g", "h"]

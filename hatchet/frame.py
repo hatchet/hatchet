@@ -59,9 +59,7 @@ class Frame:
 
     def __str__(self):
         """str() wtih sorted attributes, so output is deterministic."""
-        return "{%s}" % ", ".join(
-            "'%s': '%s'" % (k, v) for k, v in sorted(self.attrs.items())
-        )
+        return "{%s}" % ", ".join("'%s': '%s'" % (k, v) for k, v in self.tuple_repr)
 
     def __repr__(self):
         return "Frame(%s)" % self
@@ -70,7 +68,7 @@ class Frame:
     def tuple_repr(self):
         """Make a tuple of attributes and values based on reader."""
         if not self._tuple_repr:
-            self._tuple_repr = tuple((k, self.attrs[k]) for k in sorted(self.attrs))
+            self._tuple_repr = tuple(sorted((k, v) for k, v in self.attrs.items()))
         return self._tuple_repr
 
     def copy(self):

@@ -8,7 +8,7 @@ import sys
 
 from .external.printtree import trees_as_text
 from .util.dot import trees_to_dot
-from .node import Node
+from .node import Node, traversal_order
 
 
 def index_by(attr, objects):
@@ -47,7 +47,7 @@ class Graph:
         visited = set()
 
         # iterate over roots in order
-        for root in self.roots:
+        for root in sorted(self.roots, key=traversal_order):
             for value in root.traverse(attrs=attrs, visited=visited, **kwargs):
                 yield value
 
