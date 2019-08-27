@@ -8,6 +8,11 @@ from functools import total_ordering
 from .frame import Frame
 
 
+def traversal_order(node):
+    """Deterministic key function for sorting nodes in traversals."""
+    return (node.frame, id(node))
+
+
 @total_ordering
 class Node:
     """A node in the graph. The node only stores its frame."""
@@ -134,7 +139,7 @@ class Node:
         if order == "pre":
             yield value(self)
 
-        for child in self.children:
+        for child in sorted(self.children, key=traversal_order):
             for item in child.traverse(order, attrs, visited):
                 yield item
 

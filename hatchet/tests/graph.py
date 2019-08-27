@@ -16,7 +16,7 @@ def test_from_lists():
     diamond_subdag = Node.from_lists(("a", ("b", d), ("c", d)))
 
     g = Graph.from_lists(("e", "f", diamond_subdag), ("g", diamond_subdag, "h"))
-    assert list(g.traverse(attrs="name")) == ["e", "f", "a", "b", "d", "c", "g", "h"]
+    assert list(g.traverse(attrs="name")) == ["e", "a", "b", "d", "c", "f", "g", "h"]
 
 
 def test_len_chain():
