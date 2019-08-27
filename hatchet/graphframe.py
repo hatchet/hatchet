@@ -333,20 +333,8 @@ class GraphFrame:
         new_gf.update_inclusive_columns()
         return new_gf
 
-    def subtree_sum(self, columns, out_columns=None, function=np.sum):
-        """Compute sub of elements in subtrees.  Valid only for trees.
-
-        Output columns will contain the sum of values in the specified
-        columns all nodes in its children and their descendants.
-
-        Arguments:
-            columns (list of str):  names of columns to sum (default: all columns)
-            out_columns (list of str): names of columns to store results
-                (default: in place)
-            function (callable): associative operator used to sum
-                elements (default: sum)
-
-        """
+    def _init_sum_columns(self, columns, out_columns):
+        """Helper function for subtree_sum and subgraph_sum."""
         if out_columns is None:
             out_columns = columns
         else:
@@ -357,6 +345,30 @@ class GraphFrame:
         if len(columns) != len(out_columns):
             raise ValueError("columns out_columns must be the same length!")
 
+        return out_columns
+
+    def subtree_sum(self, columns, out_columns=None, function=np.sum):
+        """Compute sum of elements in subtrees.  Valid only for trees.
+
+        For each row in the graph, ``out_columns`` will contain the
+        element-wise sum of all values in ``columns`` for that row's node
+        and all of its descendants.
+
+        This algorithm will multiply count nodes with in-degree higher
+        than one -- i.e., it is only correct for trees.  Prefer using
+        ``subgraph_sum`` (which calls ``subtree_sum`` if it can), unless
+        you have a good reason not to.
+
+        Arguments:
+            columns (list of str):  names of columns to sum (default: all columns)
+            out_columns (list of str): names of columns to store results
+                (default: in place)
+            function (callable): associative operator used to sum
+                elements (default: sum)
+
+        """
+        out_columns = self._init_sum_columns(columns, out_columns)
+
         # sum over the output columns
         for node in self.graph.traverse(order="post"):
             if node.children:
@@ -364,12 +376,44 @@ class GraphFrame:
                     self.dataframe.loc[[node] + node.children, out_columns]
                 )
 
+    def subgraph_sum(self, columns, out_columns=None, function=np.sum):
+        """Compute sum of elements in subgraphs.
+
+        For each row in the graph, ``out_columns`` will contain the
+        element-wise sum of all values in ``columns`` for that row's node
+        and all of its descendants.
+
+        This algorithm is worst-case quadratic in the size of the graph,
+        so we try to call ``subtree_sum`` if we can.  In general, there
+        is not a particularly efficient algorithm known for subgraph
+        sums, so this does about as well as we know how.
+
+        Arguments:
+            columns (list of str):  names of columns to sum (default: all columns)
+            out_columns (list of str): names of columns to store results
+                (default: in place)
+            function (callable): associative operator used to sum
+                elements (default: sum)
+        """
+        if self.graph.is_tree():
+            self.subtree_sum(columns, out_columns, function)
+            return
+
+        out_columns = self._init_sum_columns(columns, out_columns)
+        for node in self.graph.traverse():
+            subgraph_nodes = list(node.traverse())
+            # TODO: if you take the list constructor away from the
+            # TODO: assignment below, this assignment gives NaNs. Why?
+            self.dataframe.loc[node, out_columns] = list(
+                function(self.dataframe.loc[subgraph_nodes, columns])
+            )
+
     def update_inclusive_columns(self):
         """Update inclusive columns (typically after operations that rewire the
         graph.
         """
         self.inc_metrics = ["%s (inc)" % s for s in self.exc_metrics]
-        self.subtree_sum(self.exc_metrics, self.inc_metrics)
+        self.subgraph_sum(self.exc_metrics, self.inc_metrics)
 
     def unify(self, other):
         """Returns a unified graphframe.

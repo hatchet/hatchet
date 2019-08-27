@@ -121,17 +121,21 @@ class Node:
             order (str):  "pre" or "post" for preorder or postorder (default pre)
             attrs (list or str, optional): If provided, extract these fields
                 from nodes while traversing and yield them.
+            visited (dict, optional): dictionary in which each visited
+                node's in-degree will be stored.
         """
         if order not in ("pre", "post"):
             raise ValueError("order must be one of 'pre' or 'post'")
 
         if visited is None:
-            visited = set()
+            visited = {}
 
         key = id(self)
         if key in visited:
+            # count the number of times we reached
+            visited[key] += 1
             return
-        visited.add(key)
+        visited[key] = 1
 
         def value(node):
             return node if attrs is None else node.frame.values(attrs)
@@ -140,7 +144,7 @@ class Node:
             yield value(self)
 
         for child in sorted(self.children, key=traversal_order):
-            for item in child.traverse(order, attrs, visited):
+            for item in child.traverse(order=order, attrs=attrs, visited=visited):
                 yield item
 
         if order == "post":

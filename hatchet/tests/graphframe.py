@@ -161,7 +161,7 @@ def check_filter_squash(gf, filter_func, expected_graph, expected_inc_time):
     ]
 
 
-def test_filter_squash1():
+def test_filter_squash():
     r"""Test squash on a simple tree with one root.
 
           a
@@ -292,7 +292,6 @@ def test_filter_squash_bunny():
     )
 
 
-@pytest.mark.xfail(reason="Subgraph sums are not yet properly supported")
 def test_filter_squash_bunny_to_goat():
     r"""Test squash on a "bunny" shaped graph:
 

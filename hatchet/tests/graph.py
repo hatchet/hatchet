@@ -60,3 +60,32 @@ def test_union_dag():
     g4 = g1.union(g2)
 
     assert g4 == g3
+
+
+def test_dag_is_not_tree():
+    g = Graph.from_lists(("b", "c"), ("d", "e"))
+    assert not g.is_tree()
+
+    d = Node(Frame(name="d"))
+    diamond_subdag = Node.from_lists(("a", ("b", d), ("c", d)))
+    g = Graph([diamond_subdag])
+    assert not g.is_tree()
+
+    g = Graph.from_lists(("e", "f", diamond_subdag), ("g", diamond_subdag, "h"))
+    assert not g.is_tree()
+
+
+def test_trees_are_trees():
+    g = Graph.from_lists(("a",))
+    assert g.is_tree()
+
+    g = Graph.from_lists(("a", ("b", ("c"))))
+    assert g.is_tree()
+
+    g = Graph.from_lists(("a", "b", "c"))
+    assert g.is_tree()
+
+    g = Graph.from_lists(
+        ("a", ("b", "e", "f", "g"), ("c", "e", "f", "g"), ("d", "e", "f", "g"))
+    )
+    assert g.is_tree()

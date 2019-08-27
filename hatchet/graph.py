@@ -30,7 +30,7 @@ class Graph:
         assert roots is not None
         self.roots = roots
 
-    def traverse(self, attrs=None, **kwargs):
+    def traverse(self, order="pre", attrs=None, visited=None):
         """Preorder traversal of all roots of this Graph.
 
         Arguments:
@@ -43,13 +43,23 @@ class Graph:
 
         Only preorder traversal is currently supported.
         """
-        # share visited set so that we visit each node at most once.
-        visited = set()
+        # share visited dict so that we visit each node at most once.
+        if visited is None:
+            visited = {}
 
         # iterate over roots in order
         for root in sorted(self.roots, key=traversal_order):
-            for value in root.traverse(attrs=attrs, visited=visited, **kwargs):
+            for value in root.traverse(order=order, attrs=attrs, visited=visited):
                 yield value
+
+    def is_tree(self):
+        """True if this graph is a tree, false otherwise."""
+        if len(self.roots) > 1:
+            return False
+
+        visited = {}
+        list(self.traverse(visited=visited))
+        return all(v == 1 for v in visited.values())
 
     def find_merges(self):
         """Find nodes that have the same parent and frame.
