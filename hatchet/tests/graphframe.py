@@ -5,6 +5,7 @@
 
 import pytest
 
+import numpy as np
 import pandas as pd
 
 from hatchet import GraphFrame
@@ -75,7 +76,62 @@ def test_from_lists():
     assert all(node in gf.dataframe["node"] for node in nodes)
 
 
-def check_filter_squash(gf, filter_func, expected_graph):
+def test_update_inclusive_metrics():
+    gf = GraphFrame.from_lists(("a", ("b", "c"), ("d", "e")))
+    (a, b, c, d, e) = gf.graph.traverse()
+
+    # this is computed automatically by from_lists -- drop it for this test.
+    del gf.dataframe["time (inc)"]
+
+    gf.update_inclusive_columns()
+    assert gf.dataframe.loc[a, "time (inc)"] == 5
+    assert gf.dataframe.loc[b, "time (inc)"] == 2
+    assert gf.dataframe.loc[c, "time (inc)"] == 1
+    assert gf.dataframe.loc[d, "time (inc)"] == 2
+    assert gf.dataframe.loc[e, "time (inc)"] == 1
+
+
+def test_subtree_sum_value_error():
+    gf = GraphFrame.from_lists(("a", ("b", "c"), ("d", "e")))
+
+    # in and out columns with different lengths
+    with pytest.raises(ValueError):
+        gf.subtree_sum(["time"], [])
+
+
+def test_subtree_sum_inplace():
+    gf = GraphFrame.from_lists(("a", ("b", "c"), ("d", "e")))
+    (a, b, c, d, e) = gf.graph.traverse()
+
+    gf.subtree_sum(["time"])
+    assert gf.dataframe.loc[a, "time"] == 5
+    assert gf.dataframe.loc[b, "time"] == 2
+    assert gf.dataframe.loc[c, "time"] == 1
+    assert gf.dataframe.loc[d, "time"] == 2
+    assert gf.dataframe.loc[e, "time"] == 1
+
+
+def test_subtree_product():
+    gf = GraphFrame.from_lists(("a", ("b", "c"), ("d", "e")))
+    (a, b, c, d, e) = gf.graph.traverse()
+
+    gf.dataframe["time2"] = gf.dataframe["time"] * 2
+
+    gf.subtree_sum(["time", "time2"], ["out", "out2"], function=np.prod)
+    assert gf.dataframe.loc[a, "out"] == 1
+    assert gf.dataframe.loc[b, "out"] == 1
+    assert gf.dataframe.loc[c, "out"] == 1
+    assert gf.dataframe.loc[d, "out"] == 1
+    assert gf.dataframe.loc[e, "out"] == 1
+
+    assert gf.dataframe.loc[a, "out2"] == 32
+    assert gf.dataframe.loc[b, "out2"] == 4
+    assert gf.dataframe.loc[c, "out2"] == 2
+    assert gf.dataframe.loc[d, "out2"] == 4
+    assert gf.dataframe.loc[e, "out2"] == 2
+
+
+def check_filter_squash(gf, filter_func, expected_graph, expected_inc_time):
     """Ensure filtering and squashing results in the right Graph and GraphFrame."""
     orig_graph = gf.graph.copy()
 
@@ -96,8 +152,16 @@ def check_filter_squash(gf, filter_func, expected_graph):
         n.frame["name"] in squashed_node_names for n in squashed.dataframe["node"]
     )
 
+    # verify inclusive metrics at different nodes
+    nodes = list(squashed.graph.traverse())
+    assert len(nodes) == len(expected_inc_time)
 
-def test_filter_squash():
+    assert expected_inc_time == [
+        squashed.dataframe.loc[node, "time (inc)"] for node in nodes
+    ]
+
+
+def test_filter_squash1():
     r"""Test squash on a simple tree with one root.
 
           a
@@ -111,6 +175,7 @@ def test_filter_squash():
         GraphFrame.from_lists(("a", ("b", "c"), ("d", "e"))),
         lambda row: row["node"].frame["name"] in ("a", "c", "e"),
         Graph.from_lists(("a", "c", "e")),
+        [3, 1, 1],  # a, c, e
     )
 
 
@@ -132,6 +197,7 @@ def test_filter_squash_with_merge():
         GraphFrame.from_lists(("a", ("b", "c"), ("d", "c"))),
         lambda row: row["node"].frame["name"] in ("a", "c"),
         Graph.from_lists(("a", "c")),
+        [3, 2],  # a, c
     )
 
 
@@ -155,6 +221,7 @@ def test_filter_squash_with_rootless_merge():
         ),
         lambda row: row["node"].frame["name"] not in ("a", "b", "c", "d"),
         Graph.from_lists(["e"], ["f"], ["g"]),
+        [3, 3, 3],  # e, f, g
     )
 
 
@@ -172,6 +239,7 @@ def test_filter_squash_different_roots():
         GraphFrame.from_lists(("a", ("b", "c"), ("d", "e"))),
         lambda row: row["node"].frame["name"] != "a",
         Graph.from_lists(("b", "c"), ("d", "e")),
+        [2, 1, 2, 1],  # b, c, d, e
     )
 
 
@@ -192,6 +260,7 @@ def test_filter_squash_diamond():
         GraphFrame.from_lists(("a", ("b", d), ("c", d))),
         lambda row: row["node"].frame["name"] not in ("b", "c"),
         Graph.from_lists(("a", "d")),
+        [2, 1],  # a, d
     )
 
 
@@ -218,10 +287,12 @@ def test_filter_squash_bunny():
     check_filter_squash(
         GraphFrame.from_lists(("e", "f", diamond), ("g", diamond, "h")),
         lambda row: row["node"].frame["name"] not in ("a", "b", "c"),
-        Graph.from_lists(("e", "f", new_d), ("g", new_d, "h")),
+        Graph.from_lists(("e", new_d, "f"), ("g", new_d, "h")),
+        [3, 1, 1, 3, 1],  # e, d, f, g, h
     )
 
 
+@pytest.mark.xfail(reason="Subgraph sums are not yet properly supported")
 def test_filter_squash_bunny_to_goat():
     r"""Test squash on a "bunny" shaped graph:
 
@@ -246,11 +317,12 @@ def test_filter_squash_bunny_to_goat():
     check_filter_squash(
         GraphFrame.from_lists(("e", "f", diamond), ("g", diamond, "h")),
         lambda row: row["node"].frame["name"] not in ("a", "c"),
-        Graph.from_lists(("e", "f", new_d, new_b), ("g", new_b, new_d, "h")),
+        Graph.from_lists(("e", new_b, new_d, "f"), ("g", new_b, new_d, "h")),
+        [4, 2, 1, 1, 4, 1],  # e, b, d, f, g, h
     )
 
 
-@pytest.mark.xfail
+@pytest.mark.xfail(reason="Hatchet does not yet handle merging with parents properly.")
 def test_filter_squash_bunny_to_goat_with_merge():
     r"""Test squash on a "bunny" shaped graph:
 
@@ -274,5 +346,6 @@ def test_filter_squash_bunny_to_goat_with_merge():
     check_filter_squash(
         GraphFrame.from_lists(("e", "f", diamond), ("g", diamond, "h")),
         lambda row: row["node"].frame["name"] not in ("a", "c"),
-        Graph.from_lists(("e", "f", new_b), ("g", new_b, "h")),
+        Graph.from_lists(("e", new_b, "f"), ("g", new_b, "h")),
+        [4, 2, 1, 4, 1],  # e, b, f, g, h
     )
