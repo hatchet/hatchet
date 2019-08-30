@@ -5,8 +5,6 @@
 
 import os
 
-import six
-
 
 def which(executable):
     """Finds an `executable` in the user's PATH like command-line which.
@@ -14,10 +12,8 @@ def which(executable):
     Args:
         executable (str): executable to search for
     """
-    path = os.environ.get("PATH")
-
-    if isinstance(path, six.string_types):
-        path = path.split(os.pathsep)
+    path = os.environ.get("PATH", "/usr/sbin:/usr/bin:/sbin:/bin")
+    path = path.split(os.pathsep)
 
     for directory in path:
         exe = os.path.join(directory, executable)
