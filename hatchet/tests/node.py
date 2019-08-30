@@ -25,6 +25,11 @@ def test_from_lists():
     assert node.children[0].children[0].frame == c
 
 
+def test_from_lists_value_error():
+    with pytest.raises(ValueError):
+        Node.from_lists(object())
+
+
 def test_traverse_pre():
     node = Node(Frame(name="a"))
     assert list(node.traverse(attrs="name")) == ["a"]
@@ -90,3 +95,32 @@ def test_traverse_paths():
 
     g = Graph.from_lists(("e", "f", diamond_subdag), ("g", diamond_subdag, "h"))
     assert list(g.traverse(attrs="name")) == ["e", "a", "b", "d", "c", "f", "g", "h"]
+
+
+def check_dag_equal():
+    chain = Node.from_lists(("a", ("b", ("c", ("d",)))))
+
+    d = Node(Frame(name="d"))
+    diamond = Node.from_lists(("a", ("b", d), ("c", d)))
+
+    tree = Node.from_lists(
+        ("a", ("b", "e", "f", "g"), ("c", "e", "f", "g"), ("d", "e", "f", "g"))
+    )
+
+    assert chain.dag_equal(chain)
+    assert chain.dag_equal(chain.copy())
+
+    assert diamond.dag_equal(diamond)
+    assert diamond.dag_equal(diamond.copy())
+
+    assert tree.dag_equal(tree)
+    assert tree.dag_equal(tree.copy())
+
+    assert not chain.dag_equal(tree)
+    assert not chain.dag_equal(diamond)
+
+    assert not tree.dag_equal(chain)
+    assert not tree.dag_equal(diamond)
+
+    assert not diamond.dag_equal(chain)
+    assert not diamond.dag_equal(tree)

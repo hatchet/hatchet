@@ -72,7 +72,7 @@ class Node:
             raise MultiplePathError("Node has more than one path: " % paths)
         return paths[0]
 
-    def check_dag_equal(self, other, vs=None, vo=None):
+    def dag_equal(self, other, vs=None, vo=None):
         """Check if DAG rooted at self has the same structure as that rooted at
         other.
         """
@@ -109,7 +109,7 @@ class Node:
                 continue
 
             # recursive check for node equality
-            if not self_child.check_dag_equal(other_child, vs, vo):
+            if not self_child.dag_equal(other_child, vs, vo):
                 return False
 
         return True

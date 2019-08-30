@@ -359,7 +359,7 @@ class Graph:
             if self_root.frame != other_root.frame:
                 return False
 
-            if not self_root.check_dag_equal(other_root, vs, vo):
+            if not self_root.dag_equal(other_root, vs, vo):
                 return False
 
         return True
