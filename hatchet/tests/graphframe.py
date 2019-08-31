@@ -375,3 +375,26 @@ def test_filter_squash_mock_literal(mock_graph_literal):
     squashed_nodes = list(squashed_gf.graph.traverse())
     assert all(squashed_gf.dataframe.loc[squashed_nodes, "time"] > 5.0)
     assert len(squashed_gf.graph) == 7
+
+
+def test_tree(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+
+    output = gf.tree(metric="time", color=False)
+    assert output.startswith("0.000 foo")
+    assert "10.000 waldo" in output
+    assert "15.000 garply" in output
+
+    output = gf.tree(metric="time (inc)", color=False)
+    assert "50.000 waldo" in output
+    assert "15.000 garply" in output
+
+
+def test_to_dot(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    output = gf.to_dot(metric="time")
+
+    # do a simple edge check -- this isn't exhaustive
+    for node in gf.graph.traverse():
+        for child in node.children:
+            assert '"%s" -> "%s"' % (id(node), id(child)) in output

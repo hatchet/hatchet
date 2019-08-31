@@ -3,13 +3,17 @@
 #
 # SPDX-License-Identifier: MIT
 
+import sys
 from collections import defaultdict
+
 import pandas as pd
 import numpy as np
 
 from .node import Node
 from .graph import Graph
 from .frame import Frame
+from .external.printtree import trees_as_text
+from .util.dot import trees_to_dot
 
 lit_idx = 0
 squ_idx = 0
@@ -450,6 +454,48 @@ class GraphFrame:
 
         self.graph = union_graph
         other.graph = union_graph
+
+    def tree(
+        self,
+        metric="time",
+        name="name",
+        context="file",
+        rank=0,
+        threshold=0.0,
+        expand_names=False,
+        unicode=True,
+        color=None,
+    ):
+        """Format this graphframe as a tree and return the resulting string."""
+        # automatic color by default; use True or False to force override
+        if color is None:
+            color = sys.stdout.isatty()
+
+        result = trees_as_text(
+            self.graph.roots,
+            self.dataframe,
+            metric,
+            name,
+            context,
+            rank,
+            threshold,
+            expand_names,
+            unicode=unicode,
+            color=color,
+        )
+
+        if sys.version_info >= (3, 0, 0):
+            return result
+        else:
+            return result.encode("utf-8")
+
+    def to_dot(self, metric="time", name="name", rank=0, threshold=0.0):
+        """Write the graph in the graphviz dot format:
+        https://www.graphviz.org/doc/info/lang.html
+        """
+        return trees_to_dot(
+            self.graph.roots, self.dataframe, metric, name, rank, threshold
+        )
 
     def _operator(self, other, op, *args, **kwargs):
         """Generic function to apply operator to two dataframes and store

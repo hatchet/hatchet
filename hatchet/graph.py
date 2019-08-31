@@ -4,10 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 from collections import defaultdict
-import sys
 
-from .external.printtree import trees_as_text
-from .util.dot import trees_to_dot
 from .node import Node, traversal_order
 
 
@@ -269,64 +266,6 @@ class Graph:
         new_roots = _merge(frame_ordered(self.roots), frame_ordered(other.roots), None)
 
         return Graph(new_roots)
-
-    def to_string(
-        self,
-        roots=None,
-        dataframe=None,
-        metric="time",
-        name="name",
-        context="file",
-        rank=0,
-        threshold=0.0,
-        expand_names=False,
-        unicode=True,
-        color=True,
-    ):
-        """Print the graph with or without some metric attached to each node."""
-        if roots is None:
-            roots = self.roots
-
-        result = trees_as_text(
-            roots,
-            dataframe,
-            metric,
-            name,
-            context,
-            rank,
-            threshold,
-            expand_names,
-            unicode=unicode,
-            color=color,
-        )
-
-        if sys.version_info >= (3, 0, 0):
-            return result
-        else:
-            return result.encode("utf-8")
-
-    def to_dot(
-        self,
-        roots=None,
-        dataframe=None,
-        metric="time",
-        name="name",
-        rank=0,
-        threshold=0.0,
-    ):
-        """Write the graph in the graphviz dot format:
-        https://www.graphviz.org/doc/info/lang.html
-        """
-        if roots is None:
-            roots = self.roots
-
-        result = trees_to_dot(roots, dataframe, metric, name, rank, threshold)
-
-        return result
-
-    def __str__(self):
-        """Returns a string representation of the graph."""
-        return self.to_string()
 
     def __len__(self):
         """Size of the graph in terms of number of nodes."""
