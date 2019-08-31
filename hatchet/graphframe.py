@@ -484,10 +484,7 @@ class GraphFrame:
             color=color,
         )
 
-        if sys.version_info >= (3, 0, 0):
-            return result
-        else:
-            return result.encode("utf-8")
+        return result
 
     def to_dot(self, metric="time", name="name", rank=0, threshold=0.0):
         """Write the graph in the graphviz dot format:
