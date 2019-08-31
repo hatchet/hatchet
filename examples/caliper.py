@@ -26,6 +26,6 @@ if __name__ == "__main__":
     print(gf.dataframe)
     print("\n")
 
-    print(gf.graph.to_string(gf.graph.roots, gf.dataframe))
+    print(gf.tree())
     with open("test.dot", "w") as fileh:
-        fileh.write(gf.graph.to_dot(gf.graph.roots, gf.dataframe))
+        fileh.write(gf.to_dot())

@@ -31,4 +31,4 @@ if __name__ == "__main__":
     print(gf.dataframe)
     print("\n")
 
-    print(gf.graph.to_string(gf.graph.roots, gf.dataframe))
+    print(gf.tree())

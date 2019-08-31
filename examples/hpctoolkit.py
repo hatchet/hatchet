@@ -23,4 +23,4 @@ if __name__ == "__main__":
     print(gf.dataframe.xs(0, level="rank"))
     print("\n")
 
-    print(gf.graph.to_string(gf.graph.roots, gf.dataframe))
+    print(gf.tree())
