@@ -389,6 +389,10 @@ def test_tree(mock_graph_literal):
     assert "50.000 waldo" in output
     assert "15.000 garply" in output
 
+    output = gf.tree(metric="time (inc)", threshold=0.3, color=False)
+    assert "50.000 waldo" in output
+    assert "15.000 garply" not in output
+
 
 def test_to_dot(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
