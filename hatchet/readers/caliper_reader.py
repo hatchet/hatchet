@@ -45,13 +45,11 @@ class CaliperReader:
         self.timer = Timer()
         self.nid_col_name = "nid"
 
-        print(self.query)
         if isinstance(self.filename_or_stream, str):
             _, self.filename_ext = os.path.splitext(filename_or_stream)
 
     def read_json_sections(self):
         # if cali-query exists, extract data from .cali to a file-like object
-        print(self.filename_ext)
         if self.filename_ext == ".cali":
             cali_query = which("cali-query")
             if not cali_query:
