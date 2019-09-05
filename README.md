@@ -36,7 +36,7 @@ Hatchet was originally written by Abhinav Bhatele, bhatele@cs.umd.edu.
 ### Citing Hatchet
 
 If you are referencing Hatchet in a publication, please cite the
-following paper:
+following [paper](http://www.cs.umd.edu/~bhatele/pubs/pdf/2019/sc2019.pdf):
 
  * Abhinav Bhatele, Stephanie Brink, and Todd Gamblin. Hatchet: Pruning
    the Overgrowth in Parallel Profiles.  In *Supercomputing 2019
