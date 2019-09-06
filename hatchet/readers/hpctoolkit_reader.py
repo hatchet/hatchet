@@ -144,12 +144,14 @@ class HPCToolkitReader:
 
         pool = mp.Pool(initializer=init_shared_array, initargs=(shared_buffer,))
         self.metrics = np.frombuffer(shared_buffer).reshape(shape)
-
         args = [
             (filename, self.num_nodes, self.num_metrics, shape)
             for filename in metricdb_files
         ]
-        pool.map(read_metricdb_file, args)
+        try:
+            pool.map(read_metricdb_file, args)
+        finally:
+            pool.close()
 
         # once all files have been read, create a dataframe of metrics
         metric_names = [
