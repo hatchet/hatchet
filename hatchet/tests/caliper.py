@@ -102,3 +102,31 @@ def test_sample_json(sample_caliper_json):
     gf = GraphFrame.from_caliper_json(str(sample_caliper_json))
 
     assert len(gf.dataframe.groupby("name")) == 18
+
+
+def test_filter_squash_calc_unify_pi_database(lulesh_caliper_json):
+    gf = GraphFrame.from_caliper_json(str(lulesh_caliper_json))
+
+    orig_graph = gf.graph.copy()
+
+    filtered = gf.filter(lambda x: x["name"].startswith("Calc"))
+    assert filtered.graph is gf.graph
+    assert filtered.graph == orig_graph
+
+    gf2 = GraphFrame.from_caliper_json(str(lulesh_caliper_json))
+
+    assert gf.graph is not gf2.graph
+
+    filtered2 = gf2.filter(lambda x: x["name"].startswith("Calc"))
+    assert filtered2.graph is gf2.graph
+
+    squashed_gf = filtered.squash()
+    squashed_gf2 = filtered2.squash()
+
+    squashed_gf.unify(squashed_gf2)
+    assert squashed_gf.graph is squashed_gf2.graph
+    assert all(
+        squashed_gf.dataframe["node"].apply(id)
+        == squashed_gf2.dataframe["node"].apply(id)
+    )
+    assert all(squashed_gf.dataframe.index == squashed_gf2.dataframe.index)
