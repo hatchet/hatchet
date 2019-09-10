@@ -315,5 +315,5 @@ class CaliperReader:
                 exc_metrics.append(column)
 
         return hatchet.graphframe.GraphFrame(
-            Graph(list_roots), dataframe, inc_metrics, exc_metrics
+            Graph(list_roots), dataframe, exc_metrics, inc_metrics
         )
