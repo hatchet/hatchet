@@ -10,4 +10,4 @@ Hatchet is available on `GitHub <https://github.com/LLNL/hatchet>`_.
 
 Install
 -------
-Hatchet requires a Python installation (2.7+), matplotlib, numpy and pandas.
+Hatchet requires a Python installation (2.7+), matplotlib, pydot, numpy, and pandas.

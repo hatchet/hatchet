@@ -258,7 +258,7 @@ def test_filter_squash_different_roots():
 
 
 def test_filter_squash_diamond():
-    r"""Test taht diamond edges are collapsed when squashing.
+    r"""Test that diamond edges are collapsed when squashing.
 
     Ensure we can handle the most basic DAG.
 
