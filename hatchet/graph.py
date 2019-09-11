@@ -62,7 +62,7 @@ class Graph:
         """Find nodes that have the same parent and frame.
 
         Find nodes that have the same parent and duplicate frame, and
-        return a mapping from nodes that shoudl be eliminated to nodes
+        return a mapping from nodes that should be eliminated to nodes
         they should be merged into.
 
         Return:

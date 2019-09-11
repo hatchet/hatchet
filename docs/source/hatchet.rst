@@ -7,7 +7,15 @@ Submodules
 hatchet.caliper\_reader module
 ------------------------------
 
-.. automodule:: hatchet.caliper_reader
+.. automodule:: hatchet.readers.caliper_reader
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+hatchet.gprof\_dot\_reader module
+---------------------------------
+
+.. automodule:: hatchet.readers.gprof_dot_reader
     :members:
     :undoc-members:
     :show-inheritance:
@@ -31,7 +39,7 @@ hatchet.graphframe module
 hatchet.hpctoolkit\_reader module
 ---------------------------------
 
-.. automodule:: hatchet.hpctoolkit_reader
+.. automodule:: hatchet.readers.hpctoolkit_reader
     :members:
     :undoc-members:
     :show-inheritance:
