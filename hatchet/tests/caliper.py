@@ -102,3 +102,34 @@ def test_sample_json(sample_caliper_json):
     gf = GraphFrame.from_caliper_json(str(sample_caliper_json))
 
     assert len(gf.dataframe.groupby("name")) == 18
+
+
+def test_filter_squash_unify_caliper_data(lulesh_caliper_json):
+    """Sanity test a GraphFrame object with known data."""
+    gf1 = GraphFrame.from_caliper_json(str(lulesh_caliper_json))
+    gf2 = GraphFrame.from_caliper_json(str(lulesh_caliper_json))
+
+    assert gf1.graph is not gf2.graph
+    with pytest.raises(ValueError):
+        # this is an invalid comparison because the indexes are different at
+        # this point
+        gf1.dataframe["node"].apply(id) != gf2.dataframe["node"].apply(id)
+    assert all(gf1.dataframe.index != gf2.dataframe.index)
+
+    filter_gf1 = gf1.filter(lambda x: x["name"].startswith("Calc"))
+    filter_gf2 = gf2.filter(lambda x: x["name"].startswith("Calc"))
+
+    squash_gf1 = filter_gf1.squash()
+    squash_gf2 = filter_gf2.squash()
+
+    squash_gf1.unify(squash_gf2)
+
+    # Indexes are now the same. Sort indexes before comparing.
+    squash_gf1.dataframe.sort_index(inplace=True)
+    squash_gf2.dataframe.sort_index(inplace=True)
+    assert squash_gf1.graph is squash_gf2.graph
+    assert all(
+        squash_gf1.dataframe["node"].apply(id) == squash_gf2.dataframe["node"].apply(id)
+    )
+
+    assert all(squash_gf1.dataframe.index == squash_gf2.dataframe.index)

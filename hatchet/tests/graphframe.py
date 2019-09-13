@@ -57,7 +57,9 @@ def test_unify_hpctoolkit_data(calc_pi_hpct_db):
 
     gf1.unify(gf2)
 
-    # indexes are now the same.
+    # Indexes are now the same. Sort indexes before comparing.
+    gf1.dataframe.sort_index(inplace=True)
+    gf2.dataframe.sort_index(inplace=True)
     assert gf1.graph is gf2.graph
     assert all(gf1.dataframe["node"].apply(id) == gf2.dataframe["node"].apply(id))
     assert all(gf1.dataframe.index == gf2.dataframe.index)
