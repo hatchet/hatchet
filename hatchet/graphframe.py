@@ -61,10 +61,10 @@ class GraphFrame:
 
         Arguments:
             dirname (str): parent directory of an HPCToolkit
-                experiment.xml file.
+                experiment.xml file
 
         Returns:
-            (GraphFrame): new GraphFrame containing HPCToolkit profile data.
+            (GraphFrame): new GraphFrame containing HPCToolkit profile data
         """
         # import this lazily to avoid circular dependencies
         from .readers.hpctoolkit_reader import HPCToolkitReader
@@ -76,8 +76,8 @@ class GraphFrame:
         """Read in a Caliper `cali` file.
 
         Args:
-            filename (str): name of a Caliper output file in `.cali` format.
-            query (str): cali-query in CalQL format.
+            filename (str): name of a Caliper output file in `.cali` format
+            query (str): cali-query in CalQL format
         """
         # import this lazily to avoid circular dependencies
         from .readers.caliper_reader import CaliperReader
@@ -111,7 +111,10 @@ class GraphFrame:
 
         TODO: calculate inclusive metrics automatically.
 
-        Example::
+        Example:
+
+        .. code-block:: console
+
             dag_ldict = [
                 {
                     "name": "A",
@@ -145,7 +148,7 @@ class GraphFrame:
             ]
 
         Return:
-            (GraphFrame): graphframe containing data from dictionaries.
+            (GraphFrame): graphframe containing data from dictionaries
         """
 
         def parse_node_literal(child_dict, hparent):
@@ -201,10 +204,9 @@ class GraphFrame:
     def from_lists(*lists):
         """Make a simple GraphFrame from lists.
 
-        This creates a Graph from lists (see Graph.from_lists) and uses
-        it as the index for a new GraphFrame.  Every node in the new
-        graph has exclusive time of 1 and inclusive time is computed
-        automatically.
+        This creates a Graph from lists (see ``Graph.from_lists()``) and uses
+        it as the index for a new GraphFrame. Every node in the new graph has
+        exclusive time of 1 and inclusive time is computed automatically.
 
         """
         graph = Graph.from_lists(*lists)
@@ -220,7 +222,7 @@ class GraphFrame:
     def copy(self):
         """Return a shallow copy of the graphframe.
 
-        This copies the DataFrame, but the Graph is shared between `self` and
+        This copies the DataFrame, but the Graph is shared between self and
         the new GraphFrame.
         """
         return GraphFrame(
@@ -245,7 +247,7 @@ class GraphFrame:
         )
 
     def drop_index_levels(self, function=np.mean):
-        """Drop all index levels but 'node'."""
+        """Drop all index levels but `node`."""
         index_names = list(self.dataframe.index.names)
         index_names.remove("node")
 
@@ -265,7 +267,7 @@ class GraphFrame:
         self.dataframe = agg_df
 
     def filter(self, filter_function):
-        """Filter the dataframe using a user supplied function."""
+        """Filter the dataframe using a user-supplied function."""
         filtered_rows = self.dataframe.apply(filter_function, axis=1)
         filtered_df = self.dataframe[filtered_rows]
 
@@ -377,7 +379,7 @@ class GraphFrame:
         you have a good reason not to.
 
         Arguments:
-            columns (list of str):  names of columns to sum (default: all columns)
+            columns (list of str): names of columns to sum (default: all columns)
             out_columns (list of str): names of columns to store results
                 (default: in place)
             function (callable): associative operator used to sum

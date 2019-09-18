@@ -50,6 +50,7 @@ extensions = [
     "sphinx.ext.imgmath",
     "sphinx.ext.viewcode",
     "sphinx.ext.githubpages",
+    "sphinx.ext.napoleon",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -98,7 +99,6 @@ html_theme_options = {
     "display_version": True,
     "prev_next_buttons_location": "bottom",
     "style_external_links": False,
-    "vcs_pageview_mode": "",
     # Toc options
     "collapse_navigation": True,
     "sticky_navigation": True,

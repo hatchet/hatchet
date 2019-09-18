@@ -12,7 +12,7 @@ def index_by(attr, objects):
     """Put objects into lists based on the value of an attribute.
 
     Returns:
-        (dict): dictionary of lists of objects, keyed by attribute value.
+        (dict): dictionary of lists of objects, keyed by attribute value
     """
     index = defaultdict(lambda: [])
     for obj in objects:
@@ -33,10 +33,7 @@ class Graph:
         Arguments:
             attrs (list or str, optional): If provided, extract these
                 fields from nodes while traversing and yield them. See
-                node.traverse() for details.
-
-        Keyword Args:
-            see Node.traverse()
+                :func:`~hatchet.node.traverse` for details.
 
         Only preorder traversal is currently supported.
         """
@@ -66,7 +63,7 @@ class Graph:
         they should be merged into.
 
         Return:
-            (dict): dictionary from nodes to their merge targets.
+            (dict): dictionary from nodes to their merge targets
 
         """
         merges = {}  # old_node -> merged_node
@@ -151,8 +148,7 @@ class Graph:
                 be populated with mappings from old node -> new node
 
         Return:
-            (Graph): a new Graph containing all nodes and all edges from
-                self and other
+            (Graph): new Graph containing all nodes and edges from self and other
         """
         if old_to_new is None:
             old_to_new = {}  # mapping from old nodes to new nodes
