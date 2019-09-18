@@ -39,11 +39,10 @@ class Node:
         """List of tuples, one for each path from this node to any root.
 
         Arguments:
-            attrs (str or list, optional): attribute(s) to extract from Frames.
+            attrs (str or list, optional): attribute(s) to extract from Frames
 
         Paths are tuples of Frame objects, or, if attrs is provided, they
         are paths containing the requested attributes.
-
         """
         node_value = (self.frame,) if attrs is None else (self.frame.values(attrs),)
         if not self.parents:
@@ -56,16 +55,15 @@ class Node:
             return paths
 
     def path(self, attrs=None):
-        """"Path to this node from root. Raises if there are multiple paths.
+        """Path to this node from root. Raises if there are multiple paths.
 
         Arguments:
-            attrs (str or list, optional): attribute(s) to extract from Frames.
+            attrs (str or list, optional): attribute(s) to extract from Frames
 
         This is useful for trees (where each node only has one path), as
         it just gets the only element from ``self.paths``.  This will
         fail with a MultiplePathError if there is more than one path to
         this node.
-
         """
         paths = self.paths(attrs)
         if len(paths) > 1:
@@ -118,11 +116,11 @@ class Node:
         """Traverse the tree depth-first and yield each node.
 
         Arguments:
-            order (str):  "pre" or "post" for preorder or postorder (default pre)
-            attrs (list or str, optional): If provided, extract these fields
-                from nodes while traversing and yield them.
+            order (str):  "pre" or "post" for preorder or postorder (default: pre)
+            attrs (list or str, optional): if provided, extract these fields
+                from nodes while traversing and yield them
             visited (dict, optional): dictionary in which each visited
-                node's in-degree will be stored.
+                node's in-degree will be stored
         """
         if order not in ("pre", "post"):
             raise ValueError("order must be one of 'pre' or 'post'")
@@ -171,40 +169,48 @@ class Node:
     def from_lists(cls, lists):
         r"""Construct a hierarchy of nodes from recursive lists.
 
-        For example, this will construct a simple tree:
+For example, this will construct a simple tree:
 
-            Node.from_lists(
-                ["a",
-                    ["b", "d", "e"],
-                    ["c", "f", "g"],
-                ]
-            )
+.. code-block:: python
 
-                 a
-                / \
-               b   c
-             / |   | \
-            d  e   f  g
+    Node.from_lists(
+        ["a",
+            ["b", "d", "e"],
+            ["c", "f", "g"],
+        ]
+    )
 
-        And this will construct a simple diamond DAG:
+.. code-block:: console
 
-            d = Node(Frame(name="d"))
-            Node.from_lists(
-                ["a",
-                    ["b", d],
-                    ["c", d]
-                ]
-            )
+         a
+        / \
+       b   c
+     / |   | \
+    d  e   f  g
 
-                 a
-                / \
-               b   c
-                \ /
-                 d
+And this will construct a simple diamond DAG:
 
-        In the above examples, the 'a' represents a Node with its
-        frame == Frame(name="a").
-        """
+.. code-block:: python
+
+    d = Node(Frame(name="d"))
+    Node.from_lists(
+        ["a",
+            ["b", d],
+            ["c", d]
+        ]
+    )
+
+.. code-block:: console
+
+      a
+     / \
+    b   c
+     \ /
+      d
+
+In the above examples, the 'a' represents a Node with its
+`frame == Frame(name="a")`.
+"""
 
         def _from_lists(lists, parent):
             if isinstance(lists, (tuple, list)):

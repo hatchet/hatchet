@@ -11,15 +11,14 @@ class Frame:
     """The frame index for a node. The node only stores its frame.
 
     Arguments:
-       attrs (dict): Dictionary of attributes and values.
+       attrs (dict): dictionary of attributes and values
     """
 
     def __init__(self, attrs=None, **kwargs):
         """Construct a frame from a dictionary, or from immediate kwargs.
 
         Arguments:
-            attrs (dict, optional): dictionary of attributes for this
-                Frame.
+            attrs (dict, optional): dictionary of attributes for this Frame
 
         Keyword arguments are optional, but if they are provided, they
         will be used to update the dictionary.  Keys in kwargs take
