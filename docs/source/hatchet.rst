@@ -1,11 +1,17 @@
-hatchet package
+Hatchet Package
 ===============
 
+Module Contents
+---------------
+
+.. automodule:: hatchet
+
+
 Submodules
-----------
+^^^^^^^^^^
 
 hatchet.graph module
---------------------
+""""""""""""""""""""
 
 .. automodule:: hatchet.graph
     :members:
@@ -13,7 +19,7 @@ hatchet.graph module
     :show-inheritance:
 
 hatchet.graphframe module
--------------------------
+"""""""""""""""""""""""""
 
 .. automodule:: hatchet.graphframe
     :members:
@@ -21,7 +27,7 @@ hatchet.graphframe module
     :show-inheritance:
 
 hatchet.node module
--------------------
+"""""""""""""""""""
 
 .. automodule:: hatchet.node
     :members:
@@ -29,7 +35,7 @@ hatchet.node module
     :show-inheritance:
 
 hatchet.frame module
---------------------
+""""""""""""""""""""
 
 .. automodule:: hatchet.frame
     :members:
@@ -37,22 +43,11 @@ hatchet.frame module
     :show-inheritance:
 
 
-Module contents
----------------
-
-.. automodule:: hatchet
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
 Subpackages
------------
+^^^^^^^^^^^
 
 .. toctree::
 
     hatchet.readers
     hatchet.external
     hatchet.util
-
-

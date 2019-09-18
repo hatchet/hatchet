@@ -2,10 +2,10 @@ hatchet.readers package
 =======================
 
 Submodules
-----------
+^^^^^^^^^^
 
 hatchet.caliper\_reader module
-------------------------------
+""""""""""""""""""""""""""""""
 
 .. automodule:: hatchet.readers.caliper_reader
     :members:
@@ -13,7 +13,7 @@ hatchet.caliper\_reader module
     :show-inheritance:
 
 hatchet.gprof\_dot\_reader module
----------------------------------
+"""""""""""""""""""""""""""""""""
 
 .. automodule:: hatchet.readers.gprof_dot_reader
     :members:
@@ -21,18 +21,9 @@ hatchet.gprof\_dot\_reader module
     :show-inheritance:
 
 hatchet.hpctoolkit\_reader module
----------------------------------
+"""""""""""""""""""""""""""""""""
 
 .. automodule:: hatchet.readers.hpctoolkit_reader
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-Module contents
----------------
-
-.. automodule:: hatchet.readers
     :members:
     :undoc-members:
     :show-inheritance:
