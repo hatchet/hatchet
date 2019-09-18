@@ -125,6 +125,12 @@ with unequal graphs, a union is performed beforehand to ensure that the graphs
 are structurally equivalent.  This ensures that operands to element-wise
 operations like add and subtract, can be aligned by their respective nodes.
 
+**Tree**: The ``tree`` operation returns the graphframe's graph structure as a
+string that can be printed to the console. By default, the tree uses the
+``name`` of each node and the associated ``time`` metric as the string
+representation. This operation uses automatic color by default, but True or
+False can be used to force override.
+
 GraphFrame Operations
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -134,6 +140,10 @@ but the same graph.  As mentioned earlier, graphs in Hatchet use immutable
 semantics, and they are copied only when they need to be restructured.  This
 property allows us to reuse graphs from GraphFrame to GraphFrame if the
 operations performed on the GraphFrame do not mutate the graph.
+
+**DeepCopy**: The ``deepcopy`` operation returns a deep copy of a GraphFrame.
+It is similar to ``copy``, but returns a new GraphFrame with a copy of the
+original GraphFrame's DataFrame and a copy of the original GraphFrame's graph.
 
 **Unify**: ``unify`` operates on GraphFrames, and calls union on the two
 graphs, and then reindexes the DataFrames in both GraphFrames to be indexed by
