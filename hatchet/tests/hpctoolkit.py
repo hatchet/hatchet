@@ -3,6 +3,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+import numpy as np
+
 from hatchet import GraphFrame
 from hatchet.readers.hpctoolkit_reader import HPCToolkitReader
 
@@ -63,7 +65,15 @@ def test_graphframe(calc_pi_hpct_db):
     assert len(gf.dataframe.groupby("file")) == 11
     assert len(gf.dataframe.groupby("name")) == 20
 
-    # TODO: add tests for dataframe
+    for col in gf.dataframe.columns:
+        if col in ("time (inc)", "time"):
+            assert gf.dataframe[col].dtype == np.float64
+        elif col in ("nid", "rank", "line"):
+            assert gf.dataframe[col].dtype == np.int64
+        elif col in ("name", "type", "file", "module", "node"):
+            assert gf.dataframe[col].dtype == np.object
+
+    # TODO: add tests to confirm values in dataframe
 
 
 def test_read_calc_pi_database(calc_pi_hpct_db):

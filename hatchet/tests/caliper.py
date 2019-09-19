@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 import subprocess
+import numpy as np
 
 import pytest
 
@@ -45,7 +46,15 @@ def test_graphframe(lulesh_caliper_json):
 
     assert len(gf.dataframe.groupby("name")) == 24
 
-    # TODO: add tests for dataframe
+    for col in gf.dataframe.columns:
+        if col in ("time (inc)", "time"):
+            assert gf.dataframe[col].dtype == np.float64
+        elif col in ("nid", "rank"):
+            assert gf.dataframe[col].dtype == np.int64
+        elif col in ("name", "node"):
+            assert gf.dataframe[col].dtype == np.object
+
+    # TODO: add tests to confirm values in dataframe
 
 
 def test_read_calc_pi_database(lulesh_caliper_json):
@@ -53,7 +62,7 @@ def test_read_calc_pi_database(lulesh_caliper_json):
     reader = CaliperReader(str(lulesh_caliper_json))
     reader.read_json_sections()
 
-    assert len(reader.json_data) == 200
+    assert len(reader.json_data) == 192
     assert len(reader.json_cols) == 4
     assert len(reader.json_cols_mdata) == 4
     assert len(reader.json_nodes) == 24
