@@ -102,10 +102,14 @@ class GprofDotReader:
         with self.timer.phase("graph construction"):
             roots = self.create_graph()
             graph = Graph(roots)
+            graph.enumerate_traverse()
 
         with self.timer.phase("data frame"):
             dataframe = pd.DataFrame.from_dict(data=list(self.name_to_dict.values()))
             index = ["node"]
             dataframe.set_index(index, drop=False, inplace=True)
+            for i, node in enumerate(graph.traverse()):
+                dataframe.loc[node]._hatchet_nid = i
+            dataframe.sort_index(inplace=True)
 
         return hatchet.graphframe.GraphFrame(graph, dataframe, ["time"], ["time (inc)"])

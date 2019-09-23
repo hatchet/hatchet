@@ -50,19 +50,17 @@ def test_unify_hpctoolkit_data(calc_pi_hpct_db):
     gf2 = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
 
     assert gf1.graph is not gf2.graph
-    with pytest.raises(ValueError):
-        # this is an invalid comparison because the indexes are different at this point
-        gf1.dataframe["node"].apply(id) != gf2.dataframe["node"].apply(id)
-    assert all(gf1.dataframe.index != gf2.dataframe.index)
+    # indexes are the same since we are reading in the same dataset
+    assert all(gf1.dataframe["node"] == gf2.dataframe["node"])
 
     gf1.unify(gf2)
 
-    # Indexes are now the same. Sort indexes before comparing.
+    assert gf1.graph is gf2.graph
+
+    # Indexes should still be the same after unify. Sort indexes before comparing.
     gf1.dataframe.sort_index(inplace=True)
     gf2.dataframe.sort_index(inplace=True)
-    assert gf1.graph is gf2.graph
-    assert all(gf1.dataframe["node"].apply(id) == gf2.dataframe["node"].apply(id))
-    assert all(gf1.dataframe.index == gf2.dataframe.index)
+    assert all(gf1.dataframe["node"] == gf2.dataframe["node"])
 
 
 def test_invalid_constructor():
@@ -155,10 +153,7 @@ def check_filter_squash(gf, filter_func, expected_graph, expected_inc_time):
     assert all(n in filtered.graph.traverse() for n in filtered.dataframe["node"])
 
     squashed = filtered.squash()
-    assert filtered.graph is gf.graph
     assert filtered.graph is not squashed.graph
-    assert all(n not in gf.graph.traverse() for n in squashed.dataframe["node"])
-
     assert squashed.graph == expected_graph
     assert len(squashed.dataframe.index) == len(expected_graph)
     squashed_node_names = list(expected_graph.traverse(attrs="name"))

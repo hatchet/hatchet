@@ -17,8 +17,9 @@ def traversal_order(node):
 class Node:
     """A node in the graph. The node only stores its frame."""
 
-    def __init__(self, frame_obj, parent=None):
+    def __init__(self, frame_obj, parent=None, hnid=-1):
         self.frame = frame_obj
+        self._hatchet_nid = hnid
 
         self.parents = []
         if parent is not None:
@@ -79,8 +80,8 @@ class Node:
         if vo is None:
             vo = set()
 
-        vs.add(id(self))
-        vo.add(id(other))
+        vs.add(self._hatchet_nid)
+        vo.add(other._hatchet_nid)
 
         # if number of children do not match, then nodes are not equal
         if len(self.children) != len(other.children):
@@ -95,8 +96,8 @@ class Node:
             if self_child.frame != other_child.frame:
                 return False
 
-            visited_s = id(self_child) in vs
-            visited_o = id(other_child) in vo
+            visited_s = self_child._hatchet_nid in vs
+            visited_o = other_child._hatchet_nid in vo
 
             # check for duplicate nodes
             if visited_s != visited_o:
@@ -149,13 +150,13 @@ class Node:
             yield value(self)
 
     def __hash__(self):
-        return hash(id(self))
+        return self._hatchet_nid
 
     def __eq__(self, other):
-        return id(self) == id(other)
+        return self._hatchet_nid == other._hatchet_nid
 
     def __lt__(self, other):
-        return id(self) < id(other)
+        return self._hatchet_nid < other._hatchet_nid
 
     def __str__(self):
         """Returns a string representation of the node."""
@@ -163,7 +164,7 @@ class Node:
 
     def copy(self):
         """Copy this node without preserving parents or children."""
-        return Node(self.frame.copy())
+        return Node(frame_obj=self.frame.copy())
 
     @classmethod
     def from_lists(cls, lists):
