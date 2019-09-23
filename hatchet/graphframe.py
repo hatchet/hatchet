@@ -187,6 +187,9 @@ class GraphFrame:
                 for child in graph_dict[i]["children"]:
                     parse_node_literal(child, graph_root)
 
+        graph = Graph(list_roots)
+        graph.enumerate_traverse()
+
         exc_metrics = []
         inc_metrics = []
         for key in graph_dict[i]["metrics"].keys():
@@ -197,8 +200,11 @@ class GraphFrame:
 
         dataframe = pd.DataFrame(data=node_dicts)
         dataframe.set_index(["node"], drop=False, inplace=True)
+        for i, node in enumerate(graph.traverse()):
+            dataframe.loc[node]._hatchet_nid = i
+        dataframe.sort_index(inplace=True)
 
-        return GraphFrame(Graph(list_roots), dataframe, exc_metrics, inc_metrics)
+        return GraphFrame(graph, dataframe, exc_metrics, inc_metrics)
 
     @staticmethod
     def from_lists(*lists):
@@ -210,10 +216,15 @@ class GraphFrame:
 
         """
         graph = Graph.from_lists(*lists)
+        graph.enumerate_traverse()
 
         df = pd.DataFrame({"node": list(graph.traverse())})
-        df.set_index(["node"], inplace=True, drop=False)
         df["time"] = [1.0] * len(graph)
+        df.set_index(["node"], inplace=True, drop=False)
+
+        for i, node in enumerate(graph.traverse()):
+            df.loc[node]._hatchet_nid = i
+        df.sort_index(inplace=True)
 
         gf = GraphFrame(graph, df, ["time"], [])
         gf.update_inclusive_columns()
@@ -239,8 +250,6 @@ class GraphFrame:
         dataframe_copy = self.dataframe.copy()
 
         dataframe_copy["node"] = dataframe_copy["node"].apply(lambda x: node_clone[x])
-        index_names = self.dataframe.index.names
-        dataframe_copy.set_index(index_names, inplace=True, drop=False)
 
         return GraphFrame(
             graph_copy, dataframe_copy, list(self.exc_metrics), list(self.inc_metrics)
@@ -262,7 +271,6 @@ class GraphFrame:
         # perform a groupby to merge nodes that just differ in index columns
         self.dataframe.reset_index(level="node", inplace=True, drop=True)
         agg_df = self.dataframe.groupby("node").agg(agg_dict)
-        agg_df.drop(index_names, axis=1, inplace=True)
 
         self.dataframe = agg_df
 
@@ -285,6 +293,8 @@ class GraphFrame:
         """
         # create new nodes for each unique node in the old dataframe
         old_to_new = {n: n.copy() for n in set(self.dataframe["node"])}
+        for i in old_to_new:
+            old_to_new[i]._hatchet_nid = i._hatchet_nid
 
         # Maintain sets of connections to make for each old node.
         # Start with old -> new mapping and update as we traverse subgraphs.
@@ -330,6 +340,7 @@ class GraphFrame:
         for root in self.graph.roots:
             rewire(root, None, visited)
         graph = Graph(new_roots)
+        graph.enumerate_traverse()
 
         index_names = self.dataframe.index.names
         self.dataframe.reset_index(inplace=True, drop=True)
@@ -353,6 +364,10 @@ class GraphFrame:
 
         # perform a groupby to merge nodes with the same callpath
         agg_df = df.groupby(index_names).agg(agg_dict)
+
+        for i, node in enumerate(graph.traverse()):
+            df.loc[node]._hatchet_nid = i
+        df.sort_index(inplace=True)
 
         # put it all together
         new_gf = GraphFrame(graph, agg_df, self.exc_metrics, self.inc_metrics)
@@ -464,12 +479,16 @@ class GraphFrame:
 
         node_map = {}
         union_graph = self.graph.union(other.graph, node_map)
+        union_graph.enumerate_traverse()
 
         self.dataframe["node"] = self.dataframe["node"].apply(lambda x: node_map[x])
-        self.dataframe.set_index(self.dataframe.index.names, inplace=True, drop=False)
-
         other.dataframe["node"] = other.dataframe["node"].apply(lambda x: node_map[x])
-        other.dataframe.set_index(other.dataframe.index.names, inplace=True, drop=False)
+
+        for i, node in enumerate(union_graph.traverse()):
+            self.dataframe.loc[node]._hatchet_nid = i
+            other.dataframe.loc[node]._hatchet_nid = i
+        self.dataframe.sort_index(inplace=True)
+        other.dataframe.sort_index(inplace=True)
 
         self.graph = union_graph
         other.graph = union_graph

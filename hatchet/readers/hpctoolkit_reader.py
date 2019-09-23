@@ -216,15 +216,24 @@ class HPCToolkitReader:
             with self.timer.phase("graph construction"):
                 self.parse_xml_children(root, graph_root, list(node_callpath))
 
+        with self.timer.phase("graph construction"):
+            graph = Graph(list_roots)
+            graph.enumerate_traverse()
+
         # create a dataframe for all the nodes in the graph
         self.df_nodes = pd.DataFrame.from_dict(data=self.node_dicts)
 
         # merge the metrics and node dataframes
         with self.timer.phase("data frame"):
             dataframe = pd.merge(self.df_metrics, self.df_nodes, on="nid")
+
             # set the index to be a MultiIndex
             indices = ["node", "rank"]
             dataframe.set_index(indices, drop=False, inplace=True)
+
+            for i, node in enumerate(graph.traverse()):
+                dataframe.loc[node]._hatchet_nid = i
+            dataframe.sort_index(inplace=True)
 
         # create list of exclusive and inclusive metric columns
         exc_metrics = []
@@ -235,9 +244,7 @@ class HPCToolkitReader:
             else:
                 exc_metrics.append(column)
 
-        return hatchet.graphframe.GraphFrame(
-            Graph(list_roots), dataframe, exc_metrics, inc_metrics
-        )
+        return hatchet.graphframe.GraphFrame(graph, dataframe, exc_metrics, inc_metrics)
 
     def parse_xml_children(self, xml_node, hnode, callpath):
         """Parses all children of an XML node."""

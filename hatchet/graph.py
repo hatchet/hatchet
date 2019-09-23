@@ -134,7 +134,10 @@ class Graph:
             for old_child in old.children:
                 new.children.append(old_to_new[old_child])
 
-        return Graph([old_to_new[r] for r in self.roots])
+        graph = Graph([old_to_new[r] for r in self.roots])
+        graph.enumerate_traverse()
+
+        return graph
 
     def union(self, other, old_to_new=None):
         """Create the union of self and other and return it as a new Graph.
@@ -261,7 +264,20 @@ class Graph:
         # First establish which nodes correspond to each other
         new_roots = _merge(frame_ordered(self.roots), frame_ordered(other.roots), None)
 
-        return Graph(new_roots)
+        graph = Graph(new_roots)
+        graph.enumerate_traverse()
+
+        return graph
+
+    def enumerate_traverse(self):
+        if not self._check_enumerate_traverse():
+            for i, node in enumerate(self.traverse()):
+                node._hatchet_nid = i
+
+    def _check_enumerate_traverse(self):
+        for i, node in enumerate(self.traverse()):
+            if i != node._hatchet_nid:
+                return False
 
     def __len__(self):
         """Size of the graph in terms of number of nodes."""
@@ -310,4 +326,7 @@ class Graph:
                 "All arguments to Graph.from_lists() must be lists: %s" % roots
             )
 
-        return Graph([Node.from_lists(r) for r in roots])
+        graph = Graph([Node.from_lists(r) for r in roots])
+        graph.enumerate_traverse()
+
+        return graph

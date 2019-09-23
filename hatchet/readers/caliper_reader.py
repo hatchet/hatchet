@@ -163,6 +163,8 @@ class CaliperReader:
 
         with self.timer.phase("graph construction"):
             list_roots = self.create_graph()
+            graph = Graph(list_roots)
+            graph.enumerate_traverse()
 
         # create a dataframe of metrics from the data section
         self.df_json_data = pd.DataFrame(self.json_data, columns=self.json_cols)
@@ -317,6 +319,9 @@ class CaliperReader:
             if "rank" in self.json_cols:
                 indices.append("rank")
             dataframe.set_index(indices, drop=False, inplace=True)
+            for i, node in enumerate(graph.traverse()):
+                dataframe.loc[node]._hatchet_nid = i
+            dataframe.sort_index(inplace=True)
 
         # create list of exclusive and inclusive metric columns
         exc_metrics = []
@@ -327,6 +332,4 @@ class CaliperReader:
             else:
                 exc_metrics.append(column)
 
-        return hatchet.graphframe.GraphFrame(
-            Graph(list_roots), dataframe, exc_metrics, inc_metrics
-        )
+        return hatchet.graphframe.GraphFrame(graph, dataframe, exc_metrics, inc_metrics)
