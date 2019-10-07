@@ -216,6 +216,9 @@ class HPCToolkitReader:
             with self.timer.phase("graph construction"):
                 self.parse_xml_children(root, graph_root, list(node_callpath))
 
+        with self.timer.phase("graph construction"):
+            graph = Graph(list_roots)
+
         # create a dataframe for all the nodes in the graph
         self.df_nodes = pd.DataFrame.from_dict(data=self.node_dicts)
 
@@ -235,9 +238,7 @@ class HPCToolkitReader:
             else:
                 exc_metrics.append(column)
 
-        return hatchet.graphframe.GraphFrame(
-            Graph(list_roots), dataframe, exc_metrics, inc_metrics
-        )
+        return hatchet.graphframe.GraphFrame(graph, dataframe, exc_metrics, inc_metrics)
 
     def parse_xml_children(self, xml_node, hnode, callpath):
         """Parses all children of an XML node."""

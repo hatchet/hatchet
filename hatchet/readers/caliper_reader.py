@@ -150,6 +150,7 @@ class CaliperReader:
 
         with self.timer.phase("graph construction"):
             list_roots = self.create_graph()
+            graph = Graph(list_roots)
 
         # create a dataframe of metrics from the data section
         self.df_json_data = pd.DataFrame(self.json_data, columns=self.json_cols)
@@ -314,6 +315,4 @@ class CaliperReader:
             else:
                 exc_metrics.append(column)
 
-        return hatchet.graphframe.GraphFrame(
-            Graph(list_roots), dataframe, exc_metrics, inc_metrics
-        )
+        return hatchet.graphframe.GraphFrame(graph, dataframe, exc_metrics, inc_metrics)
