@@ -205,7 +205,7 @@ class HPCToolkitReader:
                 self.procedure_names[root.get("n")],
                 "PF",
                 self.src_files[root.get("f")],
-                root.get("l"),
+                int(root.get("l")),
                 self.load_modules[root.get("lm")],
             )
 
@@ -244,7 +244,7 @@ class HPCToolkitReader:
         for xml_child in xml_node:
             if xml_child.tag != "M":
                 nid = int(xml_node.get("i"))
-                line = xml_node.get("l")
+                line = int(xml_node.get("l"))
                 self.parse_xml_node(xml_child, nid, line, hnode, callpath)
 
     def parse_xml_node(
@@ -259,10 +259,10 @@ class HPCToolkitReader:
         if xml_tag == "PF" or xml_tag == "Pr":
             # procedure
             name = self.procedure_names[xml_node.get("n")]
-            if parent_line != "0":
-                name = parent_line + ":" + name
+            if parent_line != 0:
+                name = str(parent_line) + ":" + name
             src_file = xml_node.get("f")
-            line = xml_node.get("l")
+            line = int(xml_node.get("l"))
 
             node_callpath = parent_callpath
             node_callpath.append(name)
@@ -280,7 +280,7 @@ class HPCToolkitReader:
         elif xml_tag == "L":
             # loop
             src_file = xml_node.get("f")
-            line = xml_node.get("l")
+            line = int(xml_node.get("l"))
             name = "Loop@" + (self.src_files[src_file]).rpartition("/")[2] + ":" + line
 
             node_callpath = parent_callpath
@@ -295,9 +295,9 @@ class HPCToolkitReader:
 
         elif xml_tag == "S":
             # statement
-            line = xml_node.get("l")
+            line = int(xml_node.get("l"))
             # this might not be required for resolving conflicts
-            name = (self.src_files[src_file]).rpartition("/")[2] + ":" + line
+            name = (self.src_files[src_file]).rpartition("/")[2] + ":" + str(line)
 
             node_callpath = parent_callpath
             node_callpath.append(name)
@@ -337,7 +337,7 @@ class HPCToolkitReader:
             # or if its a procedure with no name
             # for Prs, the preceding Pr has the calling line number and for
             # PFs, the preceding C has the line number
-            line = xml_node.get("l")
+            line = int(xml_node.get("l"))
             self.parse_xml_children(xml_node, hparent, list(parent_callpath))
         else:
             self.node_dicts.append(node_dict)

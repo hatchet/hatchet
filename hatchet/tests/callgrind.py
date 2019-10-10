@@ -3,6 +3,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+import numpy as np
+
 from hatchet import GraphFrame
 from hatchet.readers.gprof_dot_reader import GprofDotReader
 
@@ -23,7 +25,13 @@ def test_graphframe(calc_pi_callgrind_dot):
 
     assert len(gf.dataframe.groupby("name")) == 105
 
-    # TODO: add tests for dataframe
+    for col in gf.dataframe.columns:
+        if col in ("time (inc)", "time"):
+            assert gf.dataframe[col].dtype == np.float64
+        elif col in ("name", "module", "node"):
+            assert gf.dataframe[col].dtype == np.object
+
+    # TODO: add tests to confirm values in dataframe
 
 
 def test_read_calc_pi_database(calc_pi_callgrind_dot):
