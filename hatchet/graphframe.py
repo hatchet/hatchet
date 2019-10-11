@@ -331,6 +331,9 @@ class GraphFrame:
             rewire(root, None, visited)
         graph = Graph(new_roots)
 
+        index_names = self.dataframe.index.names
+        self.dataframe.reset_index(inplace=True, drop=True)
+
         # reindex new dataframe with new nodes
         df = self.dataframe.copy()
         df["node"] = df["node"].apply(lambda x: old_to_new[x])
@@ -339,8 +342,6 @@ class GraphFrame:
         # may have children with identical frames.
         merges = graph.normalize()
         df["node"] = df["node"].apply(lambda n: merges.get(n, n))
-
-        df.reset_index(inplace=True, drop=True)
 
         # create dict that stores aggregation function for each column
         agg_dict = {}
@@ -351,7 +352,6 @@ class GraphFrame:
                 agg_dict[col] = lambda x: x.iloc[0]
 
         # perform a groupby to merge nodes with the same callpath
-        index_names = self.dataframe.index.names
         agg_df = df.groupby(index_names).agg(agg_dict)
 
         # put it all together
@@ -428,11 +428,21 @@ class GraphFrame:
         out_columns = self._init_sum_columns(columns, out_columns)
         for node in self.graph.traverse():
             subgraph_nodes = list(node.traverse())
-            # TODO: if you take the list constructor away from the
-            # TODO: assignment below, this assignment gives NaNs. Why?
-            self.dataframe.loc[node, out_columns] = list(
-                function(self.dataframe.loc[subgraph_nodes, columns])
-            )
+            # TODO: need a better way of aggregating inclusive metrics when
+            # TODO: there is a multi-index
+            if isinstance(self.dataframe.index, pd.core.index.MultiIndex):
+                for i in self.dataframe.loc[(node), out_columns].index.unique():
+                    # TODO: if you take the list constructor away from the
+                    # TODO: assignment below, this assignment gives NaNs. Why?
+                    self.dataframe.loc[(node, i), out_columns] = list(
+                        function(self.dataframe.loc[(subgraph_nodes, i), columns])
+                    )
+            else:
+                # TODO: if you take the list constructor away from the
+                # TODO: assignment below, this assignment gives NaNs. Why?
+                self.dataframe.loc[(node), out_columns] = list(
+                    function(self.dataframe.loc[(subgraph_nodes), columns])
+                )
 
     def update_inclusive_columns(self):
         """Update inclusive columns (typically after operations that rewire the
