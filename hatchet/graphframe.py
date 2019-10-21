@@ -331,24 +331,31 @@ class GraphFrame:
             rewire(root, None, visited)
         graph = Graph(new_roots)
 
+        index_names = self.dataframe.index.names
+        self.dataframe.reset_index(inplace=True, drop=True)
+
         # reindex new dataframe with new nodes
         df = self.dataframe.copy()
         df["node"] = df["node"].apply(lambda x: old_to_new[x])
-        df.set_index(self.dataframe.index.names, inplace=True, drop=False)
 
         # at this point, the graph is potentially invalid, as some nodes
         # may have children with identical frames.
         merges = graph.normalize()
         df["node"] = df["node"].apply(lambda n: merges.get(n, n))
 
-        # aggregate metrics from old nodes into new nodes, then restore the index
-        index_names = df.index.names
-        df.reset_index(inplace=True, drop=True)
-        df = df.groupby("node", as_index=False).agg("sum")
-        df.set_index(index_names, drop=False, inplace=True)
+        # create dict that stores aggregation function for each column
+        agg_dict = {}
+        for col in df.columns.tolist():
+            if col in self.exc_metrics + self.inc_metrics:
+                agg_dict[col] = np.sum
+            else:
+                agg_dict[col] = lambda x: x.iloc[0]
+
+        # perform a groupby to merge nodes with the same callpath
+        agg_df = df.groupby(index_names).agg(agg_dict)
 
         # put it all together
-        new_gf = GraphFrame(graph, df, self.exc_metrics, self.inc_metrics)
+        new_gf = GraphFrame(graph, agg_df, self.exc_metrics, self.inc_metrics)
         new_gf.update_inclusive_columns()
         return new_gf
 
@@ -421,11 +428,21 @@ class GraphFrame:
         out_columns = self._init_sum_columns(columns, out_columns)
         for node in self.graph.traverse():
             subgraph_nodes = list(node.traverse())
-            # TODO: if you take the list constructor away from the
-            # TODO: assignment below, this assignment gives NaNs. Why?
-            self.dataframe.loc[node, out_columns] = list(
-                function(self.dataframe.loc[subgraph_nodes, columns])
-            )
+            # TODO: need a better way of aggregating inclusive metrics when
+            # TODO: there is a multi-index
+            if isinstance(self.dataframe.index, pd.core.index.MultiIndex):
+                for i in self.dataframe.loc[(node), out_columns].index.unique():
+                    # TODO: if you take the list constructor away from the
+                    # TODO: assignment below, this assignment gives NaNs. Why?
+                    self.dataframe.loc[(node, i), out_columns] = list(
+                        function(self.dataframe.loc[(subgraph_nodes, i), columns])
+                    )
+            else:
+                # TODO: if you take the list constructor away from the
+                # TODO: assignment below, this assignment gives NaNs. Why?
+                self.dataframe.loc[(node), out_columns] = list(
+                    function(self.dataframe.loc[(subgraph_nodes), columns])
+                )
 
     def update_inclusive_columns(self):
         """Update inclusive columns (typically after operations that rewire the
