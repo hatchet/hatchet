@@ -45,7 +45,7 @@ class GraphFrame:
         if dataframe is None:
             raise ValueError("GraphFrame() requires a DataFrame")
 
-        if "node" not in dataframe.index.names:
+        if "node" not in list(dataframe.index.names):
             raise ValueError(
                 "DataFrames passed to GraphFrame() must have an index called 'node'."
             )
@@ -199,7 +199,7 @@ class GraphFrame:
                 exc_metrics.append(key)
 
         dataframe = pd.DataFrame(data=node_dicts)
-        dataframe.set_index(["node"], drop=False, inplace=True)
+        dataframe.set_index(["node"], inplace=True)
         for i, node in enumerate(graph.traverse()):
             dataframe.loc[node]._hatchet_nid = i
         dataframe.sort_index(inplace=True)
@@ -220,7 +220,7 @@ class GraphFrame:
 
         df = pd.DataFrame({"node": list(graph.traverse())})
         df["time"] = [1.0] * len(graph)
-        df.set_index(["node"], inplace=True, drop=False)
+        df.set_index(["node"], inplace=True)
 
         for i, node in enumerate(graph.traverse()):
             df.loc[node]._hatchet_nid = i
@@ -249,7 +249,12 @@ class GraphFrame:
         graph_copy = self.graph.copy(node_clone)
         dataframe_copy = self.dataframe.copy()
 
+        index_names = dataframe_copy.index.names
+        dataframe_copy.reset_index(inplace=True)
+
         dataframe_copy["node"] = dataframe_copy["node"].apply(lambda x: node_clone[x])
+
+        dataframe_copy.set_index(index_names, inplace=True)
 
         return GraphFrame(
             graph_copy, dataframe_copy, list(self.exc_metrics), list(self.inc_metrics)
@@ -269,15 +274,21 @@ class GraphFrame:
                 agg_dict[col] = lambda x: x.iloc[0]
 
         # perform a groupby to merge nodes that just differ in index columns
-        self.dataframe.reset_index(level="node", inplace=True, drop=True)
+        self.dataframe.reset_index(level="node", inplace=True)
         agg_df = self.dataframe.groupby("node").agg(agg_dict)
 
         self.dataframe = agg_df
 
     def filter(self, filter_function):
         """Filter the dataframe using a user-supplied function."""
-        filtered_rows = self.dataframe.apply(filter_function, axis=1)
-        filtered_df = self.dataframe[filtered_rows]
+        dataframe_copy = self.dataframe.copy()
+
+        index_names = self.dataframe.index.names
+        dataframe_copy.reset_index(inplace=True)
+
+        filtered_rows = dataframe_copy.apply(filter_function, axis=1)
+        filtered_df = dataframe_copy[filtered_rows]
+        filtered_df.set_index(index_names, inplace=True)
 
         filtered_gf = GraphFrame(self.graph, filtered_df)
         filtered_gf.exc_metrics = self.exc_metrics
@@ -291,6 +302,9 @@ class GraphFrame:
         This can be used to simplify the Graph, or to normalize Graph
         indexes between two GraphFrames.
         """
+        index_names = self.dataframe.index.names
+        self.dataframe.reset_index(inplace=True)
+
         # create new nodes for each unique node in the old dataframe
         old_to_new = {n: n.copy() for n in set(self.dataframe["node"])}
         for i in old_to_new:
@@ -342,8 +356,7 @@ class GraphFrame:
         graph = Graph(new_roots)
         graph.enumerate_traverse()
 
-        index_names = self.dataframe.index.names
-        self.dataframe.reset_index(inplace=True, drop=True)
+        self.dataframe.reset_index(inplace=True)
 
         # reindex new dataframe with new nodes
         df = self.dataframe.copy()
@@ -354,6 +367,7 @@ class GraphFrame:
         merges = graph.normalize()
         df["node"] = df["node"].apply(lambda n: merges.get(n, n))
 
+        df.set_index(index_names, inplace=True)
         # create dict that stores aggregation function for each column
         agg_dict = {}
         for col in df.columns.tolist():
@@ -481,17 +495,27 @@ class GraphFrame:
         union_graph = self.graph.union(other.graph, node_map)
         union_graph.enumerate_traverse()
 
+        self_index_names = self.dataframe.index.names
+        other_index_names = other.dataframe.index.names
+
+        self.dataframe.reset_index(inplace=True)
+        other.dataframe.reset_index(inplace=True)
+
         self.dataframe["node"] = self.dataframe["node"].apply(lambda x: node_map[x])
         other.dataframe["node"] = other.dataframe["node"].apply(lambda x: node_map[x])
+
+        self.dataframe.set_index(self_index_names, inplace=True, drop=True)
+        other.dataframe.set_index(other_index_names, inplace=True, drop=True)
 
         for i, node in enumerate(union_graph.traverse()):
             self.dataframe.loc[node]._hatchet_nid = i
             other.dataframe.loc[node]._hatchet_nid = i
-        self.dataframe.sort_index(inplace=True)
-        other.dataframe.sort_index(inplace=True)
 
         self.graph = union_graph
         other.graph = union_graph
+
+        self.dataframe.sort_index(inplace=True)
+        other.dataframe.sort_index(inplace=True)
 
     def tree(
         self,

@@ -119,8 +119,18 @@ def test_filter_squash_unify_caliper_data(lulesh_caliper_json):
     gf2 = GraphFrame.from_caliper_json(str(lulesh_caliper_json))
 
     assert gf1.graph is not gf2.graph
+
+    gf1_index_names = gf1.dataframe.index.names
+    gf2_index_names = gf2.dataframe.index.names
+
+    gf1.dataframe.reset_index(inplace=True)
+    gf2.dataframe.reset_index(inplace=True)
+
     # indexes are the same since we are reading in the same dataset
     assert all(gf1.dataframe["node"] == gf2.dataframe["node"])
+
+    gf1.dataframe.set_index(gf1_index_names, inplace=True)
+    gf2.dataframe.set_index(gf2_index_names, inplace=True)
 
     filter_gf1 = gf1.filter(lambda x: x["name"].startswith("Calc"))
     filter_gf2 = gf2.filter(lambda x: x["name"].startswith("Calc"))
@@ -132,7 +142,11 @@ def test_filter_squash_unify_caliper_data(lulesh_caliper_json):
 
     assert squash_gf1.graph is squash_gf2.graph
 
+    squash_gf1.dataframe.reset_index(inplace=True)
+    squash_gf2.dataframe.reset_index(inplace=True)
+
     # Indexes should still be the same after unify. Sort indexes before comparing.
-    squash_gf1.dataframe.sort_index(inplace=True)
-    squash_gf2.dataframe.sort_index(inplace=True)
     assert all(squash_gf1.dataframe["node"] == squash_gf2.dataframe["node"])
+
+    squash_gf1.dataframe.set_index(gf1_index_names, inplace=True)
+    squash_gf2.dataframe.set_index(gf2_index_names, inplace=True)
