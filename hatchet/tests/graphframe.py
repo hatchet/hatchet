@@ -51,7 +51,7 @@ def test_unify_hpctoolkit_data(calc_pi_hpct_db):
 
     assert gf1.graph is not gf2.graph
     # indexes are the same since we are reading in the same dataset
-    assert all(gf1.dataframe["node"] == gf2.dataframe["node"])
+    assert all(gf1.dataframe.index == gf2.dataframe.index)
 
     gf1.unify(gf2)
 
@@ -60,7 +60,7 @@ def test_unify_hpctoolkit_data(calc_pi_hpct_db):
     # Indexes should still be the same after unify. Sort indexes before comparing.
     gf1.dataframe.sort_index(inplace=True)
     gf2.dataframe.sort_index(inplace=True)
-    assert all(gf1.dataframe["node"] == gf2.dataframe["node"])
+    assert all(gf1.dataframe.index == gf2.dataframe.index)
 
 
 def test_invalid_constructor():
@@ -79,13 +79,14 @@ def test_invalid_constructor():
 
 def test_from_lists():
     gf = GraphFrame.from_lists(("a", ("b", "c"), ("d", "e")))
+    gf.dataframe.reset_index(inplace=True, drop=False)
 
     assert list(gf.graph.traverse(attrs="name")) == ["a", "b", "c", "d", "e"]
 
     assert all(gf.dataframe["time"] == ([1.0] * 5))
 
     nodes = set(gf.graph.traverse())
-    assert all(node in gf.dataframe["node"] for node in nodes)
+    assert all(node in list(gf.dataframe["node"]) for node in nodes)
 
 
 def test_update_inclusive_metrics():
@@ -148,11 +149,16 @@ def check_filter_squash(gf, filter_func, expected_graph, expected_inc_time):
     orig_graph = gf.graph.copy()
 
     filtered = gf.filter(filter_func)
+    index_names = filtered.dataframe.index.names
+    filtered.dataframe.reset_index(inplace=True)
     assert filtered.graph is gf.graph
     assert filtered.graph == orig_graph
     assert all(n in filtered.graph.traverse() for n in filtered.dataframe["node"])
+    filtered.dataframe.set_index(index_names, inplace=True)
 
     squashed = filtered.squash()
+    index_names = squashed.dataframe.index.names
+    squashed.dataframe.reset_index(inplace=True, drop=False)
     assert filtered.graph is not squashed.graph
     assert squashed.graph == expected_graph
     assert len(squashed.dataframe.index) == len(expected_graph)
@@ -160,6 +166,7 @@ def check_filter_squash(gf, filter_func, expected_graph, expected_inc_time):
     assert all(
         n.frame["name"] in squashed_node_names for n in squashed.dataframe["node"]
     )
+    squashed.dataframe.set_index(index_names, inplace=True)
 
     # verify inclusive metrics at different nodes
     nodes = list(squashed.graph.traverse())

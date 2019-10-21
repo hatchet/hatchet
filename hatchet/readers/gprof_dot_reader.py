@@ -107,7 +107,7 @@ class GprofDotReader:
         with self.timer.phase("data frame"):
             dataframe = pd.DataFrame.from_dict(data=list(self.name_to_dict.values()))
             index = ["node"]
-            dataframe.set_index(index, drop=False, inplace=True)
+            dataframe.set_index(index, inplace=True)
             for i, node in enumerate(graph.traverse()):
                 dataframe.loc[node]._hatchet_nid = i
             dataframe.sort_index(inplace=True)

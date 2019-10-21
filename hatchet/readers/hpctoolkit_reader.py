@@ -229,7 +229,7 @@ class HPCToolkitReader:
 
             # set the index to be a MultiIndex
             indices = ["node", "rank"]
-            dataframe.set_index(indices, drop=False, inplace=True)
+            dataframe.set_index(indices, inplace=True)
 
             for i, node in enumerate(graph.traverse()):
                 dataframe.loc[node]._hatchet_nid = i
