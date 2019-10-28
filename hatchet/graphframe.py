@@ -661,6 +661,116 @@ class GraphFrame:
 
         return self
 
+    def groupby_aggregate(self, groupby_function, agg_function):
+        """Groupby-aggregate dataframe and reindex the Graph.
+
+        Reindex the graph to match the groupby-aggregated dataframe.
+
+        Update the frame attributes to contain those columns in the dataframe index.
+
+        Arguments:
+            self (graphframe): self's graphframe
+            groupby_function: groupby function on dataframe
+            agg_function: aggregate function on dataframe
+
+        Return:
+            (GraphFrame): new graphframe with reindexed graph and groupby-aggregated dataframe
+        """
+        # create new nodes for each unique node in the old dataframe
+        # length is equal to number of nodes in original graph
+        old_to_new = {}
+
+        # list of new roots
+        new_roots = []
+
+        # dict of (new) super nodes
+        # length is equal to length of dataframe index (after groupby-aggregate)
+        node_dicts = []
+
+        def reindex(node, parent, visited):
+            """Reindex the graph.
+
+            Connect super nodes to children according to relationships from old graph.
+            """
+            # grab the super node corresponding to original node
+            super_node = old_to_new.get(node)
+
+            if not node.parents and super_node not in new_roots:
+                # this is a new root
+                new_roots.append(super_node)
+
+            # iterate over parents of old node, adding parents to super node
+            for parent in node.parents:
+                # convert node to super node
+                snode = old_to_new.get(parent)
+                # move to next node if parent and super node are to be merged
+                if snode == super_node:
+                    continue
+                # add node to super node's parents if parent does not exist in super
+                # node's parents
+                if snode not in super_node.parents:
+                    super_node.add_parent(snode)
+
+            # iterate over children of old node, adding children to super node
+            for child in node.children:
+                # convert node to super node
+                snode = old_to_new.get(child)
+                # move to next node if child and super node are to be merged
+                if snode == super_node:
+                    continue
+                # add node to super node's children if child does not exist in super
+                # node's children
+                if snode not in super_node.children:
+                    super_node.add_child(snode)
+
+            if node not in visited:
+                visited.add(node)
+                for child in node.children:
+                    reindex(child, super_node, visited)
+
+        # groupby-aggregate dataframe based on user-supplied functions
+        groupby_obj = self.dataframe.groupby(groupby_function)
+        agg_df = groupby_obj.agg(agg_function)
+
+        # traverse groupby_obj, determine old node to super node mapping
+        nid = 0
+        for k, v in groupby_obj.groups.items():
+            node_name = k
+            node_type = agg_df.index.name
+            super_node = Node(Frame({"name": node_name, "type": node_type}), None, nid)
+            n = {"node": super_node, "nid": nid, "name": node_name}
+            node_dicts.append(n)
+            nid += 1
+
+            # if many old nodes map to the same super node
+            for i in v:
+                old_to_new[i] = super_node
+
+        # reindex graph by traversing old graph
+        visited = set()
+        for root in self.graph.roots:
+            reindex(root, None, visited)
+
+        # append super nodes to groupby-aggregate dataframe
+        df_index = list(agg_df.index.names)
+        agg_df.reset_index(inplace=True)
+        df_nodes = pd.DataFrame.from_dict(data=node_dicts)
+        tmp_df = pd.concat([agg_df, df_nodes], axis=1)
+        # add node to dataframe index if it doesn't exist
+        if "node" not in df_index:
+            df_index.append("node")
+        # reset index
+        tmp_df.set_index(df_index, inplace=True)
+
+        # update _hatchet_nid in reindexed graph and groupby-aggregate dataframe
+        graph = Graph(new_roots)
+        graph.enumerate_traverse()
+
+        # put it all together
+        new_gf = GraphFrame(graph, tmp_df, self.exc_metrics, self.inc_metrics)
+        new_gf.drop_index_levels()
+        return new_gf
+
     def add(self, other, *args, **kwargs):
         """Returns the column-wise sum of two graphframes as a new graphframe.
 
