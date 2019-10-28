@@ -223,7 +223,7 @@ class CaliperReader:
                     for line, line_group in line_groups:
                         # create the node label
                         file_path = (line_group.head(1))["file"].item()
-                        file_name = file_path.rpartition("/")[2]
+                        file_name = os.path.basename(file_path)
                         node_label = file_name + ":" + line
 
                         # create a new hatchet node

@@ -6,6 +6,7 @@
 import glob
 import struct
 import re
+import os
 
 import numpy as np
 import pandas as pd
@@ -285,10 +286,11 @@ class HPCToolkitReader:
             )
 
         elif xml_tag == "L":
+            print(xml_tag)
             # loop
             src_file = xml_node.get("f")
             line = int(xml_node.get("l"))
-            name = "Loop@" + (self.src_files[src_file]).rpartition("/")[2] + ":" + line
+            name = "Loop@" + os.path.basename(self.src_files[src_file]) + ":" + line
 
             node_callpath = parent_callpath
             node_callpath.append(name)
@@ -304,7 +306,7 @@ class HPCToolkitReader:
             # statement
             line = int(xml_node.get("l"))
             # this might not be required for resolving conflicts
-            name = (self.src_files[src_file]).rpartition("/")[2] + ":" + str(line)
+            name = os.path.basename(self.src_files[src_file]) + ":" + str(line)
 
             node_callpath = parent_callpath
             node_callpath.append(name)
