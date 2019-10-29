@@ -35,9 +35,12 @@ def init_shared_array(buf_):
 
 def read_metricdb_file(args):
     """Read a single metricdb file into a 1D array."""
-    filename, num_nodes, num_metrics, shape = args
+    filename, num_nodes, num_threads_per_rank, num_metrics, shape = args
     rank = int(
         re.search(r"\-(\d+)\-(\d+)\-([\w\d]+)\-(\d+)\-\d.metric-db$", filename).group(1)
+    )
+    thread = int(
+        re.search(r"\-(\d+)\-(\d+)\-([\w\d]+)\-(\d+)\-\d.metric-db$", filename).group(2)
     )
 
     with open(filename, "rb") as metricdb:
@@ -49,10 +52,12 @@ def read_metricdb_file(args):
     arr = np.frombuffer(shared_metrics).reshape(shape)
 
     # copy the data in the right place in the larger 2D array of metrics
-    rank_offset = rank * num_nodes
+    rank_offset = (rank * num_threads_per_rank + thread) * num_nodes
+
     arr[rank_offset : rank_offset + num_nodes, :2].flat = arr1d.flat
     arr[rank_offset : rank_offset + num_nodes, 2] = range(1, num_nodes + 1)
-    arr[rank_offset : rank_offset + num_nodes, 3] = float(rank)
+    arr[rank_offset : rank_offset + num_nodes, 3] = rank
+    arr[rank_offset : rank_offset + num_nodes, 4] = thread
 
 
 class HPCToolkitReader:
@@ -75,7 +80,15 @@ class HPCToolkitReader:
         # For a parallel run, there should be one metric-db file per MPI
         # process
         metricdb_files = glob.glob(self.dir_name + "/*.metric-db")
-        self.num_pes = len(metricdb_files)
+        self.num_metricdb_files = len(metricdb_files)
+
+        # We need to know how many threads per rank there are. This counts the
+        # number of thread 0 metric-db files (i.e., number of ranks), then
+        # uses this as the divisor to the total number of metric-db files.
+        metricdb_numranks_files = glob.glob(self.dir_name + "/*-000-*.metric-db")
+        self.num_threads_per_rank = int(
+            self.num_metricdb_files / len(metricdb_numranks_files)
+        )
 
         # Read one metric-db file to extract the number of nodes in the CCT
         # and the number of metrics
@@ -128,16 +141,16 @@ class HPCToolkitReader:
 
     def read_all_metricdb_files(self):
         """Read all the metric-db files and create a dataframe with num_nodes X
-        num_pes rows and num_metrics columns. Two additional columns store the node
-        id and MPI process rank.
+        num_metricdb_files rows and num_metrics columns. Three additional columns
+        store the node id, MPI process rank, and thread id (if applicable).
         """
         metricdb_files = glob.glob(self.dir_name + "/*.metric-db")
         metricdb_files.sort()
 
         # All the metric data per node and per process is read into the metrics
-        # array below. The two additional columns are for storing the implicit
-        # node id (nid) and MPI process rank.
-        shape = [self.num_nodes * self.num_pes, self.num_metrics + 2]
+        # array below. The three additional columns are for storing the implicit
+        # node id (nid), MPI process rank, and thread id (if applicable).
+        shape = [self.num_nodes * self.num_metricdb_files, self.num_metrics + 3]
         size = int(np.prod(shape))
 
         # shared memory buffer for multiprocessing
@@ -146,7 +159,13 @@ class HPCToolkitReader:
         pool = mp.Pool(initializer=init_shared_array, initargs=(shared_buffer,))
         self.metrics = np.frombuffer(shared_buffer).reshape(shape)
         args = [
-            (filename, self.num_nodes, self.num_metrics, shape)
+            (
+                filename,
+                self.num_nodes,
+                self.num_threads_per_rank,
+                self.num_metrics,
+                shape,
+            )
             for filename in metricdb_files
         ]
         try:
@@ -165,10 +184,15 @@ class HPCToolkitReader:
                 metric_names[idx] = "time (inc)"
 
         self.metric_columns = metric_names
-        df_columns = self.metric_columns + ["nid", "rank"]
+        df_columns = self.metric_columns + ["nid", "rank", "thread"]
         self.df_metrics = pd.DataFrame(self.metrics, columns=df_columns)
         self.df_metrics["nid"] = self.df_metrics["nid"].astype(int, copy=False)
         self.df_metrics["rank"] = self.df_metrics["rank"].astype(int, copy=False)
+        self.df_metrics["thread"] = self.df_metrics["thread"].astype(int, copy=False)
+
+        # if number of threads per rank is 1, we do not need to keep the thread ID column
+        if self.num_threads_per_rank == 1:
+            del self.df_metrics["thread"]
 
     def read(self):
         """Read the experiment.xml file to extract the calling context tree and create
@@ -229,7 +253,11 @@ class HPCToolkitReader:
             dataframe = pd.merge(self.df_metrics, self.df_nodes, on="nid")
 
             # set the index to be a MultiIndex
-            indices = ["node", "rank"]
+            if self.num_threads_per_rank > 1:
+                indices = ["node", "rank", "thread"]
+            # if number of threads per rank is 1, do not make thread an index
+            elif self.num_threads_per_rank == 1:
+                indices = ["node", "rank"]
             dataframe.set_index(indices, inplace=True)
 
             for i, node in enumerate(graph.traverse()):

@@ -37,6 +37,7 @@ def trees_as_text(
     name,
     context,
     rank,
+    thread,
     threshold,
     expand_names,
     unicode,
@@ -54,6 +55,7 @@ def trees_as_text(
             name,
             context,
             rank,
+            thread,
             threshold,
             expand_names,
             unicode=unicode,
@@ -70,6 +72,7 @@ def as_text(
     name,
     context,
     rank,
+    thread,
     threshold,
     expand_names,
     indent="",
@@ -82,12 +85,17 @@ def as_text(
     The function takes a node, and creates a string for the node.
     """
     # set dataframe index based on if rank is a part of the index
-    if "rank" in dataframe.index.names:
+    if "rank" in dataframe.index.names and "thread" in dataframe.index.names:
+        df_index = (hnode, rank, thread)
+    elif "rank" in dataframe.index.names:
         df_index = (hnode, rank)
+    elif "thread" in dataframe.index.names:
+        df_index = (hnode, thread)
     else:
         df_index = hnode
 
     colors = colors_enabled if color else colors_disabled
+
     node_time = dataframe.loc[df_index, metric]
     max_time = dataframe[metric].max()
 
@@ -122,8 +130,12 @@ def as_text(
         # threshold
         children = []
         for child in hnode.children:
-            if "rank" in dataframe.index.names:
+            if "rank" in dataframe.index.names and "thread" in dataframe.index.names:
+                df_index = (child, rank, thread)
+            elif "rank" in dataframe.index.names:
                 df_index = (child, rank)
+            elif "thread" in dataframe.index.names:
+                df_index = (child, thread)
             else:
                 df_index = child
             child_time = dataframe.loc[df_index, metric]
@@ -147,6 +159,7 @@ def as_text(
                 name,
                 context,
                 rank,
+                thread,
                 threshold,
                 expand_names,
                 indent=c_indent,
