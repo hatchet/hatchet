@@ -356,8 +356,6 @@ class GraphFrame:
         graph = Graph(new_roots)
         graph.enumerate_traverse()
 
-        self.dataframe.reset_index(inplace=True)
-
         # reindex new dataframe with new nodes
         df = self.dataframe.copy()
         df["node"] = df["node"].apply(lambda x: old_to_new[x])
