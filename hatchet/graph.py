@@ -179,7 +179,7 @@ class Graph:
                 """Make a new node to represent the union of other nodes."""
                 new_node = nodes[0].copy()
                 for node in nodes:
-                    old_to_new[node] = new_node
+                    old_to_new[id(node)] = new_node
                 return new_node
 
             new_children = []
@@ -198,7 +198,7 @@ class Graph:
             while self_child and other_child:
                 if self_child.frame < other_child.frame:
                     # self_child is unique
-                    new_node = old_to_new.get(self_child)
+                    new_node = old_to_new.get(id(self_child))
                     if not new_node:
                         new_node = make_node(self_child)
                         _merge(frame_ordered(self_child.children), (), new_node)
@@ -207,7 +207,7 @@ class Graph:
 
                 elif self_child.frame > other_child.frame:
                     # other_child is unique
-                    new_node = old_to_new.get(other_child)
+                    new_node = old_to_new.get(id(other_child))
                     if not new_node:
                         new_node = make_node(other_child)
                         _merge((), frame_ordered(other_child.children), new_node)
@@ -216,8 +216,8 @@ class Graph:
 
                 else:
                     # self_child and other_child are equal
-                    self_mapped = old_to_new.get(self_child)
-                    other_mapped = old_to_new.get(other_child)
+                    self_mapped = old_to_new.get(id(self_child))
+                    other_mapped = old_to_new.get(id(other_child))
                     if not self_mapped and not other_mapped:
                         new_node = make_node(self_child, other_child)
                     else:
@@ -225,13 +225,13 @@ class Graph:
 
                     # map whichever node was not mapped yet
                     if not self_mapped:
-                        old_to_new[self_child] = new_node
+                        old_to_new[id(self_child)] = new_node
                         self_side = frame_ordered(self_child.children)
                     else:
                         self_side = []
 
                     if not other_mapped:
-                        old_to_new[other_child] = new_node
+                        old_to_new[id(other_child)] = new_node
                         other_side = frame_ordered(other_child.children)
                     else:
                         other_side = []
@@ -244,7 +244,7 @@ class Graph:
 
             # finish off whichever list of children is longer
             while self_child:
-                new_node = old_to_new.get(self_child)
+                new_node = old_to_new.get(id(self_child))
                 if not new_node:
                     new_node = make_node(self_child)
                     _merge(frame_ordered(self_child.children), (), new_node)
@@ -252,7 +252,7 @@ class Graph:
                 self_child = next(self_children, None)
 
             while other_child:
-                new_node = old_to_new.get(self_child)
+                new_node = old_to_new.get(id(other_child))
                 if not new_node:
                     new_node = make_node(other_child)
                     _merge((), frame_ordered(other_child.children), new_node)
