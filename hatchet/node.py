@@ -153,7 +153,7 @@ class Node:
         return self._hatchet_nid
 
     def __eq__(self, other):
-        return self._hatchet_nid == other._hatchet_nid
+        return self._hatchet_nid == other._hatchet_nid and self.frame == other.frame
 
     def __lt__(self, other):
         return self._hatchet_nid < other._hatchet_nid
