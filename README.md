@@ -39,8 +39,10 @@ If you are referencing Hatchet in a publication, please cite the
 following [paper](http://www.cs.umd.edu/~bhatele/pubs/pdf/2019/sc2019.pdf):
 
  * Abhinav Bhatele, Stephanie Brink, and Todd Gamblin. Hatchet: Pruning
-   the Overgrowth in Parallel Profiles.  In *Supercomputing 2019
-   (SC'19)*, Denver, Colorado, November 17-22 2019. LLNL-CONF-772402.
+   the Overgrowth in Parallel Profiles. In Proceedings of the International
+   Conference for High Performance Computing, Networking, Storage and Analysis
+   (SC '19). ACM, New York, NY, USA. [DOI](
+   https://doi.org/10.1145/3295500.335621)
 
 ### License
 
@@ -55,5 +57,4 @@ See [LICENSE](https://github.com/llnl/hatchet/blob/master/LICENSE) and
 [NOTICE](https://github.com/llnl/hatchet/blob/master/NOTICE) for details.
 
 SPDX-License-Identifier: MIT
-
 LLNL-CODE-741008
