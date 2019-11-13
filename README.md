@@ -11,7 +11,7 @@ indexed by structured tree and graph data.  It is intended for analyzing
 sequential and parallel profile data.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/LLNL/hatchet/master/screenshot.png" width=600>
+  <img src="https://raw.githubusercontent.com/LLNL/hatchet/master/screenshot.png" width=800>
 </p>
 
 ### Installing hatchet
