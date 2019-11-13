@@ -12,52 +12,50 @@ Hatchet Documentation
 =====================
 
 Hatchet is a Python-based library to analyze performance data that has a
-hierarchy (derived from calling context trees, call graphs, callpath traces,
-nested regions' timers, etc.). Hatchet implements various operations to analyze
-a single hierarchical data set or compare multiple data sets.
+hierarchy (such as serial or parallel profiles that represent calling context
+trees, call graphs, nested regions' timers, etc.).  Hatchet allows `Pandas
+<https://pandas.pydata.org>`_ dataframes to be indexed by structured tree and
+graph data. It is intended for analyzing sequential and parallel profile data.
 
+Hatchet implements various operations to analyze a single hierarchical data set
+or compare multiple data sets, and its API facilitates analyzing such data
+programmatically.
 
-Getting Started
----------------
+You can get hatchet from the `github repository
+<https://github.com/LLNL/hatchet>`_:
 
-To get started installing and using Hatchet, see the :doc:`Install Guide
-<install>` and :doc:`User Guide <userguide>`.
+.. code-block:: console
 
+  $ git clone https://github.com/LLNL/hatchet.git
 
-Hatchet Project Resources
--------------------------
+or install it using pip:
 
-**Online Documentation**
+.. code-block:: console
 
-http://hatchet.readthedocs.io
+  $ pip install hatchet
 
-**Github Source Code**
-
-http://github.com/llnl/hatchet
-
-**Issue Tracker**
-
-http://github.com/llnl/hatchet/issues
-
-
-Citing Hatchet
---------------
-
-If you are referencing Hatchet in a publication, please cite the
-following `paper <http://www.cs.umd.edu/~bhatele/pubs/pdf/2019/sc2019.pdf>`_:
-
- * Abhinav Bhatele, Stephanie Brink, and Todd Gamblin. Hatchet: Pruning
-   the Overgrowth in Parallel Profiles.  In *Supercomputing 2019
-   (SC'19)*, Denver, Colorado, November 17-22 2019. LLNL-CONF-772402.
+If you are new to hatchet and want to start using it, see :doc:`Getting Started
+<getting_started>`, or refer to the full :doc:`User Guide <user_guide>` below.
 
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
 
-   install
-   userguide
+   getting_started
+   user_guide
    source/hatchet
+
+
+If you encounter bugs while using hatchet, you can report them by opening an issue on `GitHub <http://github.com/llnl/hatchet/issues>`_.
+
+If you are referencing hatchet in a publication, please cite the
+following `paper <http://www.cs.umd.edu/~bhatele/pubs/pdf/2019/sc2019.pdf>`_:
+ * Abhinav Bhatele, Stephanie Brink, and Todd Gamblin. Hatchet: Pruning
+   the Overgrowth in Parallel Profiles. In Proceedings of the International
+   Conference for High Performance Computing, Networking, Storage and Analysis
+   (SC '19). ACM, New York, NY, USA. `DOI
+   <https://doi.org/10.1145/3295500.335621>`_
 
 
 Indices and tables

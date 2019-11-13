@@ -22,7 +22,6 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../hatchet"))
 
-
 # -- Project information -----------------------------------------------------
 
 project = "hatchet"
@@ -78,7 +77,25 @@ language = None
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = "sphinx"
+from pygments.style import Style
+from pygments.styles.default import DefaultStyle
+from pygments.token import Generic, Comment, Text
+
+# modifications to the default style
+class HatchetStyle(DefaultStyle):
+    styles = DefaultStyle.styles.copy()
+    background_color       = "#f4f4f8"
+    styles[Generic.Output] = "#355"
+    styles[Generic.Prompt] = "bold #346ec9"
+
+import pkg_resources
+dist = pkg_resources.Distribution(__file__)
+sys.path.append('.')  # make 'conf' module findable
+ep = pkg_resources.EntryPoint.parse('hatchet = conf:HatchetStyle', dist=dist)
+dist._ep_map = {'pygments.styles': {'plugin1': ep}}
+pkg_resources.working_set.add(dist)
+
+pygments_style = 'hatchet'
 
 
 # -- Options for HTML output -------------------------------------------------
