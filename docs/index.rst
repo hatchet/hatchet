@@ -8,20 +8,18 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Hatchet Documentation
-=====================
+Hatchet
+=======
 
-Hatchet is a Python-based library to analyze performance data that has a
-hierarchy (such as serial or parallel profiles that represent calling context
-trees, call graphs, nested regions' timers, etc.).  Hatchet allows `Pandas
+Hatchet is a Python-based library that allows `Pandas
 <https://pandas.pydata.org>`_ dataframes to be indexed by structured tree and
-graph data. It is intended for analyzing sequential and parallel profile data.
+graph data. It is intended for analyzing performance data that has a hierarchy
+(for example, serial or parallel profiles that represent calling context trees,
+call graphs, nested regions' timers, etc.).  Hatchet implements various
+operations to analyze a single hierarchical data set or compare multiple data
+sets, and its API facilitates analyzing such data programmatically.
 
-Hatchet implements various operations to analyze a single hierarchical data set
-or compare multiple data sets, and its API facilitates analyzing such data
-programmatically.
-
-You can get hatchet from the `github repository
+You can get hatchet from its `GitHub repository
 <https://github.com/LLNL/hatchet>`_:
 
 .. code-block:: console

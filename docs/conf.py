@@ -84,18 +84,20 @@ from pygments.token import Generic, Comment, Text
 # modifications to the default style
 class HatchetStyle(DefaultStyle):
     styles = DefaultStyle.styles.copy()
-    background_color       = "#f4f4f8"
+    background_color = "#f4f4f8"
     styles[Generic.Output] = "#355"
     styles[Generic.Prompt] = "bold #346ec9"
 
+
 import pkg_resources
+
 dist = pkg_resources.Distribution(__file__)
-sys.path.append('.')  # make 'conf' module findable
-ep = pkg_resources.EntryPoint.parse('hatchet = conf:HatchetStyle', dist=dist)
-dist._ep_map = {'pygments.styles': {'plugin1': ep}}
+sys.path.append(".")  # make 'conf' module findable
+ep = pkg_resources.EntryPoint.parse("hatchet = conf:HatchetStyle", dist=dist)
+dist._ep_map = {"pygments.styles": {"plugin1": ep}}
 pkg_resources.working_set.add(dist)
 
-pygments_style = 'hatchet'
+pygments_style = "hatchet"
 
 
 # -- Options for HTML output -------------------------------------------------
