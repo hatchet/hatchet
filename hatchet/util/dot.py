@@ -7,7 +7,7 @@ import matplotlib.cm
 import matplotlib.colors
 
 
-def trees_to_dot(roots, dataframe, metric, name, rank, threshold):
+def trees_to_dot(roots, dataframe, metric, name, rank, thread, threshold):
     """Calls to_dot in turn for each tree in the graph/forest."""
     text = (
         "strict digraph {\n"
@@ -21,7 +21,7 @@ def trees_to_dot(roots, dataframe, metric, name, rank, threshold):
 
     # call to_dot for each root in the graph
     for root in roots:
-        (nodes, edges) = to_dot(root, dataframe, metric, name, rank, threshold)
+        (nodes, edges) = to_dot(root, dataframe, metric, name, rank, thread, threshold)
         all_nodes += nodes
         all_edges += edges
 
@@ -29,7 +29,7 @@ def trees_to_dot(roots, dataframe, metric, name, rank, threshold):
     return text
 
 
-def to_dot(hnode, dataframe, metric, name, rank, threshold):
+def to_dot(hnode, dataframe, metric, name, rank, thread, threshold):
     """Write to graphviz dot format."""
     colormap = matplotlib.cm.Reds
     min_time = dataframe[metric].min()
@@ -37,10 +37,15 @@ def to_dot(hnode, dataframe, metric, name, rank, threshold):
 
     def add_nodes_and_edges(hnode):
         # set dataframe index based on if rank is a part of the index
-        if "rank" in dataframe.index.names:
+        if "rank" in dataframe.index.names and "thread" in dataframe.index.names:
+            df_index = (hnode, rank, thread)
+        elif "rank" in dataframe.index.names:
             df_index = (hnode, rank)
+        elif "thread" in dataframe.index.names:
+            df_index = (hnode, thread)
         else:
             df_index = hnode
+
         node_time = dataframe.loc[df_index, metric]
         node_name = dataframe.loc[df_index, name]
         node_id = hnode._hatchet_nid
@@ -59,10 +64,18 @@ def to_dot(hnode, dataframe, metric, name, rank, threshold):
             # threshold
             children = []
             for child in hnode.children:
-                if "rank" in dataframe.index.names:
+                if (
+                    "rank" in dataframe.index.names
+                    and "thread" in dataframe.index.names
+                ):
+                    df_index = (child, rank, thread)
+                elif "rank" in dataframe.index.names:
                     df_index = (child, rank)
+                elif "thread" in dataframe.index.names:
+                    df_index = (child, thread)
                 else:
-                    df_index = hnode
+                    df_index = child
+
                 child_time = dataframe.loc[df_index, metric]
                 if child_time >= threshold * max_time:
                     children.append(child)
