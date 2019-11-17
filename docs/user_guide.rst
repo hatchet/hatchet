@@ -89,7 +89,7 @@ When the graph represented by the input dataset is small, the user may be intere
 
 .. code-block:: python
 
-  print(gf.tree())
+  print(gf.tree(color=True))
 
 One can also use the ``to_dot()`` function to output the tree as a string in the Graphviz' DOT format. This can be written to a file and then used to display a tree using the ``dot`` or ``neato`` program.
 
@@ -290,8 +290,6 @@ string that can be printed to the console. By default, the tree uses the
 representation. This operation uses automatic color by default, but True or
 False can be used to force override.
 
-
 Generating datasets for analysis
 --------------------------------
-
 
