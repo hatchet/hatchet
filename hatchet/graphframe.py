@@ -548,12 +548,12 @@ class GraphFrame:
 
         return result
 
-    def to_dot(self, metric="time", name="name", rank=0, threshold=0.0):
+    def to_dot(self, metric="time", name="name", rank=0, thread=0, threshold=0.0):
         """Write the graph in the graphviz dot format:
         https://www.graphviz.org/doc/info/lang.html
         """
         return trees_to_dot(
-            self.graph.roots, self.dataframe, metric, name, rank, threshold
+            self.graph.roots, self.dataframe, metric, name, rank, thread, threshold
         )
 
     def _operator(self, other, op, *args, **kwargs):
