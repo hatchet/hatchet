@@ -43,7 +43,7 @@ def to_dot(hnode, dataframe, metric, name, rank, threshold):
             df_index = hnode
         node_time = dataframe.loc[df_index, metric]
         node_name = dataframe.loc[df_index, name]
-        node_id = id(hnode)
+        node_id = hnode._hatchet_nid
 
         weight = (node_time - min_time) / (max_time - min_time)
         color = matplotlib.colors.rgb2hex(colormap(weight))
@@ -69,10 +69,7 @@ def to_dot(hnode, dataframe, metric, name, rank, threshold):
 
             for child in children:
                 # add edges
-                if "rank" in dataframe.index.names:
-                    child_id = "%s_%d" % (id(child), rank)
-                else:
-                    child_id = id(child)
+                child_id = child._hatchet_nid
 
                 edge_string += '"{0}" -> "{1}";\n'.format(node_id, child_id)
 
