@@ -403,4 +403,4 @@ def test_to_dot(mock_graph_literal):
     # do a simple edge check -- this isn't exhaustive
     for node in gf.graph.traverse():
         for child in node.children:
-            assert '"%s" -> "%s"' % (id(node), id(child)) in output
+            assert '"%s" -> "%s"' % (node._hatchet_nid, child._hatchet_nid) in output
