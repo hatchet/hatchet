@@ -49,11 +49,12 @@ If you encounter bugs while using hatchet, you can report them by opening an iss
 
 If you are referencing hatchet in a publication, please cite the
 following `paper <http://www.cs.umd.edu/~bhatele/pubs/pdf/2019/sc2019.pdf>`_:
- * Abhinav Bhatele, Stephanie Brink, and Todd Gamblin. Hatchet: Pruning
-   the Overgrowth in Parallel Profiles. In Proceedings of the International
-   Conference for High Performance Computing, Networking, Storage and Analysis
-   (SC '19). ACM, New York, NY, USA. `DOI
-   <https://doi.org/10.1145/3295500.335621>`_
+
+* Abhinav Bhatele, Stephanie Brink, and Todd Gamblin. Hatchet: Pruning
+  the Overgrowth in Parallel Profiles. In Proceedings of the International
+  Conference for High Performance Computing, Networking, Storage and Analysis
+  (SC '19). ACM, New York, NY, USA.
+  `DOI <https://doi.org/10.1145/3295500.335621>`_
 
 
 Indices and tables

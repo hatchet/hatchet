@@ -67,8 +67,8 @@ messages:
   >>> import hatchet
   >>>
 
-Supported Input Data Formats
-----------------------------
+Input data formats
+------------------
 
 Currently, hatchet supports the following data formats as input:
 
