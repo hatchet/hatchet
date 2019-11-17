@@ -17,7 +17,7 @@ Data structures in hatchet
 
 Hatchet's primary data structure is a ``GraphFrame``, which combines a
 structured index in the form of a graph with a pandas dataframe.  The images
-below show the two objects in a ``GraphFrame`` – a ``Graph`` object (the
+on the right show the two objects in a ``GraphFrame`` – a ``Graph`` object (the
 index), and a ``DataFrame object`` storing the metrics associated with each
 node.
 
@@ -35,7 +35,7 @@ a dataframe that stores different metrics (numerical data) and categorical data
 associated with each node.
 
 .. image:: images/sample-dataframe.png
-   :scale: 30 %
+   :scale: 35 %
    :align: right
 
 **Graph**: The graph can be connected or disconnected (multiple roots) and each
@@ -138,14 +138,26 @@ a cross section of the dataframe, say the values for rank 0, like this:
 
   print(gf.dataframe.xs(0, level="rank"))
 
-
 Dataframe operations
 --------------------
 
-**Filter**: ``filter`` takes a user-supplied function and applies that
-to all rows in the DataFrame. The resulting Series or DataFrame is used to
-filter the DataFrame to only return rows that are true. The returned GraphFrame
-preserves the original graph provided as input to the filter operation.
+.. image:: images/sample-dataframe.png
+   :scale: 40 %
+   :align: right
+
+**filter**: ``filter`` takes a user-supplied function and applies that to all
+rows in the DataFrame. The resulting Series or DataFrame is used to filter the
+DataFrame to only return rows that are true. The returned GraphFrame preserves
+the original graph provided as input to the filter operation. The images on the
+right show a DataFrame before and after a filter operation.
+
+.. code-block:: python
+
+  filtered_gf = gf.filter(lambda x: x['time'] > 10.0)
+
+.. image:: images/filter-dataframe.png
+   :scale: 40 %
+   :align: right
 
 Filter is one of the operations that leads to the graph object and DataFrame
 object becoming inconsistent. After a filter operation, there are nodes in the
@@ -162,21 +174,36 @@ by specifying an aggregation function. Essentially, this performs a
 function is used to perform the aggregation over all MPI processes or threads
 at the per-node granularity.
 
+.. code-block:: python
+
+  gf.drop_index_levels(function=np.max)
+
 **update_inclusive_columns**: When a graph is rewired (i.e., the
 parent-child connections are modified), all the columns in the DataFrame that
 store inclusive values of a metric become inaccurate. This function performs a
 post-order traversal of the graph to update all columns that store inclusive
 metrics in the DataFrame for each node.
 
+.. image:: images/sample-graph.png
+   :scale: 30 %
+   :align: right
+
 Graph operations
 ----------------
 
-**Squash**: The ``squash`` operation is typically performed by the user after a
+**traverse**: A generator function that performs a pre-order traversal of the
+graph and generates a sequence of all nodes in the graph in that order.
+
+**squash**: The ``squash`` operation is typically performed by the user after a
 ``filter`` operation on the DataFrame.  The squash operation removes nodes from
 the graph that were previously removed from the DataFrame due to a filter
 operation. When one or more nodes on a path are removed from the graph, the
 nearest remaining ancestor is connected by an edge to the nearest remaining
 child on the path. All call paths in the graph are re-wired in this manner.
+
+.. image:: images/squash-graph.png
+   :scale: 30 %
+   :align: right
 
 A squash operation creates a new DataFrame in addition to the new graph. The
 new DataFrame contains all rows from the original DataFrame, but its index
@@ -186,43 +213,42 @@ parent-child relationships have changed. Hence, the squash operation also calls
 ``update_inclusive_columns`` to make all inclusive columns in the DataFrame
 accurate again.
 
-**Equal**: The ``==`` operation checks whether two graphs have the same nodes
+.. code-block:: python
+
+  filtered_gf = gf.filter(lambda x: x['time'] > 10.0)
+  squashed_gf = filtered_gf.squash()
+
+**equal**: The ``==`` operation checks whether two graphs have the same nodes
 and edge connectivity when traversing from their roots.  If they are
 equivalent, it returns true, otherwise it returns false.
 
-**Union**: The ``union`` function takes two graphs and creates a unified graph,
+**union**: The ``union`` function takes two graphs and creates a unified graph,
 preserving all edges structure of the original graphs, and merging nodes with
 identical context.  When Hatchet performs binary operations on two GraphFrames
 with unequal graphs, a union is performed beforehand to ensure that the graphs
 are structurally equivalent.  This ensures that operands to element-wise
 operations like add and subtract, can be aligned by their respective nodes.
 
-**Tree**: The ``tree`` operation returns the graphframe's graph structure as a
-string that can be printed to the console. By default, the tree uses the
-``name`` of each node and the associated ``time`` metric as the string
-representation. This operation uses automatic color by default, but True or
-False can be used to force override.
-
 GraphFrame operations
 ---------------------
 
-**Copy**: The ``copy`` operation returns a shallow copy of a GraphFrame.  It
+**copy**: The ``copy`` operation returns a shallow copy of a GraphFrame.  It
 creates a new GraphFrame with a copy of the original GraphFrame's DataFrame,
 but the same graph.  As mentioned earlier, graphs in Hatchet use immutable
 semantics, and they are copied only when they need to be restructured.  This
 property allows us to reuse graphs from GraphFrame to GraphFrame if the
 operations performed on the GraphFrame do not mutate the graph.
 
-**DeepCopy**: The ``deepcopy`` operation returns a deep copy of a GraphFrame.
+**deepcopy**: The ``deepcopy`` operation returns a deep copy of a GraphFrame.
 It is similar to ``copy``, but returns a new GraphFrame with a copy of the
 original GraphFrame's DataFrame and a copy of the original GraphFrame's graph.
 
-**Unify**: ``unify`` operates on GraphFrames, and calls union on the two
+**unify**: ``unify`` operates on GraphFrames, and calls union on the two
 graphs, and then reindexes the DataFrames in both GraphFrames to be indexed by
 the nodes in the unified graph.  Binary operations on GraphFrames call unify
 which in turn calls union on the respective graphs.
 
-**Add**: Assuming the graphs in two GraphFrames are equal, the ``add (+)``
+**add**: Assuming the graphs in two GraphFrames are equal, the ``add (+)``
 operation computes the element-wise sum of two DataFrames.  In the case where
 the two graphs are not identical, ``unify`` (described above) is applied first
 to create a unified graph before performing the sum.  The DataFrames are copied
@@ -230,9 +256,33 @@ and reindexed by the combined graph, and the add operation returns new
 GraphFrame with the result of adding these DataFrames. Hatchet also provides an
 in-place version of the add operator: ``+=``.
 
-**Subtract**:  The subtract operation is similar to the add operation in that
+**subtract**:  The subtract operation is similar to the add operation in that
 it requires the two graphs to be identical.  It applies ``union`` and reindexes
 DataFrames if necessary.  Once the graphs are unified, the subtract operation
 computes the element-wise difference between the two DataFrames.  The subtract
 operation returns a new GraphFrame, or it modifies one of the GraphFrames in
 place in the case of the in-place subtraction (``-=``).
+
+.. code-block:: python
+
+  gf1 = ht.GraphFrame.from_literal( ... )
+  gf2 = ht.GraphFrame.from_literal( ... )
+  gf2 -= gf1
+
+|pic1| - |pic2| = |pic3|
+
+.. |pic1| image:: images/diff-graph2.png
+   :scale: 30 %
+
+.. |pic2| image:: images/diff-graph1.png
+   :scale: 30 %
+
+.. |pic3| image:: images/diff-graph3.png
+   :scale: 30 %
+
+**tree**: The ``tree`` operation returns the graphframe's graph structure as a
+string that can be printed to the console. By default, the tree uses the
+``name`` of each node and the associated ``time`` metric as the string
+representation. This operation uses automatic color by default, but True or
+False can be used to force override.
+
