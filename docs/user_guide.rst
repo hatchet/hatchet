@@ -12,6 +12,7 @@ to store the data on each node of the hierarchy and keeps the graph
 relationships between the nodes in a different data structure that is kept
 consistent with the dataframe.
 
+
 Data structures in hatchet
 --------------------------
 
@@ -76,6 +77,7 @@ the ``from_caliper_json`` method:
       filename = ("hatchet/tests/data/caliper-lulesh-json/lulesh-sample-annotation-profile.json")
       gf = ht.GraphFrame.from_caliper_json(filename)
 
+
 Visualizing the data
 --------------------
 
@@ -108,7 +110,6 @@ One can also use the ``to_flamegraph`` function to output the tree as a string
 in the folded stack format required by flamegraph. This file can then be used to
 create a flamegraph using ``flamegraph.pl``.
 
-
 .. code-block:: python
 
   with open("test.txt", "w") as folded_stack:
@@ -137,6 +138,7 @@ a cross section of the dataframe, say the values for rank 0, like this:
 .. code-block:: python
 
   print(gf.dataframe.xs(0, level="rank"))
+
 
 Dataframe operations
 --------------------
@@ -188,6 +190,7 @@ metrics in the DataFrame for each node.
    :scale: 30 %
    :align: right
 
+
 Graph operations
 ----------------
 
@@ -228,6 +231,7 @@ identical context.  When Hatchet performs binary operations on two GraphFrames
 with unequal graphs, a union is performed beforehand to ensure that the graphs
 are structurally equivalent.  This ensures that operands to element-wise
 operations like add and subtract, can be aligned by their respective nodes.
+
 
 GraphFrame operations
 ---------------------
@@ -285,4 +289,9 @@ string that can be printed to the console. By default, the tree uses the
 ``name`` of each node and the associated ``time`` metric as the string
 representation. This operation uses automatic color by default, but True or
 False can be used to force override.
+
+
+Generating datasets for analysis
+--------------------------------
+
 
