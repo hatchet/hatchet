@@ -12,46 +12,135 @@ to store the data on each node of the hierarchy and keeps the graph
 relationships between the nodes in a different data structure that is kept
 consistent with the dataframe.
 
-Hatchet Data Structures
------------------------
+Data structures in hatchet
+--------------------------
 
 Hatchet's primary data structure is a ``GraphFrame``, which combines a
-structured index in the form of a graph, and a Python pandas dataframe. We
-explain these data structures in further detail in the following subsections.
-
-Graphframe
-^^^^^^^^^^
-
-``Graphframe`` is the main data structure in Hatchet that stores the
-performance data that is read in from an HPCToolkit database, Caliper Json or
-Cali file, or gprof/callgrind DOT file. Typically, the raw input data is in the
-form of a tree. However, since subsequent operations on the tree can lead to
-new edges being created which can turn the tree into a graph, we store the
-input data as a directed graph. The graphframe consists of a graph object that
-stores the edge relationships between nodes and a dataframe that stores
-different metrics (numerical data) and categorical data associated with each
+structured index in the form of a graph with a pandas dataframe.  The images
+below show the two objects in a ``GraphFrame`` – a ``Graph`` object (the
+index), and a ``DataFrame object`` storing the metrics associated with each
 node.
 
-Graph
-^^^^^
+.. image:: images/sample-graph.png
+   :scale: 30 %
+   :align: right
 
-The graph can be connected or disconnected (multiple roots) and each node in
-the graph can have one or more parents and children. The node stores its
-frame, which can be defined by the reader. The callpath is derived by
+**Graphframe** stores the performance data that is read in from an HPCToolkit
+database, Caliper Json or Cali file, or gprof/callgrind DOT file. Typically,
+the raw input data is in the form of a tree. However, since subsequent
+operations on the tree can lead to new edges being created which can turn the
+tree into a graph, we store the input data as a directed graph. The graphframe
+consists of a graph object that stores the edge relationships between nodes and
+a dataframe that stores different metrics (numerical data) and categorical data
+associated with each node.
+
+.. image:: images/sample-dataframe.png
+   :scale: 30 %
+   :align: right
+
+**Graph**: The graph can be connected or disconnected (multiple roots) and each
+node in the graph can have one or more parents and children. The node stores
+its frame, which can be defined by the reader. The callpath is derived by
 appending the frames from the root to a given node.
 
-Dataframe
-^^^^^^^^^
+**Dataframe**: The dataframe holds all the numerical and categorical data
+associated with each node. Since typically the call tree data is per process, a
+multiindex composed of the node and MPI rank is used to index into the
+dataframe.
 
-The dataframe holds all the numerical and categorical data associated with each
-node. Since typically the call tree data is per process, a multiindex composed
-of the node and MPI rank is used to index into the dataframe.
 
-Hatchet Operations
-------------------
+Reading in a dataset
+--------------------
 
-Dataframe Operations
-^^^^^^^^^^^^^^^^^^^^
+One can use one of several static methods defined in the GraphFrame class to
+read in an input dataset using hatchet. For example, if a user has an
+HPCToolkit database directory that they want to analyze, they can use the
+``from_hpctoolkit`` method:
+
+.. code-block:: python
+
+  import hatchet as ht
+
+  if __name__ == "__main__":
+      dirname = "hatchet/tests/data/hpctoolkit-cpi-database"
+      gf = ht.GraphFrame.from_hpctoolkit(dirname)
+
+Similarly if the input file is a split-JSON output by Caliper, they can use
+the ``from_caliper_json`` method:
+
+.. code-block:: python
+
+  import hatchet as ht
+
+  if __name__ == "__main__":
+      filename = ("hatchet/tests/data/caliper-lulesh-json/lulesh-sample-annotation-profile.json")
+      gf = ht.GraphFrame.from_caliper_json(filename)
+
+Visualizing the data
+--------------------
+
+.. image:: images/vis-terminal.png
+   :scale: 40 %
+   :align: right
+
+When the graph represented by the input dataset is small, the user may be interested in visualizing it in entirety or a portion of it. Hatchet provides several mechanisms to visualize the graph in hatchet. One can use the ``tree()`` function to convert the graph into a string that can be printed on standard output:
+
+.. code-block:: python
+
+  print(gf.tree())
+
+One can also use the ``to_dot()`` function to output the tree as a string in the Graphviz' DOT format. This can be written to a file and then used to display a tree using the ``dot`` or ``neato`` program.
+
+.. image:: images/vis-dot.png
+   :scale: 25 %
+   :align: right
+
+.. code-block:: python
+
+  with open("test.dot", "w") as dot_file:
+      dot_file.write(gf.to_dot())
+
+.. code-block:: console
+
+  $ dot -Tpdf test.dot > test.pdf
+
+One can also use the ``to_flamegraph`` function to output the tree as a string
+in the folded stack format required by flamegraph. This file can then be used to
+create a flamegraph using ``flamegraph.pl``.
+
+
+.. code-block:: python
+
+  with open("test.txt", "w") as folded_stack:
+      folded_stack.write(gf.to_flamegraph())
+
+.. code-block:: console
+
+  $ ./flamegraph.pl test.txt > test.svg
+
+.. image:: images/vis-flamegraph.png
+   :scale: 50 %
+
+One can also print the contents of the dataframe to standard output:
+
+.. code-block:: python
+
+  pd.set_option("display.width", 1200)
+  pd.set_option("display.max_colwidth", 20)
+  pd.set_option("display.max_rows", None)
+
+  print(gf.dataframe)
+
+If there are many processes or threads in the dataframe, one can also print
+a cross section of the dataframe, say the values for rank 0, like this:
+
+.. code-block:: python
+
+  print(gf.dataframe.xs(0, level="rank"))
+
+
+Dataframe operations
+--------------------
 
 **Filter**: ``filter`` takes a user-supplied function and applies that
 to all rows in the DataFrame. The resulting Series or DataFrame is used to
@@ -79,8 +168,8 @@ store inclusive values of a metric become inaccurate. This function performs a
 post-order traversal of the graph to update all columns that store inclusive
 metrics in the DataFrame for each node.
 
-Graph Operations
-^^^^^^^^^^^^^^^^
+Graph operations
+----------------
 
 **Squash**: The ``squash`` operation is typically performed by the user after a
 ``filter`` operation on the DataFrame.  The squash operation removes nodes from
@@ -114,8 +203,8 @@ string that can be printed to the console. By default, the tree uses the
 representation. This operation uses automatic color by default, but True or
 False can be used to force override.
 
-GraphFrame Operations
-^^^^^^^^^^^^^^^^^^^^^
+GraphFrame operations
+---------------------
 
 **Copy**: The ``copy`` operation returns a shallow copy of a GraphFrame.  It
 creates a new GraphFrame with a copy of the original GraphFrame's DataFrame,
