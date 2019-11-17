@@ -556,6 +556,40 @@ class GraphFrame:
             self.graph.roots, self.dataframe, metric, name, rank, thread, threshold
         )
 
+    def to_flamegraph(
+        self, metric="time", name="name", rank=0, thread=0, threshold=0.0
+    ):
+        """Write the graph in the folded stack output required by FlameGraph
+        http://www.brendangregg.com/flamegraphs.html
+        """
+        folded_stack = ""
+
+        for root in self.graph.roots:
+            for hnode in root.traverse():
+                callpath = hnode.path()
+                for i in range(0, len(callpath) - 1):
+                    folded_stack = folded_stack + callpath[i].attrs[name] + "; "
+                folded_stack = folded_stack + callpath[-1].attrs[name] + " "
+
+                # set dataframe index based on if rank and thread are part of the index
+                if (
+                    "rank" in self.dataframe.index.names
+                    and "thread" in self.dataframe.index.names
+                ):
+                    df_index = (hnode, rank, thread)
+                elif "rank" in self.dataframe.index.names:
+                    df_index = (hnode, rank)
+                elif "thread" in self.dataframe.index.names:
+                    df_index = (hnode, thread)
+                else:
+                    df_index = hnode
+
+                folded_stack = (
+                    folded_stack + str(self.dataframe.loc[df_index, metric]) + "\n"
+                )
+
+        return folded_stack
+
     def _operator(self, other, op, *args, **kwargs):
         """Generic function to apply operator to two dataframes and store
         result in self.
