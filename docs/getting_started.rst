@@ -86,7 +86,7 @@ Currently, hatchet supports the following data formats as input:
   ``gprof`` or ``callgrind`` output.
 * String literal: Hatchet can read as input a list of dictionaries that
   represents a graph.
-* List: Hatchet can also read a list of lists that reprsents a graph.
+* List: Hatchet can also read a list of lists that represents a graph.
 
 For more details on the different input file formats, refer to the
 :doc:`User Guide <user_guide>`.
