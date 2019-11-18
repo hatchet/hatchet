@@ -491,7 +491,6 @@ class GraphFrame:
 
         node_map = {}
         union_graph = self.graph.union(other.graph, node_map)
-        union_graph.enumerate_traverse()
 
         self_index_names = self.dataframe.index.names
         other_index_names = other.dataframe.index.names
@@ -499,21 +498,16 @@ class GraphFrame:
         self.dataframe.reset_index(inplace=True)
         other.dataframe.reset_index(inplace=True)
 
-        self.dataframe["node"] = self.dataframe["node"].apply(lambda x: node_map[x])
-        other.dataframe["node"] = other.dataframe["node"].apply(lambda x: node_map[x])
+        self.dataframe["node"] = self.dataframe["node"].apply(lambda x: node_map[id(x)])
+        other.dataframe["node"] = other.dataframe["node"].apply(
+            lambda x: node_map[id(x)]
+        )
 
         self.dataframe.set_index(self_index_names, inplace=True, drop=True)
         other.dataframe.set_index(other_index_names, inplace=True, drop=True)
 
-        for i, node in enumerate(union_graph.traverse()):
-            self.dataframe.loc[node]._hatchet_nid = i
-            other.dataframe.loc[node]._hatchet_nid = i
-
         self.graph = union_graph
         other.graph = union_graph
-
-        self.dataframe.sort_index(inplace=True)
-        other.dataframe.sort_index(inplace=True)
 
     def tree(
         self,
