@@ -15,7 +15,7 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="hatchet",
-    version="0.0.3",
+    version="1.0.0",
     description="A Python library for analyzing hierarchical performance data",
     url="https://github.com/LLNL/hatchet",
     author="Abhinav Bhatele",
