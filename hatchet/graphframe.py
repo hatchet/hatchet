@@ -478,6 +478,32 @@ class GraphFrame:
         self.inc_metrics = ["%s (inc)" % s for s in self.exc_metrics]
         self.subgraph_sum(self.exc_metrics, self.inc_metrics)
 
+    def fill(self, node_map):
+        """Fill missing nodes in self's dataframe that are in node_map, but are
+        not in self's dataframe.
+        """
+        self_missing_nodes = {}
+        for k, v in node_map.items():
+            if v not in self.dataframe.index:
+                self_missing_nodes[v] = []
+                for i in self.dataframe.columns:
+                    if self.dataframe[i].dtype == np.float64 or self.dataframe[i].dtype == np.int64:
+                        self_missing_nodes[v].append(0)
+                    elif self.dataframe[i].dtype == np.object:
+                        if i == "name":
+                            self_missing_nodes[v].append(v.frame["name"])
+                        else:
+                            self_missing_nodes[v].append("0")
+
+        fill_self = pd.DataFrame.from_dict(
+            data=self_missing_nodes, orient="index", columns=self.dataframe.columns
+        )
+        fill_self["time (inc)"] = fill_self["time (inc)"].astype(float)
+        fill_self["time"] = fill_self["time"].astype(float)
+        fill_self.index.name = "node"
+        self_temp = self.dataframe.append(fill_self)
+        self.dataframe = self_temp
+
     def unify(self, other):
         """Returns a unified graphframe.
 
@@ -499,7 +525,9 @@ class GraphFrame:
         other.dataframe.reset_index(inplace=True)
 
         self.dataframe["node"] = self.dataframe["node"].apply(lambda x: node_map[id(x)])
-        other.dataframe["node"] = other.dataframe["node"].apply(lambda x: node_map[id(x)])
+        other.dataframe["node"] = other.dataframe["node"].apply(
+            lambda x: node_map[id(x)]
+        )
 
         self.dataframe.set_index(self_index_names, inplace=True, drop=True)
         other.dataframe.set_index(other_index_names, inplace=True, drop=True)
@@ -507,34 +535,12 @@ class GraphFrame:
         # identify nodes in node_map, but not in self, append them to end of
         # self's dataframe, fill all columns with 0s
         # TODO: How should we fill in the "name" column for missing nodes?
-        self_missing_nodes = {}
-        for k,v in node_map.items():
-            if v not in self.dataframe.index:
-                self_missing_nodes[v] = [0] * self.dataframe.shape[1]
-
-        fill_self = pd.DataFrame.from_dict(data=self_missing_nodes, orient="index", columns=self.dataframe.columns)
-        fill_self["time (inc)"]=fill_self["time (inc)"].astype(float)
-        fill_self["time"]=fill_self["time"].astype(float)
-        fill_self["name"]=fill_self["name"].astype(object)
-        fill_self.index.name = "node"
-        self_temp = self.dataframe.append(fill_self)
-        self.dataframe = self_temp
+        self.fill(node_map)
 
         # identify nodes in node_map, but not in other, append them to end of
         # other's dataframe, fill all columns with 0s
         # TODO: How should we fill in the "name" column for missing nodes?
-        other_missing_nodes = {}
-        for k,v in node_map.items():
-            if v not in other.dataframe.index:
-                other_missing_nodes[v] = [0] * other.dataframe.shape[1]
-
-        fill_other = pd.DataFrame.from_dict(data=other_missing_nodes, orient="index", columns=other.dataframe.columns)
-        fill_other["time (inc)"]=fill_other["time (inc)"].astype(float)
-        fill_other["time"]=fill_other["time"].astype(float)
-        fill_other["name"]=fill_other["name"].astype(object)
-        fill_other.index.name = "node"
-        other_temp = other.dataframe.append(fill_other)
-        other.dataframe = other_temp
+        other.fill(node_map)
 
         for i, node in enumerate(union_graph.traverse()):
             self.dataframe.loc[node]._hatchet_nid = i

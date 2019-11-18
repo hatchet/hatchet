@@ -62,6 +62,56 @@ def test_union_dag():
     assert g4 == g3
 
 
+def test_union_dag_newnodes():
+    # make graphs g1, g2, and g3, where you know g3 is the union of g1 and g2
+    c = Node.from_lists(("c", "d"))
+    g1 = Graph.from_lists(("a", ("b", c), ("e", c)))
+
+    d = Node(Frame(name="d"))
+    g2 = Graph.from_lists(("a", ("b", ("c", d)), ("e", d, "f")))
+
+    d2 = Node(Frame(name="d"))
+    c2 = Node.from_lists(("c", d2))
+    g3 = Graph.from_lists(("a", ("b", c2), ("e", c2, d2, "f")))
+
+    print("")
+    print("g1 nnodes:", len(g1))
+    print("g2 nnodes:", len(g2))
+    print("exp nnodes:", len(g3))
+
+    assert g1 != g2
+
+    g4 = g1.union(g2)
+    print("act nnodes:", len(g4))
+
+    assert g4 == g3
+
+
+def test_union_dag_simple_roots():
+    # make graphs g1, g2, and g3, where you know g3 is the union of g1 and g2
+    g1 = Graph.from_lists(("a", "b"))
+
+    b = Node(Frame(name="b"))
+    g2 = Graph.from_lists(("a", b), ("c", b))
+
+    b2 = Node(Frame(name="b"))
+    g3 = Graph.from_lists(("a", b2), ("c", b2))
+
+    print("")
+    print("g1 nnodes:", len(g1))
+    print("g1 roots:", len(g1.roots))
+    print("g2 nnodes:", len(g2))
+    print("g2 roots:", len(g2.roots))
+    print("exp nnodes:", len(g3))
+    print("exp roots:", len(g3.roots))
+
+    assert g1 != g2
+
+    g4 = g1.union(g2)
+
+    assert g4 == g3
+
+
 def test_dag_is_not_tree():
     g = Graph.from_lists(("b", "c"), ("d", "e"))
     assert not g.is_tree()
