@@ -6,15 +6,7 @@ Hatchet
 [![Read the Docs](http://readthedocs.org/projects/hatchet/badge/?version=latest)](http://hatchet.readthedocs.io)
 [![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
-Hatchet allows [Pandas](https://pandas.pydata.org/) dataframes to be
-indexed by structured tree and graph data.  It is intended for analyzing
-sequential and parallel profile data.
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/LLNL/hatchet/master/screenshot.png" width=800>
-</p>
-
-### Installing hatchet
+Hatchet is a Python-based library that allows [Pandas](https://pandas.pydata.org) dataframes to be indexed by structured tree and graph data. It is intended for analyzing performance data that has a hierarchy (for example, serial or parallel profiles that represent calling context trees, call graphs, nested regions’ timers, etc.). Hatchet implements various operations to analyze a single hierarchical data set or compare multiple data sets, and its API facilitates analyzing such data programmatically.
 
 To use hatchet, install it with pip:
 
@@ -25,13 +17,25 @@ $ pip install hatchet
 Or, if you want to develop with this repo directly, add the cloned
 directory to your `PYTHONPATH`.
 
-### Authors
+<p align="center">
+  <img src="https://raw.githubusercontent.com/LLNL/hatchet/master/screenshot.png" width=800>
+</p>
 
+
+### Documentation
+
+See the [Getting Started](https://hatchet.readthedocs.io/en/latest/getting_started.html) page for basic examples and usage. Full documentation is available in the [User Guide](https://hatchet.readthedocs.io/en/latest/user_guide.html).
+
+Examples of performance analysis using hatchet are available [here](https://hatchet.readthedocs.io/en/latest/examples.html).
+
+
+### Authors
 
 Many thanks go to Hatchet's
 [contributors](https://github.com/llnl/hatchet/graphs/contributors).
 
-Hatchet was originally written by Abhinav Bhatele, bhatele@cs.umd.edu.
+Hatchet was created by Abhinav Bhatele, bhatele@cs.umd.edu.
+
 
 ### Citing Hatchet
 
@@ -57,4 +61,5 @@ See [LICENSE](https://github.com/llnl/hatchet/blob/master/LICENSE) and
 [NOTICE](https://github.com/llnl/hatchet/blob/master/NOTICE) for details.
 
 SPDX-License-Identifier: MIT
+
 LLNL-CODE-741008
