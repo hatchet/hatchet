@@ -1,5 +1,4 @@
-Hatchet
-=======
+# <img src="https://raw.githubusercontent.com/LLNL/hatchet/master/logo-hex.png" width="64" valign="middle" alt="hatchet"/> Hatchet
 
 [![Build Status](https://travis-ci.com/LLNL/hatchet.svg?branch=master)](https://travis-ci.com/LLNL/hatchet)
 [![codecov](https://codecov.io/gh/LLNL/hatchet/branch/master/graph/badge.svg)](https://codecov.io/gh/LLNL/hatchet)
