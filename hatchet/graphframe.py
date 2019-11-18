@@ -504,6 +504,10 @@ class GraphFrame:
         self_temp = self.dataframe.append(fill_self)
         self.dataframe = self_temp
 
+        for i, node in enumerate(self.graph.traverse()):
+            self.dataframe.loc[node]._hatchet_nid = i
+        self.dataframe.sort_index(inplace=True)
+
     def unify(self, other):
         """Returns a unified graphframe.
 
@@ -531,22 +535,6 @@ class GraphFrame:
 
         self.dataframe.set_index(self_index_names, inplace=True, drop=True)
         other.dataframe.set_index(other_index_names, inplace=True, drop=True)
-
-        # identify nodes in node_map, but not in self, append them to end of
-        # self's dataframe, fill all columns with 0s
-        # TODO: How should we fill in the "name" column for missing nodes?
-        self.fill(node_map)
-
-        # identify nodes in node_map, but not in other, append them to end of
-        # other's dataframe, fill all columns with 0s
-        # TODO: How should we fill in the "name" column for missing nodes?
-        other.fill(node_map)
-
-        for i, node in enumerate(union_graph.traverse()):
-            self.dataframe.loc[node]._hatchet_nid = i
-            other.dataframe.loc[node]._hatchet_nid = i
-        self.dataframe.sort_index(inplace=True)
-        other.dataframe.sort_index(inplace=True)
 
         self.graph = union_graph
         other.graph = union_graph
@@ -665,6 +653,16 @@ class GraphFrame:
         # unify copies of graphframes
         self_copy.unify(other_copy)
 
+        # identify nodes in node_map, but not in self, append them to end of
+        # self's dataframe, fill all columns with 0s
+        # TODO: How should we fill in the "name" column for missing nodes?
+        self.fill(node_map)
+
+        # identify nodes in node_map, but not in other, append them to end of
+        # other's dataframe, fill all columns with 0s
+        # TODO: How should we fill in the "name" column for missing nodes?
+        other.fill(node_map)
+
         return self_copy._operator(other_copy, self_copy.dataframe.add, *args, **kwargs)
 
     def sub(self, other, *args, **kwargs):
@@ -684,6 +682,16 @@ class GraphFrame:
         # unify copies of graphframes
         self_copy.unify(other_copy)
 
+        # identify nodes in node_map, but not in self, append them to end of
+        # self's dataframe, fill all columns with 0s
+        # TODO: How should we fill in the "name" column for missing nodes?
+        #self.fill(node_map)
+
+        # identify nodes in node_map, but not in other, append them to end of
+        # other's dataframe, fill all columns with 0s
+        # TODO: How should we fill in the "name" column for missing nodes?
+        #other.fill(node_map)
+
         return self_copy._operator(other_copy, self_copy.dataframe.sub, *args, **kwargs)
 
     def __iadd__(self, other):
@@ -702,6 +710,16 @@ class GraphFrame:
 
         # unify self graphframe and copy of other graphframe
         self.unify(other_copy)
+
+        # identify nodes in node_map, but not in self, append them to end of
+        # self's dataframe, fill all columns with 0s
+        # TODO: How should we fill in the "name" column for missing nodes?
+        #self.fill(node_map)
+
+        # identify nodes in node_map, but not in other, append them to end of
+        # other's dataframe, fill all columns with 0s
+        # TODO: How should we fill in the "name" column for missing nodes?
+        #other.fill(node_map)
 
         return self._operator(other_copy, self.dataframe.add)
 
@@ -732,6 +750,16 @@ class GraphFrame:
 
         # unify self graphframe and other graphframe
         self.unify(other_copy)
+
+        # identify nodes in node_map, but not in self, append them to end of
+        # self's dataframe, fill all columns with 0s
+        # TODO: How should we fill in the "name" column for missing nodes?
+        #self.fill(node_map)
+
+        # identify nodes in node_map, but not in other, append them to end of
+        # other's dataframe, fill all columns with 0s
+        # TODO: How should we fill in the "name" column for missing nodes?
+        #other.fill(node_map)
 
         return self._operator(other_copy, self.dataframe.sub)
 
