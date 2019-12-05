@@ -46,18 +46,8 @@ spent in each node by any process. If we divide the corresponding columns of
 the two DataFrames and look at the nodes with the highest value of the
 max-to-average ratio, we have located the nodes with highest imbalance.
 
-.. code-block:: python
-
-  gf1 = ht.GraphFrame.from_caliper('lulesh-512cores')
-  gf2 = gf1.copy()
-
-  gf1.drop_index_levels(function=np.mean)
-  gf2.drop_index_levels(function=np.max)
-
-  gf1.dataframe['imbalance'] = gf2.dataframe['time'].div(gf1.dataframe['time'])
-
-  sorted_df = gf1.dataframe.sort_values(by=['imbalance'], ascending=False)
-  print(sorted_df)
+.. literalinclude:: ../examples/load-imbalance.py
+   :language: python
 
 .. image:: images/lulesh-load-imb.png
    :scale: 30 %
@@ -119,9 +109,9 @@ biggest offenders.
   squashed_gf2 = filtered_gf2.squash()
 
   diff_gf = squashed_gf2 - squashed_gf1
- 
+
   sorted_df = diff_gf.dataframe.sort_values(by=['time'], ascending=False)
-  print(sorted_df) 
+  print(sorted_df)
 
 .. image:: images/lulesh-mpi.png
    :scale: 40 %
