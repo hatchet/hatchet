@@ -56,7 +56,7 @@ max-to-average ratio, we have located the nodes with highest imbalance.
 
   gf1.dataframe['imbalance'] = gf2.dataframe['time'].div(gf1.dataframe['time'])
 
-  sorted_df = gf.dataframe.sort_values(by=['imbalance'], ascending=False)
+  sorted_df = gf1.dataframe.sort_values(by=['imbalance'], ascending=False)
   print(sorted_df)
 
 .. image:: images/lulesh-load-imb.png
@@ -80,12 +80,12 @@ execution time.
 .. code-block:: python
 
   gf1 = ht.GraphFrame.from_caliper('lulesh-1core.json')
-  gf2 = ht.GraphFrame.from_caliper('lulesh-27cores. json')
+  gf2 = ht.GraphFrame.from_caliper('lulesh-27cores.json')
 
   gf2.drop_index_levels()
   gf3 = gf2 - gf1
 
-  sorted_df = gf.dataframe.sort_values(by=['time'], ascending=False)
+  sorted_df = gf3.dataframe.sort_values(by=['time'], ascending=False)
   print(sorted_df)
 
 .. image:: images/lulesh-diff-df.png
