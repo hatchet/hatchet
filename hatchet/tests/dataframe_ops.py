@@ -3,6 +3,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+from __future__ import division
+
 from hatchet import GraphFrame
 
 
@@ -59,6 +61,26 @@ def test_sub(mock_graph_literal):
     assert gf5.graph == gf3.graph == gf4.graph
 
 
+def test_div(mock_graph_literal):
+    gf1 = GraphFrame.from_literal(mock_graph_literal)
+    gf2 = GraphFrame.from_literal(mock_graph_literal)
+
+    assert gf1.graph is not gf2.graph
+
+    gf3 = gf1.div(gf2)
+
+    assert gf3.graph == gf1.graph.union(gf2.graph)
+
+    assert gf3.dataframe["time"].sum() == 21
+    assert gf3.dataframe["time (inc)"].sum() == 24
+
+    gf4 = gf3.copy()
+    assert gf4.graph is gf3.graph
+
+    gf5 = gf3.div(gf4)
+    assert gf5.graph == gf3.graph == gf4.graph
+
+
 def test_add_operator(mock_graph_literal):
     gf1 = GraphFrame.from_literal(mock_graph_literal)
     gf2 = GraphFrame.from_literal(mock_graph_literal)
@@ -91,6 +113,27 @@ def test_sub_operator(mock_graph_literal):
 
     for metric in gf3.exc_metrics + gf3.inc_metrics:
         assert gf3.dataframe[metric].sum() == 0
+
+    gf4 = gf3.copy()
+    assert gf4.graph is gf3.graph
+
+    gf5 = gf3.sub(gf4)
+
+    assert gf5.graph == gf3.graph == gf4.graph
+
+
+def test_div_operator(mock_graph_literal):
+    gf1 = GraphFrame.from_literal(mock_graph_literal)
+    gf2 = GraphFrame.from_literal(mock_graph_literal)
+
+    assert gf1.graph is not gf2.graph
+
+    gf3 = gf1 / gf2
+
+    assert gf3.graph == gf1.graph.union(gf2.graph)
+
+    assert gf3.dataframe["time"].sum() == 21
+    assert gf3.dataframe["time (inc)"].sum() == 24
 
     gf4 = gf3.copy()
     assert gf4.graph is gf3.graph
@@ -138,5 +181,26 @@ def test_isub_operator(mock_graph_literal):
     assert gf3.graph is gf1.graph
 
     gf3 -= gf1
+
+    assert gf3.graph == gf1.graph
+
+
+def test_idiv_operator(mock_graph_literal):
+    gf1 = GraphFrame.from_literal(mock_graph_literal)
+    gf2 = GraphFrame.from_literal(mock_graph_literal)
+
+    assert gf1.graph is not gf2.graph
+
+    gf1 /= gf2
+
+    assert gf1.graph == gf1.graph.union(gf2.graph)
+
+    assert gf1.dataframe["time"].sum() == 21
+    assert gf1.dataframe["time (inc)"].sum() == 24
+
+    gf3 = gf1.copy()
+    assert gf3.graph is gf1.graph
+
+    gf3 /= gf1
 
     assert gf3.graph == gf1.graph
