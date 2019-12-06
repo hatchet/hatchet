@@ -200,8 +200,6 @@ class GraphFrame:
 
         dataframe = pd.DataFrame(data=node_dicts)
         dataframe.set_index(["node"], inplace=True)
-        for i, node in enumerate(graph.traverse()):
-            dataframe.loc[node]._hatchet_nid = i
         dataframe.sort_index(inplace=True)
 
         return GraphFrame(graph, dataframe, exc_metrics, inc_metrics)
@@ -221,9 +219,6 @@ class GraphFrame:
         df = pd.DataFrame({"node": list(graph.traverse())})
         df["time"] = [1.0] * len(graph)
         df.set_index(["node"], inplace=True)
-
-        for i, node in enumerate(graph.traverse()):
-            df.loc[node]._hatchet_nid = i
         df.sort_index(inplace=True)
 
         gf = GraphFrame(graph, df, ["time"], [])
@@ -376,10 +371,7 @@ class GraphFrame:
 
         # perform a groupby to merge nodes with the same callpath
         agg_df = df.groupby(index_names).agg(agg_dict)
-
-        for i, node in enumerate(graph.traverse()):
-            df.loc[node]._hatchet_nid = i
-        df.sort_index(inplace=True)
+        agg_df.sort_index(inplace=True)
 
         # put it all together
         new_gf = GraphFrame(graph, agg_df, self.exc_metrics, self.inc_metrics)

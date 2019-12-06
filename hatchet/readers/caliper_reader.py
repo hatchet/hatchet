@@ -319,8 +319,6 @@ class CaliperReader:
             if "rank" in self.json_cols:
                 indices.append("rank")
             dataframe.set_index(indices, inplace=True)
-            for i, node in enumerate(graph.traverse()):
-                dataframe.loc[node]._hatchet_nid = i
             dataframe.sort_index(inplace=True)
 
         # create list of exclusive and inclusive metric columns

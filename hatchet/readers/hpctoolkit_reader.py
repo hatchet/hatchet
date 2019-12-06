@@ -259,9 +259,6 @@ class HPCToolkitReader:
             elif self.num_threads_per_rank == 1:
                 indices = ["node", "rank"]
             dataframe.set_index(indices, inplace=True)
-
-            for i, node in enumerate(graph.traverse()):
-                dataframe.loc[node]._hatchet_nid = i
             dataframe.sort_index(inplace=True)
 
         # create list of exclusive and inclusive metric columns
