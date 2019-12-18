@@ -34,7 +34,10 @@ class Timer(object):
 
         now = datetime.now()
         delta = now - self._start_time
-        self._times[self._phase] = delta
+        if self._times.get(self._phase):
+            self._times[self._phase] = self._times.get(self._phase) + delta
+        else:
+            self._times[self._phase] = delta
 
         self._phase = None
         self._start_time = None
