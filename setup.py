@@ -33,5 +33,5 @@ setup(
         "hatchet.external",
         "hatchet.tests",
     ],
-    install_requires=["pydot"],
+    install_requires=["pydot", "PyYAML"],
 )

@@ -1,0 +1,5738 @@
+cycle_10:
+  cycle: 10
+  relay:
+    path: full
+    time : 1.2954
+  relay_1:
+    path: subset
+    time : 0.346699
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.00970525
+      time : 0.0097447
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.103513
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.14789
+    variance: 0.549896
+    skewness: 5.24161
+    kurtosis: 26.5618
+    time : 0.0305894
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.00733107
+    field_min: 1
+    field_max: 5.5
+    entropy: 0.303049
+    time : 0.0426024
+  GetGlobalRange:
+    time : 0.00143472
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.408509
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.832773
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.131538
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.279071
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 1.2437
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0186389
+  GetGlobalBounds:
+    time : 0.00026957
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 0.00369576
+    GetGlobalBounds:
+      time : 0.000336313
+    Composite:
+      time : 0.175615
+    time : 0.179893
+  GetGlobalBounds_1:
+    time : 0.123698
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.202533
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.316674
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0162583
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0231635
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0280159
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0335924
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.381175
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0173669
+  GetGlobalBounds_2:
+    time : 0.000144567
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 0.000140705
+    GetGlobalBounds:
+      time : 0.000119305
+    Composite:
+      time : 0.0195438
+    time : 0.045729
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 4.8748e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00820308
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0492375
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.189651
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0207118
+  GetGlobalBounds_3:
+    time : 0.00046274
+  vtkh::RayTracer_2:
+    input_cells: 0
+    GetGlobalRange:
+      time : 0.00170077
+    GetGlobalBounds:
+      time : 0.00193404
+    Composite:
+      time : 0.440069
+    time : 1.40141
+  vtkh::RayTracer_3:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.00196413
+    Composite:
+      time : 0.405982
+    time : 0.580727
+  vtkh::RayTracer_4:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.00253804
+    Composite:
+      time : 0.392697
+    time : 0.570246
+  vtkh::RayTracer_5:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.00146731
+    Composite:
+      time : 0.369715
+    time : 0.554553
+  vtkh::RayTracer_6:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.00032434
+    Composite:
+      time : 0.368481
+    time : 0.554051
+  vtkh::RayTracer_7:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.00233578
+    Composite:
+      time : 0.396647
+    time : 0.570648
+  vtkh::RayTracer_8:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.0003328
+    Composite:
+      time : 0.191116
+    time : 0.366061
+  time : 8.89058
+cycle_20:
+  cycle: 20
+  sim_time: 1.59695
+  cycle_count: 10
+  relay:
+    path: full
+    time : 1.1152
+  relay_1:
+    path: subset
+    time : 0.353123
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.0096834
+      time : 0.00970098
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.013469
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.16538
+    variance: 0.549774
+    skewness: 4.80992
+    kurtosis: 22.79
+    time : 0.015028
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.000625233
+    field_min: 1
+    field_max: 5.5
+    entropy: 0.451493
+    time : 0.0186004
+  GetGlobalRange:
+    time : 0.000292831
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.0110741
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.175223
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.142869
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.027734
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.345998
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0207382
+  GetGlobalBounds:
+    time : 0.000163235
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 7.87e-05
+    GetGlobalBounds:
+      time : 0.000115797
+    Composite:
+      time : 0.0571233
+    time : 0.0573714
+  GetGlobalBounds_1:
+    time : 0.131635
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.028932
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0369189
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0162616
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0232387
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0227596
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0284548
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0960943
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0175067
+  GetGlobalBounds_2:
+    time : 0.000140888
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 8.0844e-05
+    GetGlobalBounds:
+      time : 0.000215084
+    Composite:
+      time : 0.0234972
+    time : 0.0374904
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 5.0704e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00738411
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.066915
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.2039
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0245616
+  GetGlobalBounds_3:
+    time : 0.000211824
+  vtkh::RayTracer_2:
+    input_cells: 0
+    GetGlobalRange:
+      time : 0.000223453
+    GetGlobalBounds:
+      time : 0.000135316
+    Composite:
+      time : 0.441986
+    time : 0.45993
+  vtkh::RayTracer_3:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000758706
+    Composite:
+      time : 0.438828
+    time : 0.597069
+  vtkh::RayTracer_4:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000381278
+    Composite:
+      time : 0.412851
+    time : 0.554494
+  vtkh::RayTracer_5:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000542264
+    Composite:
+      time : 0.403791
+    time : 0.586564
+  vtkh::RayTracer_6:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000647784
+    Composite:
+      time : 0.414734
+    time : 0.580778
+  vtkh::RayTracer_7:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000354082
+    Composite:
+      time : 0.413767
+    time : 0.572419
+  vtkh::RayTracer_8:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000330028
+    Composite:
+      time : 0.202621
+    time : 0.326527
+  time : 6.31796
+cycle_30:
+  cycle: 30
+  sim_time: 1.49398
+  cycle_count: 10
+  relay:
+    path: full
+    time : 1.08856
+  relay_1:
+    path: subset
+    time : 0.313676
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.00952684
+      time : 0.0095376
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.0134159
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.18436
+    variance: 0.546817
+    skewness: 4.38298
+    kurtosis: 19.2049
+    time : 0.0181399
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.00056584
+    field_min: 1
+    field_max: 5.5
+    entropy: 0.607024
+    time : 0.0193493
+  GetGlobalRange:
+    time : 0.000300914
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.0076005
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.14151
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.120725
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0229875
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.285397
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0181322
+  GetGlobalBounds:
+    time : 0.000173542
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 7.5003e-05
+    GetGlobalBounds:
+      time : 0.000133568
+    Composite:
+      time : 0.0489339
+    time : 0.0493092
+  GetGlobalBounds_1:
+    time : 0.108792
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0173616
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0259734
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0166163
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0239087
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.027389
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.034037
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0912063
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0173857
+  GetGlobalBounds_2:
+    time : 0.000133735
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 7.9826e-05
+    GetGlobalBounds:
+      time : 0.000127424
+    Composite:
+      time : 0.0200737
+    time : 0.0344075
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 4.0553e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00736481
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0488701
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.208421
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0257668
+  GetGlobalBounds_3:
+    time : 0.00022108
+  vtkh::RayTracer_2:
+    input_cells: 0
+    GetGlobalRange:
+      time : 0.000211367
+    GetGlobalBounds:
+      time : 0.000139091
+    Composite:
+      time : 0.419965
+    time : 0.426734
+  vtkh::RayTracer_3:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000562115
+    Composite:
+      time : 0.438476
+    time : 0.629282
+  vtkh::RayTracer_4:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000359569
+    Composite:
+      time : 0.415346
+    time : 0.603715
+  vtkh::RayTracer_5:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.00036072
+    Composite:
+      time : 0.413091
+    time : 0.561611
+  vtkh::RayTracer_6:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000347031
+    Composite:
+      time : 0.426035
+    time : 0.583941
+  vtkh::RayTracer_7:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000371383
+    Composite:
+      time : 0.440411
+    time : 0.571661
+  vtkh::RayTracer_8:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000420838
+    Composite:
+      time : 0.210987
+    time : 0.350407
+  time : 6.12373
+cycle_40:
+  cycle: 40
+  sim_time: 1.34669
+  cycle_count: 10
+  relay:
+    path: full
+    time : 1.1493
+  relay_1:
+    path: subset
+    time : 0.270362
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.0095806
+      time : 0.00959244
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.00976844
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.20351
+    variance: 0.542134
+    skewness: 3.99069
+    kurtosis: 16.05
+    time : 0.0169329
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.000739224
+    field_min: 1
+    field_max: 5.5
+    entropy: 0.747451
+    time : 0.0235701
+  GetGlobalRange:
+    time : 0.000272681
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.00709975
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.136733
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.114593
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0250649
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.276542
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0198486
+  GetGlobalBounds:
+    time : 0.000162755
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 9.5965e-05
+    GetGlobalBounds:
+      time : 0.000116542
+    Composite:
+      time : 0.0488201
+    time : 0.0490943
+  GetGlobalBounds_1:
+    time : 0.117574
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0172637
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0249219
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0163407
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0230247
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0219652
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0277716
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0829574
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0181636
+  GetGlobalBounds_2:
+    time : 0.000146488
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 8.5059e-05
+    GetGlobalBounds:
+      time : 0.000100489
+    Composite:
+      time : 0.0221862
+    time : 0.0367376
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 4.1919e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00734495
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0540276
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.175963
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0246109
+  GetGlobalBounds_3:
+    time : 0.000195431
+  vtkh::RayTracer_2:
+    input_cells: 0
+    GetGlobalRange:
+      time : 0.00023216
+    GetGlobalBounds:
+      time : 0.000184336
+    Composite:
+      time : 0.421842
+    time : 0.428732
+  vtkh::RayTracer_3:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000367037
+    Composite:
+      time : 0.421199
+    time : 0.586305
+  vtkh::RayTracer_4:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000406186
+    Composite:
+      time : 0.422181
+    time : 0.590337
+  vtkh::RayTracer_5:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000605705
+    Composite:
+      time : 0.426387
+    time : 1.2509
+  vtkh::RayTracer_6:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.00055362
+    Composite:
+      time : 0.425141
+    time : 2.58143
+  vtkh::RayTracer_7:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000454329
+    Composite:
+      time : 0.434828
+    time : 0.660967
+  vtkh::RayTracer_8:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000427212
+    Composite:
+      time : 0.209456
+    time : 0.361507
+  time : 8.85065
+cycle_50:
+  cycle: 50
+  sim_time: 1.3992
+  cycle_count: 10
+  relay:
+    path: full
+    time : 1.20972
+  relay_1:
+    path: subset
+    time : 0.275364
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.0131796
+      time : 0.0131914
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.0132811
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.22301
+    variance: 0.535906
+    skewness: 3.62191
+    kurtosis: 13.2617
+    time : 0.0171427
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.00232639
+    field_min: 0.99528
+    field_max: 5.5
+    entropy: 0.903969
+    time : 0.0211746
+  GetGlobalRange:
+    time : 0.000324531
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.00710449
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.137239
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.116436
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0269471
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.280796
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.023331
+  GetGlobalBounds:
+    time : 0.000158366
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 8.2087e-05
+    GetGlobalBounds:
+      time : 0.00010094
+    Composite:
+      time : 0.0516218
+    time : 0.05185
+  GetGlobalBounds_1:
+    time : 0.14503
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0204938
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0289673
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0171429
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0242984
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0221783
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0284024
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0890725
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0174139
+  GetGlobalBounds_2:
+    time : 0.00013878
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 8.5076e-05
+    GetGlobalBounds:
+      time : 0.000117757
+    Composite:
+      time : 0.021947
+    time : 0.0356909
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 4.0058e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00717237
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0623078
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.198727
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0318936
+  GetGlobalBounds_3:
+    time : 0.000220834
+  vtkh::RayTracer_2:
+    input_cells: 0
+    GetGlobalRange:
+      time : 0.000224437
+    GetGlobalBounds:
+      time : 0.000172551
+    Composite:
+      time : 0.429197
+    time : 0.437969
+  vtkh::RayTracer_3:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000378768
+    Composite:
+      time : 0.431983
+    time : 0.567131
+  vtkh::RayTracer_4:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000394159
+    Composite:
+      time : 0.448259
+    time : 0.624546
+  vtkh::RayTracer_5:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000387639
+    Composite:
+      time : 0.446375
+    time : 0.593587
+  vtkh::RayTracer_6:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000361288
+    Composite:
+      time : 0.434019
+    time : 0.617842
+  vtkh::RayTracer_7:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000399139
+    Composite:
+      time : 0.464748
+    time : 0.653637
+  vtkh::RayTracer_8:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000369149
+    Composite:
+      time : 0.220165
+    time : 0.380921
+  time : 6.41508
+cycle_60:
+  cycle: 60
+  sim_time: 1.35015
+  cycle_count: 10
+  relay:
+    path: full
+    time : 1.31691
+  relay_1:
+    path: subset
+    time : 0.271444
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.0128211
+      time : 0.0128403
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.0129549
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.24255
+    variance: 0.527968
+    skewness: 3.27997
+    kurtosis: 10.8161
+    time : 0.0188681
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.000742895
+    field_min: 0.979777
+    field_max: 5.5
+    entropy: 1.04742
+    time : 0.018304
+  GetGlobalRange:
+    time : 0.000289751
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.00723743
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.136343
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.11996
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0314941
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.288006
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0244025
+  GetGlobalBounds:
+    time : 0.000195339
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 9.118e-05
+    GetGlobalBounds:
+      time : 0.00011973
+    Composite:
+      time : 0.0443631
+    time : 0.0446242
+  GetGlobalBounds_1:
+    time : 0.117307
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0169599
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.024782
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0191077
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.026088
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.022162
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0278086
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0860275
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0173484
+  GetGlobalBounds_2:
+    time : 0.000140573
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 9.1259e-05
+    GetGlobalBounds:
+      time : 0.000128395
+    Composite:
+      time : 0.0206786
+    time : 0.0355288
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 3.9714e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00731907
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.064585
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.206975
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0333014
+  GetGlobalBounds_3:
+    time : 0.000246841
+  vtkh::RayTracer_2:
+    input_cells: 0
+    GetGlobalRange:
+      time : 0.000224738
+    GetGlobalBounds:
+      time : 0.000191847
+    Composite:
+      time : 0.456069
+    time : 0.465216
+  vtkh::RayTracer_3:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000397112
+    Composite:
+      time : 0.45269
+    time : 0.616728
+  vtkh::RayTracer_4:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000576817
+    Composite:
+      time : 0.453462
+    time : 0.597769
+  vtkh::RayTracer_5:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000434924
+    Composite:
+      time : 0.4565
+    time : 0.604595
+  vtkh::RayTracer_6:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000392438
+    Composite:
+      time : 0.454795
+    time : 0.645351
+  vtkh::RayTracer_7:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000396356
+    Composite:
+      time : 0.450383
+    time : 0.590131
+  vtkh::RayTracer_8:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000411787
+    Composite:
+      time : 0.228512
+    time : 0.387747
+  time : 6.51997
+cycle_70:
+  cycle: 70
+  sim_time: 1.38302
+  cycle_count: 10
+  relay:
+    path: full
+    time : 1.41315
+  relay_1:
+    path: subset
+    time : 0.271097
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.00964405
+      time : 0.00966052
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.00974747
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.26221
+    variance: 0.518081
+    skewness: 2.95948
+    kurtosis: 8.67033
+    time : 0.0199853
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.0008219
+    field_min: 0.969952
+    field_max: 5.5
+    entropy: 1.19417
+    time : 0.019525
+  GetGlobalRange:
+    time : 0.000309359
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.00717849
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.129834
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.112638
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0274716
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.270101
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.026484
+  GetGlobalBounds:
+    time : 0.000291071
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 8.0163e-05
+    GetGlobalBounds:
+      time : 0.000110841
+    Composite:
+      time : 0.0423036
+    time : 0.0425458
+  GetGlobalBounds_1:
+    time : 0.117398
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0242216
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0323615
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0182171
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0250508
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0227938
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0282305
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0931328
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0178717
+  GetGlobalBounds_2:
+    time : 0.000121448
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 9.9595e-05
+    GetGlobalBounds:
+      time : 0.000122319
+    Composite:
+      time : 0.0213979
+    time : 0.0353988
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 4.0444e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.0073266
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0707664
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.211426
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0332056
+  GetGlobalBounds_3:
+    time : 0.000200978
+  vtkh::RayTracer_2:
+    input_cells: 0
+    GetGlobalRange:
+      time : 0.000224152
+    GetGlobalBounds:
+      time : 0.000186657
+    Composite:
+      time : 0.467807
+    time : 0.477815
+  vtkh::RayTracer_3:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000406685
+    Composite:
+      time : 0.468408
+    time : 0.637238
+  vtkh::RayTracer_4:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000398952
+    Composite:
+      time : 0.476173
+    time : 0.624501
+  vtkh::RayTracer_5:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000411637
+    Composite:
+      time : 0.476685
+    time : 0.668012
+  vtkh::RayTracer_6:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000394289
+    Composite:
+      time : 0.471096
+    time : 0.601523
+  vtkh::RayTracer_7:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000403588
+    Composite:
+      time : 0.471224
+    time : 0.634505
+  vtkh::RayTracer_8:
+    input_cells: 0
+    GetGlobalBounds:
+      time : 0.000415393
+    Composite:
+      time : 0.24255
+    time : 0.37851
+  time : 6.73489
+cycle_80:
+  cycle: 80
+  sim_time: 1.42174
+  cycle_count: 10
+  relay:
+    path: full
+    time : 1.47854
+  relay_1:
+    path: subset
+    time : 0.29052
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.00953106
+      time : 0.00954247
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.0129046
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.28184
+    variance: 0.504804
+    skewness: 2.64973
+    kurtosis: 6.75206
+    time : 0.0177625
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.000626093
+    field_min: 0.960358
+    field_max: 5.5
+    entropy: 1.32001
+    time : 0.0213536
+  GetGlobalRange:
+    time : 0.000301577
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.00721138
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.145709
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.108263
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0273658
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.281498
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0220903
+  GetGlobalBounds:
+    time : 0.000134228
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 0.000100158
+    GetGlobalBounds:
+      time : 9.731e-05
+    Composite:
+      time : 0.0488805
+    time : 0.0491215
+  GetGlobalBounds_1:
+    time : 0.107893
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0284442
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0364592
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.018357
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0256311
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.021948
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0279372
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0973843
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.017779
+  GetGlobalBounds_2:
+    time : 0.000144896
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 7.7866e-05
+    GetGlobalBounds:
+      time : 0.000123573
+    Composite:
+      time : 0.0227347
+    time : 0.0362851
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 5.161e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00734491
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 10224
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 10224
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.074286
+    output_cells: 10224
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.184887
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 10224
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 10224
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0342987
+  GetGlobalBounds_3:
+    time : 0.000238009
+  vtkh::RayTracer_2:
+    input_cells: 10224
+    GetGlobalRange:
+      time : 0.000253191
+    GetGlobalBounds:
+      time : 0.000199626
+    Composite:
+      time : 0.338908
+    time : 0.485648
+  vtkh::RayTracer_3:
+    input_cells: 10224
+    GetGlobalBounds:
+      time : 0.00040563
+    Composite:
+      time : 0.34116
+    time : 0.613124
+  vtkh::RayTracer_4:
+    input_cells: 10224
+    GetGlobalBounds:
+      time : 0.000443745
+    Composite:
+      time : 0.351137
+    time : 0.634863
+  vtkh::RayTracer_5:
+    input_cells: 10224
+    GetGlobalBounds:
+      time : 0.000733461
+    Composite:
+      time : 0.339221
+    time : 0.608292
+  vtkh::RayTracer_6:
+    input_cells: 10224
+    GetGlobalBounds:
+      time : 0.000421089
+    Composite:
+      time : 0.344202
+    time : 0.620777
+  vtkh::RayTracer_7:
+    input_cells: 10224
+    GetGlobalBounds:
+      time : 0.000516197
+    Composite:
+      time : 0.341365
+    time : 0.624165
+  vtkh::RayTracer_8:
+    input_cells: 10224
+    GetGlobalBounds:
+      time : 0.00044056
+    Composite:
+      time : 0.172457
+    time : 0.38131
+  time : 6.73612
+cycle_90:
+  cycle: 90
+  sim_time: 1.34227
+  cycle_count: 10
+  relay:
+    path: full
+    time : 1.568
+  relay_1:
+    path: subset
+    time : 0.289799
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.0095901
+      time : 0.00960627
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.0113385
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.30103
+    variance: 0.488017
+    skewness: 2.37307
+    kurtosis: 5.27271
+    time : 0.0169685
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.000770668
+    field_min: 0.951844
+    field_max: 5.5
+    entropy: 1.46396
+    time : 0.0186742
+  GetGlobalRange:
+    time : 0.00027561
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.00908715
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.161788
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.131058
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0277864
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.320796
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0226579
+  GetGlobalBounds:
+    time : 0.000140798
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 0.00010048
+    GetGlobalBounds:
+      time : 9.808e-05
+    Composite:
+      time : 0.0387977
+    time : 0.0390408
+  GetGlobalBounds_1:
+    time : 0.116723
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.01692
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0247123
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.019137
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0256465
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0242512
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0301241
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0880011
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0178333
+  GetGlobalBounds_2:
+    time : 0.000157279
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 8.474e-05
+    GetGlobalBounds:
+      time : 0.00014221
+    Composite:
+      time : 0.0216664
+    time : 0.0361287
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 4.4054e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00739012
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 22160
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 22160
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0764731
+    output_cells: 22160
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.214512
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 22160
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 22160
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0357154
+  GetGlobalBounds_3:
+    time : 0.000260437
+  vtkh::RayTracer_2:
+    input_cells: 22160
+    GetGlobalRange:
+      time : 0.000262287
+    GetGlobalBounds:
+      time : 0.000240968
+    Composite:
+      time : 0.332204
+    time : 0.489514
+  vtkh::RayTracer_3:
+    input_cells: 22160
+    GetGlobalBounds:
+      time : 0.000442195
+    Composite:
+      time : 0.336875
+    time : 0.630137
+  vtkh::RayTracer_4:
+    input_cells: 22160
+    GetGlobalBounds:
+      time : 0.000477813
+    Composite:
+      time : 0.343896
+    time : 0.624769
+  vtkh::RayTracer_5:
+    input_cells: 22160
+    GetGlobalBounds:
+      time : 0.000493869
+    Composite:
+      time : 0.337425
+    time : 0.620038
+  vtkh::RayTracer_6:
+    input_cells: 22160
+    GetGlobalBounds:
+      time : 0.000435849
+    Composite:
+      time : 0.338817
+    time : 0.624635
+  vtkh::RayTracer_7:
+    input_cells: 22160
+    GetGlobalBounds:
+      time : 0.000457447
+    Composite:
+      time : 0.34003
+    time : 0.648036
+  vtkh::RayTracer_8:
+    input_cells: 22160
+    GetGlobalBounds:
+      time : 0.000638184
+    Composite:
+      time : 0.169193
+    time : 0.401575
+  time : 6.94275
+cycle_100:
+  cycle: 100
+  sim_time: 1.33488
+  cycle_count: 10
+  relay:
+    path: full
+    time : 1.71178
+  relay_1:
+    path: subset
+    time : 0.268525
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.00955579
+      time : 0.00957178
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.00977116
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.31962
+    variance: 0.470071
+    skewness: 2.14017
+    kurtosis: 4.25652
+    time : 0.0172004
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.000805474
+    field_min: 0.945727
+    field_max: 5.5
+    entropy: 1.57281
+    time : 0.0176087
+  GetGlobalRange:
+    time : 0.00029549
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.00722332
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.136154
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.119779
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0290203
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.285133
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0258748
+  GetGlobalBounds:
+    time : 0.000136809
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 8.0354e-05
+    GetGlobalBounds:
+      time : 0.000132644
+    Composite:
+      time : 0.0407524
+    time : 0.0410282
+  GetGlobalBounds_1:
+    time : 0.0857534
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0213171
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0291272
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0160169
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0229376
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0224054
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0283832
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0877338
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.017335
+  GetGlobalBounds_2:
+    time : 0.000134965
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 9.4355e-05
+    GetGlobalBounds:
+      time : 0.0001122
+    Composite:
+      time : 0.0222525
+    time : 0.0360527
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 6.0988e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00732813
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 33232
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 33232
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0795123
+    output_cells: 33232
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.232461
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 33232
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 33232
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0363961
+  GetGlobalBounds_3:
+    time : 0.000257895
+  vtkh::RayTracer_2:
+    input_cells: 33232
+    GetGlobalRange:
+      time : 0.000252958
+    GetGlobalBounds:
+      time : 0.000380918
+    Composite:
+      time : 0.323552
+    time : 0.492734
+  vtkh::RayTracer_3:
+    input_cells: 33232
+    GetGlobalBounds:
+      time : 0.000506847
+    Composite:
+      time : 0.320357
+    time : 0.63908
+  vtkh::RayTracer_4:
+    input_cells: 33232
+    GetGlobalBounds:
+      time : 0.000443704
+    Composite:
+      time : 0.333959
+    time : 0.640019
+  vtkh::RayTracer_5:
+    input_cells: 33232
+    GetGlobalBounds:
+      time : 0.000415514
+    Composite:
+      time : 0.330557
+    time : 0.634329
+  vtkh::RayTracer_6:
+    input_cells: 33232
+    GetGlobalBounds:
+      time : 0.000530463
+    Composite:
+      time : 0.327034
+    time : 0.62135
+  vtkh::RayTracer_7:
+    input_cells: 33232
+    GetGlobalBounds:
+      time : 0.000435091
+    Composite:
+      time : 0.343892
+    time : 0.641224
+  vtkh::RayTracer_8:
+    input_cells: 33232
+    GetGlobalBounds:
+      time : 0.000485066
+    Composite:
+      time : 0.169286
+    time : 0.389802
+  time : 7.0415
+cycle_110:
+  cycle: 110
+  sim_time: 1.35578
+  cycle_count: 10
+  relay:
+    path: full
+    time : 1.81425
+  relay_1:
+    path: subset
+    time : 0.308636
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.00952469
+      time : 0.00953566
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.00974104
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.33768
+    variance: 0.451827
+    skewness: 1.95015
+    kurtosis: 3.61535
+    time : 0.0148414
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.000842751
+    field_min: 0.939116
+    field_max: 5.5
+    entropy: 1.69961
+    time : 0.0175193
+  GetGlobalRange:
+    time : 0.000267946
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.00718276
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.1387
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.119015
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0284801
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.286346
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0228467
+  GetGlobalBounds:
+    time : 0.000136373
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 8.2768e-05
+    GetGlobalBounds:
+      time : 0.000109404
+    Composite:
+      time : 0.0433563
+    time : 0.043591
+  GetGlobalBounds_1:
+    time : 0.0990571
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0277935
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0358551
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0171983
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0298114
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0245095
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0304141
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.106213
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0170727
+  GetGlobalBounds_2:
+    time : 0.000136895
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 9.5311e-05
+    GetGlobalBounds:
+      time : 0.000121821
+    Composite:
+      time : 0.0301657
+    time : 0.0459865
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 3.4849e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00740727
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 45528
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 45525
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0784656
+    output_cells: 45525
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.205948
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 45525
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 45525
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0376423
+  GetGlobalBounds_3:
+    time : 0.000241511
+  vtkh::RayTracer_2:
+    input_cells: 45525
+    GetGlobalRange:
+      time : 0.000259685
+    GetGlobalBounds:
+      time : 0.000234918
+    Composite:
+      time : 0.328561
+    time : 0.525297
+  vtkh::RayTracer_3:
+    input_cells: 45525
+    GetGlobalBounds:
+      time : 0.00164429
+    Composite:
+      time : 0.34525
+    time : 0.653897
+  vtkh::RayTracer_4:
+    input_cells: 45525
+    GetGlobalBounds:
+      time : 0.000544532
+    Composite:
+      time : 0.347331
+    time : 0.646826
+  vtkh::RayTracer_5:
+    input_cells: 45525
+    GetGlobalBounds:
+      time : 0.000436703
+    Composite:
+      time : 0.366671
+    time : 0.671327
+  vtkh::RayTracer_6:
+    input_cells: 45525
+    GetGlobalBounds:
+      time : 0.000913551
+    Composite:
+      time : 0.340648
+    time : 0.652908
+  vtkh::RayTracer_7:
+    input_cells: 45525
+    GetGlobalBounds:
+      time : 0.000482276
+    Composite:
+      time : 0.351808
+    time : 0.644219
+  vtkh::RayTracer_8:
+    input_cells: 45525
+    GetGlobalBounds:
+      time : 0.000477883
+    Composite:
+      time : 0.173655
+    time : 0.443264
+  time : 7.37115
+cycle_120:
+  cycle: 120
+  sim_time: 1.33182
+  cycle_count: 10
+  relay:
+    path: full
+    time : 1.93723
+  relay_1:
+    path: subset
+    time : 0.341156
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.00951453
+      time : 0.00952565
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.0113855
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.35527
+    variance: 0.433337
+    skewness: 1.79934
+    kurtosis: 3.26684
+    time : 0.0177665
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.000813484
+    field_min: 0.933553
+    field_max: 5.5
+    entropy: 1.83159
+    time : 0.0174949
+  GetGlobalRange:
+    time : 0.0004262
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.00712781
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.144918
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.11228
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.031759
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.289161
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0229378
+  GetGlobalBounds:
+    time : 0.000151584
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 9.846e-05
+    GetGlobalBounds:
+      time : 0.000123346
+    Composite:
+      time : 0.0394574
+    time : 0.039712
+  GetGlobalBounds_1:
+    time : 0.0959085
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.016859
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0248415
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.020135
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0268663
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0226029
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0281191
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0873822
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.017476
+  GetGlobalBounds_2:
+    time : 0.000122296
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 7.1876e-05
+    GetGlobalBounds:
+      time : 0.000100484
+    Composite:
+      time : 0.0240854
+    time : 0.0384597
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 3.8066e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00736782
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 56628
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 56628
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0874274
+    output_cells: 56628
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.228881
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 56628
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56628
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0373747
+  GetGlobalBounds_3:
+    time : 0.00027261
+  vtkh::RayTracer_2:
+    input_cells: 56628
+    GetGlobalRange:
+      time : 0.000268709
+    GetGlobalBounds:
+      time : 0.000247954
+    Composite:
+      time : 0.365928
+    time : 0.518142
+  vtkh::RayTracer_3:
+    input_cells: 56628
+    GetGlobalBounds:
+      time : 0.000466987
+    Composite:
+      time : 0.378671
+    time : 0.673134
+  vtkh::RayTracer_4:
+    input_cells: 56628
+    GetGlobalBounds:
+      time : 0.000487106
+    Composite:
+      time : 0.376312
+    time : 0.668093
+  vtkh::RayTracer_5:
+    input_cells: 56628
+    GetGlobalBounds:
+      time : 0.000483786
+    Composite:
+      time : 0.372716
+    time : 0.644552
+  vtkh::RayTracer_6:
+    input_cells: 56628
+    GetGlobalBounds:
+      time : 0.000477288
+    Composite:
+      time : 0.372745
+    time : 0.653899
+  vtkh::RayTracer_7:
+    input_cells: 56628
+    GetGlobalBounds:
+      time : 0.000535022
+    Composite:
+      time : 0.370125
+    time : 0.647757
+  vtkh::RayTracer_8:
+    input_cells: 56628
+    GetGlobalBounds:
+      time : 0.000454452
+    Composite:
+      time : 0.192644
+    time : 0.399795
+  time : 7.49219
+cycle_130:
+  cycle: 130
+  sim_time: 1.32764
+  cycle_count: 10
+  relay:
+    path: full
+    time : 2.0483
+  relay_1:
+    path: subset
+    time : 0.364393
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.00958864
+      time : 0.00959935
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.0121783
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.37223
+    variance: 0.415017
+    skewness: 1.68452
+    kurtosis: 3.14691
+    time : 0.0142364
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.000631861
+    field_min: 0.929589
+    field_max: 5.5
+    entropy: 2.00377
+    time : 0.0165411
+  GetGlobalRange:
+    time : 0.00035531
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.00723153
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.134725
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.118406
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0284188
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.281727
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0238537
+  GetGlobalBounds:
+    time : 0.000231321
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 8.585e-05
+    GetGlobalBounds:
+      time : 9.2835e-05
+    Composite:
+      time : 0.0375148
+    time : 0.0377722
+  GetGlobalBounds_1:
+    time : 0.0888624
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.020944
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0294199
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0166138
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0234174
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0218606
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0276865
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0877826
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0176002
+  GetGlobalBounds_2:
+    time : 0.000122992
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 8.7419e-05
+    GetGlobalBounds:
+      time : 0.000121003
+    Composite:
+      time : 0.0207046
+    time : 0.0349442
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 4.1723e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00732213
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 67776
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 67776
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0809814
+    output_cells: 67776
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.21288
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 67776
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 67776
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.041107
+  GetGlobalBounds_3:
+    time : 0.000272113
+  vtkh::RayTracer_2:
+    input_cells: 67776
+    GetGlobalRange:
+      time : 0.000264387
+    GetGlobalBounds:
+      time : 0.000225144
+    Composite:
+      time : 0.365043
+    time : 0.526417
+  vtkh::RayTracer_3:
+    input_cells: 67776
+    GetGlobalBounds:
+      time : 0.000510481
+    Composite:
+      time : 0.368404
+    time : 0.666281
+  vtkh::RayTracer_4:
+    input_cells: 67776
+    GetGlobalBounds:
+      time : 0.000464555
+    Composite:
+      time : 0.356159
+    time : 0.637672
+  vtkh::RayTracer_5:
+    input_cells: 67776
+    GetGlobalBounds:
+      time : 0.000486629
+    Composite:
+      time : 0.355347
+    time : 0.642567
+  vtkh::RayTracer_6:
+    input_cells: 67776
+    GetGlobalBounds:
+      time : 0.000587177
+    Composite:
+      time : 0.368623
+    time : 0.687897
+  vtkh::RayTracer_7:
+    input_cells: 67776
+    GetGlobalBounds:
+      time : 0.000483948
+    Composite:
+      time : 0.370005
+    time : 0.685355
+  vtkh::RayTracer_8:
+    input_cells: 67776
+    GetGlobalBounds:
+      time : 0.000523895
+    Composite:
+      time : 0.191028
+    time : 0.405759
+  time : 7.62428
+cycle_140:
+  cycle: 140
+  sim_time: 1.35772
+  cycle_count: 10
+  relay:
+    path: full
+    time : 2.24003
+  relay_1:
+    path: subset
+    time : 0.374783
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.00955491
+      time : 0.00957161
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.00972664
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.3883
+    variance: 0.397166
+    skewness: 1.60266
+    kurtosis: 3.20007
+    time : 0.0176979
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.00443023
+    field_min: 0.925807
+    field_max: 5.5
+    entropy: 2.12442
+    time : 0.0215151
+  GetGlobalRange:
+    time : 0.000306413
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.00981135
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.138252
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.111734
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0294376
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.279594
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0236771
+  GetGlobalBounds:
+    time : 0.000136677
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 7.9004e-05
+    GetGlobalBounds:
+      time : 0.000105289
+    Composite:
+      time : 0.0367705
+    time : 0.0369989
+  GetGlobalBounds_1:
+    time : 0.0961631
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0272964
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0348754
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0175541
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0244753
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0226489
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0284593
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0954007
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0183578
+  GetGlobalBounds_2:
+    time : 0.000165625
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 9.6125e-05
+    GetGlobalBounds:
+      time : 0.000128249
+    Composite:
+      time : 0.0210548
+    time : 0.0359283
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 3.8006e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00824929
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 77044
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 77037
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.104007
+    output_cells: 77037
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.246412
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 77037
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 77037
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0399868
+  GetGlobalBounds_3:
+    time : 0.000311699
+  vtkh::RayTracer_2:
+    input_cells: 77037
+    GetGlobalRange:
+      time : 0.000279327
+    GetGlobalBounds:
+      time : 0.000231981
+    Composite:
+      time : 0.375169
+    time : 0.548814
+  vtkh::RayTracer_3:
+    input_cells: 77037
+    GetGlobalBounds:
+      time : 0.000505691
+    Composite:
+      time : 0.376607
+    time : 0.692376
+  vtkh::RayTracer_4:
+    input_cells: 77037
+    GetGlobalBounds:
+      time : 0.000520574
+    Composite:
+      time : 0.381599
+    time : 0.681278
+  vtkh::RayTracer_5:
+    input_cells: 77037
+    GetGlobalBounds:
+      time : 0.000502559
+    Composite:
+      time : 0.374829
+    time : 0.693811
+  vtkh::RayTracer_6:
+    input_cells: 77037
+    GetGlobalBounds:
+      time : 0.000490849
+    Composite:
+      time : 0.370694
+    time : 0.661619
+  vtkh::RayTracer_7:
+    input_cells: 77037
+    GetGlobalBounds:
+      time : 0.000492789
+    Composite:
+      time : 0.3818
+    time : 0.671672
+  vtkh::RayTracer_8:
+    input_cells: 77037
+    GetGlobalBounds:
+      time : 0.000508377
+    Composite:
+      time : 0.190489
+    time : 0.408636
+  time : 7.99235
+cycle_150:
+  cycle: 150
+  sim_time: 1.3436
+  cycle_count: 10
+  relay:
+    path: full
+    time : 2.35151
+  relay_1:
+    path: subset
+    time : 0.391585
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.00958071
+      time : 0.00959748
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.0129179
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.40354
+    variance: 0.380172
+    skewness: 1.54498
+    kurtosis: 3.36305
+    time : 0.0153285
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.000636357
+    field_min: 0.923099
+    field_max: 5.5
+    entropy: 2.30883
+    time : 0.019225
+  GetGlobalRange:
+    time : 0.000304402
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.00725952
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.134584
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.119544
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0315943
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.285869
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.028238
+  GetGlobalBounds:
+    time : 0.000138414
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 0.000100978
+    GetGlobalBounds:
+      time : 9.8736e-05
+    Composite:
+      time : 0.0492691
+    time : 0.0495195
+  GetGlobalBounds_1:
+    time : 0.0914238
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0243391
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0323381
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0167275
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.023709
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.022624
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.028447
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0918883
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0182381
+  GetGlobalBounds_2:
+    time : 0.000138669
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 8.4825e-05
+    GetGlobalBounds:
+      time : 0.000106943
+    Composite:
+      time : 0.0224859
+    time : 0.0362281
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 3.7467e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00731387
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 85732
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 85730
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0984275
+    output_cells: 85730
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.239648
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 85730
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 85730
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0432818
+  GetGlobalBounds_3:
+    time : 0.000280269
+  vtkh::RayTracer_2:
+    input_cells: 85730
+    GetGlobalRange:
+      time : 0.00026393
+    GetGlobalBounds:
+      time : 0.000239207
+    Composite:
+      time : 0.394702
+    time : 0.578579
+  vtkh::RayTracer_3:
+    input_cells: 85730
+    GetGlobalBounds:
+      time : 0.000470017
+    Composite:
+      time : 0.37986
+    time : 0.712907
+  vtkh::RayTracer_4:
+    input_cells: 85730
+    GetGlobalBounds:
+      time : 0.000536755
+    Composite:
+      time : 0.391182
+    time : 0.705903
+  vtkh::RayTracer_5:
+    input_cells: 85730
+    GetGlobalBounds:
+      time : 0.000478498
+    Composite:
+      time : 0.40075
+    time : 0.70054
+  vtkh::RayTracer_6:
+    input_cells: 85730
+    GetGlobalBounds:
+      time : 0.000503685
+    Composite:
+      time : 0.389892
+    time : 0.693268
+  vtkh::RayTracer_7:
+    input_cells: 85730
+    GetGlobalBounds:
+      time : 0.000694283
+    Composite:
+      time : 0.398653
+    time : 0.696731
+  vtkh::RayTracer_8:
+    input_cells: 85730
+    GetGlobalBounds:
+      time : 0.000522477
+    Composite:
+      time : 0.199952
+    time : 0.420256
+  time : 8.29671
+cycle_160:
+  cycle: 160
+  sim_time: 1.3289
+  cycle_count: 10
+  relay:
+    path: full
+    time : 2.50869
+  relay_1:
+    path: subset
+    time : 0.416644
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.0100614
+      time : 0.0100783
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.0101638
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.41832
+    variance: 0.363368
+    skewness: 1.50472
+    kurtosis: 3.60533
+    time : 0.0142678
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.000766855
+    field_min: 0.920271
+    field_max: 5.5
+    entropy: 2.49862
+    time : 0.0173473
+  GetGlobalRange:
+    time : 0.000290634
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.00733017
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.133282
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.106618
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0280014
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.268067
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0230725
+  GetGlobalBounds:
+    time : 0.000124357
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 8.0211e-05
+    GetGlobalBounds:
+      time : 0.000245523
+    Composite:
+      time : 0.0423204
+    time : 0.042696
+  GetGlobalBounds_1:
+    time : 0.0932208
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0201565
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0281446
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0163481
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0231958
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0223096
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0279798
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.086507
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0206499
+  GetGlobalBounds_2:
+    time : 0.000196294
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 9.2849e-05
+    GetGlobalBounds:
+      time : 0.000119372
+    Composite:
+      time : 0.0220153
+    time : 0.0366803
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 3.724e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00733885
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 96496
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 96494
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.097749
+    output_cells: 96494
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.220513
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 96494
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 96494
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0436657
+  GetGlobalBounds_3:
+    time : 0.000303039
+  vtkh::RayTracer_2:
+    input_cells: 96494
+    GetGlobalRange:
+      time : 0.000255554
+    GetGlobalBounds:
+      time : 0.000271788
+    Composite:
+      time : 0.389447
+    time : 0.586401
+  vtkh::RayTracer_3:
+    input_cells: 96494
+    GetGlobalBounds:
+      time : 0.00050841
+    Composite:
+      time : 0.385861
+    time : 0.701059
+  vtkh::RayTracer_4:
+    input_cells: 96494
+    GetGlobalBounds:
+      time : 0.000563421
+    Composite:
+      time : 0.398696
+    time : 0.710369
+  vtkh::RayTracer_5:
+    input_cells: 96494
+    GetGlobalBounds:
+      time : 0.000517709
+    Composite:
+      time : 0.390903
+    time : 0.699075
+  vtkh::RayTracer_6:
+    input_cells: 96494
+    GetGlobalBounds:
+      time : 0.000557138
+    Composite:
+      time : 0.388615
+    time : 0.707333
+  vtkh::RayTracer_7:
+    input_cells: 96494
+    GetGlobalBounds:
+      time : 0.000530088
+    Composite:
+      time : 0.398982
+    time : 0.712254
+  vtkh::RayTracer_8:
+    input_cells: 96494
+    GetGlobalBounds:
+      time : 0.000579284
+    Composite:
+      time : 0.197928
+    time : 0.425754
+  time : 8.46771
+cycle_170:
+  cycle: 170
+  sim_time: 1.35013
+  cycle_count: 10
+  relay:
+    path: full
+    time : 2.61589
+  relay_1:
+    path: subset
+    time : 0.451569
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.00973733
+      time : 0.00975658
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.00985628
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.43291
+    variance: 0.346803
+    skewness: 1.47255
+    kurtosis: 3.89426
+    time : 0.0144294
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.000741186
+    field_min: 0.917018
+    field_max: 5.5
+    entropy: 2.68409
+    time : 0.0183573
+  GetGlobalRange:
+    time : 0.00028486
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.00715052
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.145213
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.11683
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0281945
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.290426
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0235542
+  GetGlobalBounds:
+    time : 0.000120295
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 9.0831e-05
+    GetGlobalBounds:
+      time : 0.0001073
+    Composite:
+      time : 0.0354524
+    time : 0.0357092
+  GetGlobalBounds_1:
+    time : 0.118705
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0177173
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0262862
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0168459
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0243284
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0226285
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0288801
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0867727
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0178748
+  GetGlobalBounds_2:
+    time : 0.000137875
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 7.9603e-05
+    GetGlobalBounds:
+      time : 0.000103522
+    Composite:
+      time : 0.0217562
+    time : 0.0358105
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 3.7602e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00735703
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 107440
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 107430
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0946875
+    output_cells: 107430
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.243806
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 107430
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 107430
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0434713
+  GetGlobalBounds_3:
+    time : 0.00033899
+  vtkh::RayTracer_2:
+    input_cells: 107430
+    GetGlobalRange:
+      time : 0.000307712
+    GetGlobalBounds:
+      time : 0.0002489
+    Composite:
+      time : 0.372301
+    time : 0.580721
+  vtkh::RayTracer_3:
+    input_cells: 107430
+    GetGlobalBounds:
+      time : 0.000544384
+    Composite:
+      time : 0.375013
+    time : 0.724548
+  vtkh::RayTracer_4:
+    input_cells: 107430
+    GetGlobalBounds:
+      time : 0.000524708
+    Composite:
+      time : 0.377747
+    time : 0.703325
+  vtkh::RayTracer_5:
+    input_cells: 107430
+    GetGlobalBounds:
+      time : 0.000509808
+    Composite:
+      time : 0.373723
+    time : 0.721758
+  vtkh::RayTracer_6:
+    input_cells: 107430
+    GetGlobalBounds:
+      time : 0.000541579
+    Composite:
+      time : 0.3769
+    time : 0.706639
+  vtkh::RayTracer_7:
+    input_cells: 107430
+    GetGlobalBounds:
+      time : 0.000526742
+    Composite:
+      time : 0.376674
+    time : 0.690851
+  vtkh::RayTracer_8:
+    input_cells: 107430
+    GetGlobalBounds:
+      time : 0.000527295
+    Composite:
+      time : 0.189982
+    time : 0.422024
+  time : 8.64842
+cycle_180:
+  cycle: 180
+  sim_time: 1.32186
+  cycle_count: 10
+  relay:
+    path: full
+    time : 2.8015
+  relay_1:
+    path: subset
+    time : 0.462972
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.0095344
+      time : 0.00955645
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.00965365
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.44742
+    variance: 0.330148
+    skewness: 1.4453
+    kurtosis: 4.23597
+    time : 0.0142946
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.00076018
+    field_min: 0.914011
+    field_max: 5.5
+    entropy: 2.88519
+    time : 0.0178883
+  GetGlobalRange:
+    time : 0.000290664
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.00937385
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.131559
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.112809
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0291104
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.273632
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0235114
+  GetGlobalBounds:
+    time : 0.000124087
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 8.5833e-05
+    GetGlobalBounds:
+      time : 9.7099e-05
+    Composite:
+      time : 0.0415744
+    time : 0.0417996
+  GetGlobalBounds_1:
+    time : 0.097392
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0241927
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0322178
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0211555
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.027814
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0219289
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0278012
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0953681
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0179654
+  GetGlobalBounds_2:
+    time : 0.000120559
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 8.8101e-05
+    GetGlobalBounds:
+      time : 0.000117351
+    Composite:
+      time : 0.0231747
+    time : 0.0369287
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 3.7864e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00737019
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 116080
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 116072
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0963592
+    output_cells: 116072
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.242238
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 116072
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 116072
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0433958
+  GetGlobalBounds_3:
+    time : 0.000386088
+  vtkh::RayTracer_2:
+    input_cells: 116072
+    GetGlobalRange:
+      time : 0.000272625
+    GetGlobalBounds:
+      time : 0.000278373
+    Composite:
+      time : 0.369491
+    time : 0.603367
+  vtkh::RayTracer_3:
+    input_cells: 116072
+    GetGlobalBounds:
+      time : 0.000497439
+    Composite:
+      time : 0.37655
+    time : 0.739794
+  vtkh::RayTracer_4:
+    input_cells: 116072
+    GetGlobalBounds:
+      time : 0.000576217
+    Composite:
+      time : 0.375262
+    time : 0.714606
+  vtkh::RayTracer_5:
+    input_cells: 116072
+    GetGlobalBounds:
+      time : 0.000490749
+    Composite:
+      time : 0.406657
+    time : 0.739715
+  vtkh::RayTracer_6:
+    input_cells: 116072
+    GetGlobalBounds:
+      time : 0.000509063
+    Composite:
+      time : 0.392701
+    time : 0.724117
+  vtkh::RayTracer_7:
+    input_cells: 116072
+    GetGlobalBounds:
+      time : 0.000514653
+    Composite:
+      time : 0.379317
+    time : 0.729717
+  vtkh::RayTracer_8:
+    input_cells: 116072
+    GetGlobalBounds:
+      time : 0.000529934
+    Composite:
+      time : 0.188477
+    time : 0.442134
+  time : 8.96554
+cycle_190:
+  cycle: 190
+  sim_time: 1.33625
+  cycle_count: 10
+  relay:
+    path: full
+    time : 2.92688
+  relay_1:
+    path: subset
+    time : 0.507614
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.00957255
+      time : 0.00959092
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.00987708
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.46216
+    variance: 0.31315
+    skewness: 1.41973
+    kurtosis: 4.63737
+    time : 0.0145778
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.000698606
+    field_min: 0.911336
+    field_max: 5.5
+    entropy: 3.08632
+    time : 0.0184358
+  GetGlobalRange:
+    time : 0.000291862
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.00728387
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.138548
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.116814
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0276892
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.283209
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0230303
+  GetGlobalBounds:
+    time : 0.000129119
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 7.7034e-05
+    GetGlobalBounds:
+      time : 0.000100062
+    Composite:
+      time : 0.0410987
+    time : 0.0413234
+  GetGlobalBounds_1:
+    time : 0.100268
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0169086
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0245879
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0223181
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.028702
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0249883
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0304695
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0912935
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0180236
+  GetGlobalBounds_2:
+    time : 0.00014605
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 7.9336e-05
+    GetGlobalBounds:
+      time : 0.000142992
+    Composite:
+      time : 0.0278042
+    time : 0.0415397
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 4.134e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00731948
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 124784
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 124770
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0968367
+    output_cells: 124770
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.243839
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 124770
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 124770
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0430679
+  GetGlobalBounds_3:
+    time : 0.00033066
+  vtkh::RayTracer_2:
+    input_cells: 124770
+    GetGlobalRange:
+      time : 0.000299483
+    GetGlobalBounds:
+      time : 0.000246095
+    Composite:
+      time : 0.38237
+    time : 0.626603
+  vtkh::RayTracer_3:
+    input_cells: 124770
+    GetGlobalBounds:
+      time : 0.000497185
+    Composite:
+      time : 0.387862
+    time : 0.754983
+  vtkh::RayTracer_4:
+    input_cells: 124770
+    GetGlobalBounds:
+      time : 0.00068633
+    Composite:
+      time : 0.386366
+    time : 0.735884
+  vtkh::RayTracer_5:
+    input_cells: 124770
+    GetGlobalBounds:
+      time : 0.000540341
+    Composite:
+      time : 0.377068
+    time : 0.720997
+  vtkh::RayTracer_6:
+    input_cells: 124770
+    GetGlobalBounds:
+      time : 0.000505166
+    Composite:
+      time : 0.377111
+    time : 0.732199
+  vtkh::RayTracer_7:
+    input_cells: 124770
+    GetGlobalBounds:
+      time : 0.000508166
+    Composite:
+      time : 0.377731
+    time : 0.734274
+  vtkh::RayTracer_8:
+    input_cells: 124770
+    GetGlobalBounds:
+      time : 0.000548437
+    Composite:
+      time : 0.191441
+    time : 0.449867
+  time : 9.22549
+cycle_200:
+  cycle: 200
+  sim_time: 1.33561
+  cycle_count: 10
+  relay:
+    path: full
+    time : 3.01775
+  relay_1:
+    path: subset
+    time : 0.517235
+  vtkh::GhostStripper:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    structured_strip:
+      can_strip:
+        time : 0.00960652
+      time : 0.0096176
+    output_cells: 2314125
+    output_domains: 1
+    output_topology: structured
+    time : 0.00990047
+  statistics:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    mean: 1.4774
+    variance: 0.295478
+    skewness: 1.39531
+    kurtosis: 5.14074
+    time : 0.0157087
+  histogram:
+    device: openmp
+    bins: 256
+    input_cells: 2314125
+    input_domains: 1
+    GetGlobalRange:
+      time : 0.000735983
+    field_min: 0.909096
+    field_max: 5.5
+    entropy: 3.21687
+    time : 0.0169316
+  GetGlobalRange:
+    time : 0.000396823
+  vtkh::IsoVolume:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::ClipField:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::Recenter:
+        device: openmp
+        input_cells: 2314125
+        input_domains: 1
+        in_topology: structured
+        output_cells: 2314125
+        output_domains: 1
+        output_topology: structured
+        time : 0.0072219
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.13577
+    vtkh::ClipField_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.107449
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 0
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0273498
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.270751
+  vtkh::GhostStripper_1:
+    device: openmp
+    input_cells: 0
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 0
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0237499
+  GetGlobalBounds:
+    time : 0.000102497
+  vtkh::RayTracer:
+    input_cells: 0
+    GetGlobalRange:
+      time : 0.000100845
+    GetGlobalBounds:
+      time : 0.000248509
+    Composite:
+      time : 0.0450081
+    time : 0.045405
+  GetGlobalBounds_1:
+    time : 0.121227
+  vtkh::Slice:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    vtkh::MarchingCubes:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0164766
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0310832
+    vtkh::MarchingCubes_1:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 28050
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 28050
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.0166809
+      output_cells: 28050
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0232184
+    vtkh::MarchingCubes_2:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      vtkh::CleanGrid:
+        device: openmp
+        input_cells: 0
+        input_domains: 1
+        in_topology: unstructured
+        output_cells: 0
+        output_domains: 1
+        output_topology: unstructured
+        time : 0.022224
+      output_cells: 0
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0278615
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0893705
+  vtkh::GhostStripper_2:
+    device: openmp
+    input_cells: 56100
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 56100
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0180234
+  GetGlobalBounds_2:
+    time : 0.000155486
+  vtkh::RayTracer_1:
+    input_cells: 56100
+    GetGlobalRange:
+      time : 7.5414e-05
+    GetGlobalBounds:
+      time : 0.000117882
+    Composite:
+      time : 0.0218011
+    time : 0.0359401
+  vtkh::MarchingCubes:
+    device: openmp
+    input_cells: 2314125
+    input_domains: 1
+    in_topology: structured
+    GetGlobalRange:
+      time : 3.9469e-05
+    vtkh::Recenter:
+      device: openmp
+      input_cells: 2314125
+      input_domains: 1
+      in_topology: structured
+      output_cells: 2314125
+      output_domains: 1
+      output_topology: structured
+      time : 0.00736423
+    vtkh::CleanGrid:
+      device: openmp
+      input_cells: 126192
+      input_domains: 1
+      in_topology: unstructured
+      output_cells: 126190
+      output_domains: 1
+      output_topology: unstructured
+      time : 0.0993847
+    output_cells: 126190
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.236246
+  vtkh::GhostStripper_3:
+    device: openmp
+    input_cells: 126190
+    input_domains: 1
+    in_topology: unstructured
+    output_cells: 126190
+    output_domains: 1
+    output_topology: unstructured
+    time : 0.0427128
+  GetGlobalBounds_3:
+    time : 0.000352521
+  vtkh::RayTracer_2:
+    input_cells: 126190
+    GetGlobalRange:
+      time : 0.00027251
+    GetGlobalBounds:
+      time : 0.00026496
+    Composite:
+      time : 0.396458
+    time : 0.622139
+  vtkh::RayTracer_3:
+    input_cells: 126190
+    GetGlobalBounds:
+      time : 0.000541409
+    Composite:
+      time : 0.403594
+    time : 0.820973
+  vtkh::RayTracer_4:
+    input_cells: 126190
+    GetGlobalBounds:
+      time : 0.000855195
+    Composite:
+      time : 0.40769
+    time : 0.775749
+  vtkh::RayTracer_5:
+    input_cells: 126190
+    GetGlobalBounds:
+      time : 0.000662718
+    Composite:
+      time : 0.401968
+    time : 0.719259
+  vtkh::RayTracer_6:
+    input_cells: 126190
+    GetGlobalBounds:
+      time : 0.000556026
+    Composite:
+      time : 0.400402
+    time : 0.741859
+  vtkh::RayTracer_7:
+    input_cells: 126190
+    GetGlobalBounds:
+      time : 0.000519631
+    Composite:
+      time : 0.405384
+    time : 0.749631
+  vtkh::RayTracer_8:
+    input_cells: 126190
+    GetGlobalBounds:
+      time : 0.000532802
+    Composite:
+      time : 0.203692
+    time : 0.443829
+  time : 9.43992

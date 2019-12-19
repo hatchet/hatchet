@@ -347,3 +347,25 @@ def mock_dag_literal2():
     ]
 
     return dag_ldict
+
+
+@pytest.fixture
+def ascent_json(data_dir, tmpdir):
+    """Builds a temporary directory containing the Ascent json files."""
+    ascent_json_dir = os.path.join(data_dir, "ascent-cloverleaf-ex/json")
+
+    for f in glob(os.path.join(str(ascent_json_dir), "*.json")):
+        shutil.copy(f, str(tmpdir))
+
+    return tmpdir
+
+
+@pytest.fixture
+def ascent_yaml(data_dir, tmpdir):
+    """Builds a temporary directory containing the Ascent yaml files."""
+    ascent_yaml_dir = os.path.join(data_dir, "ascent-cloverleaf-ex/yaml")
+
+    for f in glob(os.path.join(str(ascent_yaml_dir), "*.yaml")):
+        shutil.copy(f, str(tmpdir))
+
+    return tmpdir

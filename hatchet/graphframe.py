@@ -30,8 +30,8 @@ class GraphFrame:
         Likely, you do not want to use this function.
 
         See ``from_hpctoolkit``, ``from_caliper``, ``from_caliper_json``,
-        ``from_gprof_dot``, and other reader methods for easier ways to
-        create a ``GraphFrame``.
+        ``from_gprof_dot``, ``from_ascent``, and other reader methods for
+        easier ways to create a ``GraphFrame``.
 
         Arguments:
              graph (Graph): Graph of nodes in this GraphFrame.
@@ -104,6 +104,14 @@ class GraphFrame:
         from .readers.gprof_dot_reader import GprofDotReader
 
         return GprofDotReader(filename).read()
+
+    @staticmethod
+    def from_ascent(dirname):
+        """Read in Ascent data files."""
+        # import this lazily to avoid circular dependencies
+        from .readers.ascent_reader import AscentReader
+
+        return AscentReader(dirname).read()
 
     @staticmethod
     def from_literal(graph_dict):
