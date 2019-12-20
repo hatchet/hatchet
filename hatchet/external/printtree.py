@@ -100,7 +100,7 @@ def as_text(
     max_time = dataframe[metric].max()
 
     # only display nodes whose metric is greater than some threshold
-    if node_time >= threshold * max_time:
+    if abs(node_time) >= threshold * max_time:
         time_str = "{:.3f}".format(node_time)
         func_name = dataframe.loc[df_index, name]
 
@@ -139,7 +139,7 @@ def as_text(
             else:
                 df_index = child
             child_time = dataframe.loc[df_index, metric]
-            if child_time >= threshold * max_time:
+            if abs(child_time) >= threshold * max_time:
                 children.append(child)
 
         if children:
