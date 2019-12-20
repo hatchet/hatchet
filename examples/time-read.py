@@ -8,7 +8,7 @@
 from __future__ import print_function
 import argparse
 
-from hatchet.readers.hpctoolkit_reader import HPCToolkitReader
+from hatchet import GraphFrame
 
 
 if __name__ == "__main__":
@@ -20,6 +20,4 @@ if __name__ == "__main__":
     )
     args = parser.parse_args()
 
-    reader = HPCToolkitReader(args.directory)
-    reader.create_graph()
-    print(str(reader.timer))
+    reader = GraphFrame.from_hpctoolkit(args.directory)
