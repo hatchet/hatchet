@@ -360,6 +360,7 @@ class GraphFrame:
         merges = graph.normalize()
         df["node"] = df["node"].apply(lambda n: merges.get(n, n))
 
+        self.dataframe.set_index(index_names, inplace=True)
         df.set_index(index_names, inplace=True)
         # create dict that stores aggregation function for each column
         agg_dict = {}
