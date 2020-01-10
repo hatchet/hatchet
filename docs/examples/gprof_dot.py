@@ -5,8 +5,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-from __future__ import print_function
-
 import hatchet as ht
 
 
