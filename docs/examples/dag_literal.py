@@ -5,14 +5,7 @@
 #
 # SPDX-License-Identifier: MIT
 
-from __future__ import print_function
-
-import pandas as pd
-
 import hatchet as ht
-
-pd.set_option("display.width", 500)
-pd.set_option("display.max_colwidth", 30)
 
 
 if __name__ == "__main__":
@@ -143,28 +136,34 @@ if __name__ == "__main__":
                 ],
             },
             {
-                "name": "waldo",
-                "metrics": {"time (inc)": 80.0, "time": 9.0},
+                "name": "ほげ (hoge)",
+                "metrics": {"time (inc)": 30.0, "time": 0.0},
                 "children": [
                     {
-                        "name": "bar",
-                        "metrics": {"time (inc)": 20.0, "time": 5.0},
+                        "name": "(ぴよ (piyo)",
+                        "metrics": {"time (inc)": 15.0, "time": 5.0},
                         "children": [
                             {
-                                "name": "baz",
+                                "name": "ふが (fuga)",
                                 "metrics": {"time (inc)": 5.0, "time": 5.0},
                             },
                             {
-                                "name": "grault",
-                                "metrics": {"time (inc)": 10.0, "time": 10.0},
+                                "name": "ほげら (hogera)",
+                                "metrics": {"time (inc)": 5.0, "time": 5.0},
                             },
                         ],
-                    }
+                    },
+                    {
+                        "name": "ほげほげ (hogehoge)",
+                        "metrics": {"time (inc)": 15.0, "time": 15.0},
+                    },
                 ],
             },
+
         ]
     )
 
     print(gf.dataframe)
+    print("\n")
 
     print(gf.tree(threshold=0.0))
