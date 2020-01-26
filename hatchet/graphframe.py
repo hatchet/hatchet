@@ -499,6 +499,10 @@ class GraphFrame:
         self.dataframe.set_index(self_index_names, inplace=True, drop=True)
         other.dataframe.set_index(other_index_names, inplace=True, drop=True)
 
+        # add missing rows to copy of self's dataframe in preparation for
+        # operation
+        self._insert_missing_rows(other)
+
         self.graph = union_graph
         other.graph = union_graph
 
@@ -599,6 +603,38 @@ class GraphFrame:
         )
 
         self.dataframe.update(op(other.dataframe[all_metrics], *args, **kwargs))
+
+        return self
+
+    def _insert_missing_rows(self, other):
+        """Helper function to add rows that exist in other, but not in self.
+
+        This returns a graphframe with a modified dataframe. The new rows will
+        contain zeros for numeric columns.
+
+        Return:
+            (GraphFrame): self's modified graphframe
+        """
+        all_metrics = list(
+            set().union(
+                self.exc_metrics, self.inc_metrics, other.exc_metrics, other.inc_metrics
+            )
+        )
+
+        # get rows that exist in other, but not in self, set metric column to 0
+        # for these rows
+        other_not_in_self = other.dataframe[
+            ~other.dataframe.index.isin(self.dataframe.index)
+        ]
+        for i in other_not_in_self.index:
+            for j in all_metrics:
+                other_not_in_self.at[i, j] = 0
+
+        # append missing rows to self's dataframe
+        self.dataframe = self.dataframe.append(other_not_in_self)
+
+        # sort self's dataframe by index
+        self.dataframe.sort_index(inplace=True)
 
         return self
 

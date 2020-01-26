@@ -31,6 +31,7 @@ def test_add(mock_graph_literal):
 
     assert gf3.graph == gf1.graph.union(gf2.graph)
 
+    assert len(gf3.graph) == gf3.dataframe.shape[0]
     assert gf3.dataframe["time"].sum() == 330
     assert gf3.dataframe["time (inc)"].sum() == 1280
 
@@ -50,6 +51,7 @@ def test_sub(mock_graph_literal):
     gf3 = gf1.sub(gf2)
 
     assert gf3.graph == gf1.graph.union(gf2.graph)
+    assert len(gf3.graph) == gf3.dataframe.shape[0]
 
     for metric in gf3.exc_metrics + gf3.inc_metrics:
         assert gf3.dataframe[metric].sum() == 0
@@ -68,6 +70,7 @@ def test_div(mock_graph_literal):
     assert gf1.graph is not gf2.graph
 
     gf3 = gf1.div(gf2)
+    assert len(gf3.graph) == gf3.dataframe.shape[0]
 
     assert gf3.graph == gf1.graph.union(gf2.graph)
 
@@ -90,6 +93,7 @@ def test_add_operator(mock_graph_literal):
     gf3 = gf1 + gf2
 
     assert gf3.graph == gf1.graph.union(gf2.graph)
+    assert len(gf3.graph) == gf3.dataframe.shape[0]
 
     assert gf3.dataframe["time"].sum() == 330
     assert gf3.dataframe["time (inc)"].sum() == 1280
@@ -110,6 +114,7 @@ def test_sub_operator(mock_graph_literal):
     gf3 = gf1 - gf2
 
     assert gf3.graph == gf1.graph.union(gf2.graph)
+    assert len(gf3.graph) == gf3.dataframe.shape[0]
 
     for metric in gf3.exc_metrics + gf3.inc_metrics:
         assert gf3.dataframe[metric].sum() == 0
@@ -131,6 +136,7 @@ def test_div_operator(mock_graph_literal):
     gf3 = gf1 / gf2
 
     assert gf3.graph == gf1.graph.union(gf2.graph)
+    assert len(gf3.graph) == gf3.dataframe.shape[0]
 
     assert gf3.dataframe["time"].sum() == 21
     assert gf3.dataframe["time (inc)"].sum() == 24
@@ -152,6 +158,7 @@ def test_iadd_operator(mock_graph_literal):
     gf1 += gf2
 
     assert gf1.graph == gf1.graph.union(gf2.graph)
+    assert len(gf1.graph) == gf1.dataframe.shape[0]
 
     assert gf1.dataframe["time"].sum() == 330
     assert gf1.dataframe["time (inc)"].sum() == 1280
@@ -173,6 +180,7 @@ def test_isub_operator(mock_graph_literal):
     gf1 -= gf2
 
     assert gf1.graph == gf1.graph.union(gf2.graph)
+    assert len(gf1.graph) == gf1.dataframe.shape[0]
 
     for metric in gf1.exc_metrics + gf1.inc_metrics:
         assert gf1.dataframe[metric].sum() == 0
@@ -194,6 +202,7 @@ def test_idiv_operator(mock_graph_literal):
     gf1 /= gf2
 
     assert gf1.graph == gf1.graph.union(gf2.graph)
+    assert len(gf1.graph) == gf1.dataframe.shape[0]
 
     assert gf1.dataframe["time"].sum() == 21
     assert gf1.dataframe["time (inc)"].sum() == 24
