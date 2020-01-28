@@ -39,6 +39,7 @@ def trees_as_text(
     rank,
     thread,
     threshold,
+    precision,
     expand_names,
     unicode,
     color,
@@ -57,6 +58,7 @@ def trees_as_text(
             rank,
             thread,
             threshold,
+            precision,
             expand_names,
             unicode=unicode,
             color=color,
@@ -74,6 +76,7 @@ def as_text(
     rank,
     thread,
     threshold,
+    precision,
     expand_names,
     indent="",
     child_indent="",
@@ -101,7 +104,8 @@ def as_text(
 
     # only display nodes whose metric is greater than some threshold
     if abs(node_time) >= threshold * max_time:
-        time_str = "{:.3f}".format(node_time)
+        time_str_precision = "{:." + str(precision) + "f}"
+        time_str = time_str_precision.format(node_time)
         func_name = dataframe.loc[df_index, name]
 
         # shorten names longer than 39 characters
@@ -161,6 +165,7 @@ def as_text(
                 rank,
                 thread,
                 threshold,
+                precision,
                 expand_names,
                 indent=c_indent,
                 child_indent=cc_indent,
