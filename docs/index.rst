@@ -54,7 +54,7 @@ following `paper <http://www.cs.umd.edu/~bhatele/pubs/pdf/2019/sc2019.pdf>`_:
   the Overgrowth in Parallel Profiles. In Proceedings of the International
   Conference for High Performance Computing, Networking, Storage and Analysis
   (SC '19). ACM, New York, NY, USA.
-  `DOI <https://doi.org/10.1145/3295500.335621>`_
+  `DOI <https://doi.org/10.1145/3295500.3356219>`_
 
 .. toctree::
    :maxdepth: 2
