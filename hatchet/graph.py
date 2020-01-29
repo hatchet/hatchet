@@ -156,10 +156,6 @@ class Graph:
         if old_to_new is None:
             old_to_new = {}  # mapping from old nodes to new nodes
 
-        def frame_ordered(nodes):
-            """Return list of nodes sorted by frame."""
-            return sorted(nodes, key=lambda n: n.frame)
-
         def _merge(self_children, other_children, parent):
             """Recursively merge children of self and other.
 
@@ -201,7 +197,7 @@ class Graph:
                     new_node = old_to_new.get(id(self_child))
                     if not new_node:
                         new_node = make_node(self_child)
-                        _merge(frame_ordered(self_child.children), (), new_node)
+                        _merge(self_child.children, (), new_node)
                     connect(parent, new_node)
                     self_child = next(self_children, None)
 
@@ -210,7 +206,7 @@ class Graph:
                     new_node = old_to_new.get(id(other_child))
                     if not new_node:
                         new_node = make_node(other_child)
-                        _merge((), frame_ordered(other_child.children), new_node)
+                        _merge((), other_child.children, new_node)
                     connect(parent, new_node)
                     other_child = next(other_children, None)
 
@@ -226,13 +222,13 @@ class Graph:
                     # map whichever node was not mapped yet
                     if not self_mapped:
                         old_to_new[id(self_child)] = new_node
-                        self_side = frame_ordered(self_child.children)
+                        self_side = self_child.children
                     else:
                         self_side = []
 
                     if not other_mapped:
                         old_to_new[id(other_child)] = new_node
-                        other_side = frame_ordered(other_child.children)
+                        other_side = other_child.children
                     else:
                         other_side = []
 
@@ -247,7 +243,7 @@ class Graph:
                 new_node = old_to_new.get(id(self_child))
                 if not new_node:
                     new_node = make_node(self_child)
-                    _merge(frame_ordered(self_child.children), (), new_node)
+                    _merge(self_child.children, (), new_node)
                 connect(parent, new_node)
                 self_child = next(self_children, None)
 
@@ -255,14 +251,14 @@ class Graph:
                 new_node = old_to_new.get(id(other_child))
                 if not new_node:
                     new_node = make_node(other_child)
-                    _merge((), frame_ordered(other_child.children), new_node)
+                    _merge((), other_child.children, new_node)
                 connect(parent, new_node)
                 other_child = next(other_children, None)
 
             return new_children
 
         # First establish which nodes correspond to each other
-        new_roots = _merge(frame_ordered(self.roots), frame_ordered(other.roots), None)
+        new_roots = _merge(self.roots, other.roots, None)
 
         graph = Graph(new_roots)
         graph.enumerate_traverse()
