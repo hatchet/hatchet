@@ -404,3 +404,15 @@ def test_to_dot(mock_graph_literal):
     for node in gf.graph.traverse():
         for child in node.children:
             assert '"%s" -> "%s"' % (node._hatchet_nid, child._hatchet_nid) in output
+
+
+def test_unify_diff_graphs():
+    gf1 = GraphFrame.from_lists(("a", ("b", "c"), ("d", "e")))
+    gf2 = GraphFrame.from_lists(("a", ("b", "c", "d"), ("e", "f"), "g"))
+
+    assert gf1.graph is not gf2.graph
+
+    gf1.unify(gf2)
+    assert gf1.graph is gf2.graph
+
+    assert len(gf1.graph) == gf1.dataframe.shape[0]
