@@ -126,9 +126,26 @@ def as_text(
                 c=colors_enabled if color else colors_disabled,
             )
         else:
-            result = "{indent}{time_str} {function}\n".format(
-                indent=indent, time_str=time_str, function=func_name
-            )
+            if "_missing_node" in dataframe.columns:
+                # if value of _missing_node column is not nan, then this is a missing
+                # node, so add decorators to differentiate it
+                is_missing_node = dataframe.loc[df_index, "_missing_node"]
+                if is_missing_node == "R":
+                    result = "{indent}{time_str} \033[1m[[{function}]] (R)\033[0m\n".format(
+                        indent=indent, time_str=time_str, function=func_name
+                    )
+                elif is_missing_node == "L":
+                    result = "{indent}{time_str} \033[1m[[{function}]] (L)\033[0m\n".format(
+                        indent=indent, time_str=time_str, function=func_name
+                    )
+                elif is_missing_node == "":
+                    result = "{indent}{time_str} {function}\n".format(
+                        indent=indent, time_str=time_str, function=func_name
+                    )
+            else:
+                result = "{indent}{time_str} {function}\n".format(
+                    indent=indent, time_str=time_str, function=func_name
+                )
 
         # only display those edges where child's metric is greater than
         # threshold
