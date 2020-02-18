@@ -621,16 +621,39 @@ class GraphFrame:
             )
         )
 
-        # get rows that exist in other, but not in self, set metric column to 0
-        # for these rows
+        # get nodes that exist in other, but not in self, set metric columns to 0 for
+        # these rows
         other_not_in_self = other.dataframe[
             ~other.dataframe.index.isin(self.dataframe.index)
         ]
+        # get nodes that exist in self, but not in other
+        self_not_in_other = self.dataframe[
+            ~self.dataframe.index.isin(other.dataframe.index)
+        ]
+        # if there are missing nodes in either self or other, add a new column
+        # called _missing_node
+        if not self_not_in_other.empty:
+            self.dataframe["_missing_node"] = ""
+        if not other_not_in_self.empty:
+            other_not_in_self["_missing_node"] = ""
+
+        # for nodes that only exist in self, set value to be "L" indicating
+        # it exists in left graphframe
+        for i in self_not_in_other.index:
+            # a value of L indicates that the node exists in self, but not other
+            self.dataframe.at[i, "_missing_node"] = "L"
+
+        # for nodes that only exist in other, set the metric to be 0 (since
+        # it's a missing node in sel), and set value of _missing_node to be "R"
+        # indicating it exists in right graphframe
         for i in other_not_in_self.index:
             for j in all_metrics:
                 other_not_in_self.at[i, j] = 0
+            # a value of R indicates that the node exists in other, but not self
+            other_not_in_self.at[i, "_missing_node"] = "R"
 
-        # append missing rows to self's dataframe
+        # append missing rows (nodes that exist in other, but not self) to self's
+        # dataframe
         self.dataframe = self.dataframe.append(other_not_in_self)
 
         # sort self's dataframe by index
