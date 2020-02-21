@@ -20,10 +20,10 @@ from hatchet.util.timer import Timer
 
 
 class AscentReader:
-    """Read in an Ascent yaml file."""
+    """Read in an Ascent data (yaml or json) file."""
 
     def __init__(self, dir_name):
-        """Read from Ascent yaml file."""
+        """Read from Ascent data file."""
         self.dir_name = dir_name
         self.filename_ext = ""
 
@@ -110,7 +110,7 @@ class AscentReader:
 
     # cycle, path, time, device, input_cells, input_domains, ...
     def get_header(self, d):
-        """Read single Ascent yaml file, single cycle only to get unique list
+        """Read single Ascent data file, single cycle only to get unique list
            of metric column headers.
         """
 
@@ -129,7 +129,7 @@ class AscentReader:
             else:
                 self.metric_columns.add(k)
 
-    def parse_yaml_data(self, f):
+    def parse_ascent_data(self, f):
         def _parse_children(node_list, rows, f, hparent, rank):
             for k, v in node_list.items():
                 if isinstance(v, dict):
@@ -168,27 +168,24 @@ class AscentReader:
         return rows
 
     def read(self):
-        """Read the Ascent json files to extract the calling context tree."""
-        # Must process yaml files in numerical order, otherwise, rows doesn't
-        # get filled correctly. Could pre-allocated rows of a certain length,
-        # but nodes are defined from rank 0's yaml file.
+        """Read the Ascent data files to extract the calling context tree."""
         data_files = sorted(glob.glob(self.dir_name + "/*.*"))
 
+        # data metrics vary depending on the node (i.e., visualization operation)
+        # parse the first cycle in a single data file to get all unique metrics
         with self.timer.phase("get column headers"):
             with open(data_files[0], "r") as stream:
                 if self.filename_ext == ".yaml":
-                    tmp = ym.safe_load(stream)
+                    data = ym.safe_load(stream)
                 elif self.filename_ext == ".json":
-                    tmp = json.load(stream)
+                    data = json.load(stream)
 
-                # is this necessary? should we instead get all the operations from all
-                # cycles (i.e., in yaml file)?
-                for k, v in tmp.items():
+                for k, v in data.items():
                     self.num_ops += 1
                     self.get_header(v)
                     break
 
-        # read single yaml file, get nodes
+        # read single data file, create graph
         with self.timer.phase("get nodes"):
             list_roots = []
             with open(data_files[0], "r") as stream:
@@ -201,11 +198,11 @@ class AscentReader:
 
         self.num_ops_all_cyc = len(self.idx_to_node)
 
-        with self.timer.phase("read yaml files"):
+        with self.timer.phase("read data files"):
             all_rows = {}
 
             for filename in data_files:
-                rows = self.parse_yaml_data(filename)
+                rows = self.parse_ascent_data(filename)
                 all_rows.update(rows)
 
         with self.timer.phase("graph construction"):
@@ -221,7 +218,7 @@ class AscentReader:
             df_nodes = pd.DataFrame.from_dict(data=self.node_dicts)
 
             dataframe = pd.merge(metrics, df_nodes, on="nid")
-            dataframe.set_index(["node", "rank"], inplace=True)
+            dataframe.set_index(["node", "rank", "cycle"], inplace=True)
 
         # create list of exclusive and inclusive metric columns
         exc_metrics = []
@@ -232,5 +229,7 @@ class AscentReader:
             else:
                 exc_metrics.append(column)
 
+        print("")
+        print(self.timer)
         gf = hatchet.graphframe.GraphFrame(graph, dataframe, exc_metrics, inc_metrics)
         return gf
