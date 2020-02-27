@@ -272,8 +272,11 @@ class HPCToolkitReader:
 
     def parse_xml_children(self, xml_node, hnode):
         """Parses all children of an XML node."""
+        global src_file
+
         for xml_child in xml_node:
             if xml_child.tag != "M":
+                src_file = xml_node.get("f")
                 nid = int(xml_node.get("i"))
                 line = int(xml_node.get("l"))
                 self.parse_xml_node(xml_child, nid, line, hnode)
