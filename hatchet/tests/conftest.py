@@ -347,3 +347,84 @@ def mock_dag_literal2():
     ]
 
     return dag_ldict
+
+
+@pytest.fixture
+def small_mock1():
+    ldict = [
+        {
+            "name": "A",
+            "metrics": {"time (inc)": 130.0, "time": 0.0},
+            "children": [
+                {
+                    "name": "B",
+                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "children": [
+                        {"name": "C", "metrics": {"time (inc)": 5.0, "time": 5.0}}
+                    ],
+                },
+                {
+                    "name": "E",
+                    "metrics": {"time (inc)": 55.0, "time": 10.0},
+                    "children": [
+                        {"name": "F", "metrics": {"time (inc)": 1.0, "time": 9.0}}
+                    ],
+                },
+                {"name": "H", "metrics": {"time (inc)": 55.0, "time": 10.0}},
+            ],
+        }
+    ]
+
+    return ldict
+
+
+@pytest.fixture
+def small_mock2():
+    ldict = [
+        {
+            "name": "A",
+            "metrics": {"time (inc)": 130.0, "time": 0.0},
+            "children": [
+                {
+                    "name": "B",
+                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "children": [
+                        {"name": "C", "metrics": {"time (inc)": 5.0, "time": 5.0}},
+                        {"name": "D", "metrics": {"time (inc)": 5.0, "time": 5.0}},
+                    ],
+                },
+                {
+                    "name": "E",
+                    "metrics": {"time (inc)": 55.0, "time": 10.0},
+                    "children": [
+                        {"name": "F", "metrics": {"time (inc)": 1.0, "time": 9.0}},
+                        {"name": "G", "metrics": {"time (inc)": 1.0, "time": 9.0}},
+                    ],
+                },
+            ],
+        }
+    ]
+
+    return ldict
+
+
+@pytest.fixture
+def small_mock3():
+    ldict = [
+        {
+            "name": "A",
+            "metrics": {"time (inc)": 130.0, "time": 0.0},
+            "children": [
+                {"name": "B", "metrics": {"time (inc)": 20.0, "time": 5.0}},
+                {
+                    "name": "E",
+                    "metrics": {"time (inc)": 55.0, "time": 10.0},
+                    "children": [
+                        {"name": "F", "metrics": {"time (inc)": 1.0, "time": 9.0}}
+                    ],
+                },
+            ],
+        }
+    ]
+
+    return ldict

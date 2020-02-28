@@ -416,3 +416,29 @@ def test_unify_diff_graphs():
     assert gf1.graph is gf2.graph
 
     assert len(gf1.graph) == gf1.dataframe.shape[0]
+
+
+def test_sub_decorator(small_mock1, small_mock2, small_mock3):
+    gf1 = GraphFrame.from_literal(small_mock1)
+    gf2 = GraphFrame.from_literal(small_mock2)
+    gf3 = GraphFrame.from_literal(small_mock3)
+
+    assert len(gf1.graph) == 6
+    assert len(gf2.graph) == 7
+
+    gf4 = gf1 - gf2
+
+    assert len(gf4.graph) == 8
+    assert gf4.dataframe.loc[gf4.dataframe["_missing_node"] == "R"].shape[0] == 2
+    assert gf4.dataframe.loc[gf4.dataframe["_missing_node"] == "L"].shape[0] == 1
+    assert gf4.dataframe.loc[gf4.dataframe["_missing_node"] == ""].shape[0] == 5
+
+    gf5 = gf1 - gf3
+
+    assert len(gf1.graph) == 6
+    assert len(gf3.graph) == 4
+
+    assert len(gf5.graph) == 6
+    assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == "R"].shape[0] == 0
+    assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == "L"].shape[0] == 2
+    assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == ""].shape[0] == 4
