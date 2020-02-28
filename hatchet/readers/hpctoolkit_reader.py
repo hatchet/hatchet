@@ -278,9 +278,7 @@ class HPCToolkitReader:
                 line = int(xml_node.get("l"))
                 self.parse_xml_node(xml_child, nid, line, hnode)
 
-    def parse_xml_node(
-        self, xml_node, parent_nid, parent_line, hparent
-    ):
+    def parse_xml_node(self, xml_node, parent_nid, parent_line, hparent):
         """Parses an XML node and its children recursively."""
         nid = int(xml_node.get("i"))
 
