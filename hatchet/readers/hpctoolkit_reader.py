@@ -216,8 +216,6 @@ class HPCToolkitReader:
 
             # start with the root and create the callpath and node for the root
             # also a corresponding node_dict to be inserted into the dataframe
-            node_callpath = []
-            node_callpath.append(self.procedure_names[root.get("n")])
             graph_root = Node(
                 Frame(
                     {"type": "function", "name": self.procedure_names[root.get("n")]}
@@ -239,7 +237,7 @@ class HPCToolkitReader:
 
             # start graph construction at the root
             with self.timer.phase("graph construction"):
-                self.parse_xml_children(root, graph_root, list(node_callpath))
+                self.parse_xml_children(root, graph_root)
 
         with self.timer.phase("graph construction"):
             graph = Graph(list_roots)
@@ -272,17 +270,15 @@ class HPCToolkitReader:
 
         return hatchet.graphframe.GraphFrame(graph, dataframe, exc_metrics, inc_metrics)
 
-    def parse_xml_children(self, xml_node, hnode, callpath):
+    def parse_xml_children(self, xml_node, hnode):
         """Parses all children of an XML node."""
         for xml_child in xml_node:
             if xml_child.tag != "M":
                 nid = int(xml_node.get("i"))
                 line = int(xml_node.get("l"))
-                self.parse_xml_node(xml_child, nid, line, hnode, callpath)
+                self.parse_xml_node(xml_child, nid, line, hnode)
 
-    def parse_xml_node(
-        self, xml_node, parent_nid, parent_line, hparent, parent_callpath
-    ):
+    def parse_xml_node(self, xml_node, parent_nid, parent_line, hparent):
         """Parses an XML node and its children recursively."""
         nid = int(xml_node.get("i"))
 
@@ -297,8 +293,6 @@ class HPCToolkitReader:
             src_file = xml_node.get("f")
             line = int(xml_node.get("l"))
 
-            node_callpath = parent_callpath
-            node_callpath.append(name)
             hnode = Node(Frame({"type": "function", "name": name}), hparent)
             node_dict = self.create_node_dict(
                 nid,
@@ -318,8 +312,6 @@ class HPCToolkitReader:
                 "Loop@" + os.path.basename(self.src_files[src_file]) + ":" + str(line)
             )
 
-            node_callpath = parent_callpath
-            node_callpath.append(name)
             hnode = Node(
                 Frame({"type": "loop", "file": self.src_files[src_file], "line": line}),
                 hparent,
@@ -334,8 +326,6 @@ class HPCToolkitReader:
             # this might not be required for resolving conflicts
             name = os.path.basename(self.src_files[src_file]) + ":" + str(line)
 
-            node_callpath = parent_callpath
-            node_callpath.append(name)
             hnode = Node(
                 Frame(
                     {
@@ -373,11 +363,11 @@ class HPCToolkitReader:
             # for Prs, the preceding Pr has the calling line number and for
             # PFs, the preceding C has the line number
             line = int(xml_node.get("l"))
-            self.parse_xml_children(xml_node, hparent, list(parent_callpath))
+            self.parse_xml_children(xml_node, hparent)
         else:
             self.node_dicts.append(node_dict)
             hparent.add_child(hnode)
-            self.parse_xml_children(xml_node, hnode, list(node_callpath))
+            self.parse_xml_children(xml_node, hnode)
 
     def create_node_dict(self, nid, hnode, name, node_type, src_file, line, module):
         """Create a dict with all the node attributes."""
