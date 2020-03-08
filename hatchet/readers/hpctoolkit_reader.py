@@ -212,7 +212,10 @@ class HPCToolkitReader:
 
         # parse the ElementTree to generate a calling context tree
         for root in self.callpath_profile.findall("PF"):
+            global src_file
+
             nid = int(root.get("i"))
+            src_file = root.get("f")
 
             # start with the root and create the callpath and node for the root
             # also a corresponding node_dict to be inserted into the dataframe
@@ -227,7 +230,7 @@ class HPCToolkitReader:
                 graph_root,
                 self.procedure_names[root.get("n")],
                 "PF",
-                self.src_files[root.get("f")],
+                self.src_files[src_file],
                 int(root.get("l")),
                 self.load_modules[root.get("lm")],
             )
@@ -272,11 +275,8 @@ class HPCToolkitReader:
 
     def parse_xml_children(self, xml_node, hnode):
         """Parses all children of an XML node."""
-        global src_file
-
         for xml_child in xml_node:
             if xml_child.tag != "M":
-                src_file = xml_node.get("f")
                 nid = int(xml_node.get("i"))
                 line = int(xml_node.get("l"))
                 self.parse_xml_node(xml_child, nid, line, hnode)
