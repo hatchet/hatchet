@@ -15,7 +15,7 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="hatchet",
-    version="1.0.0",
+    version="1.0.1",
     description="A Python library for analyzing hierarchical performance data",
     url="https://github.com/LLNL/hatchet",
     author="Abhinav Bhatele",
@@ -33,5 +33,9 @@ setup(
         "hatchet.external",
         "hatchet.tests",
     ],
-    install_requires=["pydot"],
+    install_requires=["pydot",
+                      "PyYAML",
+                      "matplotlib",
+                      "numpy",
+                      "pandas==0.23.0"],
 )
