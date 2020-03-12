@@ -5,3 +5,5 @@ pytest
 codecov
 flake8
 pep8-naming
+numpy
+PyYAML
