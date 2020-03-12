@@ -428,3 +428,142 @@ def small_mock3():
     ]
 
     return ldict
+
+
+@pytest.fixture
+def mock_dag_literal_module():
+    """Creates a mock DAG."""
+    dag_ldict = [
+        {
+            "name": "A",
+            "metrics": {"time (inc)": 130.0, "time": 0.0, "module": "main"},
+            "children": [
+                {
+                    "name": "B",
+                    "metrics": {"time (inc)": 20.0, "time": 5.0, "module": "foo"},
+                    "children": [
+                        {
+                            "name": "C",
+                            "metrics": {
+                                "time (inc)": 5.0,
+                                "time": 5.0,
+                                "module": "graz",
+                            },
+                        }
+                    ],
+                },
+                {
+                    "name": "E",
+                    "metrics": {"time (inc)": 55.0, "time": 10.0, "module": "bar"},
+                    "children": [
+                        {
+                            "name": "F",
+                            "metrics": {
+                                "time (inc)": 1.0,
+                                "time": 9.0,
+                                "module": "baz",
+                            },
+                        }
+                    ],
+                },
+            ],
+        }
+    ]
+
+    return dag_ldict
+
+
+@pytest.fixture
+def mock_dag_literal_module_complex():
+    """Creates a mock DAG."""
+    dag_ldict = [
+        {
+            "name": "A",
+            "metrics": {"time (inc)": 130.0, "time": 1.0, "module": "main"},
+            "children": [
+                {
+                    "name": "B",
+                    "metrics": {"time (inc)": 20.0, "time": 1.0, "module": "foo"},
+                    "children": [
+                        {
+                            "name": "C",
+                            "metrics": {
+                                "time (inc)": 6.0,
+                                "time": 1.0,
+                                "module": "graz",
+                            },
+                            "children": [
+                                {
+                                    "name": "D",
+                                    "metrics": {
+                                        "time (inc)": 1.0,
+                                        "time": 1.0,
+                                        "module": "graz",
+                                    },
+                                }
+                            ],
+                        }
+                    ],
+                },
+                {
+                    "name": "E",
+                    "metrics": {"time (inc)": 55.0, "time": 1, "module": "bar"},
+                },
+            ],
+        }
+    ]
+
+    return dag_ldict
+
+
+@pytest.fixture
+def mock_dag_literal_module_more_complex():
+    """Creates a mock DAG."""
+    dag_ldict = [
+        {
+            "name": "A",
+            "metrics": {"time (inc)": 130.0, "time": 0.0, "module": "main"},
+            "children": [
+                {
+                    "name": "B",
+                    "metrics": {"time (inc)": 20.0, "time": 5.0, "module": "foo"},
+                    "children": [
+                        {
+                            "name": "C",
+                            "metrics": {
+                                "time (inc)": 5.0,
+                                "time": 5.0,
+                                "module": "graz",
+                            },
+                            "children": [
+                                {
+                                    "name": "D",
+                                    "metrics": {
+                                        "time (inc)": 8.0,
+                                        "time": 1.0,
+                                        "module": "graz",
+                                    },
+                                }
+                            ],
+                        }
+                    ],
+                },
+                {
+                    "name": "E",
+                    "metrics": {"time (inc)": 55.0, "time": 10.0, "module": "bar"},
+                    "children": [
+                        {
+                            "name": "F",
+                            "metrics": {
+                                "time (inc)": 1.0,
+                                "time": 1.0,
+                                "module": "foo",
+                            },
+                        }
+                    ],
+                },
+            ],
+        }
+    ]
+
+    return dag_ldict
