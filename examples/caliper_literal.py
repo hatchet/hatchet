@@ -20,7 +20,7 @@ pd.set_option("display.max_rows", None)
 if __name__ == "__main__":
     cali_file = "hatchet/tests/data/caliper-cali/caliper-ex.cali"
 
-    cali_query = "/usr/gapps/spot/caliper/bin/cali-query"
+    cali_query = "/usr/gapps/spot/caliper-install/bin/cali-query"
     grouping_attribute = "function"
     default_metric = "sum(sum#time.duration),inclusive_sum(sum#time.duration)"
     query = "select function,%s group by %s format json-split" % (
@@ -37,4 +37,4 @@ if __name__ == "__main__":
     print(gf.dataframe)
     print("\n")
 
-    print(gf.tree())
+    print(gf.tree(metric="sum#sum#time.duration"))

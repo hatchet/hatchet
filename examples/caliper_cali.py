@@ -31,4 +31,4 @@ if __name__ == "__main__":
     print(gf.dataframe)
     print("\n")
 
-    print(gf.tree())
+    print(gf.tree(metric="sum#sum#time.duration"))
