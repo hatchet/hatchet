@@ -40,6 +40,7 @@ def trees_as_text(
     thread,
     threshold,
     precision,
+    depth,
     expand_names,
     unicode,
     color,
@@ -59,6 +60,7 @@ def trees_as_text(
             thread,
             threshold,
             precision,
+            depth,
             expand_names,
             unicode=unicode,
             color=color,
@@ -77,6 +79,7 @@ def as_text(
     thread,
     threshold,
     precision,
+    depth,
     expand_names,
     indent="",
     child_indent="",
@@ -101,9 +104,11 @@ def as_text(
 
     node_time = dataframe.loc[df_index, metric]
     max_time = dataframe[metric].max()
+    node_depth = hnode._depth
 
     # only display nodes whose metric is greater than some threshold
-    if abs(node_time) >= threshold * max_time:
+    # if abs(node_time) >= threshold * max_time and (node_depth < depth or not depth):
+    if abs(node_time) >= threshold * max_time and node_depth < depth:
         time_str_precision = "{:." + str(precision) + "f}"
         time_str = time_str_precision.format(node_time)
         func_name = dataframe.loc[df_index, name]
@@ -183,6 +188,7 @@ def as_text(
                 thread,
                 threshold,
                 precision,
+                depth,
                 expand_names,
                 indent=c_indent,
                 child_indent=cc_indent,

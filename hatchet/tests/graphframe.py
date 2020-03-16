@@ -544,3 +544,21 @@ def test_groupby_aggregate_more_complex(mock_dag_literal_module_more_complex):
 
     assert all(m in out_gf.dataframe.name.values for m in modules)
     assert len(out_gf.graph) == len(modules)
+
+
+def test_depth(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+
+    nnodes_depth_2 = 0
+    max_depth = 0
+
+    # determine max depth in example graph
+    # also, count number of nodes at depth 2
+    for i, node in enumerate(gf.graph.traverse()):
+        if node._depth > max_depth:
+            max_depth = node._depth
+        if node._depth == 2:
+            nnodes_depth_2 += 1
+
+    assert nnodes_depth_2 == 7
+    assert max_depth == 5

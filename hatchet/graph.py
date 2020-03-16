@@ -265,10 +265,26 @@ class Graph:
 
         return graph
 
+    def enumerate_depth(self):
+        def _iter_depth(node, parent, visited):
+            for child in node.children:
+                if child not in visited:
+                    visited.add(child)
+                    # depth of child is depth of node + 1
+                    child._depth = node._depth + 1
+                    _iter_depth(child, node, visited)
+
+        visited = set()
+        for root in self.roots:
+            root._depth = 0  # depth of root node is 0
+            _iter_depth(root, None, visited)
+
     def enumerate_traverse(self):
         if not self._check_enumerate_traverse():
             for i, node in enumerate(self.traverse()):
                 node._hatchet_nid = i
+
+            self.enumerate_depth()
 
     def _check_enumerate_traverse(self):
         for i, node in enumerate(self.traverse()):
