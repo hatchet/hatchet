@@ -3,6 +3,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+import pytest
+
 import numpy as np
 
 from hatchet import GraphFrame
@@ -87,3 +89,10 @@ def test_read_calc_pi_database(calc_pi_hpct_db):
     assert all(lm in reader.load_modules.values() for lm in modules)
     assert all(sf in reader.src_files.values() for sf in src_files)
     assert all(pr in reader.procedure_names.values() for pr in procedures)
+
+
+def test_read_trace_profile(kripke_hpct_trace_db):
+    """Sanity test a GraphFrame object with known data."""
+    db = "hatchet/tests/data/hpctoolkit-kripke-trace-database"
+    with pytest.raises(TypeError):
+        GraphFrame.from_hpctoolkit(db)

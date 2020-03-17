@@ -71,6 +71,19 @@ class HPCToolkitReader:
         self.dir_name = dir_name
 
         root = ET.parse(self.dir_name + "/experiment.xml").getroot()
+        # Check if experiment.xml file contains TraceDBTable tag. This
+        # indicates that tracing was enabled in hpcrun (i.e., -t).
+        try:
+            next(root.iter("TraceDBTable"))
+        except StopIteration:
+            pass
+        else:
+            # throw an error if TraceDBTable tag exists, since HPCToolkit
+            # reader does not yet handle this format
+            raise TypeError(
+                "HPCToolkit reader does not support trace profiles (hpcrun -t)."
+            )
+
         self.loadmodule_table = next(root.iter("LoadModuleTable"))
         self.file_table = next(root.iter("FileTable"))
         self.procedure_table = next(root.iter("ProcedureTable"))
