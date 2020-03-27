@@ -3,7 +3,10 @@
 #
 # SPDX-License-Identifier: MIT
 
+from __future__ import unicode_literals
+
 import sys
+import re
 from collections import defaultdict
 
 import pandas as pd
@@ -104,6 +107,18 @@ class GraphFrame:
         from .readers.gprof_dot_reader import GprofDotReader
 
         return GprofDotReader(filename).read()
+
+    @staticmethod
+    def from_hatchet_snapshot(filename):
+        """Read in a Hatchet snapshot file.
+
+        Args:
+            filename (str): name of a Hatchet snapshot file in `.json` format
+        """
+        # import this lazily to avoid circular dependencies
+        from .readers.hatchet_snapshot_reader import HatchetSnapshotReader
+
+        return HatchetSnapshotReader(filename).read()
 
     @staticmethod
     def from_literal(graph_dict):
@@ -777,6 +792,112 @@ class GraphFrame:
         new_gf = GraphFrame(graph, tmp_df, self.exc_metrics, self.inc_metrics)
         new_gf.drop_index_levels()
         return new_gf
+
+    def save(self, fname="hatchet-snapshot"):
+        # hatchet snapshot files have JSON extension
+        df_fname = fname + ".json"
+
+        # modify a copy of the dataframe (to be outputted to snapshot file)
+        df_copy = self.dataframe.copy()
+
+        df_copy.reset_index(inplace=True, drop=False)
+        df_copy.set_index(["node"], inplace=True)
+
+        # set _hnid column to be hatchet nid, this is in loading the data and
+        # merging the nodes and data
+        df_copy["_hnid"] = np.nan
+        for _, node in enumerate(self.graph.traverse()):
+            df_copy.at[node, "_hnid"] = node._hatchet_nid
+
+        df_copy.sort_index(axis=0, inplace=True)
+
+        # save out dataframe
+        f = open(df_fname, "w")
+
+        f.write("{\n")
+
+        # python2 outputs names as unicode string, force string type
+        df_copy = df_copy.astype({"name": str})
+        if "_missing_node" in df_copy.columns:
+            df_copy = df_copy.astype({"_missing_node": str})
+        # output dataframe
+        f.write('    "data": ')
+        tmp = str(df_copy.values.tolist())
+        tmp = re.sub(r"\[\[", "[\n        [", tmp)
+        tmp = re.sub(r"\[\[", "[\n        [", tmp)
+        tmp3 = (
+            tmp.replace(", [", ",\n        [")
+            .replace("[[", "[\n [")
+            .replace("nan", "null")
+            .replace("'", '"')
+            .replace("None", '"None"')
+        )
+        tmp4 = re.sub("]$", "\n    ],\n", tmp3)
+        f.write(tmp4)
+
+        f.write('    "columns": [\n')
+        count = 1
+        for k in list(df_copy.columns):
+            if count < len(df_copy.columns):
+                f.write('        "' + k + '",\n')
+            else:
+                f.write('        "' + k + '"\n')
+            count += 1
+        f.write("    ],\n")
+
+        # output node data
+        f.write('    "nodes": [\n')
+        node_count = 1
+        for _, node in enumerate(self.graph.traverse()):
+            f.write("        {\n")
+            attrs_count = 1
+            for k, v in node.frame.attrs.items():
+                if attrs_count < len(node.frame.attrs):
+                    try:
+                        is_type = isinstance(v, unicode) or isinstance(v, str)
+                    except NameError:
+                        is_type = isinstance(v, str)
+                    finally:
+                        if is_type:
+                            f.write('            "' + k + '": "' + str(v) + '",\n')
+                        else:
+                            f.write('            "' + k + '": ' + str(v) + ",\n")
+                else:
+                    if node.parents:
+                        try:
+                            is_type = isinstance(v, unicode) or isinstance(v, str)
+                        except NameError:
+                            is_type = isinstance(v, str)
+                        finally:
+                            if is_type:
+                                f.write('            "' + k + '": "' + str(v) + '",\n')
+                            else:
+                                f.write('            "' + k + '": ' + str(v) + ",\n")
+                    else:
+                        try:
+                            is_type = isinstance(v, unicode) or isinstance(v, str)
+                        except NameError:
+                            is_type = isinstance(v, str)
+                        finally:
+                            if is_type:
+                                f.write('            "' + k + '": "' + str(v) + '"\n')
+                            else:
+                                f.write('            "' + k + '": ' + str(v) + "\n")
+
+                attrs_count += 1
+            if node.parents:
+                f.write(
+                    '            "parent": ' + str(node.parents[0]._hatchet_nid) + "\n"
+                )
+            if node_count < len(self.graph):
+                f.write("        },\n")
+            else:
+                f.write("        }\n")
+            node_count += 1
+        f.write("    ]\n")
+
+        f.write("}\n")
+        f.close()
 
     def add(self, other, *args, **kwargs):
         """Returns the column-wise sum of two graphframes as a new graphframe.

@@ -579,3 +579,39 @@ def osu_allgather_hpct_db(data_dir, tmpdir):
     shutil.copy(os.path.join(hpct_db_dir, "experiment.xml"), str(tmpdir))
 
     return tmpdir
+
+
+@pytest.fixture
+def literal_hatchet_snapshot(data_dir, tmpdir):
+    """Builds a temporary directory containing the hatchet snapshot file."""
+    hatchet_json_dir = os.path.join(data_dir, "hatchet-snapshot-json")
+    hatchet_json_file = os.path.join(hatchet_json_dir, "hatchet-literal-snapshot.json")
+
+    shutil.copy(hatchet_json_file, str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), "hatchet-literal-snapshot.json")
+
+    return tmpfile
+
+
+@pytest.fixture
+def hpct_hatchet_snapshot(data_dir, tmpdir):
+    """Builds a temporary directory containing the hatchet snapshot file."""
+    hatchet_json_dir = os.path.join(data_dir, "hatchet-snapshot-json")
+    hatchet_json_file = os.path.join(hatchet_json_dir, "hatchet-hpct-snapshot.json")
+
+    shutil.copy(hatchet_json_file, str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), "hatchet-hpct-snapshot.json")
+
+    return tmpfile
+
+
+@pytest.fixture
+def caliper_hatchet_snapshot(data_dir, tmpdir):
+    """Builds a temporary directory containing the hatchet snapshot file."""
+    hatchet_json_dir = os.path.join(data_dir, "hatchet-snapshot-json")
+    hatchet_json_file = os.path.join(hatchet_json_dir, "hatchet-caliper-snapshot.json")
+
+    shutil.copy(hatchet_json_file, str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), "hatchet-caliper-snapshot.json")
+
+    return tmpfile

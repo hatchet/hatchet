@@ -1,0 +1,331 @@
+{
+    "data": [
+        [0, 999238.0, 0.0, 2, "<unknown file>", 0, "/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0", "<program root>", "PF", 0.0],
+        [1, 999390.0, 0.0, 2, "<unknown file>", 0, "/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0", "<program root>", "PF", 0.0],
+        [2, 1000306.0, 0.0, 2, "<unknown file>", 0, "/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0", "<program root>", "PF", 0.0],
+        [3, 999308.0, 0.0, 2, "<unknown file>", 0, "/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0", "<program root>", "PF", 0.0],
+        [0, 999238.0, 0.0, 4, "./src/cpi.c", 19, "cpi", "main", "PF", 1.0],
+        [1, 999390.0, 0.0, 4, "./src/cpi.c", 19, "cpi", "main", "PF", 1.0],
+        [2, 1000306.0, 0.0, 4, "./src/cpi.c", 19, "cpi", "main", "PF", 1.0],
+        [3, 999308.0, 0.0, 4, "./src/cpi.c", 19, "cpi", "main", "PF", 1.0],
+        [0, 0.0, 0.0, 6, "<unknown file>", 0, "/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0", "27:MPI_Init", "PF", 2.0],
+        [1, 0.0, 0.0, 6, "<unknown file>", 0, "/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0", "27:MPI_Init", "PF", 2.0],
+        [2, 0.0, 0.0, 6, "<unknown file>", 0, "/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0", "27:MPI_Init", "PF", 2.0],
+        [3, 0.0, 0.0, 6, "<unknown file>", 0, "/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0", "27:MPI_Init", "PF", 2.0],
+        [0, 0.0, 0.0, 8, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/init.c", 198, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "PMPI_Init", "PF", 3.0],
+        [1, 0.0, 0.0, 8, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/init.c", 198, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "PMPI_Init", "PF", 3.0],
+        [2, 0.0, 0.0, 8, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/init.c", 198, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "PMPI_Init", "PF", 3.0],
+        [3, 0.0, 0.0, 8, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/init.c", 198, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "PMPI_Init", "PF", 3.0],
+        [0, 0.0, 0.0, 10, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/initthread.c", 512, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "198:MPIR_Init_thread", "PF", 4.0],
+        [1, 0.0, 0.0, 10, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/initthread.c", 512, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "198:MPIR_Init_thread", "PF", 4.0],
+        [2, 0.0, 0.0, 10, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/initthread.c", 512, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "198:MPIR_Init_thread", "PF", 4.0],
+        [3, 0.0, 0.0, 10, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/initthread.c", 512, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "198:MPIR_Init_thread", "PF", 4.0],
+        [0, 0.0, 0.0, 12, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_init.c", 363, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "512:MPID_Init", "PF", 5.0],
+        [1, 0.0, 0.0, 12, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_init.c", 363, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "512:MPID_Init", "PF", 5.0],
+        [2, 0.0, 0.0, 12, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_init.c", 363, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "512:MPID_Init", "PF", 5.0],
+        [3, 0.0, 0.0, 12, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_init.c", 363, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "512:MPID_Init", "PF", 5.0],
+        [0, 0.0, 0.0, 14, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/mpidi_calls.c", 24, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "363:MPIDI_CH3_Init", "PF", 6.0],
+        [1, 0.0, 0.0, 14, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/mpidi_calls.c", 24, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "363:MPIDI_CH3_Init", "PF", 6.0],
+        [2, 0.0, 0.0, 14, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/mpidi_calls.c", 24, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "363:MPIDI_CH3_Init", "PF", 6.0],
+        [3, 0.0, 0.0, 14, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/mpidi_calls.c", 24, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "363:MPIDI_CH3_Init", "PF", 6.0],
+        [0, 0.0, 0.0, 16, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_entry.c", 348, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "24:psm_doinit", "PF", 7.0],
+        [1, 0.0, 0.0, 16, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_entry.c", 348, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "24:psm_doinit", "PF", 7.0],
+        [2, 0.0, 0.0, 16, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_entry.c", 348, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "24:psm_doinit", "PF", 7.0],
+        [3, 0.0, 0.0, 16, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_entry.c", 348, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "24:psm_doinit", "PF", 7.0],
+        [0, 0.0, 0.0, 18, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "348:<unknown procedure>", "PF", 8.0],
+        [1, 0.0, 0.0, 18, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "348:<unknown procedure>", "PF", 8.0],
+        [2, 0.0, 0.0, 18, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "348:<unknown procedure>", "PF", 8.0],
+        [3, 0.0, 0.0, 18, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "348:<unknown procedure>", "PF", 8.0],
+        [0, 0.0, 0.0, 20, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 9.0],
+        [1, 0.0, 0.0, 20, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 9.0],
+        [2, 0.0, 0.0, 20, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 9.0],
+        [3, 0.0, 0.0, 20, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 9.0],
+        [0, 0.0, 0.0, 22, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 10.0],
+        [1, 0.0, 0.0, 22, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 10.0],
+        [2, 0.0, 0.0, 22, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 10.0],
+        [3, 0.0, 0.0, 22, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 10.0],
+        [0, 0.0, 0.0, 24, "<unknown file>", 0, "/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0", "pthread_create", "PF", 11.0],
+        [1, 0.0, 0.0, 24, "<unknown file>", 0, "/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0", "pthread_create", "PF", 11.0],
+        [2, 0.0, 0.0, 24, "<unknown file>", 0, "/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0", "pthread_create", "PF", 11.0],
+        [3, 0.0, 0.0, 24, "<unknown file>", 0, "/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0", "pthread_create", "PF", 11.0],
+        [0, 0.0, 0.0, 25, "<unknown file>", 0, "None", "<unknown file>:0", "S", 12.0],
+        [1, 0.0, 0.0, 25, "<unknown file>", 0, "None", "<unknown file>:0", "S", 12.0],
+        [2, 0.0, 0.0, 25, "<unknown file>", 0, "None", "<unknown file>:0", "S", 12.0],
+        [3, 0.0, 0.0, 25, "<unknown file>", 0, "None", "<unknown file>:0", "S", 12.0],
+        [0, 999238.0, 0.0, 27, "<unknown file>", 0, "/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0", "62:MPI_Finalize", "PF", 13.0],
+        [1, 999390.0, 0.0, 27, "<unknown file>", 0, "/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0", "62:MPI_Finalize", "PF", 13.0],
+        [2, 1000306.0, 0.0, 27, "<unknown file>", 0, "/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0", "62:MPI_Finalize", "PF", 13.0],
+        [3, 999308.0, 0.0, 27, "<unknown file>", 0, "/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0", "62:MPI_Finalize", "PF", 13.0],
+        [0, 999238.0, 0.0, 29, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/finalize.c", 294, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "PMPI_Finalize", "PF", 14.0],
+        [1, 999390.0, 0.0, 29, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/finalize.c", 294, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "PMPI_Finalize", "PF", 14.0],
+        [2, 1000306.0, 0.0, 29, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/finalize.c", 294, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "PMPI_Finalize", "PF", 14.0],
+        [3, 999308.0, 0.0, 29, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/finalize.c", 294, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "PMPI_Finalize", "PF", 14.0],
+        [0, 999238.0, 0.0, 31, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_finalize.c", 162, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "294:MPID_Finalize", "PF", 15.0],
+        [1, 999390.0, 0.0, 31, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_finalize.c", 162, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "294:MPID_Finalize", "PF", 15.0],
+        [2, 1000306.0, 0.0, 31, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_finalize.c", 162, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "294:MPID_Finalize", "PF", 15.0],
+        [3, 999308.0, 0.0, 31, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_finalize.c", 162, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "294:MPID_Finalize", "PF", 15.0],
+        [0, 999238.0, 0.0, 33, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/mpidi_calls.c", 230, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "162:MPIDI_CH3_Finalize", "PF", 16.0],
+        [1, 999390.0, 0.0, 33, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/mpidi_calls.c", 230, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "162:MPIDI_CH3_Finalize", "PF", 16.0],
+        [2, 1000306.0, 0.0, 33, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/mpidi_calls.c", 230, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "162:MPIDI_CH3_Finalize", "PF", 16.0],
+        [3, 999308.0, 0.0, 33, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/mpidi_calls.c", 230, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "162:MPIDI_CH3_Finalize", "PF", 16.0],
+        [0, 999238.0, 0.0, 35, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_exit.c", 36, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "230:psm_dofinalize", "PF", 17.0],
+        [1, 999390.0, 0.0, 35, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_exit.c", 36, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "230:psm_dofinalize", "PF", 17.0],
+        [2, 1000306.0, 0.0, 35, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_exit.c", 36, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "230:psm_dofinalize", "PF", 17.0],
+        [3, 999308.0, 0.0, 35, "/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_exit.c", 36, "/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5", "230:psm_dofinalize", "PF", 17.0],
+        [0, 999238.0, 0.0, 37, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "36:<unknown procedure>", "PF", 18.0],
+        [1, 999390.0, 0.0, 37, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "36:<unknown procedure>", "PF", 18.0],
+        [2, 1000306.0, 0.0, 37, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "36:<unknown procedure>", "PF", 18.0],
+        [3, 999308.0, 0.0, 37, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "36:<unknown procedure>", "PF", 18.0],
+        [0, 999238.0, 0.0, 39, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 19.0],
+        [1, 999390.0, 0.0, 39, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 19.0],
+        [2, 1000306.0, 0.0, 39, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 19.0],
+        [3, 999308.0, 0.0, 39, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 19.0],
+        [0, 999238.0, 0.0, 41, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 20.0],
+        [1, 999390.0, 0.0, 41, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 20.0],
+        [2, 1000306.0, 0.0, 41, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 20.0],
+        [3, 999308.0, 0.0, 41, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 20.0],
+        [0, 59960.0, 59960.0, 60, "interp.c", 0, "None", "interp.c:0", "S", 21.0],
+        [1, 35980.0, 35980.0, 60, "interp.c", 0, "None", "interp.c:0", "S", 21.0],
+        [2, 59961.0, 59961.0, 60, "interp.c", 0, "None", "interp.c:0", "S", 21.0],
+        [3, 23976.0, 23976.0, 60, "interp.c", 0, "None", "interp.c:0", "S", 21.0],
+        [0, 316840.0, 0.0, 46, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 22.0],
+        [1, 316759.0, 0.0, 46, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 22.0],
+        [2, 376650.0, 0.0, 46, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 22.0],
+        [3, 377648.0, 0.0, 46, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 22.0],
+        [0, 316840.0, 316840.0, 47, "<unknown file>", 0, "None", "<unknown file>:0", "S", 23.0],
+        [1, 316759.0, 316759.0, 47, "<unknown file>", 0, "None", "<unknown file>:0", "S", 23.0],
+        [2, 376650.0, 376650.0, 47, "<unknown file>", 0, "None", "<unknown file>:0", "S", 23.0],
+        [3, 377648.0, 377648.0, 47, "<unknown file>", 0, "None", "<unknown file>:0", "S", 23.0],
+        [0, 298806.0, 0.0, 43, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 24.0],
+        [1, 293767.0, 0.0, 43, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 24.0],
+        [2, 317865.0, 0.0, 43, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 24.0],
+        [3, 310812.0, 0.0, 43, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 24.0],
+        [0, 298806.0, 298806.0, 44, "<unknown file>", 0, "None", "<unknown file>:0", "S", 25.0],
+        [1, 293767.0, 293767.0, 44, "<unknown file>", 0, "None", "<unknown file>:0", "S", 25.0],
+        [2, 317865.0, 317865.0, 44, "<unknown file>", 0, "None", "<unknown file>:0", "S", 25.0],
+        [3, 310812.0, 310812.0, 44, "<unknown file>", 0, "None", "<unknown file>:0", "S", 25.0],
+        [0, 305643.0, 0.0, 49, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 26.0],
+        [1, 334893.0, 0.0, 49, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 26.0],
+        [2, 245830.0, 0.0, 49, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 26.0],
+        [3, 286872.0, 0.0, 49, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 26.0],
+        [0, 47965.0, 47965.0, 56, "<unknown file>", 0, "None", "<unknown file>:0", "S", 27.0],
+        [1, 53972.0, 53972.0, 56, "<unknown file>", 0, "None", "<unknown file>:0", "S", 27.0],
+        [2, 17988.0, 17988.0, 56, "<unknown file>", 0, "None", "<unknown file>:0", "S", 27.0],
+        [3, 77022.0, 77022.0, 56, "<unknown file>", 0, "None", "<unknown file>:0", "S", 27.0],
+        [0, 59960.0, 0.0, 51, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 28.0],
+        [1, 35982.0, 0.0, 51, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 28.0],
+        [2, 5996.0, 0.0, 51, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 28.0],
+        [3, 35974.0, 0.0, 51, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 28.0],
+        [0, 59960.0, 59960.0, 52, "<unknown file>", 0, "None", "<unknown file>:0", "S", 29.0],
+        [1, 35982.0, 35982.0, 52, "<unknown file>", 0, "None", "<unknown file>:0", "S", 29.0],
+        [2, 5996.0, 5996.0, 52, "<unknown file>", 0, "None", "<unknown file>:0", "S", 29.0],
+        [3, 35974.0, 35974.0, 52, "<unknown file>", 0, "None", "<unknown file>:0", "S", 29.0],
+        [0, 197718.0, 0.0, 54, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 30.0],
+        [1, 244939.0, 0.0, 54, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 30.0],
+        [2, 221846.0, 0.0, 54, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 30.0],
+        [3, 173876.0, 0.0, 54, "<unknown file>", 0, "/usr/lib64/libpsm_infinipath.so.1.14", "<unknown procedure>", "PF", 30.0],
+        [0, 197718.0, 197718.0, 55, "<unknown file>", 0, "None", "<unknown file>:0", "S", 31.0],
+        [1, 244939.0, 244939.0, 55, "<unknown file>", 0, "None", "<unknown file>:0", "S", 31.0],
+        [2, 221846.0, 221846.0, 55, "<unknown file>", 0, "None", "<unknown file>:0", "S", 31.0],
+        [3, 173876.0, 173876.0, 55, "<unknown file>", 0, "None", "<unknown file>:0", "S", 31.0],
+        [0, 17989.0, 0.0, 58, "interp.c", 0, "/lib64/libc-2.12.so", "__GI_sched_yield", "PF", 32.0],
+        [1, 17991.0, 0.0, 58, "interp.c", 0, "/lib64/libc-2.12.so", "__GI_sched_yield", "PF", 32.0],
+        [2, 0.0, 0.0, 58, "interp.c", 0, "/lib64/libc-2.12.so", "__GI_sched_yield", "PF", 32.0],
+        [3, 0.0, 0.0, 58, "interp.c", 0, "/lib64/libc-2.12.so", "__GI_sched_yield", "PF", 32.0],
+        [0, 17989.0, 17989.0, 59, "interp.c", 0, "None", "interp.c:0", "S", 33.0],
+        [1, 17991.0, 17991.0, 59, "interp.c", 0, "None", "interp.c:0", "S", 33.0],
+        [2, 0.0, 0.0, 59, "interp.c", 0, "None", "interp.c:0", "S", 33.0],
+        [3, 0.0, 0.0, 59, "interp.c", 0, "None", "interp.c:0", "S", 33.0]
+    ],
+    "columns": [
+        "rank",
+        "time (inc)",
+        "time",
+        "nid",
+        "file",
+        "line",
+        "module",
+        "name",
+        "type",
+        "_hnid"
+    ],
+    "nodes": [
+        {
+            "type": "function",
+            "name": "<program root>"
+        },
+        {
+            "type": "function",
+            "name": "main",
+            "parent": 0
+        },
+        {
+            "type": "function",
+            "name": "27:MPI_Init",
+            "parent": 1
+        },
+        {
+            "type": "function",
+            "name": "PMPI_Init",
+            "parent": 2
+        },
+        {
+            "type": "function",
+            "name": "198:MPIR_Init_thread",
+            "parent": 3
+        },
+        {
+            "type": "function",
+            "name": "512:MPID_Init",
+            "parent": 4
+        },
+        {
+            "type": "function",
+            "name": "363:MPIDI_CH3_Init",
+            "parent": 5
+        },
+        {
+            "type": "function",
+            "name": "24:psm_doinit",
+            "parent": 6
+        },
+        {
+            "type": "function",
+            "name": "348:<unknown procedure>",
+            "parent": 7
+        },
+        {
+            "type": "function",
+            "name": "<unknown procedure>",
+            "parent": 8
+        },
+        {
+            "type": "function",
+            "name": "<unknown procedure>",
+            "parent": 9
+        },
+        {
+            "type": "function",
+            "name": "pthread_create",
+            "parent": 10
+        },
+        {
+            "type": "statement",
+            "file": "<unknown file>",
+            "line": 0,
+            "parent": 11
+        },
+        {
+            "type": "function",
+            "name": "62:MPI_Finalize",
+            "parent": 1
+        },
+        {
+            "type": "function",
+            "name": "PMPI_Finalize",
+            "parent": 13
+        },
+        {
+            "type": "function",
+            "name": "294:MPID_Finalize",
+            "parent": 14
+        },
+        {
+            "type": "function",
+            "name": "162:MPIDI_CH3_Finalize",
+            "parent": 15
+        },
+        {
+            "type": "function",
+            "name": "230:psm_dofinalize",
+            "parent": 16
+        },
+        {
+            "type": "function",
+            "name": "36:<unknown procedure>",
+            "parent": 17
+        },
+        {
+            "type": "function",
+            "name": "<unknown procedure>",
+            "parent": 18
+        },
+        {
+            "type": "function",
+            "name": "<unknown procedure>",
+            "parent": 19
+        },
+        {
+            "type": "statement",
+            "file": "interp.c",
+            "line": 0,
+            "parent": 20
+        },
+        {
+            "type": "function",
+            "name": "<unknown procedure>",
+            "parent": 20
+        },
+        {
+            "type": "statement",
+            "file": "<unknown file>",
+            "line": 0,
+            "parent": 22
+        },
+        {
+            "type": "function",
+            "name": "<unknown procedure>",
+            "parent": 20
+        },
+        {
+            "type": "statement",
+            "file": "<unknown file>",
+            "line": 0,
+            "parent": 24
+        },
+        {
+            "type": "function",
+            "name": "<unknown procedure>",
+            "parent": 20
+        },
+        {
+            "type": "statement",
+            "file": "<unknown file>",
+            "line": 0,
+            "parent": 26
+        },
+        {
+            "type": "function",
+            "name": "<unknown procedure>",
+            "parent": 26
+        },
+        {
+            "type": "statement",
+            "file": "<unknown file>",
+            "line": 0,
+            "parent": 28
+        },
+        {
+            "type": "function",
+            "name": "<unknown procedure>",
+            "parent": 26
+        },
+        {
+            "type": "statement",
+            "file": "<unknown file>",
+            "line": 0,
+            "parent": 30
+        },
+        {
+            "type": "function",
+            "name": "__GI_sched_yield",
+            "parent": 20
+        },
+        {
+            "type": "statement",
+            "file": "interp.c",
+            "line": 0,
+            "parent": 32
+        }
+    ]
+}

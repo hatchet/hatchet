@@ -7,6 +7,7 @@ import pytest
 
 import numpy as np
 import pandas as pd
+import os.path
 
 from hatchet import GraphFrame
 from hatchet.frame import Frame
@@ -562,3 +563,24 @@ def test_depth(mock_graph_literal):
 
     assert nnodes_depth_2 == 7
     assert max_depth == 5
+
+
+def test_graphframe_save_literal(mock_graph_literal):
+    """Test the save operation with literal data."""
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    gf.save(fname="hatchet-literal-snapshot")
+    assert os.path.isfile("hatchet-literal-snapshot.json")
+
+
+def test_graphframe_save_hpctoolkit(calc_pi_hpct_db):
+    """Test the save operation with HPCToolkit data."""
+    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+    gf.save(fname="hatchet-hpct-snapshot")
+    assert os.path.isfile("hatchet-hpct-snapshot.json")
+
+
+def test_graphframe_save_caliper(lulesh_caliper_json):
+    """Test the save operation with Caliper data."""
+    gf = GraphFrame.from_caliper_json(str(lulesh_caliper_json))
+    gf.save(fname="hatchet-caliper-snapshot")
+    assert os.path.isfile("hatchet-caliper-snapshot.json")

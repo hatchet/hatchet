@@ -1,0 +1,130 @@
+{
+    "data": [
+        ["foo", 0.0, 130.0, 0.0],
+        ["bar", 5.0, 20.0, 1.0],
+        ["baz", 5.0, 5.0, 2.0],
+        ["grault", 10.0, 10.0, 3.0],
+        ["qux", 0.0, 60.0, 4.0],
+        ["quux", 5.0, 60.0, 5.0],
+        ["corge", 10.0, 55.0, 6.0],
+        ["bar", 5.0, 20.0, 7.0],
+        ["baz", 5.0, 5.0, 8.0],
+        ["grault", 10.0, 10.0, 9.0],
+        ["garply", 15.0, 15.0, 10.0],
+        ["grault", 10.0, 10.0, 11.0],
+        ["waldo", 0.0, 50.0, 12.0],
+        ["fred", 5.0, 35.0, 13.0],
+        ["plugh", 5.0, 5.0, 14.0],
+        ["xyzzy", 5.0, 25.0, 15.0],
+        ["thud", 5.0, 25.0, 16.0],
+        ["baz", 5.0, 5.0, 17.0],
+        ["garply", 15.0, 15.0, 18.0],
+        ["garply", 15.0, 15.0, 19.0],
+        ["waldo", 10.0, 30.0, 20.0],
+        ["bar", 5.0, 20.0, 21.0],
+        ["baz", 5.0, 5.0, 22.0],
+        ["grault", 10.0, 10.0, 23.0]
+    ],
+    "columns": [
+        "name",
+        "time",
+        "time (inc)",
+        "_hnid"
+    ],
+    "nodes": [
+        {
+            "name": "foo"
+        },
+        {
+            "name": "bar",
+            "parent": 0
+        },
+        {
+            "name": "baz",
+            "parent": 1
+        },
+        {
+            "name": "grault",
+            "parent": 1
+        },
+        {
+            "name": "qux",
+            "parent": 0
+        },
+        {
+            "name": "quux",
+            "parent": 4
+        },
+        {
+            "name": "corge",
+            "parent": 5
+        },
+        {
+            "name": "bar",
+            "parent": 6
+        },
+        {
+            "name": "baz",
+            "parent": 7
+        },
+        {
+            "name": "grault",
+            "parent": 7
+        },
+        {
+            "name": "garply",
+            "parent": 6
+        },
+        {
+            "name": "grault",
+            "parent": 6
+        },
+        {
+            "name": "waldo",
+            "parent": 0
+        },
+        {
+            "name": "fred",
+            "parent": 12
+        },
+        {
+            "name": "plugh",
+            "parent": 13
+        },
+        {
+            "name": "xyzzy",
+            "parent": 13
+        },
+        {
+            "name": "thud",
+            "parent": 15
+        },
+        {
+            "name": "baz",
+            "parent": 16
+        },
+        {
+            "name": "garply",
+            "parent": 16
+        },
+        {
+            "name": "garply",
+            "parent": 12
+        },
+        {
+            "name": "waldo"
+        },
+        {
+            "name": "bar",
+            "parent": 20
+        },
+        {
+            "name": "baz",
+            "parent": 21
+        },
+        {
+            "name": "grault",
+            "parent": 21
+        }
+    ]
+}
