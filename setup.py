@@ -6,6 +6,7 @@
 from setuptools import setup
 from codecs import open
 from os import path
+from hatchet import __version__
 
 here = path.abspath(path.dirname(__file__))
 
@@ -15,7 +16,7 @@ with open(path.join(here, "README.md"), encoding="utf-8") as f:
 
 setup(
     name="hatchet",
-    version="1.0.1",
+    version=__version__,
     description="A Python library for analyzing hierarchical performance data",
     url="https://github.com/LLNL/hatchet",
     author="Abhinav Bhatele",
