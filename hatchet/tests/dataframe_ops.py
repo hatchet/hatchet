@@ -213,3 +213,48 @@ def test_idiv_operator(mock_graph_literal):
     gf3 /= gf1
 
     assert gf3.graph == gf1.graph
+
+
+def test_max(mock_dag_literal1, mock_dag_literal2):
+    gf1 = GraphFrame.from_literal(mock_dag_literal1)
+    gf2 = GraphFrame.from_literal(mock_dag_literal2)
+
+    gf3 = gf1.max(gf2)
+
+    assert all(
+        i in [0.0, 5.0, 8.0, 1.0, 10.0, 9.0, 9.0] for i in gf3.dataframe.loc[:, "time"]
+    )
+    assert all(
+        i in [130.0, 20.0, 5.0, 88.0, 55.0, 1.0, 1.0]
+        for i in gf3.dataframe.loc[:, "time (inc)"]
+    )
+
+
+def test_min(mock_dag_literal1, mock_dag_literal2):
+    gf1 = GraphFrame.from_literal(mock_dag_literal1)
+    gf2 = GraphFrame.from_literal(mock_dag_literal2)
+
+    gf3 = gf1.min(gf2)
+
+    assert all(
+        i in [0.0, 5.0, 5.0, 1.0, 10.0, 9.0, 0.0] for i in gf3.dataframe.loc[:, "time"]
+    )
+    assert all(
+        i in [130.0, 2.0, 5.0, 8.0, 55.0, 1.0, 0.0]
+        for i in gf3.dataframe.loc[:, "time (inc)"]
+    )
+
+
+def test_mean(mock_dag_literal1, mock_dag_literal2):
+    gf1 = GraphFrame.from_literal(mock_dag_literal1)
+    gf2 = GraphFrame.from_literal(mock_dag_literal2)
+
+    gf3 = gf1.mean(gf2)
+
+    assert all(
+        i in [0.0, 5.0, 6.5, 1.0, 10.0, 9.0, 4.5] for i in gf3.dataframe.loc[:, "time"]
+    )
+    assert all(
+        i in [130.0, 11.0, 5.0, 48.0, 55.0, 1.0, 0.5]
+        for i in gf3.dataframe.loc[:, "time (inc)"]
+    )

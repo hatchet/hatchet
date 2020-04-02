@@ -919,3 +919,81 @@ class GraphFrame:
             (GraphFrame): new graphframe
         """
         return self.div(other)
+
+    def max(self, other):
+        self_copy = self.copy()
+        other_copy = other.copy()
+
+        # unify copies of graphframes
+        self_copy.unify(other_copy)
+
+        # unioned set of self and other exclusive and inclusive metrics
+        all_metrics = list(
+            set().union(
+                self.exc_metrics, self.inc_metrics, other.exc_metrics, other.inc_metrics
+            )
+        )
+
+        # grab column from each dataframe, and update with results
+        for i in all_metrics:
+            dcat = pd.concat(
+                [self_copy.dataframe[i], other_copy.dataframe[i]], axis=1, sort=False
+            )
+            res = dcat.max(axis=1)
+            res.rename(i)
+            res.name = i
+            self_copy.dataframe.update(res)
+
+        return self_copy
+
+    def min(self, other):
+        self_copy = self.copy()
+        other_copy = other.copy()
+
+        # unify copies of graphframes
+        self_copy.unify(other_copy)
+
+        # unioned set of self and other exclusive and inclusive metrics
+        all_metrics = list(
+            set().union(
+                self.exc_metrics, self.inc_metrics, other.exc_metrics, other.inc_metrics
+            )
+        )
+
+        # grab column from each dataframe, and update with results
+        for i in all_metrics:
+            dcat = pd.concat(
+                [self_copy.dataframe[i], other_copy.dataframe[i]], axis=1, sort=False
+            )
+            res = dcat.min(axis=1)
+            res.rename(i)
+            res.name = i
+            self_copy.dataframe.update(res)
+
+        return self_copy
+
+    def mean(self, other):
+        self_copy = self.copy()
+        other_copy = other.copy()
+
+        # unify copies of graphframes
+        self_copy.unify(other_copy)
+
+        # unioned set of self and other exclusive and inclusive metrics
+        all_metrics = list(
+            set().union(
+                self.exc_metrics, self.inc_metrics, other.exc_metrics, other.inc_metrics
+            )
+        )
+
+        # grab column from each dataframe, and update with results
+        for i in all_metrics:
+            dcat = pd.concat(
+                [self_copy.dataframe[i], other_copy.dataframe[i]], axis=1, sort=False
+            )
+            res = dcat.mean(axis=1, skipna=True)
+            res.rename(i)
+            res.name = i
+            self_copy.dataframe.update(res)
+
+        return self_copy
