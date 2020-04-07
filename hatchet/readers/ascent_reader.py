@@ -28,6 +28,8 @@ class AscentReader:
         self.filename_ext = ""
 
         data_files = glob.glob(self.dir_name + "/*.*")
+        if not data_files:
+            raise ValueError("from_ascent() cannot find data files")
         self.num_data_files = len(data_files)
 
         self.yaml_data = {}
