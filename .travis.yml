@@ -37,6 +37,7 @@ install:
   - python setup.py install
 
 script:
+  - PYTHONPATH=. coverage run $(which pytest)
   - cd $TRAVIS_BUILD_DIR
   - echo -e "TRAVIS_BUILD_DIR:" ${TRAVIS_BUILD_DIR}
   - echo -e "PWD:" ${PWD}
