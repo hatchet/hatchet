@@ -76,6 +76,30 @@ def test_graphframe(calc_pi_hpct_db):
     # TODO: add tests to confirm values in dataframe
 
 
+def test_tree(calc_pi_hpct_db):
+    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+
+    output = gf.tree(metric="time", color=False)
+    assert output.startswith("0.000 <program root>  <unknown file>")
+    assert (
+        "0.000 198:MPIR_Init_thread  /tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/initthread.c"
+        in output
+    )
+
+    output = gf.tree(metric="time (inc)", color=False)
+    assert "17989.000 interp.c:0  interp.c" in output
+    assert (
+        "999238.000 230:psm_dofinalize  /tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_exit.c"
+        in output
+    )
+
+    output = gf.tree(metric="time (inc)", color=False, threshold=0.5)
+    assert (
+        "999238.000 294:MPID_Finalize  /tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_finalize.c"
+        in output
+    )
+
+
 def test_read_calc_pi_database(calc_pi_hpct_db):
     """Sanity check the HPCT database reader by examining a known input."""
     reader = HPCToolkitReader(str(calc_pi_hpct_db))
@@ -87,3 +111,20 @@ def test_read_calc_pi_database(calc_pi_hpct_db):
     assert all(lm in reader.load_modules.values() for lm in modules)
     assert all(sf in reader.src_files.values() for sf in src_files)
     assert all(pr in reader.procedure_names.values() for pr in procedures)
+
+
+def test_allgather(osu_allgather_hpct_db):
+    gf = GraphFrame.from_hpctoolkit(str(osu_allgather_hpct_db))
+
+    assert len(gf.dataframe.groupby("module")) == 9
+    assert len(gf.dataframe.groupby("file")) == 41
+    assert len(gf.dataframe.groupby("name")) == 383
+    assert len(gf.dataframe.groupby("type")) == 3
+
+    for col in gf.dataframe.columns:
+        if col in ("time (inc)", "time"):
+            assert gf.dataframe[col].dtype == np.float64
+        elif col in ("nid", "rank", "thread", "line"):
+            assert gf.dataframe[col].dtype == np.int64
+        elif col in ("name", "type", "file", "module", "node"):
+            assert gf.dataframe[col].dtype == np.object

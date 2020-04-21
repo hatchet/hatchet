@@ -150,3 +150,22 @@ def test_filter_squash_unify_caliper_data(lulesh_caliper_json):
 
     squash_gf1.dataframe.set_index(gf1_index_names, inplace=True)
     squash_gf2.dataframe.set_index(gf2_index_names, inplace=True)
+
+
+def test_tree(lulesh_caliper_json):
+    """Sanity test a GraphFrame object with known data."""
+    gf = GraphFrame.from_caliper_json(str(lulesh_caliper_json))
+
+    output = gf.tree(metric="time", color=False)
+    assert output.startswith("121489.000 main")
+    assert "663.000 LagrangeElements" in output
+    assert "21493.000 CalcTimeConstraintsForElems" in output
+
+    output = gf.tree(metric="time (inc)", color=False)
+    assert "662712.000 EvalEOSForElems" in output
+    assert "2895319.000 LagrangeNodal" in output
+
+    output = gf.tree(metric="time (inc)", color=False, threshold=0.2)
+    assert "5342467.000 LagrangeLeapFrog" in output
+    assert "2689312.000 CalcForceForNodes" in output
+    assert "1223331.000 CalcFBHourglassForceForElems" in output

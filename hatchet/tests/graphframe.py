@@ -433,6 +433,11 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
     assert gf4.dataframe.loc[gf4.dataframe["_missing_node"] == "L"].shape[0] == 1
     assert gf4.dataframe.loc[gf4.dataframe["_missing_node"] == ""].shape[0] == 5
 
+    output = gf4.tree(metric="time", color=False)
+    assert "0.000 C" in output
+    assert "-5.000 \x1b[1m[[D]] (R)" in output
+    assert "10.000 \x1b[1m[[H]] (L)" in output
+
     gf5 = gf1 - gf3
 
     assert len(gf1.graph) == 6
@@ -442,6 +447,11 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
     assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == "R"].shape[0] == 0
     assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == "L"].shape[0] == 2
     assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == ""].shape[0] == 4
+
+    output = gf5.tree(metric="time", color=False)
+    assert output.startswith("0.000 A")
+    assert "5.000 \x1b[1m[[C]] (L)" in output
+    assert "10.000 \x1b[1m[[H]] (L)" in output
 
 
 def test_groupby_aggregate_simple(mock_dag_literal_module):
