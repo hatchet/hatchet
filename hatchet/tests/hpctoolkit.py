@@ -111,3 +111,20 @@ def test_read_calc_pi_database(calc_pi_hpct_db):
     assert all(lm in reader.load_modules.values() for lm in modules)
     assert all(sf in reader.src_files.values() for sf in src_files)
     assert all(pr in reader.procedure_names.values() for pr in procedures)
+
+
+def test_allgather(osu_allgather_hpct_db):
+    gf = GraphFrame.from_hpctoolkit(str(osu_allgather_hpct_db))
+
+    assert len(gf.dataframe.groupby("module")) == 9
+    assert len(gf.dataframe.groupby("file")) == 41
+    assert len(gf.dataframe.groupby("name")) == 383
+    assert len(gf.dataframe.groupby("type")) == 3
+
+    for col in gf.dataframe.columns:
+        if col in ("time (inc)", "time"):
+            assert gf.dataframe[col].dtype == np.float64
+        elif col in ("nid", "rank", "thread", "line"):
+            assert gf.dataframe[col].dtype == np.int64
+        elif col in ("name", "type", "file", "module", "node"):
+            assert gf.dataframe[col].dtype == np.object
