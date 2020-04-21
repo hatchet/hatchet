@@ -66,7 +66,7 @@ class CaliperReader:
             with open(self.filename_or_stream) as cali_json:
                 json_obj = json.load(cali_json)
         else:
-            json_obj = json.load(self.filename_or_stream)
+            json_obj = json.loads(self.filename_or_stream.read().decode("utf-8"))
 
         # read various sections of the Caliper JSON file
         self.json_data = json_obj["data"]

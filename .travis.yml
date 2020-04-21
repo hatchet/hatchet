@@ -37,6 +37,21 @@ install:
   - python setup.py install
 
 script:
+  - cd $TRAVIS_BUILD_DIR
+  - echo -e "TRAVIS_BUILD_DIR:" ${TRAVIS_BUILD_DIR}
+  - echo -e "PWD:" ${PWD}
+  - git clone https://github.com/LLNL/Caliper.git
+  - cd Caliper
+  - mkdir build && mkdir install
+  - cd build
+  - cmake -DCMAKE_INSTALL_PREFIX=../install ../
+  - make VERBOSE=1
+  - make install
+  - export PATH=${PWD}/../install/bin:${PATH}
+  - echo -e "PATH=" ${PATH}
+  - cd ../../
+  - echo -e "PWD:" ${PWD}
+  - which cali-query
   - PYTHONPATH=. coverage run $(which pytest)
 
 after_success:
@@ -44,6 +59,8 @@ after_success:
 
 notifications:
   email:
-    recipients: bhatele@llnl.gov
+    recipients:
+      - bhatele@llnl.gov
+      - brink2@llnl.gov
     on_success: change
     on_failure: always
