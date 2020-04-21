@@ -76,6 +76,30 @@ def test_graphframe(calc_pi_hpct_db):
     # TODO: add tests to confirm values in dataframe
 
 
+def test_tree(calc_pi_hpct_db):
+    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+
+    output = gf.tree(metric="time", color=False)
+    assert output.startswith("0.000 <program root>  <unknown file>")
+    assert (
+        "0.000 198:MPIR_Init_thread  /tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/initthread.c"
+        in output
+    )
+
+    output = gf.tree(metric="time (inc)", color=False)
+    assert "17989.000 interp.c:0  interp.c" in output
+    assert (
+        "999238.000 230:psm_dofinalize  /tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_exit.c"
+        in output
+    )
+
+    output = gf.tree(metric="time (inc)", color=False, threshold=0.5)
+    assert (
+        "999238.000 294:MPID_Finalize  /tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_finalize.c"
+        in output
+    )
+
+
 def test_read_calc_pi_database(calc_pi_hpct_db):
     """Sanity check the HPCT database reader by examining a known input."""
     reader = HPCToolkitReader(str(calc_pi_hpct_db))
