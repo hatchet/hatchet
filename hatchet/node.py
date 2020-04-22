@@ -17,8 +17,9 @@ def traversal_order(node):
 class Node:
     """A node in the graph. The node only stores its frame."""
 
-    def __init__(self, frame_obj, parent=None, hnid=-1):
+    def __init__(self, frame_obj, parent=None, hnid=-1, depth=-1):
         self.frame = frame_obj
+        self._depth = depth
         self._hatchet_nid = hnid
 
         self.parents = []
