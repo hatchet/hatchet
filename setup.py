@@ -34,5 +34,5 @@ setup(
         "hatchet.external",
         "hatchet.tests",
     ],
-    install_requires=["pydot", "PyYAML", "matplotlib", "numpy", "pandas==0.23.0"],
+    install_requires=["pydot", "PyYAML", "matplotlib", "numpy", "pandas<1.0.0"],
 )
