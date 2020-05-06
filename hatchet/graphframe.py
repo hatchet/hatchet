@@ -450,7 +450,14 @@ class GraphFrame:
             subgraph_nodes = list(node.traverse())
             # TODO: need a better way of aggregating inclusive metrics when
             # TODO: there is a multi-index
-            if isinstance(self.dataframe.index, pd.core.index.MultiIndex):
+            try:
+                is_index_or_multiindex = isinstance(
+                    self.dataframe.index, pd.core.index.MultiIndex
+                )
+            except AttributeError:
+                is_index_or_multiindex = isinstance(self.dataframe.index, pd.MultiIndex)
+
+            if is_index_or_multiindex:
                 for i in self.dataframe.loc[(node), out_columns].index.unique():
                     # TODO: if you take the list constructor away from the
                     # TODO: assignment below, this assignment gives NaNs. Why?
