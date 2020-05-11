@@ -42,6 +42,7 @@ def trees_as_text(
     precision,
     depth,
     expand_names,
+    invert_colors,
     unicode,
     color,
 ):
@@ -62,6 +63,7 @@ def trees_as_text(
             precision,
             depth,
             expand_names,
+            invert_colors,
             unicode=unicode,
             color=color,
         )
@@ -81,6 +83,7 @@ def as_text(
     precision,
     depth,
     expand_names,
+    invert_colors,
     indent="",
     child_indent="",
     unicode=False,
@@ -100,7 +103,12 @@ def as_text(
     else:
         df_index = hnode
 
-    colors = colors_enabled if color else colors_disabled
+    if color and not invert_colors:
+        colors = colors_enabled_default
+    elif color and invert_colors:
+        colors = colors_enabled_invert
+    else:
+        colors = colors_disabled
 
     node_time = dataframe.loc[df_index, metric]
     max_time = dataframe[metric].max()
@@ -119,16 +127,24 @@ def as_text(
                 func_name = func_name[:18] + "..." + func_name[len(func_name) - 18 :]
 
         if color:
-            time_str = ansi_color_for_time(node_time, max_time) + time_str + colors.end
+            time_str = (
+                ansi_color_for_time(node_time, max_time, colors) + time_str + colors.end
+            )
 
         # add context (filename etc.) if requested
         if context in dataframe.columns:
+            if color and not invert_colors:
+                colors = colors_enabled_default
+            elif color and invert_colors:
+                colors = colors_enabled_invert
+            else:
+                colors = colors_disabled
             result = "{indent}{time_str} {function}  {c.faint}{code_position}{c.end}\n".format(
                 indent=indent,
                 time_str=time_str,
                 function=func_name,
                 code_position=dataframe.loc[df_index, context],
-                c=colors_enabled if color else colors_disabled,
+                c=colors,
             )
         else:
             if "_missing_node" in dataframe.columns:
@@ -190,6 +206,7 @@ def as_text(
                 precision,
                 depth,
                 expand_names,
+                invert_colors,
                 indent=c_indent,
                 child_indent=cc_indent,
                 unicode=unicode,
@@ -201,26 +218,46 @@ def as_text(
     return result
 
 
-def ansi_color_for_time(time, total):
-    colors = colors_enabled
+def ansi_color_for_time(time, total, c):
+    colors = c
     if time > 0.9 * total:
-        return colors.light_red + colors.faint
+        return colors.highest + colors.faint
     elif time > 0.75 * total:
-        return colors.red
+        return colors.high
     elif time > 0.25 * total:
-        return colors.yellow
+        return colors.med
     elif time > 0.10 * total:
-        return colors.green
+        return colors.low
     else:
-        return colors.light_green + colors.faint
+        return colors.lowest + colors.faint
 
 
-class colors_enabled:
-    red = "\033[31m"
-    light_red = "\033[91m"
-    yellow = "\033[33m"
-    light_green = "\033[92m"
-    green = "\033[32m"
+# \033[91m red high contrast
+# \033[31m red
+# \033[32m yellow
+# \033[32m green
+# \033[92m green high contrast
+
+
+class colors_enabled_default:
+    highest = "\033[91m"
+    high = "\033[31m"
+    med = "\033[33m"
+    low = "\033[32m"
+    lowest = "\033[92m"
+
+    bold = "\033[1m"
+    faint = "\033[2m"
+
+    end = "\033[0m"
+
+
+class colors_enabled_invert:
+    lowest = "\033[91m"
+    low = "\033[31m"
+    med = "\033[33m"
+    high = "\033[32m"
+    highest = "\033[92m"
 
     bold = "\033[1m"
     faint = "\033[2m"
