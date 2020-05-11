@@ -104,6 +104,14 @@ def test_add_operator(mock_graph_literal):
     gf5 = gf3 + gf4
     assert gf5.graph == gf3.graph == gf4.graph
 
+    gf6 = gf1 + gf2 + gf1
+    assert gf6.dataframe["time"].sum() == 495
+
+    gf7 = gf1 + gf2
+    gf8 = gf7 + gf1
+    assert gf8.graph == gf6.graph
+    assert gf8.dataframe["time"].sum() == gf6.dataframe["time"].sum()
+
 
 def test_sub_operator(mock_graph_literal):
     gf1 = GraphFrame.from_literal(mock_graph_literal)
@@ -126,6 +134,14 @@ def test_sub_operator(mock_graph_literal):
 
     assert gf5.graph == gf3.graph == gf4.graph
 
+    gf6 = gf1 - gf2 - gf1
+    assert gf6.dataframe["time"].sum() == -165
+
+    gf7 = gf1 - gf2
+    gf8 = gf7 - gf1
+    assert gf8.graph == gf6.graph
+    assert gf8.dataframe["time"].sum() == gf6.dataframe["time"].sum()
+
 
 def test_div_operator(mock_graph_literal):
     gf1 = GraphFrame.from_literal(mock_graph_literal)
@@ -144,9 +160,15 @@ def test_div_operator(mock_graph_literal):
     gf4 = gf3.copy()
     assert gf4.graph is gf3.graph
 
-    gf5 = gf3.sub(gf4)
+    gf5 = gf3 / gf4 / gf3
 
     assert gf5.graph == gf3.graph == gf4.graph
+    assert gf5.dataframe["time (inc)"].sum() == 24
+
+    gf6 = gf3 / gf4
+    gf7 = gf6 / gf3
+    assert gf7.graph == gf5.graph
+    assert gf7.dataframe["time"].sum() == gf5.dataframe["time"].sum()
 
 
 def test_iadd_operator(mock_graph_literal):
@@ -166,9 +188,10 @@ def test_iadd_operator(mock_graph_literal):
     gf3 = gf1.copy()
     assert gf3.graph is gf1.graph
 
-    gf3 += gf1
+    gf3 += gf1 + gf2 + gf2
 
     assert gf3.graph == gf1.graph
+    assert gf3.dataframe["time"].sum() == 990
 
 
 def test_isub_operator(mock_graph_literal):
