@@ -668,10 +668,7 @@ class GraphFrame:
 
         # append missing rows (nodes that exist in other, but not self) to self's
         # dataframe
-        self.dataframe = self.dataframe.append(other_not_in_self)
-
-        # sort self's dataframe by index
-        self.dataframe.sort_index(inplace=True)
+        self.dataframe = self.dataframe.append(other_not_in_self, sort=True)
 
         return self
 
