@@ -525,6 +525,7 @@ class GraphFrame:
         depth=60,
         expand_names=False,
         unicode=True,
+        invert_colors=False,
         color=None,
     ):
         """Format this graphframe as a tree and return the resulting string."""
@@ -544,6 +545,7 @@ class GraphFrame:
             precision,
             depth,
             expand_names,
+            invert_colors,
             unicode=unicode,
             color=color,
         )
