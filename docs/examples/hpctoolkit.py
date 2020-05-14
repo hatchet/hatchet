@@ -4,9 +4,8 @@ import hatchet as ht
 
 
 if __name__ == "__main__":
-    gf = ht.GraphFrame.from_gprof_dot(
-        "../../hatchet/tests/data/gprof2dot-cpi/callgrind.dot.64042.0.1"
-    )
+    dirname = "../../hatchet/tests/data/hpctoolkit-cpi-database"
+    gf = ht.GraphFrame.from_hpctoolkit(dirname)
 
     print(gf.dataframe)
     print("\n")
