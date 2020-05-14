@@ -1,9 +1,4 @@
 #!/usr/bin/env python
-#
-# Copyright 2017-2020 Lawrence Livermore National Security, LLC and other
-# Hatchet Project Developers. See the top-level LICENSE file for details.
-#
-# SPDX-License-Identifier: MIT
 
 import subprocess
 import hatchet as ht
@@ -29,4 +24,4 @@ if __name__ == "__main__":
     print(gf.dataframe)
     print("\n")
 
-    print(gf.tree(threshold=0.0, metric='time (inc)'))
+    print(gf.tree(threshold=0.0, metric="time (inc)"))

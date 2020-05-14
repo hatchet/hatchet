@@ -77,6 +77,8 @@ the ``from_caliper_json`` method:
       filename = ("hatchet/tests/data/caliper-lulesh-json/lulesh-sample-annotation-profile.json")
       gf = ht.GraphFrame.from_caliper_json(filename)
 
+Examples of reading in other file formats can be found in
+:doc:`Simple Examples <simple_examples>`.
 
 Visualizing the data
 --------------------

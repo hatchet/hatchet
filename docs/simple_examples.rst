@@ -6,6 +6,12 @@
 Simple Examples
 ===============
 
+Read in a HPCToolkit file
+-------------------------
+
+.. literalinclude:: examples/hpctoolkit.py
+    :language: python
+
 Read in a Caliper cali file
 ---------------------------
 
