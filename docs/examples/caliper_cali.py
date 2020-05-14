@@ -5,19 +5,10 @@
 #
 # SPDX-License-Identifier: MIT
 
-from __future__ import print_function
-
-import pandas as pd
-
 import hatchet as ht
 
-pd.set_option("display.width", 1500)
-pd.set_option("display.max_colwidth", 20)
-pd.set_option("display.max_rows", None)
-
-
 if __name__ == "__main__":
-    cali_file = "hatchet/tests/data/caliper-cali/caliper-ex.cali"
+    cali_file = "../../hatchet/tests/data/caliper-cali/caliper-ex.cali"
 
     grouping_attribute = "function"
     default_metric = "sum(sum#time.duration),inclusive_sum(sum#time.duration)"
@@ -31,4 +22,4 @@ if __name__ == "__main__":
     print(gf.dataframe)
     print("\n")
 
-    print(gf.tree())
+    print(gf.tree(threshold=0.0, metric='time (inc)'))
