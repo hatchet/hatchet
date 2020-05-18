@@ -13,7 +13,7 @@ from .node import Node
 from .graph import Graph
 from .frame import Frame
 from .query_matcher import QueryMatcher
-from .external.printtree import trees_as_text
+from .external.console import ConsoleRenderer
 from .util.dot import trees_to_dot
 
 lit_idx = 0
@@ -543,42 +543,32 @@ class GraphFrame:
 
     def tree(
         self,
-        metric="time",
-        name="name",
-        context="file",
+        metric_column="time",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
         rank=0,
         thread=0,
-        threshold=0.0,
-        precision=3,
-        depth=60,
-        expand_names=False,
-        unicode=True,
-        invert_colors=False,
-        color=None,
+        depth=10000,
+        invert_colormap=False,
     ):
         """Format this graphframe as a tree and return the resulting string."""
-        # automatic color by default; use True or False to force override
-        if color is None:
-            color = sys.stdout.isatty()
+        color = sys.stdout.isatty()
 
-        result = trees_as_text(
+        return ConsoleRenderer(unicode=True, color=color).render(
             self.graph.roots,
             self.dataframe,
-            metric,
-            name,
-            context,
-            rank,
-            thread,
-            threshold,
-            precision,
-            depth,
-            expand_names,
-            invert_colors,
-            unicode=unicode,
-            color=color,
+            metric_column=metric_column,
+            precision=precision,
+            name_column=name_column,
+            expand_name=expand_name,
+            context_column=context_column,
+            rank=rank,
+            thread=thread,
+            depth=depth,
+            invert_colormap=invert_colormap,
         )
-
-        return result
 
     def to_dot(self, metric="time", name="name", rank=0, thread=0, threshold=0.0):
         """Write the graph in the graphviz dot format:
