@@ -6,7 +6,7 @@ branch = True
 source = .
 omit =
      hatchet/tests/*
-     examples/*
+     docs/examples/*
 
 [report]
 # Regexes for lines to exclude from consideration
