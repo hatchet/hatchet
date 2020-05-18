@@ -16,6 +16,4 @@ if __name__ == "__main__":
     gf = ht.GraphFrame.from_caliper(cali_file, query)
 
     print(gf.dataframe)
-    print("\n")
-
-    print(gf.tree(threshold=0.0, metric="time (inc)"))
+    print(gf.tree(metric_column="time (inc)"))

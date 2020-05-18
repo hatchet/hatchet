@@ -8,6 +8,4 @@ if __name__ == "__main__":
     gf = ht.GraphFrame.from_hpctoolkit(dirname)
 
     print(gf.dataframe)
-    print("\n")
-
-    print(gf.tree(threshold=0.0))
+    print(gf.tree())

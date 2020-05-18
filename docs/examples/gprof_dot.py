@@ -9,6 +9,4 @@ if __name__ == "__main__":
     )
 
     print(gf.dataframe)
-    print("\n")
-
-    print(gf.tree(threshold=0.0))
+    print(gf.tree())
