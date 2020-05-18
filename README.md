@@ -25,7 +25,7 @@ directory to your `PYTHONPATH`.
 
 See the [Getting Started](https://hatchet.readthedocs.io/en/latest/getting_started.html) page for basic examples and usage. Full documentation is available in the [User Guide](https://hatchet.readthedocs.io/en/latest/user_guide.html).
 
-Examples of performance analysis using hatchet are available [here](https://hatchet.readthedocs.io/en/latest/examples.html).
+Examples of performance analysis using hatchet are available [here](https://hatchet.readthedocs.io/en/latest/advanced_examples.html).
 
 
 ### Authors
@@ -45,7 +45,7 @@ following [paper](http://www.cs.umd.edu/~bhatele/pubs/pdf/2019/sc2019.pdf):
    the Overgrowth in Parallel Profiles. In Proceedings of the International
    Conference for High Performance Computing, Networking, Storage and Analysis
    (SC '19). ACM, New York, NY, USA. [DOI](
-   https://doi.org/10.1145/3295500.335621)
+   http://doi.acm.org/10.1145/3295500.3356219)
 
 ### License
 
