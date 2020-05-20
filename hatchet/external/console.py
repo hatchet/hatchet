@@ -65,6 +65,9 @@ class ConsoleRenderer:
         for root in roots:
             result += self.render_frame(root, dataframe)
 
+        if self.color is True:
+            result += self.render_legend()
+
         return result
 
     # pylint: disable=W1401
@@ -82,6 +85,28 @@ class ConsoleRenderer:
         ]
 
         return "\n".join(lines)
+
+    def render_legend(self):
+        def render_label(index, low, high):
+            return (
+                self.colors.colormap[index]
+                + u"█ "
+                + self.colors.end
+                + "{:.2f}".format(low * self.max_metric)
+                + " - "
+                + "{:.2f}".format(high * self.max_metric)
+                + "\n"
+            )
+
+        legend = "\n" + "\033[4m" + "Legend" + self.colors.end + "\n"
+        legend += render_label(0, 0.9, 1.0)
+        legend += render_label(1, 0.7, 0.9)
+        legend += render_label(2, 0.5, 0.7)
+        legend += render_label(3, 0.3, 0.5)
+        legend += render_label(4, 0.1, 0.3)
+        legend += render_label(5, 0.0, 0.1)
+
+        return legend
 
     def render_frame(self, node, dataframe, indent=u"", child_indent=u""):
         node_depth = node._depth
