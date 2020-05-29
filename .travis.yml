@@ -1,6 +1,7 @@
 branches:
   only:
     - master
+    - develop
 
 jobs:
   fast_finish: true
