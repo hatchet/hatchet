@@ -12,6 +12,7 @@ import numpy as np
 from .node import Node
 from .graph import Graph
 from .frame import Frame
+from .query_matcher import QueryMatcher
 from .external.printtree import trees_as_text
 from .util.dot import trees_to_dot
 
@@ -274,15 +275,30 @@ class GraphFrame:
 
         self.dataframe = agg_df
 
-    def filter(self, filter_function):
+    def filter(self, filter_obj):
         """Filter the dataframe using a user-supplied function."""
         dataframe_copy = self.dataframe.copy()
 
         index_names = self.dataframe.index.names
         dataframe_copy.reset_index(inplace=True)
 
-        filtered_rows = dataframe_copy.apply(filter_function, axis=1)
-        filtered_df = dataframe_copy[filtered_rows]
+        filtered_df = None
+
+        if callable(filter_obj):
+            filtered_rows = dataframe_copy.apply(filter_obj, axis=1)
+            filtered_df = dataframe_copy[filtered_rows]
+        elif isinstance(filter_obj, list) or isinstance(filter_obj, QueryMatcher):
+            query = filter_obj
+            if isinstance(filter_obj, list):
+                query = QueryMatcher(filter_obj)
+            query_matches = query.apply(self)
+            match_set = list(set().union(*query_matches))
+            filtered_df = dataframe_copy.loc[dataframe_copy["node"].isin(match_set)]
+        else:
+            raise InvalidFilter(
+                "The arugment passed to filter must be a callable, a query path list, or a QueryMatcher object."
+            )
+
         filtered_df.set_index(index_names, inplace=True)
 
         filtered_gf = GraphFrame(self.graph, filtered_df)
@@ -932,3 +948,7 @@ class GraphFrame:
             (GraphFrame): new graphframe
         """
         return self.div(other)
+
+
+class InvalidFilter(Exception):
+    """Raised when an invalid arugment is passed to the filter function."""

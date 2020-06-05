@@ -8,7 +8,8 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from hatchet import GraphFrame
+from hatchet import GraphFrame, QueryMatcher
+from hatchet.graphframe import InvalidFilter
 from hatchet.frame import Frame
 from hatchet.graph import Graph
 from hatchet.node import Node
@@ -393,6 +394,86 @@ def test_filter_squash_mock_literal_multi_subtree_merge(mock_graph_literal):
             for n in squashed_nodes
         ]
     )
+
+
+def test_filter_query_high_level(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    path = [
+        {"time (inc)": ">= 30.0"},
+        (2, {"name": "[^b][a-z]+"}),
+        ("*", {"name": "[^b][a-z]+"}),
+        {"name": "gr[a-z]+"},
+    ]
+    root = gf.graph.roots[0]
+    match = list(
+        set(
+            [
+                root,
+                root.children[1],
+                root.children[1].children[0],
+                root.children[1].children[0].children[0],
+                root.children[1].children[0].children[0].children[1],
+            ]
+        )
+    )
+    filtered_gf = gf.filter(path)
+    squashed_gf = filtered_gf.squash()
+    squashed_nodes = list(squashed_gf.graph.traverse())
+    assert len(squashed_nodes) == len(match)
+    assert (
+        (squashed_gf.dataframe.loc[squashed_nodes, "time (inc)"] >= 30.0)
+        | (~squashed_gf.dataframe.loc[squashed_nodes, "name"].str.startswith("b"))
+        | (squashed_gf.dataframe.loc[squashed_nodes, "name"].str.startswith("gr"))
+    ).all()
+
+
+def test_filter_query_low_level(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+
+    def time_filt(row):
+        return row["time (inc)"] >= 30.0
+
+    def no_b_filt(row):
+        return not row["name"].startswith("b")
+
+    def gr_name_filt(row):
+        return row["name"].startswith("gr")
+
+    query = (
+        QueryMatcher()
+        .match(".", time_filt)
+        .rel(2, no_b_filt)
+        .rel("*", no_b_filt)
+        .rel(".", gr_name_filt)
+    )
+    root = gf.graph.roots[0]
+    match = list(
+        set(
+            [
+                root,
+                root.children[1],
+                root.children[1].children[0],
+                root.children[1].children[0].children[0],
+                root.children[1].children[0].children[0].children[1],
+            ]
+        )
+    )
+    filtered_gf = gf.filter(query)
+    squashed_gf = filtered_gf.squash()
+    squashed_nodes = list(squashed_gf.graph.traverse())
+    assert len(squashed_nodes) == len(match)
+    assert (
+        (squashed_gf.dataframe.loc[squashed_nodes, "time (inc)"] >= 30.0)
+        | (~squashed_gf.dataframe.loc[squashed_nodes, "name"].str.startswith("b"))
+        | (squashed_gf.dataframe.loc[squashed_nodes, "name"].str.startswith("gr"))
+    ).all()
+
+
+def test_filter_bad_argument(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    fake_filter = {"bad": "filter"}
+    with pytest.raises(InvalidFilter):
+        gf.filter(fake_filter)
 
 
 def test_tree(mock_graph_literal):
