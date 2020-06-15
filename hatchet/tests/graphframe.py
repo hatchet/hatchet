@@ -379,6 +379,17 @@ def test_filter_squash_mock_literal(mock_graph_literal):
     assert len(squashed_gf.graph) == 7
 
 
+def test_filter_squash_mock_literal_multi_subtree_merge(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    gf.drop_index_levels()
+    filtlist = [1, 3, 7, 9, 21, 23]
+    filtered_gf = gf.filter(lambda x: x["node"]._hatchet_nid in filtlist)
+    squashed_gf = filtered_gf.squash()
+    squashed_nodes = list(squashed_gf.graph.traverse())
+    assert len(squashed_gf.graph) == 2
+    assert all([n.frame.attrs["name"] == "bar" or n.frame.attrs["name"] == "grault" for n in squashed_nodes])
+
+
 def test_tree(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
 
