@@ -387,7 +387,12 @@ def test_filter_squash_mock_literal_multi_subtree_merge(mock_graph_literal):
     squashed_gf = filtered_gf.squash()
     squashed_nodes = list(squashed_gf.graph.traverse())
     assert len(squashed_gf.graph) == 2
-    assert all([n.frame.attrs["name"] == "bar" or n.frame.attrs["name"] == "grault" for n in squashed_nodes])
+    assert all(
+        [
+            n.frame.attrs["name"] == "bar" or n.frame.attrs["name"] == "grault"
+            for n in squashed_nodes
+        ]
+    )
 
 
 def test_tree(mock_graph_literal):
