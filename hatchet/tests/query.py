@@ -216,13 +216,8 @@ def test_match_0_or_more_wildcard(mock_graph_literal):
             node.children[0],
             node.children[0].children[0],
             node.children[0].children[0].children[0],
-            # node.children[0].children[0].children[0].children[1],
         ],
-        [
-            node.children[0],
-            node.children[0].children[0],
-            # node.children[0].children[0].children[1],
-        ],
+        [node.children[0], node.children[0].children[0]],
     ]
 
     query = QueryMatcher(path)
@@ -251,13 +246,8 @@ def test_match_1_or_more_wildcard(mock_graph_literal):
             node.children[0],
             node.children[0].children[0],
             node.children[0].children[0].children[0],
-            # node.children[0].children[0].children[0].children[1],
         ],
-        [
-            node.children[0],
-            node.children[0].children[0],
-            # node.children[0].children[0].children[1],
-        ],
+        [node.children[0], node.children[0].children[0]],
     ]
 
     query = QueryMatcher(path)
@@ -430,3 +420,31 @@ def test_apply(mock_graph_literal):
     query = QueryMatcher(path)
     with pytest.raises(InvalidQueryFilter):
         query.apply(gf)
+
+
+def test_apply_indices(calc_pi_hpct_db):
+    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+    main = gf.graph.roots[0].children[0]
+    path = [
+        {"name": "[0-9]*:?MPI_.*"},
+        ("*", {"name": "^((?!MPID).)*"}),
+        {"name": "[0-9]*:?MPID.*"},
+    ]
+    matches = [
+        [
+            main.children[0],
+            main.children[0].children[0],
+            main.children[0].children[0].children[0],
+            main.children[0].children[0].children[0].children[0],
+        ],
+        [
+            main.children[1],
+            main.children[1].children[0],
+            main.children[1].children[0].children[0],
+        ],
+    ]
+    query = QueryMatcher(path)
+    assert query.apply(gf) == matches
+
+    gf.drop_index_levels()
+    assert query.apply(gf) == matches

@@ -275,8 +275,13 @@ class GraphFrame:
 
         self.dataframe = agg_df
 
-    def filter(self, filter_obj):
-        """Filter the dataframe using a user-supplied function."""
+    def filter(self, filter_obj, squash=False):
+        """Filter the dataframe using a user-supplied function.
+
+        Arguments:
+            filter_obj (callable, list, or QueryMatcher): the filter to apply to the GraphFrame.
+            squash (boolean, optional): if True, automatically call squash for the user.
+        """
         dataframe_copy = self.dataframe.copy()
 
         index_names = self.dataframe.index.names
@@ -296,7 +301,12 @@ class GraphFrame:
             filtered_df = dataframe_copy.loc[dataframe_copy["node"].isin(match_set)]
         else:
             raise InvalidFilter(
-                "The arugment passed to filter must be a callable, a query path list, or a QueryMatcher object."
+                "The argument passed to filter must be a callable, a query path list, or a QueryMatcher object."
+            )
+
+        if filtered_df.shape[0] == 0:
+            raise EmptyFilter(
+                "The provided filter would have produced an empty GraphFrame."
             )
 
         filtered_df.set_index(index_names, inplace=True)
@@ -305,6 +315,8 @@ class GraphFrame:
         filtered_gf.exc_metrics = self.exc_metrics
         filtered_gf.inc_metrics = self.inc_metrics
 
+        if squash:
+            return filtered_gf.squash()
         return filtered_gf
 
     def squash(self):
@@ -951,4 +963,8 @@ class GraphFrame:
 
 
 class InvalidFilter(Exception):
-    """Raised when an invalid arugment is passed to the filter function."""
+    """Raised when an invalid argument is passed to the filter function."""
+
+
+class EmptyFilter(Exception):
+    """Raised when a filter would otherwise return an empty GraphFrame."""
