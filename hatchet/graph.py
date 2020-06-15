@@ -67,6 +67,7 @@ class Graph:
 
         """
         merges = {}  # old_node -> merged_node
+        inverted_merges = defaultdict(lambda: [])
 
         def _find_child_merges(node_list):
             index = index_by("frame", node_list)
@@ -75,11 +76,21 @@ class Graph:
                     min_id = min(children, key=id)
                     for child in children:
                         prev_min = merges.get(child, min_id)
-                        merges[child] = min([min_id, prev_min], key=id)
+                        val = min([min_id, prev_min], key=id)
+                        merges[child] = val
+                        inverted_merges[val].append(child)
 
         _find_child_merges(self.roots)
         for node in self.traverse():
-            _find_child_merges(node.children)
+            nodes = None
+            if node in merges:
+                new_node = merges[node]
+                nodes = []
+                for node_to_merge in inverted_merges[new_node]:
+                    nodes.extend(node_to_merge.children)
+            else:
+                nodes = node.children
+            _find_child_merges(nodes)
 
         return merges
 
