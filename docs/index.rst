@@ -42,6 +42,7 @@ If you are new to hatchet and want to start using it, see :doc:`Getting Started
 
    getting_started
    user_guide
+   tutorial
 
 .. toctree::
    :maxdepth: 2
@@ -65,9 +66,9 @@ following `paper <http://www.cs.umd.edu/~bhatele/pubs/pdf/2019/sc2019.pdf>`_:
 
 .. toctree::
    :maxdepth: 2
-   :caption: Reference
+   :caption: API Docs
 
-   source/hatchet
+   Hatchet API Docs <source/hatchet>
 
 Indices and tables
 ==================
