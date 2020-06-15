@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 
 from hatchet import GraphFrame, QueryMatcher
-from hatchet.graphframe import InvalidFilter
+from hatchet.graphframe import InvalidFilter, EmptyFilter
 from hatchet.frame import Frame
 from hatchet.graph import Graph
 from hatchet.node import Node
@@ -474,6 +474,19 @@ def test_filter_bad_argument(mock_graph_literal):
     fake_filter = {"bad": "filter"}
     with pytest.raises(InvalidFilter):
         gf.filter(fake_filter)
+
+
+def test_filter_emtpy_graphframe(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    empty_filter = [
+        {"name": "waldo"},
+        "+",
+        {"time (inc)": ">= 20.0"},
+        "+",
+        {"time (inc)": 7.5, "time": 7.5},
+    ]
+    with pytest.raises(EmptyFilter):
+        gf.filter(empty_filter)
 
 
 def test_tree(mock_graph_literal):

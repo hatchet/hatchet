@@ -5,6 +5,7 @@
 
 from numbers import Real
 import re
+from pandas import DataFrame
 
 from .node import Node, traversal_order
 
@@ -31,8 +32,14 @@ class QueryMatcher:
                 # Currently not supported
                 #           "is", "is not", "in", "not in")
 
-                def filter_func(df_row):
-                    """Lambda filter function for high-level API"""
+                # This is a dict to work around Python's non-local variable
+                # assignment rules.
+                #
+                # TODO: Replace this with the use of the "nonlocal" keyword
+                #       once Python 2.7 support is dropped.
+                first_no_drop_indices = {"val": True}
+
+                def filter_series(df_row):
                     matches = True
                     for k, v in attr_filter.items():
                         if k not in df_row.keys():
@@ -63,7 +70,76 @@ class QueryMatcher:
                             )
                     return matches
 
-                return filter_func if attr_filter != {} else lambda row: True
+                def filter_dframe(df_row):
+                    if first_no_drop_indices["val"]:
+                        print(
+                            "==================================================================="
+                        )
+                        print(
+                            "WARNING: You are performing a query without dropping index levels."
+                        )
+                        print(
+                            "         This is a valid operation, but it will significantly"
+                        )
+                        print(
+                            "         increase the time it takes for this operation to complete."
+                        )
+                        print(
+                            "         If you don't want the operation to take so long, call"
+                        )
+                        print("         GraphFrame.drop_index_levels() before calling")
+                        print("         GraphFrame.filter()")
+                        print(
+                            "===================================================================\n"
+                        )
+                        first_no_drop_indices["val"] = False
+                    matches = True
+                    for k, v in attr_filter.items():
+                        if k not in df_row.columns:
+                            return False
+                        if df_row[k].apply(type).eq(str).all():
+                            if not isinstance(v, str):
+                                raise InvalidQueryFilter(
+                                    "Value for attribute {} must be a string.", k
+                                )
+                            if (
+                                df_row[k]
+                                .apply(lambda x: re.match(v + r"\Z", x) is not None)
+                                .any()
+                            ):
+                                matches = matches and True
+                            else:
+                                matches = matches and False
+                        elif df_row[k].apply(type).eq(Real).all():
+                            if isinstance(v, str) and v.lower().startswith(compops):
+                                matches = (
+                                    matches
+                                    and df_row[k]
+                                    .apply(lambda x: eval("{} {}".format(x, v)))
+                                    .any()
+                                )
+                            elif isinstance(v, Real):
+                                matches = (
+                                    matches and df_row[k].apply(lambda x: x == v).any()
+                                )
+                            else:
+                                raise InvalidQueryFilter(
+                                    "Attribute {} has a numeric type. Valid filters for this attribute are a string starting with a comparison operator or a real number.".format(
+                                        k
+                                    )
+                                )
+                        else:
+                            raise InvalidQueryFilter(
+                                "Filter must be one of the following:\n  * A regex string for a String attribute\n  * A string starting with a comparison operator for a Numeric attribute\n  * A number for a Numeric attribute\n"
+                            )
+                    return matches
+
+                def filter_choice(df_row):
+                    if isinstance(df_row, DataFrame):
+                        return filter_dframe(df_row)
+                    return filter_series(df_row)
+
+                return filter_choice if attr_filter != {} else lambda row: True
 
             for elem in query:
                 if isinstance(elem, dict):
@@ -86,8 +162,8 @@ class QueryMatcher:
     def match(self, wildcard_spec=".", filter_func=lambda row: True):
         """Start a query with a root node described by the arguments.
 
-        Arugments:
-            wildcard_spec (str, optional, ".", "*", or "+"): the wildcard status of the node (follows standard Regex styntax)
+        Arguments:
+            wildcard_spec (str, optional, ".", "*", or "+"): the wildcard status of the node (follows standard Regex syntax)
             filter_func (callable, optional): a callable accepting only a row from a Pandas DataFrame that is used to filter this node in the query
 
         Returns:
@@ -100,8 +176,9 @@ class QueryMatcher:
 
     def rel(self, wildcard_spec=".", filter_func=lambda row: True):
         """Add another edge and node to the query.
-        Arugments:
-            wildcard_spec (str, optional, ".", "*", or "+"): the wildcard status of the node (follows standard Regex styntax)
+
+        Arguments:
+            wildcard_spec (str, optional, ".", "*", or "+"): the wildcard status of the node (follows standard Regex syntax)
             filter_func (callable, optional): a callable accepting only a row from a Pandas DataFrame that is used to filter this node in the query
 
         Returns:
@@ -129,8 +206,8 @@ class QueryMatcher:
 
     def _add_node(self, wildcard_spec=".", filter_func=lambda row: True):
         """Add a node to the query.
-        Arugments:
-            wildcard_spec (str, optional, ".", "*", or "+"): the wildcard status of the node (follows standard Regex styntax)
+        Arguments:
+            wildcard_spec (str, optional, ".", "*", or "+"): the wildcard status of the node (follows standard Regex syntax)
             filter_func (callable, optional): a callable accepting only a row from a Pandas DataFrame that is used to filter this node in the query
         """
         assert isinstance(wildcard_spec, int) or isinstance(wildcard_spec, str)
@@ -267,7 +344,7 @@ class QueryMatcher:
     def _match_pattern(self, gf, pattern_root):
         """Try to match the query pattern starting at the provided root node.
 
-        Arugments:
+        Arguments:
             gf (GraphFrame): the GraphFrame being queried.
             pattern_root (Node): the root node of the subgraph that is being queried.
 
@@ -277,6 +354,8 @@ class QueryMatcher:
         assert isinstance(pattern_root, Node)
         # Starting query node
         pattern_idx = 1
+        if self.query_pattern[0][0] == "*" or self.query_pattern[0][0] == "+":
+            pattern_idx = 0
         # Starting matching pattern
         matches = [[pattern_root]]
         while pattern_idx < len(self.query_pattern):
@@ -331,7 +410,7 @@ class QueryMatcher:
     def _apply_impl(self, gf, node, visited, matches):
         """Traverse the subgraph with the specified root, and collect all paths that match the query.
 
-        Arugments:
+        Arguments:
             gf (GraphFrame): the GraphFrame being queried.
             node (Node): the root node of the subgraph that is being queried.
             visited (set): a set that keeps track of what nodes have been visited in the traversal to minimize the amount of work that is repeated.
