@@ -14,7 +14,7 @@ This tutorial introduces how to use hatchet, including basics about:
 
 Hatchet includes standalone Python-based Jupyter notebook examples for this
 tutorial. You can find the tutorial notebooks in your hatchet install under
-``examples/tutorial/hatchet_intro/``.
+``examples/tutorial/``.
 
 .. toctree::
 

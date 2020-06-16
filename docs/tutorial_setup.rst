@@ -6,4 +6,17 @@
 Tutorial Setup
 ==============
 
-Setup here.
+The tutorial examples are installed with hatchet in the subdirectory
+``examples/tutorial``.
+
+Jupyter notebooks can be launched with:
+
+.. code-block:: console
+
+  $ jupyter notebook notebook.ipynb
+
+
+Build and Install
+~~~~~~~~~~~~~~~~~
+
+To install hatchet yourself, see :doc:`getting_started`.
