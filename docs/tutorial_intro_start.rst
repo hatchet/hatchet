@@ -1,5 +1,5 @@
-Start Tutorial
---------------
+Introduction to Hatchet
+-----------------------
 
 Read in a sample dataset into hatchet
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
