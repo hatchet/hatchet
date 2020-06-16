@@ -3,8 +3,8 @@
 
    SPDX-License-Identifier: MIT
 
-Tutorial
-========
+Basic Tutorial
+==============
 
 This tutorial introduces how to use hatchet, including basics about:
 
