@@ -6,6 +6,10 @@
 Introduction to Hatchet
 =======================
 
+.. toctree::
+   tutorial_intro_start
+   tutorial_intro_queries
+
 All Intro Examples
 ------------------
 

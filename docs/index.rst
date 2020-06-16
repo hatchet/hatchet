@@ -42,9 +42,9 @@ If you are new to hatchet and want to start using it, see :doc:`Getting Started
 
    getting_started
    user_guide
+   tutorial
    simple_examples
    advanced_examples
-   tutorial
 
 
 If you encounter bugs while using hatchet, you can report them by opening an issue on `GitHub <http://github.com/llnl/hatchet/issues>`_.
