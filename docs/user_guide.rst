@@ -78,7 +78,7 @@ the ``from_caliper_json`` method:
       gf = ht.GraphFrame.from_caliper_json(filename)
 
 Examples of reading in other file formats can be found in
-:doc:`Simple Examples <simple_examples>`.
+:doc:`Basic Examples <basic_examples>`.
 
 Visualizing the data
 --------------------

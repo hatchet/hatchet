@@ -3,7 +3,7 @@
 
    SPDX-License-Identifier: MIT
 
-Simple Examples
+Basic Examples
 ===============
 
 Hatchet can read in a variety of data file formats into a GraphFrame. Below, we
