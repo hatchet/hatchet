@@ -676,6 +676,12 @@ class GraphFrame:
             new_df["_missing_node"] = ""
             other_not_in_self = other_not_in_self.join(new_df)
 
+            # add a new column to self if other has nodes not in self
+            if self_not_in_other.empty:
+                new_df = pd.DataFrame(index=self.dataframe.index)
+                new_df["_missing_node"] = ""
+                self.dataframe = self.dataframe.join(new_df)
+
         # for nodes that only exist in self, set value to be "L" indicating
         # it exists in left graphframe
         for i in self_not_in_other.index:
