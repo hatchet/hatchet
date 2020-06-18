@@ -68,7 +68,7 @@ class ConsoleRenderer:
         else:
             self.lr_arrows = {"◀": u"< ", "▶": u"> "}
 
-        for root in sorted(roots):
+        for root in sorted(roots, key=lambda n: n.frame):
             result += self.render_frame(root, dataframe)
 
         if self.color is True:
@@ -194,7 +194,7 @@ class ConsoleRenderer:
             else:
                 indents = {"├": u"|- ", "│": u"|  ", "└": u"`- ", " ": u"   "}
 
-            sorted_children = sorted(node.children)
+            sorted_children = sorted(node.children, key=lambda n: n.frame)
             if sorted_children:
                 last_child = sorted_children[-1]
 
