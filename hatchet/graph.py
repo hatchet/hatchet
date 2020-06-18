@@ -221,7 +221,11 @@ class Graph:
                     new_node = old_to_new.get(id(self_child))
                     if not new_node:
                         new_node = make_node(self_child)
-                        _merge(self_child.children, (), new_node)
+                        _merge(
+                            sorted(self_child.children, key=lambda n: n.frame),
+                            (),
+                            new_node,
+                        )
                     connect(parent, new_node)
                     self_child = next(self_children, None)
 
@@ -230,7 +234,11 @@ class Graph:
                     new_node = old_to_new.get(id(other_child))
                     if not new_node:
                         new_node = make_node(other_child)
-                        _merge((), other_child.children, new_node)
+                        _merge(
+                            (),
+                            sorted(other_child.children, key=lambda n: n.frame),
+                            new_node,
+                        )
                     connect(parent, new_node)
                     other_child = next(other_children, None)
 
@@ -256,7 +264,11 @@ class Graph:
                     else:
                         other_side = []
 
-                    _merge(self_side, other_side, new_node)
+                    _merge(
+                        sorted(self_side, key=lambda n: n.frame),
+                        sorted(other_side, key=lambda n: n.frame),
+                        new_node,
+                    )
 
                     connect(parent, new_node)
                     self_child = next(self_children, None)
@@ -267,7 +279,11 @@ class Graph:
                 new_node = old_to_new.get(id(self_child))
                 if not new_node:
                     new_node = make_node(self_child)
-                    _merge(self_child.children, (), new_node)
+                    _merge(
+                        sorted(self_child.children, key=lambda n: n.frame),
+                        (),
+                        new_node,
+                    )
                 connect(parent, new_node)
                 self_child = next(self_children, None)
 
@@ -275,14 +291,22 @@ class Graph:
                 new_node = old_to_new.get(id(other_child))
                 if not new_node:
                     new_node = make_node(other_child)
-                    _merge((), other_child.children, new_node)
+                    _merge(
+                        (),
+                        sorted(other_child.children, key=lambda n: n.frame),
+                        new_node,
+                    )
                 connect(parent, new_node)
                 other_child = next(other_children, None)
 
             return new_children
 
         # First establish which nodes correspond to each other
-        new_roots = _merge(self.roots, other.roots, None)
+        new_roots = _merge(
+            sorted(self.roots, key=lambda n: n.frame),
+            sorted(other.roots, key=lambda n: n.frame),
+            None,
+        )
 
         graph = Graph(new_roots)
         graph.enumerate_traverse()
