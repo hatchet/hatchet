@@ -17,7 +17,7 @@ raw measurements directory output by `HPCToolkit
 <http://hpctoolkit.org/index.html>`_. To analyze an HPCToolkit database, the
 ``from_hpctoolkit`` method can be used.
 
-.. literalinclude:: examples/hpctoolkit.py
+.. literalinclude:: examples/simple/hpctoolkit.py
     :language: python
 
 Read in a Caliper cali file
