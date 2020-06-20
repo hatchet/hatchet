@@ -22,6 +22,7 @@ import hatchet.graphframe
 from hatchet.node import Node
 from hatchet.graph import Graph
 from hatchet.util.timer import Timer
+from hatchet.util.profilier import Profilier
 from hatchet.frame import Frame
 
 src_file = 0
@@ -240,8 +241,14 @@ class HPCToolkitReader:
 
             # start graph construction at the root
             with self.timer.phase("graph construction"):
+                prf = Profilier()
+                prf.start()
                 self.parse_xml_children(root, graph_root)
+                prf.end()
 
+                prf.dumpAverageStats('cumulative', 'test.txt', 1)
+
+                
         with self.timer.phase("graph construction"):
             graph = Graph(list_roots)
             graph.enumerate_traverse()
