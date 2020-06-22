@@ -195,6 +195,7 @@ class HPCToolkitReader:
         if self.num_threads_per_rank == 1:
             del self.df_metrics["thread"]
 
+        #used to speedup parse_xml_node
         self.np_metrics = self.df_metrics[self.metric_columns].to_numpy()
         self.np_nids = self.df_metrics["nid"].to_numpy()
 
@@ -246,7 +247,7 @@ class HPCToolkitReader:
             with self.timer.phase("graph construction"):
                 self.parse_xml_children(root, graph_root)
 
-            # restore metrics to dataframe
+            # put updated metrics back in dataframe
             for i, column in enumerate(self.metric_columns):
                 self.df_metrics[column] = self.np_metrics.T[i]
 
@@ -361,19 +362,9 @@ class HPCToolkitReader:
                     pcs = np.column_stack((parent_node[0], this_node[0]))
                     metrics = self.np_metrics.T[i]
 
+                    # 0 is parent and 1 is this node
                     for pc in pcs:
                         metrics[pc[0]] -= metrics[pc[1]]
-
-                    # self.df_metrics.loc[
-                    #     self.df_metrics["nid"] == parent_nid, column
-                    # ] = (
-                    #     self.df_metrics.loc[
-                    #         self.df_metrics["nid"] == parent_nid, column
-                    #     ]
-                    #     - self.df_metrics.loc[
-                    #         self.df_metrics["nid"] == nid, column
-                    #     ].values
-                    # )
 
                     self.np_metrics.T[i] = metrics
 
