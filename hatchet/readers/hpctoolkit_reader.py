@@ -245,10 +245,7 @@ class HPCToolkitReader:
 
             # start graph construction at the root
             with self.timer.phase("graph construction"):
-                prf = Profilier()
-                prf.start()
                 self.parse_xml_children(root, graph_root)
-                prf.end()
 
             # put updated metrics back in dataframe
             for i, column in enumerate(self.metric_columns):
@@ -367,6 +364,7 @@ class HPCToolkitReader:
                     # 0 is parent and 1 is this node
                     for pc in pcs:
                         metrics[pc[0]] -= metrics[pc[1]]
+
 
                     self.np_metrics.T[i] = metrics
 
