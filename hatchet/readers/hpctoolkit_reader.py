@@ -195,6 +195,7 @@ class HPCToolkitReader:
         if self.num_threads_per_rank == 1:
             del self.df_metrics["thread"]
 
+
         # used to speedup parse_xml_node
         self.np_metrics = self.df_metrics[self.metric_columns].to_numpy()
         self.np_nids = self.df_metrics["nid"].to_numpy()
@@ -364,7 +365,6 @@ class HPCToolkitReader:
                     # 0 is parent and 1 is this node
                     for pc in pcs:
                         metrics[pc[0]] -= metrics[pc[1]]
-
 
                     self.np_metrics.T[i] = metrics
 
