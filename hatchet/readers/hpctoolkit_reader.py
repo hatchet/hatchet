@@ -195,6 +195,9 @@ class HPCToolkitReader:
         if self.num_threads_per_rank == 1:
             del self.df_metrics["thread"]
 
+        self.np_metrics = self.df_metrics[self.metric_columns].to_numpy()
+        self.np_nids = self.df_metrics["nid"].to_numpy()
+
     def read(self):
         """Read the experiment.xml file to extract the calling context tree and create
         a dataframe out of it. Then merge the two dataframes to create the final
@@ -241,14 +244,13 @@ class HPCToolkitReader:
 
             # start graph construction at the root
             with self.timer.phase("graph construction"):
-                prf = Profilier()
-                prf.start()
                 self.parse_xml_children(root, graph_root)
-                prf.end()
 
-                prf.dumpAverageStats('cumulative', 'test.txt', 1)
+            # restore metrics to dataframe
+            for i, column in enumerate(self.metric_columns):
+                self.df_metrics[column] = self.np_metrics.T[i]
 
-                
+
         with self.timer.phase("graph construction"):
             graph = Graph(list_roots)
             graph.enumerate_traverse()
@@ -352,18 +354,28 @@ class HPCToolkitReader:
 
             # when we reach statement nodes, we subtract their exclusive
             # metric values from the parent's values
-            for column in self.metric_columns:
+            for i, column in enumerate(self.metric_columns):
                 if "(inc)" not in column:
-                    self.df_metrics.loc[
-                        self.df_metrics["nid"] == parent_nid, column
-                    ] = (
-                        self.df_metrics.loc[
-                            self.df_metrics["nid"] == parent_nid, column
-                        ]
-                        - self.df_metrics.loc[
-                            self.df_metrics["nid"] == nid, column
-                        ].values
-                    )
+                    parent_node = np.where(self.np_nids == parent_nid)
+                    this_node = np.where(self.np_nids == nid)
+                    pcs = np.column_stack((parent_node[0], this_node[0]))
+                    metrics = self.np_metrics.T[i]
+
+                    for pc in pcs:
+                        metrics[pc[0]] -= metrics[pc[1]]
+
+                    # self.df_metrics.loc[
+                    #     self.df_metrics["nid"] == parent_nid, column
+                    # ] = (
+                    #     self.df_metrics.loc[
+                    #         self.df_metrics["nid"] == parent_nid, column
+                    #     ]
+                    #     - self.df_metrics.loc[
+                    #         self.df_metrics["nid"] == nid, column
+                    #     ].values
+                    # )
+
+                    self.np_metrics.T[i] = metrics
 
         if xml_tag == "C" or (
             xml_tag == "Pr" and self.procedure_names[xml_node.get("n")] == ""
