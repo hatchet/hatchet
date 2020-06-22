@@ -53,6 +53,7 @@ class ConsoleRenderer:
         self.rank = kwargs["rank"]
         self.thread = kwargs["thread"]
         self.depth = kwargs["depth"]
+        self.highlight = kwargs["highlight_name"]
         self.invert_colormap = kwargs["invert_colormap"]
 
         if self.invert_colormap:
@@ -62,7 +63,7 @@ class ConsoleRenderer:
         else:
             self.max_metric = dataframe[self.metric].max()
 
-        for root in roots:
+        for root in sorted(roots):
             result += self.render_frame(root, dataframe)
 
         if self.color is True:
@@ -98,7 +99,15 @@ class ConsoleRenderer:
                 + "\n"
             )
 
-        legend = "\n" + "\033[4m" + "Legend" + self.colors.end + "\n"
+        legend = (
+            "\n"
+            + "\033[4m"
+            + "Legend (Metric: "
+            + self.metric
+            + ")"
+            + self.colors.end
+            + "\n"
+        )
         legend += render_label(0, 0.9, 1.0)
         legend += render_label(1, 0.7, 0.9)
         legend += render_label(2, 0.5, 0.7)
@@ -159,7 +168,7 @@ class ConsoleRenderer:
             if node.children:
                 last_child = node.children[-1]
 
-            for child in node.children:
+            for child in sorted(node.children):
                 if child is not last_child:
                     c_indent = child_indent + indents["├"]
                     cc_indent = child_indent + indents["│"]
@@ -192,19 +201,23 @@ class ConsoleRenderer:
             return self.colors.colormap[5]
 
     def _ansi_color_for_name(self, node_name):
+        if self.highlight is False:
+            return ""
+
         if "<unknown procedure>" in node_name or "<unknown file>" in node_name:
             return ""
         else:
             return self.colors.bg_dark_blue_255 + self.colors.white_255
 
     class colors_enabled:
+        # red-green color map
         colormap = [
-            "\033[38;5;160m",
-            "\033[38;5;208m",
-            "\033[38;5;220m",
-            "\033[38;5;193m",
-            "\033[38;5;113m",
-            "\033[38;5;28m",
+            "\033[38;5;196m",  # red
+            "\033[38;5;208m",  # orange
+            "\033[38;5;220m",  # yellow-ish
+            "\033[38;5;46m",  # neon green
+            "\033[38;5;34m",  # light green
+            "\033[38;5;22m",  # dark green
         ]
 
         bg_dark_blue_255 = "\033[48;5;24m"

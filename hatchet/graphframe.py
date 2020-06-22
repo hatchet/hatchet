@@ -551,10 +551,17 @@ class GraphFrame:
         rank=0,
         thread=0,
         depth=10000,
+        highlight_name=True,
         invert_colormap=False,
     ):
         """Format this graphframe as a tree and return the resulting string."""
         color = sys.stdout.isatty()
+
+        if color is False:
+            shell = IPython.get_ipython().__class__.__name__
+            # Test if running in a Jupyter notebook or qtconsole
+            if shell == "ZMQInteractiveShell":
+                color = True
 
         return ConsoleRenderer(unicode=True, color=color).render(
             self.graph.roots,
@@ -567,6 +574,7 @@ class GraphFrame:
             rank=rank,
             thread=thread,
             depth=depth,
+            highlight_name=highlight_name,
             invert_colormap=invert_colormap,
         )
 

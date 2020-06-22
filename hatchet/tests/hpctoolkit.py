@@ -91,6 +91,7 @@ def test_tree(calc_pi_hpct_db):
         rank=0,
         thread=0,
         depth=10000,
+        highlight_name=False,
         invert_colormap=False,
     )
     assert "0.000 <program root> <unknown file>" in output
@@ -110,6 +111,7 @@ def test_tree(calc_pi_hpct_db):
         rank=0,
         thread=0,
         depth=10000,
+        highlight_name=False,
         invert_colormap=False,
     )
     assert "17989.000 interp.c:0 interp.c" in output
