@@ -178,9 +178,9 @@ class HPCToolkitReader:
             self.metric_names[key] for key in sorted(self.metric_names.keys())
         ]
         for idx, name in enumerate(metric_names):
-            if name == "CPUTIME (usec) (E)":
+            if name == "CPUTIME (usec) (E)" or name == "CPUTIME (sec) (E)":
                 metric_names[idx] = "time"
-            if name == "CPUTIME (usec) (I)":
+            if name == "CPUTIME (usec) (I)" or name == "CPUTIME (sec) (I)":
                 metric_names[idx] = "time (inc)"
 
         self.metric_columns = metric_names
