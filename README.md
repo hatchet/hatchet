@@ -1,7 +1,7 @@
-# <img src="https://raw.githubusercontent.com/LLNL/hatchet/master/logo-hex.png" width="64" valign="middle" alt="hatchet"/> Hatchet
+# <img src="https://raw.githubusercontent.com/LLNL/hatchet/develop/logo-hex.png" width="64" valign="middle" alt="hatchet"/> Hatchet
 
-[![Build Status](https://travis-ci.com/LLNL/hatchet.svg?branch=master)](https://travis-ci.com/LLNL/hatchet)
-[![codecov](https://codecov.io/gh/LLNL/hatchet/branch/master/graph/badge.svg)](https://codecov.io/gh/LLNL/hatchet)
+[![Build Status](https://travis-ci.com/LLNL/hatchet.svg?branch=develop)](https://travis-ci.com/LLNL/hatchet)
+[![codecov](https://codecov.io/gh/LLNL/hatchet/branch/develop/graph/badge.svg)](https://codecov.io/gh/LLNL/hatchet)
 [![Read the Docs](http://readthedocs.org/projects/hatchet/badge/?version=latest)](http://hatchet.readthedocs.io)
 [![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
@@ -17,7 +17,7 @@ Or, if you want to develop with this repo directly, add the cloned
 directory to your `PYTHONPATH`.
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/LLNL/hatchet/master/screenshot.png" width=800>
+  <img src="https://raw.githubusercontent.com/LLNL/hatchet/develop/screenshot.png" width=800>
 </p>
 
 
@@ -56,8 +56,8 @@ All contributions must be made under the MIT license.  Copyrights in the
 Hatchet project are retained by contributors.  No copyright assignment is
 required to contribute to Hatchet.
 
-See [LICENSE](https://github.com/llnl/hatchet/blob/master/LICENSE) and
-[NOTICE](https://github.com/llnl/hatchet/blob/master/NOTICE) for details.
+See [LICENSE](https://github.com/llnl/hatchet/blob/develop/LICENSE) and
+[NOTICE](https://github.com/llnl/hatchet/blob/develop/NOTICE) for details.
 
 SPDX-License-Identifier: MIT
 
