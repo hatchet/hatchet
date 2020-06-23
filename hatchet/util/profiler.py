@@ -30,9 +30,10 @@ class Profiler:
     # sorting options
     # 'calls', 'cumulative', 'filename', 'ncalls', 'pcalls', 'line', 'name', 'nfl' (name file line), 'stdname', 'time'
     def dumpSortedStats(self, sortby, filename):
-        sts = pstats.Stats(self.prf)
-        sts.sort_stats(sortby)
-        sts.dump_stats(filename)
+        with open(filename, "w") as f:
+            sts = pstats.Stats(self.prf, stream=f)
+            sts.sort_stats(sortby)
+            sts.print_stats()
 
     def calcAvgStatsHelper(self, obj, num_of_runs):
         for stat in obj:
