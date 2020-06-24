@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Copyright 2017-2020 Lawrence Livermore National Security, LLC and other
 # Hatchet Project Developers. See the top-level LICENSE file for details.
 #
@@ -551,7 +553,6 @@ def test_unify_diff_graphs():
     assert len(gf1.graph) == gf1.dataframe.shape[0]
 
 
-@pytest.mark.xfail(reason="L and R decorators are currently disabled.")
 def test_sub_decorator(small_mock1, small_mock2, small_mock3):
     gf1 = GraphFrame.from_literal(small_mock1)
     gf2 = GraphFrame.from_literal(small_mock2)
@@ -570,7 +571,7 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf4.graph.roots,
         gf4.dataframe,
-        metric_column="time (inc)",
+        metric_column="time",
         precision=3,
         name_column="name",
         expand_name=False,
@@ -582,8 +583,8 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
         invert_colormap=False,
     )
     assert "0.000 C" in output
-    assert "-5.000 \x1b[1m[[D]] (R)" in output
-    assert "10.000 \x1b[1m[[H]] (L)" in output
+    assert u"-5.000 D ▶" in output
+    assert u"10.000 H ◀" in output
 
     gf5 = gf1 - gf3
 
@@ -610,8 +611,8 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
         invert_colormap=False,
     )
     assert "0.000 A" in output
-    assert "5.000 \x1b[1m[[C]] (L)" in output
-    assert "10.000 \x1b[1m[[H]] (L)" in output
+    assert u"5.000 C ◀" in output
+    assert u"55.000 H ◀" in output
 
 
 def test_groupby_aggregate_simple(mock_dag_literal_module):

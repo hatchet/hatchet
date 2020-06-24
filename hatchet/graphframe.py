@@ -16,9 +16,6 @@ from .query_matcher import QueryMatcher
 from .external.console import ConsoleRenderer
 from .util.dot import trees_to_dot
 
-lit_idx = 0
-squ_idx = 0
-
 
 class GraphFrame:
     """An input dataset is read into an object of this type, which includes a graph

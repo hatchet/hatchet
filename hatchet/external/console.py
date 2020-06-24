@@ -63,6 +63,11 @@ class ConsoleRenderer:
         else:
             self.max_metric = dataframe[self.metric].max()
 
+        if self.unicode:
+            self.lr_arrows = {"◀": u"◀ ", "▶": u"▶ "}
+        else:
+            self.lr_arrows = {"◀": u"< ", "▶": u"> "}
+
         for root in sorted(roots):
             result += self.render_frame(root, dataframe)
 
@@ -102,18 +107,27 @@ class ConsoleRenderer:
         legend = (
             "\n"
             + "\033[4m"
-            + "Legend (Metric: "
-            + self.metric
-            + ")"
+            + "Legend"
             + self.colors.end
-            + "\n"
+            + " (Metric: "
+            + self.metric
+            + ")\n"
         )
+
         legend += render_label(0, 0.9, 1.0)
         legend += render_label(1, 0.7, 0.9)
         legend += render_label(2, 0.5, 0.7)
         legend += render_label(3, 0.3, 0.5)
         legend += render_label(4, 0.1, 0.3)
         legend += render_label(5, 0.0, 0.1)
+
+        legend += "\n" + self._ansi_color_for_name("name") + "name" + self.colors.end
+        legend += " User code    "
+
+        legend += self.colors.left + self.lr_arrows["◀"] + self.colors.end
+        legend += " Only in left graph    "
+        legend += self.colors.right + self.lr_arrows["▶"] + self.colors.end
+        legend += " Only in right graph\n"
 
         return legend
 
@@ -150,9 +164,24 @@ class ConsoleRenderer:
                 self._ansi_color_for_name(node_name) + node_name + self.colors.end
             )
 
+            if "_missing_node" in dataframe.columns:
+                left_or_right = dataframe.loc[df_index, "_missing_node"]
+                if left_or_right == "":
+                    lr_decorator = ""
+                elif left_or_right == "L":
+                    lr_decorator = u" {c.left}{decorator}{c.end}".format(
+                        decorator=self.lr_arrows["◀"], c=self.colors
+                    )
+                elif left_or_right == "R":
+                    lr_decorator = u" {c.right}{decorator}{c.end}".format(
+                        decorator=self.lr_arrows["▶"], c=self.colors
+                    )
+
             result = u"{indent}{metric_str} {name_str}".format(
                 indent=indent, metric_str=metric_str, name_str=name_str
             )
+            if "_missing_node" in dataframe.columns:
+                result += lr_decorator
             if self.context in dataframe.columns:
                 result += u" {c.faint}{context}{c.end}\n".format(
                     context=dataframe.loc[df_index, self.context], c=self.colors
@@ -165,10 +194,11 @@ class ConsoleRenderer:
             else:
                 indents = {"├": u"|- ", "│": u"|  ", "└": u"`- ", " ": u"   "}
 
-            if node.children:
-                last_child = node.children[-1]
+            sorted_children = sorted(node.children)
+            if sorted_children:
+                last_child = sorted_children[-1]
 
-            for child in sorted(node.children):
+            for child in sorted_children:
                 if child is not last_child:
                     c_indent = child_indent + indents["├"]
                     cc_indent = child_indent + indents["│"]
@@ -207,7 +237,7 @@ class ConsoleRenderer:
         if "<unknown procedure>" in node_name or "<unknown file>" in node_name:
             return ""
         else:
-            return self.colors.bg_dark_blue_255 + self.colors.white_255
+            return self.colors.bg_white_255 + self.colors.dark_gray_255
 
     class colors_enabled:
         # red-green color map
@@ -220,8 +250,11 @@ class ConsoleRenderer:
             "\033[38;5;22m",  # dark green
         ]
 
-        bg_dark_blue_255 = "\033[48;5;24m"
-        white_255 = "\033[38;5;15m"
+        bg_white_255 = "\033[48;5;246m"
+        dark_gray_255 = "\033[38;5;232m"
+
+        left = "\033[38;5;160m"
+        right = "\033[38;5;28m"
 
         faint = "\033[2m"
         end = "\033[0m"
