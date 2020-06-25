@@ -11,6 +11,7 @@ import pytest
 from hatchet import GraphFrame
 from hatchet.readers.caliper_reader import CaliperReader
 from hatchet.util.executable import which
+from hatchet.external.console import ConsoleRenderer
 
 annotations = [
     "main",
@@ -156,16 +157,37 @@ def test_tree(lulesh_caliper_json):
     """Sanity test a GraphFrame object with known data."""
     gf = GraphFrame.from_caliper_json(str(lulesh_caliper_json))
 
-    output = gf.tree(metric="time", color=False)
-    assert output.startswith("121489.000 main")
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf.graph.roots,
+        gf.dataframe,
+        metric_column="time",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
+        rank=0,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        invert_colormap=False,
+    )
+    assert "121489.000 main" in output
     assert "663.000 LagrangeElements" in output
     assert "21493.000 CalcTimeConstraintsForElems" in output
 
-    output = gf.tree(metric="time (inc)", color=False)
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf.graph.roots,
+        gf.dataframe,
+        metric_column="time (inc)",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
+        rank=0,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        invert_colormap=False,
+    )
     assert "662712.000 EvalEOSForElems" in output
     assert "2895319.000 LagrangeNodal" in output
-
-    output = gf.tree(metric="time (inc)", color=False, threshold=0.2)
-    assert "5342467.000 LagrangeLeapFrog" in output
-    assert "2689312.000 CalcForceForNodes" in output
-    assert "1223331.000 CalcFBHourglassForceForElems" in output

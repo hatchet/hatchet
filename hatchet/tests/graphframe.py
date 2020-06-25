@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 # Copyright 2017-2020 Lawrence Livermore National Security, LLC and other
 # Hatchet Project Developers. See the top-level LICENSE file for details.
 #
@@ -13,6 +15,7 @@ from hatchet.graphframe import InvalidFilter, EmptyFilter
 from hatchet.frame import Frame
 from hatchet.graph import Graph
 from hatchet.node import Node
+from hatchet.external.console import ConsoleRenderer
 
 
 def test_copy(mock_graph_literal):
@@ -492,18 +495,40 @@ def test_filter_emtpy_graphframe(mock_graph_literal):
 def test_tree(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
 
-    output = gf.tree(metric="time", color=False)
-    assert output.startswith("0.000 foo")
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf.graph.roots,
+        gf.dataframe,
+        metric_column="time",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
+        rank=0,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        invert_colormap=False,
+    )
+    assert "0.000 foo" in output
     assert "10.000 waldo" in output
     assert "15.000 garply" in output
 
-    output = gf.tree(metric="time (inc)", color=False)
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf.graph.roots,
+        gf.dataframe,
+        metric_column="time (inc)",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
+        rank=0,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        invert_colormap=False,
+    )
     assert "50.000 waldo" in output
     assert "15.000 garply" in output
-
-    output = gf.tree(metric="time (inc)", threshold=0.3, color=False)
-    assert "50.000 waldo" in output
-    assert "15.000 garply" not in output
 
 
 def test_to_dot(mock_graph_literal):
@@ -543,10 +568,23 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
     assert gf4.dataframe.loc[gf4.dataframe["_missing_node"] == "L"].shape[0] == 1
     assert gf4.dataframe.loc[gf4.dataframe["_missing_node"] == ""].shape[0] == 5
 
-    output = gf4.tree(metric="time", color=False)
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf4.graph.roots,
+        gf4.dataframe,
+        metric_column="time",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
+        rank=0,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        invert_colormap=False,
+    )
     assert "0.000 C" in output
-    assert "-5.000 \x1b[1m[[D]] (R)" in output
-    assert "10.000 \x1b[1m[[H]] (L)" in output
+    assert u"-5.000 D ▶" in output
+    assert u"10.000 H ◀" in output
 
     gf5 = gf1 - gf3
 
@@ -558,10 +596,23 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
     assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == "L"].shape[0] == 2
     assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == ""].shape[0] == 4
 
-    output = gf5.tree(metric="time", color=False)
-    assert output.startswith("0.000 A")
-    assert "5.000 \x1b[1m[[C]] (L)" in output
-    assert "10.000 \x1b[1m[[H]] (L)" in output
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf5.graph.roots,
+        gf5.dataframe,
+        metric_column="time (inc)",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
+        rank=0,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        invert_colormap=False,
+    )
+    assert "0.000 A" in output
+    assert u"5.000 C ◀" in output
+    assert u"55.000 H ◀" in output
 
 
 def test_groupby_aggregate_simple(mock_dag_literal_module):

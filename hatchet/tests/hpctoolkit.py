@@ -7,6 +7,7 @@ import numpy as np
 
 from hatchet import GraphFrame
 from hatchet.readers.hpctoolkit_reader import HPCToolkitReader
+from hatchet.external.console import ConsoleRenderer
 
 modules = [
     "cpi",
@@ -79,23 +80,43 @@ def test_graphframe(calc_pi_hpct_db):
 def test_tree(calc_pi_hpct_db):
     gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
 
-    output = gf.tree(metric="time", color=False)
-    assert output.startswith("0.000 <program root>  <unknown file>")
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf.graph.roots,
+        gf.dataframe,
+        metric_column="time",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
+        rank=0,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        invert_colormap=False,
+    )
+    assert "0.000 <program root> <unknown file>" in output
     assert (
-        "0.000 198:MPIR_Init_thread  /tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/initthread.c"
+        "0.000 198:MPIR_Init_thread /tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/initthread.c"
         in output
     )
 
-    output = gf.tree(metric="time (inc)", color=False)
-    assert "17989.000 interp.c:0  interp.c" in output
-    assert (
-        "999238.000 230:psm_dofinalize  /tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_exit.c"
-        in output
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf.graph.roots,
+        gf.dataframe,
+        metric_column="time (inc)",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
+        rank=0,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        invert_colormap=False,
     )
-
-    output = gf.tree(metric="time (inc)", color=False, threshold=0.5)
+    assert "17989.000 interp.c:0 interp.c" in output
     assert (
-        "999238.000 294:MPID_Finalize  /tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_finalize.c"
+        "999238.000 230:psm_dofinalize /tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_exit.c"
         in output
     )
 
