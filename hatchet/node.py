@@ -159,6 +159,9 @@ class Node:
     def __lt__(self, other):
         return self._hatchet_nid < other._hatchet_nid
 
+    def __gt__(self, other):
+        return self._hatchet_nid > other._hatchet_nid
+
     def __str__(self):
         """Returns a string representation of the node."""
         return str(self.frame)
