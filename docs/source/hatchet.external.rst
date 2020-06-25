@@ -4,10 +4,10 @@ hatchet.external package
 Submodules
 ----------
 
-hatchet.external.printtree module
----------------------------------
+hatchet.external.console module
+-------------------------------
 
-.. automodule:: hatchet.external.printtree
+.. automodule:: hatchet.external.console
    :members:
    :undoc-members:
    :show-inheritance:
