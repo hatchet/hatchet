@@ -555,6 +555,10 @@ class GraphFrame:
         color = sys.stdout.isatty()
 
         if color is False:
+            try:
+                import IPython
+            except ImportError:
+                pass
             shell = IPython.get_ipython().__class__.__name__
             # Test if running in a Jupyter notebook or qtconsole
             if shell == "ZMQInteractiveShell":
