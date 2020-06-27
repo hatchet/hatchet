@@ -22,7 +22,6 @@ import hatchet.graphframe
 from hatchet.node import Node
 from hatchet.graph import Graph
 from hatchet.util.timer import Timer
-from hatchet.util.profilier import Profilier
 from hatchet.frame import Frame
 
 src_file = 0
@@ -195,7 +194,7 @@ class HPCToolkitReader:
         if self.num_threads_per_rank == 1:
             del self.df_metrics["thread"]
 
-        #used to speedup parse_xml_node
+        # used to speedup parse_xml_node
         self.np_metrics = self.df_metrics[self.metric_columns].to_numpy()
         self.np_nids = self.df_metrics["nid"].to_numpy()
 
@@ -250,7 +249,6 @@ class HPCToolkitReader:
             # put updated metrics back in dataframe
             for i, column in enumerate(self.metric_columns):
                 self.df_metrics[column] = self.np_metrics.T[i]
-
 
         with self.timer.phase("graph construction"):
             graph = Graph(list_roots)
