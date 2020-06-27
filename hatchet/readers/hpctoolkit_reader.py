@@ -22,7 +22,6 @@ import hatchet.graphframe
 from hatchet.node import Node
 from hatchet.graph import Graph
 from hatchet.util.timer import Timer
-from hatchet.util.profilier import Profilier
 from hatchet.frame import Frame
 
 src_file = 0
@@ -194,7 +193,6 @@ class HPCToolkitReader:
         # if number of threads per rank is 1, we do not need to keep the thread ID column
         if self.num_threads_per_rank == 1:
             del self.df_metrics["thread"]
-
 
         # used to speedup parse_xml_node
         self.np_metrics = self.df_metrics[self.metric_columns].to_numpy()
