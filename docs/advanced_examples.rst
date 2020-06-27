@@ -6,6 +6,29 @@
 Analysis Examples
 =================
 
+Applying scalar operations to attributes
+----------------------------------------
+
+Individual numeric columns in the dataframe can be scaled or offset by a
+constant using the native pandas operations. We make a copy of the original
+graphframe, and modify the dataframe directly. In this example, we offset the
+``time`` column by -2 and scale it by 1/1e7, storing the result in a new column
+in the dataframe called ``scaled time``.
+
+.. code-block:: python
+
+  gf = ht.GraphFrame.from_hpctoolkit('kripke')
+  gf.drop_index_levels()
+
+  offset = 1e7
+  gf.dataframe['scaled time'] = (gf.dataframe['time'] / offset) - 2
+  sorted_df = gf.dataframe.sort_values(by=['scaled time'], ascending=False)
+  print(sorted_df)
+
+.. image:: images/scale-offset-df.png
+   :scale: 40 %
+
+
 Generating a flat profile
 -------------------------
 
