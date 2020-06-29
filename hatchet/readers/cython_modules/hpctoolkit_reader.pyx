@@ -18,19 +18,15 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ET
 
-# cython imports
-# from hatchet.readers.subtract_metrics import set_np_nids_memview
-import hatchet.readers.subtract_metrics as smc
-# import subtract_exclusive_metric_vals
-
 import hatchet.graphframe
 from hatchet.node import Node
 from hatchet.graph import Graph
 from hatchet.util.timer import Timer
 from hatchet.frame import Frame
 
-
 src_file = 0
+
+
 
 
 def init_shared_array(buf_):
@@ -70,6 +66,7 @@ class HPCToolkitReader:
     """Read in the various sections of an HPCToolkit experiment.xml file and
     metric-db files.
     """
+
 
     def __init__(self, dir_name):
         # this is the name of the HPCToolkit database directory. The directory
@@ -203,9 +200,12 @@ class HPCToolkitReader:
         # used to speedup parse_xml_node
         self.np_metrics = self.df_metrics[self.metric_columns].to_numpy()
         self.np_nids = self.df_metrics["nid"].to_numpy()
+        global np_nids_memview
+        global num_nids
+        np_nids_memview = self.np_nids
+        num_nids = self.np_nids.shape[0]
 
-        # from subtract_metrics.pyx
-        smc.set_np_nids_memview(self.np_nids, self.np_nids.shape[0])
+
 
     def read(self):
         """Read the experiment.xml file to extract the calling context tree and create
@@ -255,9 +255,10 @@ class HPCToolkitReader:
             with self.timer.phase("graph construction"):
                 self.parse_xml_children(root, graph_root)
 
-            # put updated metrics back in dataframe
-            for i, column in enumerate(self.metric_columns):
-                self.df_metrics[column] = self.np_metrics.T[i]
+            with self.timer.phase("re-insert nodes"):
+              # put updated metrics back in dataframe
+              for i, column in enumerate(self.metric_columns):
+                  self.df_metrics[column] = self.np_metrics.T[i]
 
         with self.timer.phase("graph construction"):
             graph = Graph(list_roots)
@@ -287,6 +288,8 @@ class HPCToolkitReader:
                 inc_metrics.append(column)
             else:
                 exc_metrics.append(column)
+
+        print(self.timer._times)
 
         return hatchet.graphframe.GraphFrame(graph, dataframe, exc_metrics, inc_metrics)
 
@@ -364,18 +367,22 @@ class HPCToolkitReader:
             # metric values from the parent's values
             for i, column in enumerate(self.metric_columns):
                 if "(inc)" not in column:
-                    smc.subtract_exclusive_metric_vals(nid, parent_nid, self.np_metrics.T[i])
+                    # with self.timer.phase("exclusive metric vals cython nid: {}".format(nid)):
+                    # subtract_exclusive_metric_vals(nid, parent_nid,  self.np_metrics.T[i])
 
-                    # parent_node = np.where(self.np_nids == parent_nid)
-                    # this_node = np.where(self.np_nids == nid)
-                    # pcs = np.column_stack((parent_node[0], this_node[0]))
-                    # metrics = self.np_metrics.T[i]
-                    #
-                    # # 0 is parent and 1 is this node
-                    # for pc in pcs:
-                    #     metrics[pc[0]] -= metrics[pc[1]]
-                    #
-                    # self.np_metrics.T[i] = metrics
+
+                    parent_node = np.where(self.np_nids == parent_nid)
+                    this_node = np.where(self.np_nids == nid)
+                    pcs = np.column_stack((parent_node[0], this_node[0]))
+
+
+                    # 0 is parent and 1 is this node
+                    for pc in pcs:
+                        metrics[pc[0]] -= metrics[pc[1]]
+
+                    self.np_metrics.T[i] = metrics
+
+
 
         if xml_tag == "C" or (
             xml_tag == "Pr" and self.procedure_names[xml_node.get("n")] == ""
