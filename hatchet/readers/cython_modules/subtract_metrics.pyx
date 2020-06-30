@@ -1,4 +1,5 @@
 import numpy as np
+import cython
 
 cdef long[:] np_nids_memview
 cdef long num_nids
@@ -12,6 +13,7 @@ def set_np_nids_memview(long[:] np_nids, long np_nids_size):
   np_nids_memview = np_nids
   num_nids = np_nids_size
 
+# @cython.boundscheck(False)
 def subtract_exclusive_metric_vals(long nid, long parent_nid, double[:] metrics):
   global num_stmt_nodes
   global np_nids_memview
@@ -21,12 +23,13 @@ def subtract_exclusive_metric_vals(long nid, long parent_nid, double[:] metrics)
   cdef int loaded_p_nodes = 0
   cdef int loaded_c_nodes = 0
 
-  if num_stmt_nodes == 0:
-    for i in range(num_nids):
-      if np_nids_memview[i] == nid:
-        num_stmt_nodes += 1
-    p_nodes = np.zeros((num_stmt_nodes), dtype=np.int64)
-    c_nodes = np.zeros((num_stmt_nodes), dtype=np.int64)
+  with cython.boundscheck(False):
+    if num_stmt_nodes == 0:
+      for i in range(num_nids):
+        if np_nids_memview[i] == nid:
+          num_stmt_nodes += 1
+      p_nodes = np.zeros((num_stmt_nodes), dtype=np.int64)
+      c_nodes = np.zeros((num_stmt_nodes), dtype=np.int64)
 
   try:
     for i in range(num_nids):
@@ -39,11 +42,12 @@ def subtract_exclusive_metric_vals(long nid, long parent_nid, double[:] metrics)
     # we are modifying metrics in place here
     # since they are passed by refrence via their
     # memory
-    for i in range(loaded_c_nodes):
-      metrics[p_nodes[i]] -= metrics[c_nodes[i]]
+    with cython.boundscheck(False):
+      for i in range(loaded_c_nodes):
+        metrics[p_nodes[i]] -= metrics[c_nodes[i]]
 
-# we ran into an out of bounds error and need to allocate
-# new memory
-  except:
+  # we ran into an out of bounds error and need to allocate
+  # new memory
+  except IndexError:
     num_stmt_nodes = 0
     subtract_exclusive_metric_vals(nid, parent_nid, metrics)

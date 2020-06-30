@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 from setuptools import setup
+from setuptools import Extension
 from codecs import open
 from os import path
 from hatchet import __version__
@@ -34,5 +35,6 @@ setup(
         "hatchet.external",
         "hatchet.tests",
     ],
-    install_requires=["pydot", "PyYAML", "matplotlib", "numpy", "pandas"],
+    install_requires=["pydot", "PyYAML", "matplotlib", "numpy", "pandas", "cython"],
+    ext_modules=[Extension("hatchet.readers.subtract_metrics", ["hatchet/readers/cython_modules/subtract_metrics.c"])]
 )
