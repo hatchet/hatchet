@@ -363,16 +363,14 @@ class HPCToolkitReader:
             for i, column in enumerate(self.metric_columns):
                 if "(inc)" not in column:
                     smc.subtract_exclusive_metric_vals(nid, parent_nid, self.np_metrics.T[i])
-                    # parent_node = np.where(self.np_nids == parent_nid)
-                    # this_node = np.where(self.np_nids == nid)
-                    # pcs = np.column_stack((parent_node[0], this_node[0]))
-                    # metrics = self.np_metrics.T[i]
-                    #
-                    # # 0 is parent and 1 is this node
-                    # for pc in pcs:
-                    #     metrics[pc[0]] -= metrics[pc[1]]
-                    #
-                    # self.np_metrics.T[i] = metrics
+
+                    # print(pcs)
+                    # with open("test_2.txt", "a") as f:
+                    #     f.write("Metrics ({}, {}): [ ".format(nid, parent_nid))
+                    #     for i, metric in enumerate(self.np_metrics.T[i]):
+                    #         f.write("{}: {}, \n".format(i, metric))
+                    #     f.write("] \n\n")
+
 
         if xml_tag == "C" or (
             xml_tag == "Pr" and self.procedure_names[xml_node.get("n")] == ""

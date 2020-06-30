@@ -36,6 +36,9 @@ def subtract_exclusive_metric_vals(long nid, long parent_nid, double[:] metrics)
       elif np_nids_memview[i] == parent_nid:
         p_nodes[loaded_p_nodes] = i
         loaded_p_nodes += 1
+    # we are modifying metrics in place here
+    # since they are passed by refrence via their
+    # memory
     for i in range(loaded_c_nodes):
       metrics[p_nodes[i]] -= metrics[c_nodes[i]]
 
