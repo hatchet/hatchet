@@ -19,9 +19,7 @@ except ImportError:
     import xml.etree.ElementTree as ET
 
 # cython imports
-# from hatchet.readers.subtract_metrics import set_np_nids_memview
 import hatchet.readers.subtract_metrics as smc
-# import subtract_exclusive_metric_vals
 
 import hatchet.graphframe
 from hatchet.node import Node
@@ -365,7 +363,6 @@ class HPCToolkitReader:
             for i, column in enumerate(self.metric_columns):
                 if "(inc)" not in column:
                     smc.subtract_exclusive_metric_vals(nid, parent_nid, self.np_metrics.T[i])
-
                     # parent_node = np.where(self.np_nids == parent_nid)
                     # this_node = np.where(self.np_nids == nid)
                     # pcs = np.column_stack((parent_node[0], this_node[0]))

@@ -36,11 +36,11 @@ def subtract_exclusive_metric_vals(long nid, long parent_nid, double[:] metrics)
       elif np_nids_memview[i] == parent_nid:
         p_nodes[loaded_p_nodes] = i
         loaded_p_nodes += 1
-      for i in range(loaded_c_nodes):
-        metrics[p_nodes[i]] -= metrics[c_nodes[i]]
+    for i in range(loaded_c_nodes):
+      metrics[p_nodes[i]] -= metrics[c_nodes[i]]
 
-  # we ran into an out of bounds error and need to allocate
-  # new memory
+# we ran into an out of bounds error and need to allocate
+# new memory
   except:
     num_stmt_nodes = 0
     subtract_exclusive_metric_vals(nid, parent_nid, metrics)
