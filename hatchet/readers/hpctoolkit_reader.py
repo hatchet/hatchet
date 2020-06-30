@@ -255,7 +255,8 @@ class HPCToolkitReader:
 
             # put updated metrics back in dataframe
             for i, column in enumerate(self.metric_columns):
-                self.df_metrics[column] = self.np_metrics.T[i]
+                if "(inc)" not in column:
+                    self.df_metrics[column] = self.np_metrics.T[i]
 
         with self.timer.phase("graph construction"):
             graph = Graph(list_roots)
@@ -363,14 +364,6 @@ class HPCToolkitReader:
             for i, column in enumerate(self.metric_columns):
                 if "(inc)" not in column:
                     smc.subtract_exclusive_metric_vals(nid, parent_nid, self.np_metrics.T[i])
-
-                    # print(pcs)
-                    # with open("test_2.txt", "a") as f:
-                    #     f.write("Metrics ({}, {}): [ ".format(nid, parent_nid))
-                    #     for i, metric in enumerate(self.np_metrics.T[i]):
-                    #         f.write("{}: {}, \n".format(i, metric))
-                    #     f.write("] \n\n")
-
 
         if xml_tag == "C" or (
             xml_tag == "Pr" and self.procedure_names[xml_node.get("n")] == ""
