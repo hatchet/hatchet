@@ -215,7 +215,10 @@ class ConsoleRenderer:
         return result
 
     def _ansi_color_for_metric(self, metric):
-        proportion_of_total = metric / self.max_metric
+        if self.max_metric != 0:
+            proportion_of_total = metric / self.max_metric
+        else:
+            proportion_of_total = metric / 1
 
         if proportion_of_total > 0.9:
             return self.colors.colormap[0]
