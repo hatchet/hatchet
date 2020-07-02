@@ -36,6 +36,7 @@ install:
         pip install --upgrade black;
     fi
   - python setup.py install
+  - python setup.py build_ext --inplace
   - pip list
 
 script:

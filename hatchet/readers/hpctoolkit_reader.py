@@ -19,7 +19,7 @@ except ImportError:
     import xml.etree.ElementTree as ET
 
 # cython imports
-import hatchet.cython_modules.subtract_metrics as smc
+import hatchet.cython_modules.libs.subtract_metrics as smc
 
 import hatchet.graphframe
 from hatchet.node import Node
