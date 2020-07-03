@@ -15,6 +15,7 @@ from .frame import Frame
 from .query_matcher import QueryMatcher
 from .external.console import ConsoleRenderer
 from .util.dot import trees_to_dot
+from .util.deprecated import deprecated_params
 
 
 class GraphFrame:
@@ -538,6 +539,16 @@ class GraphFrame:
         self.graph = union_graph
         other.graph = union_graph
 
+    @deprecated_params(
+        metric="metric_column",
+        name="name_column",
+        expand_names="expand_name",
+        context="context_column",
+        invert_colors="invert_colormap",
+        color="",
+        threshold="",
+        unicode="",
+    )
     def tree(
         self,
         metric_column="time",
@@ -550,16 +561,21 @@ class GraphFrame:
         depth=10000,
         highlight_name=True,
         invert_colormap=False,
+        color=None,  # removed
+        threshold=None,  # removed
+        unicode=None,  # removed
     ):
         """Format this graphframe as a tree and return the resulting string."""
         color = sys.stdout.isatty()
+        shell = None
 
         if color is False:
             try:
                 import IPython
+
+                shell = IPython.get_ipython().__class__.__name__
             except ImportError:
                 pass
-            shell = IPython.get_ipython().__class__.__name__
             # Test if running in a Jupyter notebook or qtconsole
             if shell == "ZMQInteractiveShell":
                 color = True
