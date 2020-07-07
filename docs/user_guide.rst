@@ -91,7 +91,7 @@ When the graph represented by the input dataset is small, the user may be intere
 
 .. code-block:: python
 
-  print(gf.tree(color=True))
+  print(gf.tree())
 
 One can also use the ``to_dot()`` function to output the tree as a string in the Graphviz' DOT format. This can be written to a file and then used to display a tree using the ``dot`` or ``neato`` program.
 
@@ -149,25 +149,48 @@ Dataframe operations
    :scale: 40 %
    :align: right
 
-**filter**: ``filter`` takes a user-supplied function and applies that to all
-rows in the DataFrame. The resulting Series or DataFrame is used to filter the
-DataFrame to only return rows that are true. The returned GraphFrame preserves
-the original graph provided as input to the filter operation. The images on the
-right show a DataFrame before and after a filter operation.
+**filter**: ``filter`` takes a user-supplied function or query object and
+applies that to all rows in the DataFrame. The resulting Series or DataFrame is
+used to filter the DataFrame to only return rows that are true. The returned
+GraphFrame preserves the original graph provided as input to the filter
+operation.
 
 .. code-block:: python
 
   filtered_gf = gf.filter(lambda x: x['time'] > 10.0)
 
+The images on the right show a DataFrame before and after a filter
+operation.
+
 .. image:: images/filter-dataframe.png
    :scale: 40 %
    :align: right
+
+An alternative way to filter the DataFrame is to supply a query object. The
+example below looks for a path that matches first a single node with name
+`solvers`, followed by 0 or more nodes with an inclusive time greater than 10,
+followed by a single node with name that starts with `p` and ends in an integer
+and has an inclusive time greater than or equal to 10.
 
 Filter is one of the operations that leads to the graph object and DataFrame
 object becoming inconsistent. After a filter operation, there are nodes in the
 graph that do not return any rows when used to index into the DataFrame.
 Typically, the user will perform a squash on the GraphFrame after a filter
 operation to make the graph and DataFrame objects consistent again.
+
+.. image:: images/query-dataframe.png
+   :scale: 35 %
+   :align: right
+
+.. code-block:: python
+
+  query = [
+      {"name": "solvers"},
+      ("*", {"time (inc)": "> 10"}),
+      {"name": "p[a-z]+[0-9]", "time (inc)": ">= 10"}
+  ]
+
+  filtered_gf = gf.filter(query)
 
 **drop_index_levels**: When there is per-MPI process or per-thread
 data in the DataFrame, a user might be interested in aggregating the data in
