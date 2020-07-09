@@ -1,6 +1,7 @@
 branches:
   only:
     - develop
+    - /^releases\/.*$/
 
 jobs:
   fast_finish: true
