@@ -202,6 +202,15 @@ class HPCToolkitReader:
         self.np_metrics = self.df_metrics[self.metric_columns].to_numpy()
         self.np_nids = self.df_metrics["nid"].to_numpy()
 
+        # looking at the data this appears to be the number of
+        # ranks * number of threads-1
+        # there will be this many copies of children and parent nodes
+        threadcounts = self.df_metrics.groupby(["nid"]).size()
+        self.total_execution_threads = threadcounts.iloc[0]
+        self.xml_nodes_per_thread = threadcounts.index[-1]
+
+
+
         # from subtract_metrics.pyx
         smc.set_np_nids_memview(self.np_nids, self.np_nids.shape[0])
 
@@ -364,7 +373,7 @@ class HPCToolkitReader:
             for i, column in enumerate(self.metric_columns):
                 if "(inc)" not in column:
                     smc.subtract_exclusive_metric_vals(
-                        nid, parent_nid, self.np_metrics.T[i]
+                        nid, parent_nid, self.np_metrics.T[i], self.total_execution_threads, self.xml_nodes_per_thread
                     )
 
         if xml_tag == "C" or (
