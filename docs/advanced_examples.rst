@@ -187,3 +187,31 @@ LULESH changes as the code scales.
 
 .. image:: images/lulesh-plot.png
    :scale: 50 %
+
+We use the same LULESH scaling datasets above to filter for time-consuming
+functions that start with the string ``Calc``. This data is used to produce a
+line chart showing the performance of each function as the number of processes
+is increased. One of the functions (``CalcMonotonicQRegionForElems``) does not
+occur until the number of processes is greater than 1.
+
+.. code-block:: python
+
+  datasets = glob.glob('lulesh*.json')
+  datasets.sort()
+
+  dataframes = []
+  for dataset in datasets:
+      gf = ht.GraphFrame.from_caliper(dataset)
+      gf.drop_index_levels()
+
+      num_pes = re.match('(.*)-(\d+)(.*)', dataset).group(2)
+      gf.dataframe['pes'] = num_pes
+      filtered_gf = gf.filter(lambda x: x["time"] > 1e6 and x["name"].startswith('Calc'))
+      dataframes.append(filtered_gf.dataframe)
+
+  result = pd.concat(dataframes)
+  pivot_df = result.pivot(index='pes', columns='name', values='time')
+  pivot_df.loc[:,:].plot.line(figsize=(10, 7))
+
+.. image:: images/lulesh-line-plot.png
+   :scale: 50 %
