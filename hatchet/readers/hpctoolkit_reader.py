@@ -7,6 +7,7 @@ import glob
 import struct
 import re
 import os
+import traceback
 
 import numpy as np
 import pandas as pd
@@ -19,7 +20,17 @@ except ImportError:
     import xml.etree.ElementTree as ET
 
 # cython imports
-import hatchet.cython_modules.libs.subtract_metrics as smc
+try:
+    import hatchet.cython_modules.libs.subtract_metrics as smc
+except ImportError:
+    print("-" * 80)
+    print(
+        """Error: Shared object (.so) not found for cython module.\n\tPlease run install.sh from the hatchet root directory to build modules."""
+    )
+    print("-" * 80)
+    traceback.print_exc()
+    raise
+
 
 import hatchet.graphframe
 from hatchet.node import Node
@@ -204,12 +215,11 @@ class HPCToolkitReader:
 
         # looking at the data this appears to be the number of
         # ranks * number of threads-1
-        # there will be this many copies of children and parent nodes
+        # There may be opportunity to push an equivalent computation to this one
+        # to Cython for speedup
         threadcounts = self.df_metrics.groupby(["nid"]).size()
         self.total_execution_threads = threadcounts.iloc[0]
         self.xml_nodes_per_thread = threadcounts.index[-1]
-
-
 
         # from subtract_metrics.pyx
         smc.set_np_nids_memview(self.np_nids, self.np_nids.shape[0])
@@ -373,7 +383,11 @@ class HPCToolkitReader:
             for i, column in enumerate(self.metric_columns):
                 if "(inc)" not in column:
                     smc.subtract_exclusive_metric_vals(
-                        nid, parent_nid, self.np_metrics.T[i], self.total_execution_threads, self.xml_nodes_per_thread
+                        nid,
+                        parent_nid,
+                        self.np_metrics.T[i],
+                        self.total_execution_threads,
+                        self.xml_nodes_per_thread,
                     )
 
         if xml_tag == "C" or (
