@@ -1,3 +1,35 @@
+# v1.2.0 (2020-07-07)
+
+This release adds a syntax query language as an alternative method for
+filtering the graph. It also refreshes the tree printout with an updated
+format and legend.
+
+### New features
+
+* Add graph syntax query language to filter the graph
+* Update HPCToolkit reader to handle sec or usec time units
+
+### Changes to existing APIs
+
+* Add squash parameter to filter function to perform filter and squash in a
+  single call
+* Filter function takes an object, which can be a user-supplied function or a
+  query object
+* Tree printout format updated
+* Tree printout API parameter changes:
+    - Removed parameters: ``color`` deprecated (color determined based on terminal support),
+      ``threshold``, and ``unicode``
+    - Changed parameters: ``metric`` changed to ``metric_column``, ``name`` changed to
+      ``name_column``, ``invert_colors`` changed to ``invert_colormap``,
+      ``expand_names`` changed to ``expand_name``, and ``context`` changed to
+      ``context_column``
+    - added ``highlight_name`` to highlight user code (from non-user code)
+
+### Bugfixes
+
+* Sort nodes in union and tree printout by their frame
+* Fix squash edge case where multiple parents are the same
+
 # v1.1.0 (2020-05-07)
 
 This release adds new analysis operators, as well as some bugfixes and minor
@@ -8,7 +40,7 @@ changes.
 * Add GraphFrame reindex operator
 * Query hatchet module version
 
-### Changes to existing APIs changes
+### Changes to existing APIs
 
 * Add depth parameter to tree printout
 

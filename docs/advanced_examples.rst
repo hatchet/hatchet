@@ -147,9 +147,9 @@ biggest offenders.
   squashed_gf2 = filtered_gf2.squash()
 
   diff_gf = squashed_gf2 - squashed_gf1
- 
+
   sorted_df = diff_gf.dataframe.sort_values(by=['time'], ascending=False)
-  print(sorted_df) 
+  print(sorted_df)
 
 .. image:: images/lulesh-mpi.png
    :scale: 40 %
