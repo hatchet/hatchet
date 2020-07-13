@@ -218,7 +218,7 @@ class HPCToolkitReader:
         # There may be opportunity to push an equivalent computation to this one
         # to Cython for speedup
         threadcounts = self.df_metrics.groupby(["nid"]).size()
-        self.total_execution_threads = threadcounts.iloc[0]
+        self.total_execution_threads = threadcounts.iloc[1]
         self.xml_nodes_per_thread = threadcounts.index[-1]
 
         # from subtract_metrics.pyx
