@@ -17,7 +17,6 @@ def set_np_nids_memview(long[:] np_nids, long np_nids_size):
   num_nids = np_nids_size
 
 # @cython.boundscheck(False)
-#
 def subtract_exclusive_metric_vals(long nid, long parent_nid, double[:] metrics, long num_stmt_nodes, long stride):
   global num_stmt_nodes
   global np_nids_memview
@@ -33,6 +32,7 @@ def subtract_exclusive_metric_vals(long nid, long parent_nid, double[:] metrics,
   # since they are passed by refrence via their
   # memory
     for i in range(num_stmt_nodes):
-      metrics[ref_nid-1] -= metrics[ref_pnid-1]
+      metrics[ref_pnid-1] -= metrics[ref_nid-1]
+
       ref_nid += stride
       ref_pnid += stride
