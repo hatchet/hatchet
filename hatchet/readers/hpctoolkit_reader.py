@@ -210,8 +210,7 @@ class HPCToolkitReader:
             del self.df_metrics["thread"]
 
         # used to speedup parse_xml_node
-        self.np_metrics = self.df_metrics[self.metric_columns].to_numpy()
-        self.np_nids = self.df_metrics["nid"].to_numpy()
+        self.np_metrics = self.df_metrics[self.metric_columns].values
 
         # looking at the data this appears to be the number of
         # ranks * number of threads-1
@@ -220,7 +219,6 @@ class HPCToolkitReader:
         threadcounts = self.df_metrics.groupby(["nid"]).size()
         self.total_execution_threads = threadcounts.iloc[1]
         self.xml_nodes_per_thread = threadcounts.index[-1]
-
 
     def read(self):
         """Read the experiment.xml file to extract the calling context tree and create
