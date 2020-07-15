@@ -221,8 +221,6 @@ class HPCToolkitReader:
         self.total_execution_threads = threadcounts.iloc[1]
         self.xml_nodes_per_thread = threadcounts.index[-1]
 
-        # from subtract_metrics.pyx
-        smc.set_np_nids_memview(self.np_nids, self.np_nids.shape[0])
 
     def read(self):
         """Read the experiment.xml file to extract the calling context tree and create
