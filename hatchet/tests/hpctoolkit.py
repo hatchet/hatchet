@@ -4,6 +4,8 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
+import pickle
+import os
 
 from hatchet import GraphFrame
 from hatchet.readers.hpctoolkit_reader import HPCToolkitReader
@@ -58,7 +60,7 @@ procedures = [
 ]
 
 
-def test_graphframe(calc_pi_hpct_db):
+def test_graphframe(data_dir, calc_pi_hpct_db):
     """Sanity test a GraphFrame object with known data."""
     gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
 
@@ -74,7 +76,29 @@ def test_graphframe(calc_pi_hpct_db):
         elif col in ("name", "type", "file", "module", "node"):
             assert gf.dataframe[col].dtype == np.object
 
-    # TODO: add tests to confirm values in dataframe
+    # add tests to confirm values in dataframe
+    with open(
+        str(os.path.join(data_dir, "hpctoolkit-cpi-graphframe.pickle")), "rb"
+    ) as f:
+        gf2 = pickle.load(f)
+
+    gf.dataframe.reset_index(inplace=True)
+    gf2.dataframe.reset_index(inplace=True)
+
+    gf.dataframe.sort_values(by=["nid", "rank"], inplace=True)
+    gf2.dataframe.sort_values(by=["nid", "rank"], inplace=True)
+
+    t1 = gf.dataframe["time"].values
+    t2 = gf.dataframe["time"].values
+
+    ti1 = gf.dataframe["time (inc)"].values
+    ti2 = gf.dataframe["time (inc)"].values
+
+    for v1, v2 in zip(t1, t2):
+        assert v1 == v2
+
+    for v1, v2 in zip(ti1, ti2):
+        assert v1 == v2
 
 
 def test_tree(calc_pi_hpct_db):
@@ -134,7 +158,7 @@ def test_read_calc_pi_database(calc_pi_hpct_db):
     assert all(pr in reader.procedure_names.values() for pr in procedures)
 
 
-def test_allgather(osu_allgather_hpct_db):
+def test_allgather(data_dir, osu_allgather_hpct_db):
     gf = GraphFrame.from_hpctoolkit(str(osu_allgather_hpct_db))
 
     assert len(gf.dataframe.groupby("module")) == 9
@@ -149,3 +173,27 @@ def test_allgather(osu_allgather_hpct_db):
             assert gf.dataframe[col].dtype == np.int64
         elif col in ("name", "type", "file", "module", "node"):
             assert gf.dataframe[col].dtype == np.object
+
+    # add tests to confirm values in dataframe
+    with open(
+        str(os.path.join(data_dir, "hpctoolkit-threads-osu-allgather.pickle")), "rb"
+    ) as f:
+        gf2 = pickle.load(f)
+
+    gf.dataframe.reset_index(inplace=True)
+    gf2.dataframe.reset_index(inplace=True)
+
+    gf.dataframe.sort_values(by=["nid", "rank", "thread"], inplace=True)
+    gf2.dataframe.sort_values(by=["nid", "rank", "thread"], inplace=True)
+
+    t1 = gf.dataframe["time"].values
+    t2 = gf.dataframe["time"].values
+
+    ti1 = gf.dataframe["time (inc)"].values
+    ti2 = gf.dataframe["time (inc)"].values
+
+    for v1, v2 in zip(t1, t2):
+        assert v1 == v2
+
+    for v1, v2 in zip(ti1, ti2):
+        assert v1 == v2

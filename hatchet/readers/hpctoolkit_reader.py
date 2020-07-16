@@ -101,6 +101,7 @@ class HPCToolkitReader:
         # number of thread 0 metric-db files (i.e., number of ranks), then
         # uses this as the divisor to the total number of metric-db files.
         metricdb_numranks_files = glob.glob(self.dir_name + "/*-000-*.metric-db")
+        self.num_ranks = len(metricdb_numranks_files)
         self.num_threads_per_rank = int(
             self.num_metricdb_files / len(metricdb_numranks_files)
         )
@@ -212,13 +213,9 @@ class HPCToolkitReader:
         # used to speedup parse_xml_node
         self.np_metrics = self.df_metrics[self.metric_columns].values
 
-        # looking at the data this appears to be the number of
-        # ranks * number of threads-1
-        # There may be opportunity to push an equivalent computation to this one
-        # to Cython for speedup
-        threadcounts = self.df_metrics.groupby(["nid"]).size()
-        self.total_execution_threads = threadcounts.iloc[1]
-        self.xml_nodes_per_thread = threadcounts.index[-1]
+        # getting the number of execution threads for our stride in
+        # subtract_exclusive_metric_vals/ num nodes is already calculated
+        self.total_execution_threads = self.num_threads_per_rank * self.num_ranks
 
     def read(self):
         """Read the experiment.xml file to extract the calling context tree and create
@@ -383,7 +380,7 @@ class HPCToolkitReader:
                         parent_nid,
                         self.np_metrics.T[i],
                         self.total_execution_threads,
-                        self.xml_nodes_per_thread,
+                        self.num_nodes,
                     )
 
         if xml_tag == "C" or (
