@@ -1,0 +1,137 @@
+node,rank,time (inc),time,nid,name,type,file,line,module
+"{'name': '<program root>', 'type': 'function'}",0,999238.0,0.0,2,<program root>,PF,<unknown file>,0,/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0
+"{'name': '<program root>', 'type': 'function'}",1,999390.0,0.0,2,<program root>,PF,<unknown file>,0,/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0
+"{'name': '<program root>', 'type': 'function'}",2,1000306.0,0.0,2,<program root>,PF,<unknown file>,0,/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0
+"{'name': '<program root>', 'type': 'function'}",3,999308.0,0.0,2,<program root>,PF,<unknown file>,0,/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0
+"{'name': 'main', 'type': 'function'}",0,999238.0,0.0,4,main,PF,./src/cpi.c,19,cpi
+"{'name': 'main', 'type': 'function'}",1,999390.0,0.0,4,main,PF,./src/cpi.c,19,cpi
+"{'name': 'main', 'type': 'function'}",2,1000306.0,0.0,4,main,PF,./src/cpi.c,19,cpi
+"{'name': 'main', 'type': 'function'}",3,999308.0,0.0,4,main,PF,./src/cpi.c,19,cpi
+"{'name': '27:MPI_Init', 'type': 'function'}",0,0.0,0.0,6,27:MPI_Init,PF,<unknown file>,0,/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0
+"{'name': '27:MPI_Init', 'type': 'function'}",1,0.0,0.0,6,27:MPI_Init,PF,<unknown file>,0,/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0
+"{'name': '27:MPI_Init', 'type': 'function'}",2,0.0,0.0,6,27:MPI_Init,PF,<unknown file>,0,/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0
+"{'name': '27:MPI_Init', 'type': 'function'}",3,0.0,0.0,6,27:MPI_Init,PF,<unknown file>,0,/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0
+"{'name': 'PMPI_Init', 'type': 'function'}",0,0.0,0.0,8,PMPI_Init,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/init.c,198,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': 'PMPI_Init', 'type': 'function'}",1,0.0,0.0,8,PMPI_Init,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/init.c,198,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': 'PMPI_Init', 'type': 'function'}",2,0.0,0.0,8,PMPI_Init,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/init.c,198,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': 'PMPI_Init', 'type': 'function'}",3,0.0,0.0,8,PMPI_Init,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/init.c,198,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '198:MPIR_Init_thread', 'type': 'function'}",0,0.0,0.0,10,198:MPIR_Init_thread,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/initthread.c,512,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '198:MPIR_Init_thread', 'type': 'function'}",1,0.0,0.0,10,198:MPIR_Init_thread,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/initthread.c,512,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '198:MPIR_Init_thread', 'type': 'function'}",2,0.0,0.0,10,198:MPIR_Init_thread,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/initthread.c,512,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '198:MPIR_Init_thread', 'type': 'function'}",3,0.0,0.0,10,198:MPIR_Init_thread,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/initthread.c,512,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '512:MPID_Init', 'type': 'function'}",0,0.0,0.0,12,512:MPID_Init,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_init.c,363,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '512:MPID_Init', 'type': 'function'}",1,0.0,0.0,12,512:MPID_Init,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_init.c,363,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '512:MPID_Init', 'type': 'function'}",2,0.0,0.0,12,512:MPID_Init,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_init.c,363,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '512:MPID_Init', 'type': 'function'}",3,0.0,0.0,12,512:MPID_Init,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_init.c,363,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '363:MPIDI_CH3_Init', 'type': 'function'}",0,0.0,0.0,14,363:MPIDI_CH3_Init,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/mpidi_calls.c,24,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '363:MPIDI_CH3_Init', 'type': 'function'}",1,0.0,0.0,14,363:MPIDI_CH3_Init,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/mpidi_calls.c,24,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '363:MPIDI_CH3_Init', 'type': 'function'}",2,0.0,0.0,14,363:MPIDI_CH3_Init,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/mpidi_calls.c,24,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '363:MPIDI_CH3_Init', 'type': 'function'}",3,0.0,0.0,14,363:MPIDI_CH3_Init,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/mpidi_calls.c,24,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '24:psm_doinit', 'type': 'function'}",0,0.0,0.0,16,24:psm_doinit,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_entry.c,348,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '24:psm_doinit', 'type': 'function'}",1,0.0,0.0,16,24:psm_doinit,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_entry.c,348,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '24:psm_doinit', 'type': 'function'}",2,0.0,0.0,16,24:psm_doinit,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_entry.c,348,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '24:psm_doinit', 'type': 'function'}",3,0.0,0.0,16,24:psm_doinit,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_entry.c,348,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '348:<unknown procedure>', 'type': 'function'}",0,0.0,0.0,18,348:<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '348:<unknown procedure>', 'type': 'function'}",1,0.0,0.0,18,348:<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '348:<unknown procedure>', 'type': 'function'}",2,0.0,0.0,18,348:<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '348:<unknown procedure>', 'type': 'function'}",3,0.0,0.0,18,348:<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",0,0.0,0.0,20,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",1,0.0,0.0,20,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",2,0.0,0.0,20,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",3,0.0,0.0,20,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",0,0.0,0.0,22,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",1,0.0,0.0,22,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",2,0.0,0.0,22,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",3,0.0,0.0,22,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': 'pthread_create', 'type': 'function'}",0,0.0,0.0,24,pthread_create,PF,<unknown file>,0,/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0
+"{'name': 'pthread_create', 'type': 'function'}",1,0.0,0.0,24,pthread_create,PF,<unknown file>,0,/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0
+"{'name': 'pthread_create', 'type': 'function'}",2,0.0,0.0,24,pthread_create,PF,<unknown file>,0,/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0
+"{'name': 'pthread_create', 'type': 'function'}",3,0.0,0.0,24,pthread_create,PF,<unknown file>,0,/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",0,0.0,0.0,25,<unknown file>:0,S,<unknown file>,0,
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",1,0.0,0.0,25,<unknown file>:0,S,<unknown file>,0,
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",2,0.0,0.0,25,<unknown file>:0,S,<unknown file>,0,
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",3,0.0,0.0,25,<unknown file>:0,S,<unknown file>,0,
+"{'name': '62:MPI_Finalize', 'type': 'function'}",0,999238.0,0.0,27,62:MPI_Finalize,PF,<unknown file>,0,/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0
+"{'name': '62:MPI_Finalize', 'type': 'function'}",1,999390.0,0.0,27,62:MPI_Finalize,PF,<unknown file>,0,/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0
+"{'name': '62:MPI_Finalize', 'type': 'function'}",2,1000306.0,0.0,27,62:MPI_Finalize,PF,<unknown file>,0,/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0
+"{'name': '62:MPI_Finalize', 'type': 'function'}",3,999308.0,0.0,27,62:MPI_Finalize,PF,<unknown file>,0,/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/hpctoolkit-2017-03-16/lib/hpctoolkit/ext-libs/libmonitor.so.0.0.0
+"{'name': 'PMPI_Finalize', 'type': 'function'}",0,999238.0,0.0,29,PMPI_Finalize,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/finalize.c,294,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': 'PMPI_Finalize', 'type': 'function'}",1,999390.0,0.0,29,PMPI_Finalize,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/finalize.c,294,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': 'PMPI_Finalize', 'type': 'function'}",2,1000306.0,0.0,29,PMPI_Finalize,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/finalize.c,294,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': 'PMPI_Finalize', 'type': 'function'}",3,999308.0,0.0,29,PMPI_Finalize,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/finalize.c,294,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '294:MPID_Finalize', 'type': 'function'}",0,999238.0,0.0,31,294:MPID_Finalize,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_finalize.c,162,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '294:MPID_Finalize', 'type': 'function'}",1,999390.0,0.0,31,294:MPID_Finalize,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_finalize.c,162,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '294:MPID_Finalize', 'type': 'function'}",2,1000306.0,0.0,31,294:MPID_Finalize,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_finalize.c,162,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '294:MPID_Finalize', 'type': 'function'}",3,999308.0,0.0,31,294:MPID_Finalize,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_finalize.c,162,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '162:MPIDI_CH3_Finalize', 'type': 'function'}",0,999238.0,0.0,33,162:MPIDI_CH3_Finalize,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/mpidi_calls.c,230,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '162:MPIDI_CH3_Finalize', 'type': 'function'}",1,999390.0,0.0,33,162:MPIDI_CH3_Finalize,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/mpidi_calls.c,230,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '162:MPIDI_CH3_Finalize', 'type': 'function'}",2,1000306.0,0.0,33,162:MPIDI_CH3_Finalize,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/mpidi_calls.c,230,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '162:MPIDI_CH3_Finalize', 'type': 'function'}",3,999308.0,0.0,33,162:MPIDI_CH3_Finalize,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/mpidi_calls.c,230,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '230:psm_dofinalize', 'type': 'function'}",0,999238.0,0.0,35,230:psm_dofinalize,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_exit.c,36,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '230:psm_dofinalize', 'type': 'function'}",1,999390.0,0.0,35,230:psm_dofinalize,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_exit.c,36,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '230:psm_dofinalize', 'type': 'function'}",2,1000306.0,0.0,35,230:psm_dofinalize,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_exit.c,36,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '230:psm_dofinalize', 'type': 'function'}",3,999308.0,0.0,35,230:psm_dofinalize,PF,/tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_exit.c,36,/usr/local/tools/mvapich2-intel-debug-2.2/lib/libmpi.so.12.0.5
+"{'name': '36:<unknown procedure>', 'type': 'function'}",0,999238.0,0.0,37,36:<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '36:<unknown procedure>', 'type': 'function'}",1,999390.0,0.0,37,36:<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '36:<unknown procedure>', 'type': 'function'}",2,1000306.0,0.0,37,36:<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '36:<unknown procedure>', 'type': 'function'}",3,999308.0,0.0,37,36:<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",0,999238.0,0.0,39,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",1,999390.0,0.0,39,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",2,1000306.0,0.0,39,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",3,999308.0,0.0,39,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",0,999238.0,0.0,41,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",1,999390.0,0.0,41,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",2,1000306.0,0.0,41,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",3,999308.0,0.0,41,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'file': 'interp.c', 'line': '0', 'type': 'statement'}",0,59960.0,59960.0,60,interp.c:0,S,interp.c,0,
+"{'file': 'interp.c', 'line': '0', 'type': 'statement'}",1,35980.0,35980.0,60,interp.c:0,S,interp.c,0,
+"{'file': 'interp.c', 'line': '0', 'type': 'statement'}",2,59961.0,59961.0,60,interp.c:0,S,interp.c,0,
+"{'file': 'interp.c', 'line': '0', 'type': 'statement'}",3,23976.0,23976.0,60,interp.c:0,S,interp.c,0,
+"{'name': '<unknown procedure>', 'type': 'function'}",0,305643.0,0.0,49,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",1,334893.0,0.0,49,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",2,245830.0,0.0,49,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",3,286872.0,0.0,49,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",0,47965.0,47965.0,56,<unknown file>:0,S,<unknown file>,0,
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",1,53972.0,53972.0,56,<unknown file>:0,S,<unknown file>,0,
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",2,17988.0,17988.0,56,<unknown file>:0,S,<unknown file>,0,
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",3,77022.0,77022.0,56,<unknown file>:0,S,<unknown file>,0,
+"{'name': '<unknown procedure>', 'type': 'function'}",0,197718.0,0.0,54,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",1,244939.0,0.0,54,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",2,221846.0,0.0,54,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",3,173876.0,0.0,54,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",0,197718.0,197718.0,55,<unknown file>:0,S,<unknown file>,0,
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",1,244939.0,244939.0,55,<unknown file>:0,S,<unknown file>,0,
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",2,221846.0,221846.0,55,<unknown file>:0,S,<unknown file>,0,
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",3,173876.0,173876.0,55,<unknown file>:0,S,<unknown file>,0,
+"{'name': '<unknown procedure>', 'type': 'function'}",0,59960.0,0.0,51,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",1,35982.0,0.0,51,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",2,5996.0,0.0,51,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",3,35974.0,0.0,51,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",0,59960.0,59960.0,52,<unknown file>:0,S,<unknown file>,0,
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",1,35982.0,35982.0,52,<unknown file>:0,S,<unknown file>,0,
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",2,5996.0,5996.0,52,<unknown file>:0,S,<unknown file>,0,
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",3,35974.0,35974.0,52,<unknown file>:0,S,<unknown file>,0,
+"{'name': '<unknown procedure>', 'type': 'function'}",0,316840.0,0.0,46,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",1,316759.0,0.0,46,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",2,376650.0,0.0,46,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",3,377648.0,0.0,46,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",0,316840.0,316840.0,47,<unknown file>:0,S,<unknown file>,0,
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",1,316759.0,316759.0,47,<unknown file>:0,S,<unknown file>,0,
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",2,376650.0,376650.0,47,<unknown file>:0,S,<unknown file>,0,
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",3,377648.0,377648.0,47,<unknown file>:0,S,<unknown file>,0,
+"{'name': '<unknown procedure>', 'type': 'function'}",0,298806.0,0.0,43,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",1,293767.0,0.0,43,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",2,317865.0,0.0,43,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'name': '<unknown procedure>', 'type': 'function'}",3,310812.0,0.0,43,<unknown procedure>,PF,<unknown file>,0,/usr/lib64/libpsm_infinipath.so.1.14
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",0,298806.0,298806.0,44,<unknown file>:0,S,<unknown file>,0,
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",1,293767.0,293767.0,44,<unknown file>:0,S,<unknown file>,0,
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",2,317865.0,317865.0,44,<unknown file>:0,S,<unknown file>,0,
+"{'file': '<unknown file>', 'line': '0', 'type': 'statement'}",3,310812.0,310812.0,44,<unknown file>:0,S,<unknown file>,0,
+"{'name': '__GI_sched_yield', 'type': 'function'}",0,17989.0,0.0,58,__GI_sched_yield,PF,interp.c,0,/lib64/libc-2.12.so
+"{'name': '__GI_sched_yield', 'type': 'function'}",1,17991.0,0.0,58,__GI_sched_yield,PF,interp.c,0,/lib64/libc-2.12.so
+"{'name': '__GI_sched_yield', 'type': 'function'}",2,0.0,0.0,58,__GI_sched_yield,PF,interp.c,0,/lib64/libc-2.12.so
+"{'name': '__GI_sched_yield', 'type': 'function'}",3,0.0,0.0,58,__GI_sched_yield,PF,interp.c,0,/lib64/libc-2.12.so
+"{'file': 'interp.c', 'line': '0', 'type': 'statement'}",0,17989.0,17989.0,59,interp.c:0,S,interp.c,0,
+"{'file': 'interp.c', 'line': '0', 'type': 'statement'}",1,17991.0,17991.0,59,interp.c:0,S,interp.c,0,
+"{'file': 'interp.c', 'line': '0', 'type': 'statement'}",2,0.0,0.0,59,interp.c:0,S,interp.c,0,
+"{'file': 'interp.c', 'line': '0', 'type': 'statement'}",3,0.0,0.0,59,interp.c:0,S,interp.c,0,

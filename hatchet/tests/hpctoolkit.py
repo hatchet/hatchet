@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
-import pickle
+import pandas as pd
 import os
 
 from hatchet import GraphFrame
@@ -77,22 +77,19 @@ def test_graphframe(data_dir, calc_pi_hpct_db):
             assert gf.dataframe[col].dtype == np.object
 
     # add tests to confirm values in dataframe
-    with open(
-        str(os.path.join(data_dir, "hpctoolkit-cpi-graphframe.pickle")), "rb"
-    ) as f:
-        gf2 = pickle.load(f)
+    df = pd.read_csv(str(os.path.join(data_dir, "hpctoolkit-cpi-graphframe.csv")))
 
     gf.dataframe.reset_index(inplace=True)
-    gf2.dataframe.reset_index(inplace=True)
+    df.reset_index(inplace=True)
 
     gf.dataframe.sort_values(by=["nid", "rank"], inplace=True)
-    gf2.dataframe.sort_values(by=["nid", "rank"], inplace=True)
+    df.sort_values(by=["nid", "rank"], inplace=True)
 
     t1 = gf.dataframe["time"].values
-    t2 = gf.dataframe["time"].values
+    t2 = df["time"].values
 
     ti1 = gf.dataframe["time (inc)"].values
-    ti2 = gf.dataframe["time (inc)"].values
+    ti2 = df["time (inc)"].values
 
     for v1, v2 in zip(t1, t2):
         assert v1 == v2
@@ -175,22 +172,21 @@ def test_allgather(data_dir, osu_allgather_hpct_db):
             assert gf.dataframe[col].dtype == np.object
 
     # add tests to confirm values in dataframe
-    with open(
-        str(os.path.join(data_dir, "hpctoolkit-threads-osu-allgather.pickle")), "rb"
-    ) as f:
-        gf2 = pickle.load(f)
+    df = pd.read_csv(
+        str(os.path.join(data_dir, "hpctoolkit-threads-osu-allgather.csv"))
+    )
 
     gf.dataframe.reset_index(inplace=True)
-    gf2.dataframe.reset_index(inplace=True)
+    df.reset_index(inplace=True)
 
     gf.dataframe.sort_values(by=["nid", "rank", "thread"], inplace=True)
-    gf2.dataframe.sort_values(by=["nid", "rank", "thread"], inplace=True)
+    df.sort_values(by=["nid", "rank", "thread"], inplace=True)
 
     t1 = gf.dataframe["time"].values
-    t2 = gf.dataframe["time"].values
+    t2 = df["time"].values
 
     ti1 = gf.dataframe["time (inc)"].values
-    ti2 = gf.dataframe["time (inc)"].values
+    ti2 = df["time (inc)"].values
 
     for v1, v2 in zip(t1, t2):
         assert v1 == v2
