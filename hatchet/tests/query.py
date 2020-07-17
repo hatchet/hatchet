@@ -306,7 +306,7 @@ def test_match(mock_graph_literal):
         ]
     ]
     query0 = QueryMatcher(path0)
-    assert query0._match_pattern(gf, root) == match0
+    assert query0._match_pattern(gf, root, 0) == match0
 
     path1 = [
         {"name": "waldo"},
@@ -316,7 +316,7 @@ def test_match(mock_graph_literal):
         {"time (inc)": 7.5, "time": 7.5},
     ]
     query1 = QueryMatcher(path1)
-    assert query1._match_pattern(gf, root) is None
+    assert query1._match_pattern(gf, root, 0) is None
 
 
 def test_apply(mock_graph_literal):
@@ -392,7 +392,6 @@ def test_apply(mock_graph_literal):
     path = [{"name": "this"}, ("*", {"name": "is"}), {"name": "nonsense"}]
 
     query = QueryMatcher(path)
-
     assert query.apply(gf) == []
 
     path = [{"name": 5}, "*", {"name": "whatever"}]
@@ -420,6 +419,54 @@ def test_apply(mock_graph_literal):
     query = QueryMatcher(path)
     with pytest.raises(InvalidQueryFilter):
         query.apply(gf)
+
+    path = ["*", {"name": "bar"}, {"name": "grault"}, "*"]
+    match = [
+        [root, root.children[0], root.children[0].children[1]],
+        [root.children[0], root.children[0].children[1]],
+        [
+            root,
+            root.children[1],
+            root.children[1].children[0],
+            root.children[1].children[0].children[0],
+            root.children[1].children[0].children[0].children[0],
+            root.children[1].children[0].children[0].children[0].children[1],
+        ],
+        [
+            root.children[1],
+            root.children[1].children[0],
+            root.children[1].children[0].children[0],
+            root.children[1].children[0].children[0].children[0],
+            root.children[1].children[0].children[0].children[0].children[1],
+        ],
+        [
+            root.children[1].children[0],
+            root.children[1].children[0].children[0],
+            root.children[1].children[0].children[0].children[0],
+            root.children[1].children[0].children[0].children[0].children[1],
+        ],
+        [
+            root.children[1].children[0].children[0],
+            root.children[1].children[0].children[0].children[0],
+            root.children[1].children[0].children[0].children[0].children[1],
+        ],
+        [
+            root.children[1].children[0].children[0].children[0],
+            root.children[1].children[0].children[0].children[0].children[1],
+        ],
+        [
+            gf.graph.roots[1],
+            gf.graph.roots[1].children[0],
+            gf.graph.roots[1].children[0].children[1],
+        ],
+        [gf.graph.roots[1].children[0], gf.graph.roots[1].children[0].children[1]],
+    ]
+    query = QueryMatcher(path)
+    assert sorted(query.apply(gf)) == sorted(match)
+
+    path = ["*", {"name": "bar"}, {"name": "grault"}, "+"]
+    query = QueryMatcher(path)
+    assert query.apply(gf) == []
 
 
 def test_apply_indices(calc_pi_hpct_db):

@@ -341,7 +341,7 @@ class QueryMatcher:
             return None
         return matches
 
-    def _match_pattern(self, gf, pattern_root):
+    def _match_pattern(self, gf, pattern_root, match_idx):
         """Try to match the query pattern starting at the provided root node.
 
         Arguments:
@@ -353,8 +353,11 @@ class QueryMatcher:
         """
         assert isinstance(pattern_root, Node)
         # Starting query node
-        pattern_idx = 1
-        if self.query_pattern[0][0] == "*" or self.query_pattern[0][0] == "+":
+        pattern_idx = match_idx + 1
+        if (
+            self.query_pattern[match_idx][0] == "*"
+            or self.query_pattern[match_idx][0] == "+"
+        ):
             pattern_idx = 0
         # Starting matching pattern
         matches = [[pattern_root]]
@@ -375,19 +378,25 @@ class QueryMatcher:
                     else:
                         sub_match.extend(s)
                 elif wcard == "*":
-                    for child in sorted(m[-1].children, key=traversal_order):
-                        s = self._match_0_or_more(gf, child, pattern_idx)
-                        if s is None:
-                            sub_match.append(s)
-                        else:
-                            sub_match.extend(s)
+                    if len(m[-1].children) == 0:
+                        sub_match.append([])
+                    else:
+                        for child in sorted(m[-1].children, key=traversal_order):
+                            s = self._match_0_or_more(gf, child, pattern_idx)
+                            if s is None:
+                                sub_match.append(s)
+                            else:
+                                sub_match.extend(s)
                 elif wcard == "+":
-                    for child in sorted(m[-1].children, key=traversal_order):
-                        s = self._match_1_or_more(gf, child, pattern_idx)
-                        if s is None:
-                            sub_match.append(s)
-                        else:
-                            sub_match.extend(s)
+                    if len(m[-1].children) == 0:
+                        sub_match.append(None)
+                    else:
+                        for child in sorted(m[-1].children, key=traversal_order):
+                            s = self._match_1_or_more(gf, child, pattern_idx)
+                            if s is None:
+                                sub_match.append(s)
+                            else:
+                                sub_match.extend(s)
                 else:
                     raise InvalidQueryFilter(
                         'Query wildcards must be one of ".", "*", or "+"'
@@ -426,8 +435,13 @@ class QueryMatcher:
         # If the node matches the starting/root node of the query,
         # try to get all query matches in the subgraph rooted at
         # this node.
+        if self.query_pattern[0][0] == "*":
+            if 1 in self.search_cache[node._hatchet_nid]:
+                sub_match = self._match_pattern(gf, node, 1)
+                if sub_match is not None:
+                    matches.extend(sub_match)
         if 0 in self.search_cache[node._hatchet_nid]:
-            sub_match = self._match_pattern(gf, node)
+            sub_match = self._match_pattern(gf, node, 0)
             if sub_match is not None:
                 matches.extend(sub_match)
         # Note that the node is now visited.
