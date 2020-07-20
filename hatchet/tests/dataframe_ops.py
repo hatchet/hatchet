@@ -84,6 +84,21 @@ def test_div(mock_graph_literal):
     assert gf5.graph == gf3.graph == gf4.graph
 
 
+def test_mul(mock_graph_literal):
+    gf1 = GraphFrame.from_literal(mock_graph_literal)
+    gf2 = GraphFrame.from_literal(mock_graph_literal)
+
+    assert gf1.graph is not gf2.graph
+
+    gf3 = gf1.mul(gf2)
+    assert len(gf3.graph) == gf3.dataframe.shape[0]
+
+    assert gf3.graph == gf1.graph.union(gf2.graph)
+
+    assert gf3.dataframe["time"].sum() == 1575
+    assert gf3.dataframe["time (inc)"].sum() == 35400
+
+
 def test_add_operator(mock_graph_literal):
     gf1 = GraphFrame.from_literal(mock_graph_literal)
     gf2 = GraphFrame.from_literal(mock_graph_literal)
@@ -171,6 +186,22 @@ def test_div_operator(mock_graph_literal):
     assert gf7.dataframe["time"].sum() == gf5.dataframe["time"].sum()
 
 
+def test_mul_operator(mock_graph_literal):
+    gf1 = GraphFrame.from_literal(mock_graph_literal)
+    gf2 = GraphFrame.from_literal(mock_graph_literal)
+    gf3 = GraphFrame.from_literal(mock_graph_literal)
+
+    assert gf1.graph is not gf2.graph is not gf3.graph
+
+    gf4 = gf1 * gf2 * gf3
+
+    assert gf4.graph == gf1.graph.union(gf2.graph.union(gf3.graph))
+    assert len(gf4.graph) == gf4.dataframe.shape[0]
+
+    assert gf4.dataframe["time"].sum() == 17625
+    assert gf4.dataframe["time (inc)"].sum() == 3060250
+
+
 def test_iadd_operator(mock_graph_literal):
     gf1 = GraphFrame.from_literal(mock_graph_literal)
     gf2 = GraphFrame.from_literal(mock_graph_literal)
@@ -236,3 +267,18 @@ def test_idiv_operator(mock_graph_literal):
     gf3 /= gf1
 
     assert gf3.graph == gf1.graph
+
+
+def test_imul_operator(mock_graph_literal):
+    gf1 = GraphFrame.from_literal(mock_graph_literal)
+    gf2 = GraphFrame.from_literal(mock_graph_literal)
+
+    assert gf1.graph is not gf2.graph
+
+    gf1 *= gf2
+
+    assert gf1.graph == gf1.graph.union(gf2.graph)
+    assert len(gf1.graph) == gf1.dataframe.shape[0]
+
+    assert gf1.dataframe["time"].sum() == 1575
+    assert gf1.dataframe["time (inc)"].sum() == 35400
