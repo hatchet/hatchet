@@ -43,6 +43,7 @@ If you are new to hatchet and want to start using it, see :doc:`Getting Started
    getting_started
    user_guide
    simple_examples
+   scaling_examples
    advanced_examples
 
 
