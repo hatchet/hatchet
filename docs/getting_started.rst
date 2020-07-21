@@ -31,14 +31,14 @@ You can get hatchet from its `GitHub repository
 
 This will create a directory called ``hatchet``.
 
-Add Hatchet to your PYTHONPATH
+Install and Build Hatchet
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Assuming that the full path to your cloned hatchet directory is in the ``HATCHET_ROOT`` environment variable, you can add ``$HATCHET_ROOT`` to your ``PYTHONPATH`` and you are ready to start using hatchet:
+To build hatchet and update your PYTHONPATH, run the folllowing bash script from the hatchet root directory:
 
 .. code-block:: console
 
-    $ export PYTHONPATH=$HATCHET_ROOT:$PYTHONPATH
+    $ ./install.sh
 
 Alternatively, you can install hatchet using pip:
 
