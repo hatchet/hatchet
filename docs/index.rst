@@ -42,6 +42,11 @@ If you are new to hatchet and want to start using it, see :doc:`Getting Started
 
    getting_started
    user_guide
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Analysis Examples
+
    simple_examples
    scaling_examples
    advanced_examples
