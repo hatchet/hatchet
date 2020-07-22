@@ -35,7 +35,7 @@ except ImportError:
 import hatchet.graphframe
 from hatchet.node import Node
 from hatchet.graph import Graph
-from hatchet.util.timer import Timer
+from hatchet.util.profiler import Timer
 from hatchet.frame import Frame
 
 
