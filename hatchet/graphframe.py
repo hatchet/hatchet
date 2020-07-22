@@ -890,6 +890,26 @@ class GraphFrame:
             other_copy, self_copy.dataframe.divide, *args, **kwargs
         )
 
+    def mul(self, other, *args, **kwargs):
+        """Returns the column-wise float multiplication of two graphframes as a new graphframe.
+
+        This graphframe is the union of self's and other's graphs, and does not
+        modify self or other.
+
+        Return:
+            (GraphFrame): new graphframe
+        """
+        # create a copy of both graphframes
+        self_copy = self.copy()
+        other_copy = other.copy()
+
+        # unify copies of graphframes
+        self_copy.unify(other_copy)
+
+        return self_copy._operator(
+            other_copy, self_copy.dataframe.multiply, *args, **kwargs
+        )
+
     def __iadd__(self, other):
         """Computes column-wise sum of two graphframes and stores the result in
         self.
@@ -919,6 +939,17 @@ class GraphFrame:
             (GraphFrame): new graphframe
         """
         return self.add(other)
+
+    def __mul__(self, other):
+        """Returns the column-wise multiplication of two graphframes as a new graphframe.
+
+        This graphframe is the union of self's and other's graphs, and does not
+        modify self or other.
+
+        Return:
+            (GraphFrame): new graphframe
+        """
+        return self.mul(other)
 
     def __isub__(self, other):
         """Computes column-wise difference of two graphframes and stores the
@@ -981,6 +1012,25 @@ class GraphFrame:
             (GraphFrame): new graphframe
         """
         return self.div(other)
+
+    def __imul__(self, other):
+        """Computes column-wise float multiplication of two graphframes and stores the
+        result in self.
+
+        Self's graphframe is the union of self's and other's graphs, and the
+        node handles from self will be rewritten with this operation. This
+        operation does not modify other.
+
+        Return:
+            (GraphFrame): self's graphframe modified
+        """
+        # create a copy of other's graphframe
+        other_copy = other.copy()
+
+        # unify self graphframe and other graphframe
+        self.unify(other_copy)
+
+        return self._operator(other_copy, self.dataframe.mul)
 
 
 class InvalidFilter(Exception):
