@@ -70,6 +70,7 @@ class Graph:
         inverted_merges = defaultdict(
             lambda: []
         )  # merged_node -> list of corresponding old_nodes
+        processed = []
 
         def _find_child_merges(node_list):
             index = index_by("frame", node_list)
@@ -89,6 +90,8 @@ class Graph:
 
         _find_child_merges(self.roots)
         for node in self.traverse():
+            if node in processed:
+                continue
             nodes = None
             # If node is going to be merged with other nodes,
             # collect the set of those nodes' children. This is
@@ -99,10 +102,12 @@ class Graph:
                 nodes = []
                 for node_to_merge in inverted_merges[new_node]:
                     nodes.extend(node_to_merge.children)
+                processed.extend(inverted_merges[new_node])
             # If node is not going to be merged, simply get the list of
             # node's children.
             else:
                 nodes = node.children
+                processed.append(node)
             _find_child_merges(nodes)
 
         return merges
