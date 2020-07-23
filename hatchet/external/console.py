@@ -60,8 +60,10 @@ class ConsoleRenderer:
             self.colors.colormap.reverse()
         if "rank" in dataframe.index.names:
             self.max_metric = (dataframe.xs(self.rank, level=1))[self.metric].max()
+            self.min_metric = (dataframe.xs(self.rank, level=1))[self.metric].min()
         else:
             self.max_metric = dataframe[self.metric].max()
+            self.min_metric = dataframe[self.metric].min()
 
         if self.unicode:
             self.lr_arrows = {"◀": u"◀ ", "▶": u"▶ "}
@@ -94,13 +96,15 @@ class ConsoleRenderer:
 
     def render_legend(self):
         def render_label(index, low, high):
+            metric_range = self.max_metric - self.min_metric
+
             return (
                 self.colors.colormap[index]
                 + u"█ "
                 + self.colors.end
-                + "{:.2f}".format(low * self.max_metric)
+                + "{:.2f}".format(low * metric_range + self.min_metric)
                 + " - "
-                + "{:.2f}".format(high * self.max_metric)
+                + "{:.2f}".format(high * metric_range + self.min_metric)
                 + "\n"
             )
 
@@ -215,8 +219,10 @@ class ConsoleRenderer:
         return result
 
     def _ansi_color_for_metric(self, metric):
-        if self.max_metric != 0:
-            proportion_of_total = metric / self.max_metric
+        metric_range = self.max_metric - self.min_metric
+
+        if metric_range != 0:
+            proportion_of_total = (metric - self.min_metric) / metric_range
         else:
             proportion_of_total = metric / 1
 
