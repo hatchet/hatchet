@@ -12,6 +12,14 @@ hatchet.util.config module
    :undoc-members:
    :show-inheritance:
 
+hatchet.util.deprecated module
+------------------------------
+
+.. automodule:: hatchet.util.deprecated
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 hatchet.util.dot module
 -----------------------
 
@@ -28,10 +36,10 @@ hatchet.util.executable module
    :undoc-members:
    :show-inheritance:
 
-hatchet.util.timer module
--------------------------
+hatchet.util.profiler module
+----------------------------
 
-.. automodule:: hatchet.util.timer
+.. automodule:: hatchet.util.profiler
    :members:
    :undoc-members:
    :show-inheritance:
