@@ -60,8 +60,10 @@ class ConsoleRenderer:
             self.colors.colormap.reverse()
         if "rank" in dataframe.index.names:
             self.max_metric = (dataframe.xs(self.rank, level=1))[self.metric].max()
+            self.min_metric = (dataframe.xs(self.rank, level=1))[self.metric].min()
         else:
             self.max_metric = dataframe[self.metric].max()
+            self.min_metric = dataframe[self.metric].min()
 
         if self.unicode:
             self.lr_arrows = {"◀": u"◀ ", "▶": u"▶ "}
@@ -98,9 +100,9 @@ class ConsoleRenderer:
                 self.colors.colormap[index]
                 + u"█ "
                 + self.colors.end
-                + "{:.2f}".format(low * self.max_metric)
+                + "{:.2f}".format((low * (self.max_metric-self.min_metric)) + self.min_metric)
                 + " - "
-                + "{:.2f}".format(high * self.max_metric)
+                + "{:.2f}".format((high * (self.max_metric-self.min_metric) + self.min_metric))
                 + "\n"
             )
 
