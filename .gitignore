@@ -1,10 +1,7 @@
 *.pyc
 .cache
 .pytest_cache
+hatchet/cython_modules/libs/subtract_metrics.*.so
 
-experiment.xml
 docs/_build
-examples/test.dot
 
-*.metric-db
-*.egg-info

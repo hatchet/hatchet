@@ -7,6 +7,7 @@ Subpackages
 .. toctree::
    :maxdepth: 4
 
+   hatchet.cython_modules
    hatchet.external
    hatchet.readers
    hatchet.util
