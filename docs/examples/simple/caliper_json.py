@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 
-import subprocess
 import hatchet as ht
 
 
 if __name__ == "__main__":
     # Path to caliper json-split file.
-    json_file = "../../hatchet/tests/data/caliper-cpi-json/cpi-sample-callpathprofile.json"
+    json_file = (
+        "../../hatchet/tests/data/caliper-cpi-json/cpi-sample-callpathprofile.json"
+    )
 
     # Use hatchet's ``from_caliper_json`` API with the resulting json-split.
     # The result is stored into Hatchet's GraphFrame.
