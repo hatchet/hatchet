@@ -561,9 +561,9 @@ class GraphFrame:
         depth=10000,
         highlight_name=True,
         invert_colormap=False,
-        color=None,  # removed
-        threshold=None,  # removed
-        unicode=None,  # removed
+        color=None,  # remove in next release
+        threshold=None,  # remove in next release
+        unicode=None,  # remove in next release
     ):
         """Format this graphframe as a tree and return the resulting string."""
         color = sys.stdout.isatty()

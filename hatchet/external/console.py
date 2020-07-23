@@ -96,13 +96,15 @@ class ConsoleRenderer:
 
     def render_legend(self):
         def render_label(index, low, high):
+            metric_range = self.max_metric - self.min_metric
+
             return (
                 self.colors.colormap[index]
                 + u"█ "
                 + self.colors.end
-                + "{:.2f}".format((low * (self.max_metric-self.min_metric)) + self.min_metric)
+                + "{:.2f}".format(low * metric_range + self.min_metric)
                 + " - "
-                + "{:.2f}".format((high * (self.max_metric-self.min_metric) + self.min_metric))
+                + "{:.2f}".format(high * metric_range + self.min_metric)
                 + "\n"
             )
 
@@ -217,8 +219,10 @@ class ConsoleRenderer:
         return result
 
     def _ansi_color_for_metric(self, metric):
-        if self.max_metric != 0:
-            proportion_of_total = metric / self.max_metric
+        metric_range = self.max_metric - self.min_metric
+
+        if metric_range != 0:
+            proportion_of_total = (metric - self.min_metric) / metric_range
         else:
             proportion_of_total = metric / 1
 
