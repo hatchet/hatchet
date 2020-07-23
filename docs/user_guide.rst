@@ -3,8 +3,9 @@
 
    SPDX-License-Identifier: MIT
 
+**********
 User Guide
-==========
+**********
 
 Hatchet is a Python tool that simplifies the process of analyzing hierarchical
 performance data such as calling context trees. Hatchet uses pandas dataframes
@@ -14,7 +15,7 @@ consistent with the dataframe.
 
 
 Data structures in hatchet
---------------------------
+==========================
 
 Hatchet's primary data structure is a ``GraphFrame``, which combines a
 structured index in the form of a graph with a pandas dataframe.  The images
@@ -51,7 +52,7 @@ dataframe.
 
 
 Reading in a dataset
---------------------
+====================
 
 One can use one of several static methods defined in the GraphFrame class to
 read in an input dataset using hatchet. For example, if a user has an
@@ -78,10 +79,11 @@ the ``from_caliper_json`` method:
       gf = ht.GraphFrame.from_caliper_json(filename)
 
 Examples of reading in other file formats can be found in
-:doc:`Basic Examples <basic_examples>`.
+:doc:`Analysis Examples <analysis_examples>`.
+
 
 Visualizing the data
---------------------
+====================
 
 .. image:: images/vis-terminal.png
    :scale: 40 %
@@ -143,7 +145,7 @@ a cross section of the dataframe, say the values for rank 0, like this:
 
 
 Dataframe operations
---------------------
+====================
 
 .. image:: images/sample-dataframe.png
    :scale: 40 %
@@ -217,7 +219,7 @@ metrics in the DataFrame for each node.
 
 
 Graph operations
-----------------
+================
 
 **traverse**: A generator function that performs a pre-order traversal of the
 graph and generates a sequence of all nodes in the graph in that order.
@@ -259,7 +261,7 @@ operations like add and subtract, can be aligned by their respective nodes.
 
 
 GraphFrame operations
----------------------
+=====================
 
 **copy**: The ``copy`` operation returns a shallow copy of a GraphFrame.  It
 creates a new GraphFrame with a copy of the original GraphFrame's DataFrame,

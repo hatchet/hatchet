@@ -3,11 +3,12 @@
 
    SPDX-License-Identifier: MIT
 
+***************
 Getting Started
-===============
+***************
 
 Prerequisites
--------------
+=============
 
 Hatchet has the following minimum requirements, which must be installed before Hatchet is run:
 
@@ -19,8 +20,9 @@ Hatchet has the following minimum requirements, which must be installed before H
 
 Hatchet is available on `GitHub <https://github.com/LLNL/hatchet>`_.
 
+
 Installation
-------------
+============
 
 You can get hatchet from its `GitHub repository
 <https://github.com/LLNL/hatchet>`_ using this command:
@@ -32,7 +34,7 @@ You can get hatchet from its `GitHub repository
 This will create a directory called ``hatchet``.
 
 Install and Build Hatchet
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+-------------------------
 
 To build hatchet and update your PYTHONPATH, run the folllowing bash script from the hatchet root directory:
 
@@ -47,7 +49,7 @@ Alternatively, you can install hatchet using pip:
   $ pip install hatchet
 
 Check Installation
-^^^^^^^^^^^^^^^^^^
+------------------
 
 After installing hatchet, you should be able to import hatchet when running the Python interpreter in interactive mode:
 
@@ -67,8 +69,9 @@ messages:
   >>> import hatchet
   >>>
 
+
 Supported data formats
-----------------------
+======================
 
 Currently, hatchet supports the following data formats as input:
 

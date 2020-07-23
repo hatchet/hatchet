@@ -8,8 +8,9 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
+#######
 Hatchet
-=======
+#######
 
 Hatchet is a Python-based library that allows `Pandas
 <https://pandas.pydata.org>`_ dataframes to be indexed by structured tree and
@@ -42,15 +43,7 @@ If you are new to hatchet and want to start using it, see :doc:`Getting Started
 
    getting_started
    user_guide
-   tutorial
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Analysis Examples
-
-   basic_examples
-   scaling_examples
-   advanced_examples
+   analysis_examples
 
 
 If you encounter bugs while using hatchet, you can report them by opening an issue on `GitHub <http://github.com/llnl/hatchet/issues>`_.
@@ -64,6 +57,7 @@ following `paper <http://www.cs.umd.edu/~bhatele/pubs/pdf/2019/sc2019.pdf>`_:
   (SC '19). ACM, New York, NY, USA.
   `DOI <https://doi.org/10.1145/3295500.3356219>`_
 
+
 .. toctree::
    :maxdepth: 2
    :caption: Tutorials
@@ -76,8 +70,10 @@ following `paper <http://www.cs.umd.edu/~bhatele/pubs/pdf/2019/sc2019.pdf>`_:
 
    Hatchet API Docs <source/hatchet>
 
+
+##################
 Indices and tables
-==================
+##################
 
 * :ref:`genindex`
 * :ref:`modindex`
