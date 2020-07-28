@@ -64,7 +64,7 @@ after_success:
 notifications:
   email:
     recipients:
-      - bhatele@llnl.gov
+      - bhatele@cs.umd.edu
       - brink2@llnl.gov
     on_success: change
     on_failure: always

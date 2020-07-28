@@ -24,7 +24,7 @@ setup(
     author_email="bhatele@cs.umd.edu",
     license="MIT",
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 5 - Production/Stable",
         "License :: OSI Approved :: MIT License",
     ],
     keywords="",
