@@ -9,7 +9,6 @@ from collections import defaultdict
 
 import pandas as pd
 import numpy as np
-import multiprocessing as mp
 
 from .node import Node
 from .graph import Graph
@@ -32,6 +31,7 @@ except ImportError:
     raise
 
 t = Timer()
+
 
 class GraphFrame:
     """An input dataset is read into an object of this type, which includes a graph
@@ -767,31 +767,34 @@ class GraphFrame:
             other.dataframe.insert(0, "id", range(0, len(other.dataframe)))
 
         with t.phase("search preprocessing"):
-            self_hsh_ndx = self.dataframe.reset_index()['node']
-            other_hsh_ndx = other.dataframe.reset_index()['node']
+            self_hsh_ndx = self.dataframe.reset_index()["node"]
+            other_hsh_ndx = other.dataframe.reset_index()["node"]
 
-            self_hsh_ndx = np.array([x.__hash__() for x in self_hsh_ndx], dtype=np.uint64)
-            other_hsh_ndx = np.array([x.__hash__() for x in other_hsh_ndx], dtype=np.uint64)
+            self_hsh_ndx = np.array(
+                [x.__hash__() for x in self_hsh_ndx], dtype=np.uint64
+            )
+            other_hsh_ndx = np.array(
+                [x.__hash__() for x in other_hsh_ndx], dtype=np.uint64
+            )
 
-            self_hsh_ndx = np.vstack((self_hsh_ndx.astype(np.uint64), self.dataframe['id'].values.astype(np.uint64))).T
-            other_hsh_ndx = np.vstack((other_hsh_ndx.astype(np.uint64), other.dataframe['id'].values.astype(np.uint64))).T
+            self_hsh_ndx = np.vstack(
+                (
+                    self_hsh_ndx.astype(np.uint64),
+                    self.dataframe["id"].values.astype(np.uint64),
+                )
+            ).T
+            other_hsh_ndx = np.vstack(
+                (
+                    other_hsh_ndx.astype(np.uint64),
+                    other.dataframe["id"].values.astype(np.uint64),
+                )
+            ).T
 
-            self_hsh_ndx_sorted = self_hsh_ndx[self_hsh_ndx[:,0].argsort()]
-            other_hsh_ndx_sorted = other_hsh_ndx[other_hsh_ndx[:,0].argsort()]
+            self_hsh_ndx_sorted = self_hsh_ndx[self_hsh_ndx[:, 0].argsort()]
+            other_hsh_ndx_sorted = other_hsh_ndx[other_hsh_ndx[:, 0].argsort()]
 
-        with t.phase("optimized search"):
-            # get nodes that exist in other, but not in self, set metric columns to 0 for
-            # these rows
-            other_not_in_self = other.dataframe[
-                _gfm_cy.fast_not_isin(other_hsh_ndx_sorted, self_hsh_ndx_sorted, other_hsh_ndx_sorted.shape[0], self_hsh_ndx_sorted.shape[0])
-            ]
-            # get nodes that exist in self, but not in other
-            self_not_in_other = self.dataframe[
-                _gfm_cy.fast_not_isin(self_hsh_ndx_sorted, other_hsh_ndx_sorted, self_hsh_ndx_sorted.shape[0], other_hsh_ndx_sorted.shape[0])
-            ]
-
-        # # get nodes that exist in other, but not in self, set metric columns to 0 for
-        # # these rows
+        # get nodes that exist in other, but not in self, set metric columns to 0 for
+        # these rows
         # other_not_in_self = other.dataframe[
         #     ~other.dataframe.index.isin(self.dataframe.index)
         # ]
@@ -800,6 +803,26 @@ class GraphFrame:
         #     ~self.dataframe.index.isin(other.dataframe.index)
         # ]
 
+        with t.phase("optimized search"):
+            # get nodes that exist in other, but not in self, set metric columns to 0 for
+            # these rows
+            other_not_in_self = other.dataframe[
+                _gfm_cy.fast_not_isin(
+                    other_hsh_ndx_sorted,
+                    self_hsh_ndx_sorted,
+                    other_hsh_ndx_sorted.shape[0],
+                    self_hsh_ndx_sorted.shape[0],
+                )
+            ]
+            # get nodes that exist in self, but not in other
+            self_not_in_other = self.dataframe[
+                _gfm_cy.fast_not_isin(
+                    self_hsh_ndx_sorted,
+                    other_hsh_ndx_sorted,
+                    self_hsh_ndx_sorted.shape[0],
+                    other_hsh_ndx_sorted.shape[0],
+                )
+            ]
 
         with t.phase("adding columns"):
             # if there are missing nodes in either self or other, add a new column
@@ -825,13 +848,17 @@ class GraphFrame:
             onis_len = len(other_not_in_self)
             snio_len = len(self_not_in_other)
 
-            self_missing_node = self.dataframe["_missing_node"].values
-            snio_indices = self_not_in_other["id"].values
+            # case where self is a superset of other
+            if snio_len != 0:
+                self_missing_node = self.dataframe["_missing_node"].values
+                snio_indices = self_not_in_other["id"].values
 
-            # This function adds "L" to all nodes in self.dataframe['_missing_node'] which
-            # are in self but not in the other graphframe & convert from bytes to chars
-            _gfm_cy.add_L(snio_len, self_missing_node, snio_indices)
-            self.dataframe["_missing_node"] = np.array([chr(n) for n in self_missing_node])
+                # This function adds "L" to all nodes in self.dataframe['_missing_node'] which
+                # are in self but not in the other graphframe & convert from bytes to chars
+                _gfm_cy.add_L(snio_len, self_missing_node, snio_indices)
+                self.dataframe["_missing_node"] = np.array(
+                    [chr(n) for n in self_missing_node]
+                )
 
             # for nodes that only exist in other, set the metric to be 0 (since
             # it's a missing node in sel)
@@ -844,8 +871,8 @@ class GraphFrame:
             # dataframe
             self.dataframe = self.dataframe.append(other_not_in_self, sort=True)
 
-        self.dataframe = self.dataframe.drop(['id'], axis=1)
-        other.dataframe = other.dataframe.drop(['id'], axis=1)
+        self.dataframe = self.dataframe.drop(["id"], axis=1)
+        other.dataframe = other.dataframe.drop(["id"], axis=1)
 
         return self
 
