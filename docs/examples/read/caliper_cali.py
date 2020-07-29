@@ -5,7 +5,7 @@ import hatchet as ht
 
 if __name__ == "__main__":
     # Path to caliper cali file.
-    cali_file = "../../hatchet/tests/data/caliper-cali/caliper-ex.cali"
+    cali_file = "../../../hatchet/tests/data/caliper-cali/caliper-ex.cali"
 
     # Setup desired cali query.
     grouping_attribute = "function"
@@ -23,8 +23,7 @@ if __name__ == "__main__":
 
     # Printout the DataFrame component of the GraphFrame.
     print(gf.dataframe)
-    print("\n")
 
-    # Printout the graph component of the GraphFrame. Specifically, enable
-    # coloring, and only show those nodes with a positive ``time (inc)`` value.
-    print(gf.tree(color=True, threshold=0.0, metric="time (inc)"))
+    # Printout the graph component of the GraphFrame.
+    # Use "time (inc)" as the metric column to be displayed
+    print(gf.tree(metric_column="time (inc)"))
