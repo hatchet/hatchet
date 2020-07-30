@@ -133,8 +133,8 @@ def test_filter_squash_unify_caliper_data(lulesh_caliper_json):
     gf1.dataframe.set_index(gf1_index_names, inplace=True)
     gf2.dataframe.set_index(gf2_index_names, inplace=True)
 
-    filter_gf1 = gf1.filter(lambda x: x["name"].startswith("Calc"))
-    filter_gf2 = gf2.filter(lambda x: x["name"].startswith("Calc"))
+    filter_gf1 = gf1.filter(lambda x: x["name"].startswith("Calc"), squash=False)
+    filter_gf2 = gf2.filter(lambda x: x["name"].startswith("Calc"), squash=False)
 
     squash_gf1 = filter_gf1.squash()
     squash_gf2 = filter_gf2.squash()
