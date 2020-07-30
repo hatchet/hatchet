@@ -444,9 +444,10 @@ class GraphFrame:
         # sum over the output columns
         for node in self.graph.traverse(order="post"):
             if node.children:
-                self.dataframe.loc[node, out_columns] = function(
-                    self.dataframe.loc[[node] + node.children, out_columns]
-                )
+                for col in out_columns:
+                    self.dataframe.loc[node, col] = function(
+                        self.dataframe.loc[[node] + node.children, col]
+                    )
 
     def subgraph_sum(self, columns, out_columns=None, function=np.sum):
         """Compute sum of elements in subgraphs.
