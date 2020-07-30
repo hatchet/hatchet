@@ -74,19 +74,6 @@ class CaliperReader:
         self.json_cols_mdata = json_obj["column_metadata"]
         self.json_nodes = json_obj["nodes"]
 
-        # remove data entries containing None in `path` column (null in json file)
-        # first, get column where `path` data is
-        # then, parse json_data list of lists to identify lists containing None in
-        # `path` column
-        path_col = self.json_cols.index("path")
-        entries_to_remove = []
-        for sublist in self.json_data:
-            if sublist[path_col] is None:
-                entries_to_remove.append(sublist)
-        # then, remove them from the json_data list
-        for i in entries_to_remove:
-            self.json_data.remove(i)
-
         # decide which column to use as the primary path hierarchy
         # first preference to callpath if available
         if "source.function#callpath.address" in self.json_cols:
@@ -95,6 +82,19 @@ class CaliperReader:
             self.path_col_name = "path"
         else:
             sys.exit("No hierarchy column in input file")
+
+        # remove data entries containing None in `path` column (null in json file)
+        # first, get column where `path` data is
+        # then, parse json_data list of lists to identify lists containing None in
+        # `path` column
+        path_col = self.json_cols.index(self.path_col_name)
+        entries_to_remove = []
+        for sublist in self.json_data:
+            if sublist[path_col] is None:
+                entries_to_remove.append(sublist)
+        # then, remove them from the json_data list
+        for i in entries_to_remove:
+            self.json_data.remove(i)
 
         # change column names
         for idx, item in enumerate(self.json_cols):
