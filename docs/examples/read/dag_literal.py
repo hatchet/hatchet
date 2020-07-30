@@ -161,9 +161,7 @@ if __name__ == "__main__":
 
     # Printout the DataFrame component of the GraphFrame.
     print(gf.dataframe)
-    print("\n")
 
-    # Printout the graph component of the GraphFrame. Specifically, enable
-    # coloring, and only show those nodes with a positive ``time`` value.
+    # Printout the graph component of the GraphFrame.
     # Because no metric parameter is specified, ``time`` is used by default.
     print(gf.tree())
