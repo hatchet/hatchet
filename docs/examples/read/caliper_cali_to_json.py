@@ -6,7 +6,9 @@ import hatchet as ht
 
 if __name__ == "__main__":
     # Path to caliper cali file.
-    cali_file = "../../../hatchet/tests/data/caliper-cali/caliper-ex.cali"
+    cali_file = (
+        "../../../hatchet/tests/data/caliper-lulesh-cali/lulesh-annotation-profile.cali"
+    )
 
     # Setup desired cali query.
     cali_query = "cali-query"
