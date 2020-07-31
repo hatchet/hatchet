@@ -8,6 +8,7 @@ import traceback
 from collections import defaultdict
 
 import pandas as pd
+# import modin.pandas as pd
 import numpy as np
 
 from .node import Node
@@ -30,7 +31,7 @@ except ImportError:
     traceback.print_exc()
     raise
 
-t = Timer()
+
 
 
 class GraphFrame:
@@ -68,6 +69,7 @@ class GraphFrame:
         self.dataframe = dataframe
         self.exc_metrics = [] if exc_metrics is None else exc_metrics
         self.inc_metrics = [] if inc_metrics is None else inc_metrics
+        self.timer = Timer()
 
     @staticmethod
     def from_hpctoolkit(dirname):
@@ -762,11 +764,11 @@ class GraphFrame:
         )
 
         # add an id for fast indexing in
-        with t.phase("adding ids"):
+        with self.timer.phase("adding ids"):
             self.dataframe.insert(0, "id", range(0, len(self.dataframe)))
             other.dataframe.insert(0, "id", range(0, len(other.dataframe)))
 
-        with t.phase("search preprocessing"):
+        with self.timer.phase("search preprocessing"):
             self_hsh_ndx = self.dataframe.reset_index()["node"]
             other_hsh_ndx = other.dataframe.reset_index()["node"]
 
@@ -803,7 +805,7 @@ class GraphFrame:
         #     ~self.dataframe.index.isin(other.dataframe.index)
         # ]
 
-        with t.phase("optimized search"):
+        with self.timer.phase("optimized search"):
             # get nodes that exist in other, but not in self, set metric columns to 0 for
             # these rows
             other_not_in_self = other.dataframe[
@@ -824,26 +826,20 @@ class GraphFrame:
                 )
             ]
 
-        with t.phase("adding columns"):
+        with self.timer.phase("adding columns"):
             # if there are missing nodes in either self or other, add a new column
             # called _missing_node
             if not self_not_in_other.empty:
-                new_df = pd.DataFrame(index=self.dataframe.index)
-                new_df["_missing_node"] = np.zeros(len(new_df), dtype=np.ubyte)
-                self.dataframe = self.dataframe.join(new_df)
+                self.dataframe.loc[:,"_missing_node"] = np.zeros(len(self.dataframe), dtype=np.ubyte)
             if not other_not_in_self.empty:
-                new_df = pd.DataFrame(index=other_not_in_self.index)
                 # initialize with R to save filling in later
-                new_df["_missing_node"] = "R"
-                other_not_in_self = other_not_in_self.join(new_df)
+                other_not_in_self.loc[:,"_missing_node"] = ["R" for x in range(len(other_not_in_self))]
 
                 # add a new column to self if other has nodes not in self
                 if self_not_in_other.empty:
-                    new_df = pd.DataFrame(index=self.dataframe.index)
-                    new_df["_missing_node"] = np.zeros(len(new_df), dtype=np.ubyte)
-                    self.dataframe = self.dataframe.join(new_df)
+                    self.dataframe.loc[:,"_missing_node"] = np.zeros(len(self.dataframe), dtype=np.ubyte)
 
-        with t.phase("optimizied L and R"):
+        with self.timer.phase("optimizied L and R"):
             # get lengths to pass into
             onis_len = len(other_not_in_self)
             snio_len = len(self_not_in_other)
@@ -866,10 +862,11 @@ class GraphFrame:
             for j in all_metrics:
                 other_not_in_self[j] = np.zeros(onis_len)
 
-        with t.phase("rebuilding df"):
+        with self.timer.phase("rebuilding df"):
             # append missing rows (nodes that exist in other, but not self) to self's
             # dataframe
-            self.dataframe = self.dataframe.append(other_not_in_self, sort=True)
+            # self.dataframe = self.dataframe.append(other_not_in_self, sort=True)
+            self.dataframe = pd.concat([self.dataframe, other_not_in_self], sort=True)
 
         self.dataframe = self.dataframe.drop(["id"], axis=1)
         other.dataframe = other.dataframe.drop(["id"], axis=1)

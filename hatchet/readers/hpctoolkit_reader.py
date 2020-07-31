@@ -11,6 +11,7 @@ import traceback
 
 import numpy as np
 import pandas as pd
+# import modin.pandas as pd
 import multiprocessing as mp
 import multiprocessing.sharedctypes
 
@@ -201,14 +202,15 @@ class HPCToolkitReader:
 
         self.metric_columns = metric_names
         df_columns = self.metric_columns + ["nid", "rank", "thread"]
-        self.df_metrics = pd.DataFrame(self.metrics, columns=df_columns)
-        self.df_metrics["nid"] = self.df_metrics["nid"].astype(int, copy=False)
-        self.df_metrics["rank"] = self.df_metrics["rank"].astype(int, copy=False)
-        self.df_metrics["thread"] = self.df_metrics["thread"].astype(int, copy=False)
+        self.df_metrics = pd.DataFrame(self.metrics.tolist(), columns=df_columns)
+        self.df_metrics["nid"] = self.df_metrics["nid"].astype(int)
+        self.df_metrics["rank"] = self.df_metrics["rank"].astype(int)
+        self.df_metrics["thread"] = self.df_metrics["thread"].astype(int)
 
         # if number of threads per rank is 1, we do not need to keep the thread ID column
         if self.num_threads_per_rank == 1:
             del self.df_metrics["thread"]
+
 
         # used to speedup parse_xml_node
         self.np_metrics = self.df_metrics[self.metric_columns].values
