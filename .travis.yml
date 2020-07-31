@@ -1,7 +1,7 @@
 branches:
   only:
-    - master
     - develop
+    - /^releases\/.*$/
 
 jobs:
   fast_finish: true
@@ -36,6 +36,7 @@ install:
         pip install --upgrade black;
     fi
   - python setup.py install
+  - python setup.py build_ext --inplace
   - pip list
 
 script:
@@ -63,7 +64,7 @@ after_success:
 notifications:
   email:
     recipients:
-      - bhatele@llnl.gov
+      - bhatele@cs.umd.edu
       - brink2@llnl.gov
     on_success: change
     on_failure: always

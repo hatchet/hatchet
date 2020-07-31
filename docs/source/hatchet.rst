@@ -5,7 +5,9 @@ Subpackages
 -----------
 
 .. toctree::
+   :maxdepth: 4
 
+   hatchet.cython_modules
    hatchet.external
    hatchet.readers
    hatchet.util
@@ -41,6 +43,14 @@ hatchet.node module
 -------------------
 
 .. automodule:: hatchet.node
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+hatchet.query\_matcher module
+-----------------------------
+
+.. automodule:: hatchet.query_matcher
    :members:
    :undoc-members:
    :show-inheritance:

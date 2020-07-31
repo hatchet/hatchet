@@ -7,6 +7,7 @@ import glob
 import struct
 import re
 import os
+import traceback
 
 import numpy as np
 import pandas as pd
@@ -18,11 +19,25 @@ try:
 except ImportError:
     import xml.etree.ElementTree as ET
 
+# cython imports
+try:
+    import hatchet.cython_modules.libs.subtract_metrics as smc
+except ImportError:
+    print("-" * 80)
+    print(
+        """Error: Shared object (.so) not found for cython module.\n\tPlease run install.sh from the hatchet root directory to build modules."""
+    )
+    print("-" * 80)
+    traceback.print_exc()
+    raise
+
+
 import hatchet.graphframe
 from hatchet.node import Node
 from hatchet.graph import Graph
-from hatchet.util.timer import Timer
+from hatchet.util.profiler import Timer
 from hatchet.frame import Frame
+
 
 src_file = 0
 
@@ -86,6 +101,7 @@ class HPCToolkitReader:
         # number of thread 0 metric-db files (i.e., number of ranks), then
         # uses this as the divisor to the total number of metric-db files.
         metricdb_numranks_files = glob.glob(self.dir_name + "/*-000-*.metric-db")
+        self.num_ranks = len(metricdb_numranks_files)
         self.num_threads_per_rank = int(
             self.num_metricdb_files / len(metricdb_numranks_files)
         )
@@ -194,6 +210,13 @@ class HPCToolkitReader:
         if self.num_threads_per_rank == 1:
             del self.df_metrics["thread"]
 
+        # used to speedup parse_xml_node
+        self.np_metrics = self.df_metrics[self.metric_columns].values
+
+        # getting the number of execution threads for our stride in
+        # subtract_exclusive_metric_vals/ num nodes is already calculated
+        self.total_execution_threads = self.num_threads_per_rank * self.num_ranks
+
     def read(self):
         """Read the experiment.xml file to extract the calling context tree and create
         a dataframe out of it. Then merge the two dataframes to create the final
@@ -241,6 +264,11 @@ class HPCToolkitReader:
             # start graph construction at the root
             with self.timer.phase("graph construction"):
                 self.parse_xml_children(root, graph_root)
+
+            # put updated metrics back in dataframe
+            for i, column in enumerate(self.metric_columns):
+                if "(inc)" not in column:
+                    self.df_metrics[column] = self.np_metrics.T[i]
 
         with self.timer.phase("graph construction"):
             graph = Graph(list_roots)
@@ -345,17 +373,14 @@ class HPCToolkitReader:
 
             # when we reach statement nodes, we subtract their exclusive
             # metric values from the parent's values
-            for column in self.metric_columns:
+            for i, column in enumerate(self.metric_columns):
                 if "(inc)" not in column:
-                    self.df_metrics.loc[
-                        self.df_metrics["nid"] == parent_nid, column
-                    ] = (
-                        self.df_metrics.loc[
-                            self.df_metrics["nid"] == parent_nid, column
-                        ]
-                        - self.df_metrics.loc[
-                            self.df_metrics["nid"] == nid, column
-                        ].values
+                    smc.subtract_exclusive_metric_vals(
+                        nid,
+                        parent_nid,
+                        self.np_metrics.T[i],
+                        self.total_execution_threads,
+                        self.num_nodes,
                     )
 
         if xml_tag == "C" or (

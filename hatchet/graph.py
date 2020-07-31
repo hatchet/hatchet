@@ -70,6 +70,7 @@ class Graph:
         inverted_merges = defaultdict(
             lambda: []
         )  # merged_node -> list of corresponding old_nodes
+        processed = []
 
         def _find_child_merges(node_list):
             index = index_by("frame", node_list)
@@ -89,6 +90,8 @@ class Graph:
 
         _find_child_merges(self.roots)
         for node in self.traverse():
+            if node in processed:
+                continue
             nodes = None
             # If node is going to be merged with other nodes,
             # collect the set of those nodes' children. This is
@@ -99,10 +102,12 @@ class Graph:
                 nodes = []
                 for node_to_merge in inverted_merges[new_node]:
                     nodes.extend(node_to_merge.children)
+                processed.extend(inverted_merges[new_node])
             # If node is not going to be merged, simply get the list of
             # node's children.
             else:
                 nodes = node.children
+                processed.append(node)
             _find_child_merges(nodes)
 
         return merges
@@ -221,7 +226,11 @@ class Graph:
                     new_node = old_to_new.get(id(self_child))
                     if not new_node:
                         new_node = make_node(self_child)
-                        _merge(self_child.children, (), new_node)
+                        _merge(
+                            sorted(self_child.children, key=lambda n: n.frame),
+                            (),
+                            new_node,
+                        )
                     connect(parent, new_node)
                     self_child = next(self_children, None)
 
@@ -230,7 +239,11 @@ class Graph:
                     new_node = old_to_new.get(id(other_child))
                     if not new_node:
                         new_node = make_node(other_child)
-                        _merge((), other_child.children, new_node)
+                        _merge(
+                            (),
+                            sorted(other_child.children, key=lambda n: n.frame),
+                            new_node,
+                        )
                     connect(parent, new_node)
                     other_child = next(other_children, None)
 
@@ -256,7 +269,11 @@ class Graph:
                     else:
                         other_side = []
 
-                    _merge(self_side, other_side, new_node)
+                    _merge(
+                        sorted(self_side, key=lambda n: n.frame),
+                        sorted(other_side, key=lambda n: n.frame),
+                        new_node,
+                    )
 
                     connect(parent, new_node)
                     self_child = next(self_children, None)
@@ -267,7 +284,11 @@ class Graph:
                 new_node = old_to_new.get(id(self_child))
                 if not new_node:
                     new_node = make_node(self_child)
-                    _merge(self_child.children, (), new_node)
+                    _merge(
+                        sorted(self_child.children, key=lambda n: n.frame),
+                        (),
+                        new_node,
+                    )
                 connect(parent, new_node)
                 self_child = next(self_children, None)
 
@@ -275,14 +296,22 @@ class Graph:
                 new_node = old_to_new.get(id(other_child))
                 if not new_node:
                     new_node = make_node(other_child)
-                    _merge((), other_child.children, new_node)
+                    _merge(
+                        (),
+                        sorted(other_child.children, key=lambda n: n.frame),
+                        new_node,
+                    )
                 connect(parent, new_node)
                 other_child = next(other_children, None)
 
             return new_children
 
         # First establish which nodes correspond to each other
-        new_roots = _merge(self.roots, other.roots, None)
+        new_roots = _merge(
+            sorted(self.roots, key=lambda n: n.frame),
+            sorted(other.roots, key=lambda n: n.frame),
+            None,
+        )
 
         graph = Graph(new_roots)
         graph.enumerate_traverse()
@@ -290,18 +319,18 @@ class Graph:
         return graph
 
     def enumerate_depth(self):
-        def _iter_depth(node, parent, visited):
+        def _iter_depth(node, visited):
             for child in node.children:
                 if child not in visited:
                     visited.add(child)
                     # depth of child is depth of node + 1
                     child._depth = node._depth + 1
-                    _iter_depth(child, node, visited)
+                    _iter_depth(child, visited)
 
         visited = set()
         for root in self.roots:
             root._depth = 0  # depth of root node is 0
-            _iter_depth(root, None, visited)
+            _iter_depth(root, visited)
 
     def enumerate_traverse(self):
         if not self._check_enumerate_traverse():

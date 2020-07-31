@@ -12,11 +12,10 @@ import numpy as np
 from .node import Node
 from .graph import Graph
 from .frame import Frame
-from .external.printtree import trees_as_text
+from .query_matcher import QueryMatcher
+from .external.console import ConsoleRenderer
 from .util.dot import trees_to_dot
-
-lit_idx = 0
-squ_idx = 0
+from .util.deprecated import deprecated_params
 
 
 class GraphFrame:
@@ -274,21 +273,48 @@ class GraphFrame:
 
         self.dataframe = agg_df
 
-    def filter(self, filter_function):
-        """Filter the dataframe using a user-supplied function."""
+    def filter(self, filter_obj, squash=False):
+        """Filter the dataframe using a user-supplied function.
+
+        Arguments:
+            filter_obj (callable, list, or QueryMatcher): the filter to apply to the GraphFrame.
+            squash (boolean, optional): if True, automatically call squash for the user.
+        """
         dataframe_copy = self.dataframe.copy()
 
         index_names = self.dataframe.index.names
         dataframe_copy.reset_index(inplace=True)
 
-        filtered_rows = dataframe_copy.apply(filter_function, axis=1)
-        filtered_df = dataframe_copy[filtered_rows]
+        filtered_df = None
+
+        if callable(filter_obj):
+            filtered_rows = dataframe_copy.apply(filter_obj, axis=1)
+            filtered_df = dataframe_copy[filtered_rows]
+        elif isinstance(filter_obj, list) or isinstance(filter_obj, QueryMatcher):
+            query = filter_obj
+            if isinstance(filter_obj, list):
+                query = QueryMatcher(filter_obj)
+            query_matches = query.apply(self)
+            match_set = list(set().union(*query_matches))
+            filtered_df = dataframe_copy.loc[dataframe_copy["node"].isin(match_set)]
+        else:
+            raise InvalidFilter(
+                "The argument passed to filter must be a callable, a query path list, or a QueryMatcher object."
+            )
+
+        if filtered_df.shape[0] == 0:
+            raise EmptyFilter(
+                "The provided filter would have produced an empty GraphFrame."
+            )
+
         filtered_df.set_index(index_names, inplace=True)
 
         filtered_gf = GraphFrame(self.graph, filtered_df)
         filtered_gf.exc_metrics = self.exc_metrics
         filtered_gf.inc_metrics = self.inc_metrics
 
+        if squash:
+            return filtered_gf.squash()
         return filtered_gf
 
     def squash(self):
@@ -513,44 +539,61 @@ class GraphFrame:
         self.graph = union_graph
         other.graph = union_graph
 
+    @deprecated_params(
+        metric="metric_column",
+        name="name_column",
+        expand_names="expand_name",
+        context="context_column",
+        invert_colors="invert_colormap",
+        color="",
+        threshold="",
+        unicode="",
+    )
     def tree(
         self,
-        metric="time",
-        name="name",
-        context="file",
+        metric_column="time",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
         rank=0,
         thread=0,
-        threshold=0.0,
-        precision=3,
-        depth=60,
-        expand_names=False,
-        unicode=True,
-        invert_colors=False,
-        color=None,
+        depth=10000,
+        highlight_name=True,
+        invert_colormap=False,
+        color=None,  # remove in next release
+        threshold=None,  # remove in next release
+        unicode=None,  # remove in next release
     ):
         """Format this graphframe as a tree and return the resulting string."""
-        # automatic color by default; use True or False to force override
-        if color is None:
-            color = sys.stdout.isatty()
+        color = sys.stdout.isatty()
+        shell = None
 
-        result = trees_as_text(
+        if color is False:
+            try:
+                import IPython
+
+                shell = IPython.get_ipython().__class__.__name__
+            except ImportError:
+                pass
+            # Test if running in a Jupyter notebook or qtconsole
+            if shell == "ZMQInteractiveShell":
+                color = True
+
+        return ConsoleRenderer(unicode=True, color=color).render(
             self.graph.roots,
             self.dataframe,
-            metric,
-            name,
-            context,
-            rank,
-            thread,
-            threshold,
-            precision,
-            depth,
-            expand_names,
-            invert_colors,
-            unicode=unicode,
-            color=color,
+            metric_column=metric_column,
+            precision=precision,
+            name_column=name_column,
+            expand_name=expand_name,
+            context_column=context_column,
+            rank=rank,
+            thread=thread,
+            depth=depth,
+            highlight_name=highlight_name,
+            invert_colormap=invert_colormap,
         )
-
-        return result
 
     def to_dot(self, metric="time", name="name", rank=0, thread=0, threshold=0.0):
         """Write the graph in the graphviz dot format:
@@ -652,6 +695,12 @@ class GraphFrame:
             new_df = pd.DataFrame(index=other_not_in_self.index)
             new_df["_missing_node"] = ""
             other_not_in_self = other_not_in_self.join(new_df)
+
+            # add a new column to self if other has nodes not in self
+            if self_not_in_other.empty:
+                new_df = pd.DataFrame(index=self.dataframe.index)
+                new_df["_missing_node"] = ""
+                self.dataframe = self.dataframe.join(new_df)
 
         # for nodes that only exist in self, set value to be "L" indicating
         # it exists in left graphframe
@@ -841,6 +890,26 @@ class GraphFrame:
             other_copy, self_copy.dataframe.divide, *args, **kwargs
         )
 
+    def mul(self, other, *args, **kwargs):
+        """Returns the column-wise float multiplication of two graphframes as a new graphframe.
+
+        This graphframe is the union of self's and other's graphs, and does not
+        modify self or other.
+
+        Return:
+            (GraphFrame): new graphframe
+        """
+        # create a copy of both graphframes
+        self_copy = self.copy()
+        other_copy = other.copy()
+
+        # unify copies of graphframes
+        self_copy.unify(other_copy)
+
+        return self_copy._operator(
+            other_copy, self_copy.dataframe.multiply, *args, **kwargs
+        )
+
     def __iadd__(self, other):
         """Computes column-wise sum of two graphframes and stores the result in
         self.
@@ -870,6 +939,17 @@ class GraphFrame:
             (GraphFrame): new graphframe
         """
         return self.add(other)
+
+    def __mul__(self, other):
+        """Returns the column-wise multiplication of two graphframes as a new graphframe.
+
+        This graphframe is the union of self's and other's graphs, and does not
+        modify self or other.
+
+        Return:
+            (GraphFrame): new graphframe
+        """
+        return self.mul(other)
 
     def __isub__(self, other):
         """Computes column-wise difference of two graphframes and stores the
@@ -932,3 +1012,30 @@ class GraphFrame:
             (GraphFrame): new graphframe
         """
         return self.div(other)
+
+    def __imul__(self, other):
+        """Computes column-wise float multiplication of two graphframes and stores the
+        result in self.
+
+        Self's graphframe is the union of self's and other's graphs, and the
+        node handles from self will be rewritten with this operation. This
+        operation does not modify other.
+
+        Return:
+            (GraphFrame): self's graphframe modified
+        """
+        # create a copy of other's graphframe
+        other_copy = other.copy()
+
+        # unify self graphframe and other graphframe
+        self.unify(other_copy)
+
+        return self._operator(other_copy, self.dataframe.mul)
+
+
+class InvalidFilter(Exception):
+    """Raised when an invalid argument is passed to the filter function."""
+
+
+class EmptyFilter(Exception):
+    """Raised when a filter would otherwise return an empty GraphFrame."""

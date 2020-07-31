@@ -15,7 +15,7 @@ import hatchet.graphframe
 from hatchet.node import Node
 from hatchet.graph import Graph
 from hatchet.frame import Frame
-from hatchet.util.timer import Timer
+from hatchet.util.profiler import Timer
 from hatchet.util.executable import which
 
 
@@ -74,19 +74,6 @@ class CaliperReader:
         self.json_cols_mdata = json_obj["column_metadata"]
         self.json_nodes = json_obj["nodes"]
 
-        # remove data entries containing None in `path` column (null in json file)
-        # first, get column where `path` data is
-        # then, parse json_data list of lists to identify lists containing None in
-        # `path` column
-        path_col = self.json_cols.index("path")
-        entries_to_remove = []
-        for sublist in self.json_data:
-            if sublist[path_col] is None:
-                entries_to_remove.append(sublist)
-        # then, remove them from the json_data list
-        for i in entries_to_remove:
-            self.json_data.remove(i)
-
         # decide which column to use as the primary path hierarchy
         # first preference to callpath if available
         if "source.function#callpath.address" in self.json_cols:
@@ -95,6 +82,19 @@ class CaliperReader:
             self.path_col_name = "path"
         else:
             sys.exit("No hierarchy column in input file")
+
+        # remove data entries containing None in `path` column (null in json file)
+        # first, get column where `path` data is
+        # then, parse json_data list of lists to identify lists containing None in
+        # `path` column
+        path_col = self.json_cols.index(self.path_col_name)
+        entries_to_remove = []
+        for sublist in self.json_data:
+            if sublist[path_col] is None:
+                entries_to_remove.append(sublist)
+        # then, remove them from the json_data list
+        for i in entries_to_remove:
+            self.json_data.remove(i)
 
         # change column names
         for idx, item in enumerate(self.json_cols):
@@ -106,9 +106,12 @@ class CaliperReader:
                 self.json_cols[idx] = "rank"
             if item == "module#cali.sampler.pc":
                 self.json_cols[idx] = "module"
-            if item == "sum#time.duration":
+            if item == "sum#time.duration" or item == "sum#avg#sum#time.duration":
                 self.json_cols[idx] = "time"
-            if item == "inclusive#sum#time.duration":
+            if (
+                item == "inclusive#sum#time.duration"
+                or item == "sum#avg#inclusive#sum#time.duration"
+            ):
                 self.json_cols[idx] = "time (inc)"
 
         # make list of metric columns

@@ -4,9 +4,12 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
+import pandas as pd
+import os
 
 from hatchet import GraphFrame
 from hatchet.readers.hpctoolkit_reader import HPCToolkitReader
+from hatchet.external.console import ConsoleRenderer
 
 modules = [
     "cpi",
@@ -57,7 +60,7 @@ procedures = [
 ]
 
 
-def test_graphframe(calc_pi_hpct_db):
+def test_graphframe(data_dir, calc_pi_hpct_db):
     """Sanity test a GraphFrame object with known data."""
     gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
 
@@ -73,29 +76,68 @@ def test_graphframe(calc_pi_hpct_db):
         elif col in ("name", "type", "file", "module", "node"):
             assert gf.dataframe[col].dtype == np.object
 
-    # TODO: add tests to confirm values in dataframe
+    # add tests to confirm values in dataframe
+    df = pd.read_csv(str(os.path.join(data_dir, "hpctoolkit-cpi-graphframe.csv")))
+
+    gf.dataframe.reset_index(inplace=True)
+    df.reset_index(inplace=True)
+
+    gf.dataframe.sort_values(by=["nid", "rank"], inplace=True)
+    df.sort_values(by=["nid", "rank"], inplace=True)
+
+    t1 = gf.dataframe["time"].values
+    t2 = df["time"].values
+
+    ti1 = gf.dataframe["time (inc)"].values
+    ti2 = df["time (inc)"].values
+
+    for v1, v2 in zip(t1, t2):
+        assert v1 == v2
+
+    for v1, v2 in zip(ti1, ti2):
+        assert v1 == v2
 
 
 def test_tree(calc_pi_hpct_db):
     gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
 
-    output = gf.tree(metric="time", color=False)
-    assert output.startswith("0.000 <program root>  <unknown file>")
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf.graph.roots,
+        gf.dataframe,
+        metric_column="time",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
+        rank=0,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        invert_colormap=False,
+    )
+    assert "0.000 <program root> <unknown file>" in output
     assert (
-        "0.000 198:MPIR_Init_thread  /tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/initthread.c"
+        "0.000 198:MPIR_Init_thread /tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/initthread.c"
         in output
     )
 
-    output = gf.tree(metric="time (inc)", color=False)
-    assert "17989.000 interp.c:0  interp.c" in output
-    assert (
-        "999238.000 230:psm_dofinalize  /tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_exit.c"
-        in output
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf.graph.roots,
+        gf.dataframe,
+        metric_column="time (inc)",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
+        rank=0,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        invert_colormap=False,
     )
-
-    output = gf.tree(metric="time (inc)", color=False, threshold=0.5)
+    assert "17989.000 interp.c:0 interp.c" in output
     assert (
-        "999238.000 294:MPID_Finalize  /tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/src/mpid_finalize.c"
+        "999238.000 230:psm_dofinalize /tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpid/ch3/channels/psm/src/psm_exit.c"
         in output
     )
 
@@ -113,7 +155,7 @@ def test_read_calc_pi_database(calc_pi_hpct_db):
     assert all(pr in reader.procedure_names.values() for pr in procedures)
 
 
-def test_allgather(osu_allgather_hpct_db):
+def test_allgather(data_dir, osu_allgather_hpct_db):
     gf = GraphFrame.from_hpctoolkit(str(osu_allgather_hpct_db))
 
     assert len(gf.dataframe.groupby("module")) == 9
@@ -128,3 +170,26 @@ def test_allgather(osu_allgather_hpct_db):
             assert gf.dataframe[col].dtype == np.int64
         elif col in ("name", "type", "file", "module", "node"):
             assert gf.dataframe[col].dtype == np.object
+
+    # add tests to confirm values in dataframe
+    df = pd.read_csv(
+        str(os.path.join(data_dir, "hpctoolkit-threads-osu-allgather.csv"))
+    )
+
+    gf.dataframe.reset_index(inplace=True)
+    df.reset_index(inplace=True)
+
+    gf.dataframe.sort_values(by=["nid", "rank", "thread"], inplace=True)
+    df.sort_values(by=["nid", "rank", "thread"], inplace=True)
+
+    t1 = gf.dataframe["time"].values
+    t2 = df["time"].values
+
+    ti1 = gf.dataframe["time (inc)"].values
+    ti2 = df["time (inc)"].values
+
+    for v1, v2 in zip(t1, t2):
+        assert v1 == v2
+
+    for v1, v2 in zip(ti1, ti2):
+        assert v1 == v2
