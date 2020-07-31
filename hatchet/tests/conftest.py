@@ -74,39 +74,37 @@ def calc_pi_hpct_db(data_dir, tmpdir):
 
 
 @pytest.fixture
+def calc_pi_caliper_json(data_dir, tmpdir):
+    """Builds a temporary directory containing the calc-pi JSON file."""
+    cali_json_dir = os.path.join(data_dir, "caliper-cpi-json")
+    cali_json_file = os.path.join(cali_json_dir, "cpi-callpath-profile.json")
+
+    shutil.copy(cali_json_file, str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), "cpi-callpath-profile.json")
+
+    return tmpfile
+
+
+@pytest.fixture
 def lulesh_caliper_json(data_dir, tmpdir):
     """Builds a temporary directory containing the lulesh JSON file."""
     cali_json_dir = os.path.join(data_dir, "caliper-lulesh-json")
-    cali_json_file = os.path.join(
-        cali_json_dir, "lulesh-sample-annotation-profile.json"
-    )
+    cali_json_file = os.path.join(cali_json_dir, "lulesh-annotation-profile.json")
 
     shutil.copy(cali_json_file, str(tmpdir))
-    tmpfile = os.path.join(str(tmpdir), "lulesh-sample-annotation-profile.json")
+    tmpfile = os.path.join(str(tmpdir), "lulesh-annotation-profile.json")
 
     return tmpfile
 
 
 @pytest.fixture
-def sample_caliper_raw_cali(data_dir, tmpdir):
-    """Builds a temporary directory containing the raw cali file."""
-    cali_dir = os.path.join(data_dir, "caliper-cali")
-    cali_file = os.path.join(cali_dir, "caliper-ex.cali")
+def lulesh_caliper_cali(data_dir, tmpdir):
+    """Builds a temporary directory containing the lulesh cali file."""
+    cali_dir = os.path.join(data_dir, "caliper-lulesh-cali")
+    cali_file = os.path.join(cali_dir, "lulesh-annotation-profile.cali")
 
     shutil.copy(cali_file, str(tmpdir))
-    tmpfile = os.path.join(str(tmpdir), "caliper-ex.cali")
-
-    return tmpfile
-
-
-@pytest.fixture
-def sample_caliper_json(data_dir, tmpdir):
-    """Builds a temporary directory containing the sample cali-query JSON file."""
-    cali_dir = os.path.join(data_dir, "caliper-cali")
-    cali_file = os.path.join(cali_dir, "caliper-ex.json")
-
-    shutil.copy(cali_file, str(tmpdir))
-    tmpfile = os.path.join(str(tmpdir), "caliper-ex.json")
+    tmpfile = os.path.join(str(tmpdir), "lulesh-annotation-profile.cali")
 
     return tmpfile
 

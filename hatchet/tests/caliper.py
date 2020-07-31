@@ -58,7 +58,7 @@ def test_graphframe(lulesh_caliper_json):
     # TODO: add tests to confirm values in dataframe
 
 
-def test_read_calc_pi_database(lulesh_caliper_json):
+def test_read_lulesh_json(lulesh_caliper_json):
     """Sanity check the Caliper reader by examining a known input."""
     reader = CaliperReader(str(lulesh_caliper_json))
     reader.read_json_sections()
@@ -72,8 +72,15 @@ def test_read_calc_pi_database(lulesh_caliper_json):
     assert all(an in reader.idx_to_label.values() for an in annotations)
 
 
+def test_calc_pi_json(calc_pi_caliper_json):
+    """Sanity test a GraphFrame object with known data."""
+    gf = GraphFrame.from_caliper_json(str(calc_pi_caliper_json))
+
+    assert len(gf.dataframe.groupby("name")) == 100
+
+
 @pytest.mark.skipif(not which("cali-query"), reason="needs cali-query to be in path")
-def test_sample_cali(sample_caliper_raw_cali):
+def test_lulesh_cali(lulesh_caliper_cali):
     """Sanity check the Caliper reader ingesting a .cali file."""
     grouping_attribute = "function"
     default_metric = "sum(sum#time.duration),inclusive_sum(sum#time.duration)"
@@ -82,13 +89,13 @@ def test_sample_cali(sample_caliper_raw_cali):
         grouping_attribute,
     )
 
-    gf = GraphFrame.from_caliper(str(sample_caliper_raw_cali), query)
+    gf = GraphFrame.from_caliper(str(lulesh_caliper_cali), query)
 
     assert len(gf.dataframe.groupby("name")) == 18
 
 
 @pytest.mark.skipif(not which("cali-query"), reason="needs cali-query to be in path")
-def test_json_string_literal(sample_caliper_raw_cali):
+def test_lulesh_json_stream(lulesh_caliper_cali):
     """Sanity check the Caliper reader ingesting a JSON string literal."""
     cali_query = which("cali-query")
     grouping_attribute = "function"
@@ -99,17 +106,10 @@ def test_json_string_literal(sample_caliper_raw_cali):
     )
 
     cali_json = subprocess.Popen(
-        [cali_query, "-q", query, sample_caliper_raw_cali], stdout=subprocess.PIPE
+        [cali_query, "-q", query, lulesh_caliper_cali], stdout=subprocess.PIPE
     )
 
     gf = GraphFrame.from_caliper_json(cali_json.stdout)
-
-    assert len(gf.dataframe.groupby("name")) == 18
-
-
-def test_sample_json(sample_caliper_json):
-    """Sanity check the Caliper reader ingesting a JSON string literal."""
-    gf = GraphFrame.from_caliper_json(str(sample_caliper_json))
 
     assert len(gf.dataframe.groupby("name")) == 18
 

@@ -169,8 +169,6 @@ class CaliperReader:
 
         with self.timer.phase("graph construction"):
             list_roots = self.create_graph()
-            graph = Graph(list_roots)
-            graph.enumerate_traverse()
 
         # create a dataframe of metrics from the data section
         self.df_json_data = pd.DataFrame(self.json_data, columns=self.json_cols)
@@ -316,6 +314,10 @@ class CaliperReader:
 
         self.df_missing = pd.DataFrame.from_dict(data=missing_nodes)
         self.df_metrics = pd.concat([self.df_fixed_data, self.df_missing])
+
+        # create a graph object once all the nodes have been added
+        graph = Graph(list_roots)
+        graph.enumerate_traverse()
 
         # merge the metrics and node dataframes on the idx column
         with self.timer.phase("data frame"):
