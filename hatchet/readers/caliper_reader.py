@@ -78,8 +78,10 @@ class CaliperReader:
         # first preference to callpath if available
         if "source.function#callpath.address" in self.json_cols:
             self.path_col_name = "source.function#callpath.address"
+            self.node_type = "function"
         elif "path" in self.json_cols:
             self.path_col_name = "path"
+            self.node_type = "region"
         else:
             sys.exit("No hierarchy column in input file")
 
@@ -132,7 +134,7 @@ class CaliperReader:
                 if "parent" not in node:
                     # since this node does not have a parent, this is a root
                     graph_root = Node(
-                        Frame({"type": "function", "name": node_label}), None
+                        Frame({"type": self.node_type, "name": node_label}), None
                     )
                     list_roots.append(graph_root)
 
@@ -145,7 +147,8 @@ class CaliperReader:
                 else:
                     parent_hnode = (self.idx_to_node[node["parent"]])["node"]
                     hnode = Node(
-                        Frame({"type": "function", "name": node_label}), parent_hnode
+                        Frame({"type": self.node_type, "name": node_label}),
+                        parent_hnode,
                     )
                     parent_hnode.add_child(hnode)
 
