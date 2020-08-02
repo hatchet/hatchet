@@ -74,6 +74,18 @@ def calc_pi_hpct_db(data_dir, tmpdir):
 
 
 @pytest.fixture
+def osu_allgather_hpct_db(data_dir, tmpdir):
+    """Builds a temporary directory containing the osu allgather database."""
+    hpct_db_dir = os.path.join(data_dir, "hpctoolkit-allgather-database")
+
+    for f in glob(os.path.join(str(hpct_db_dir), "*.metric-db")):
+        shutil.copy(f, str(tmpdir))
+    shutil.copy(os.path.join(hpct_db_dir, "experiment.xml"), str(tmpdir))
+
+    return tmpdir
+
+
+@pytest.fixture
 def calc_pi_caliper_json(data_dir, tmpdir):
     """Builds a temporary directory containing the calc-pi JSON file."""
     cali_json_dir = os.path.join(data_dir, "caliper-cpi-json")
@@ -565,15 +577,3 @@ def mock_dag_literal_module_more_complex():
     ]
 
     return dag_ldict
-
-
-@pytest.fixture
-def osu_allgather_hpct_db(data_dir, tmpdir):
-    """Builds a temporary directory containing the calc-pi database."""
-    hpct_db_dir = os.path.join(data_dir, "hpctoolkit-threads-osu-allgather")
-
-    for f in glob(os.path.join(str(hpct_db_dir), "*.metric-db")):
-        shutil.copy(f, str(tmpdir))
-    shutil.copy(os.path.join(hpct_db_dir, "experiment.xml"), str(tmpdir))
-
-    return tmpdir

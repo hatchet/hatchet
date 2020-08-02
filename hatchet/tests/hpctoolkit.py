@@ -172,9 +172,7 @@ def test_allgather(data_dir, osu_allgather_hpct_db):
             assert gf.dataframe[col].dtype == np.object
 
     # add tests to confirm values in dataframe
-    df = pd.read_csv(
-        str(os.path.join(data_dir, "hpctoolkit-threads-osu-allgather.csv"))
-    )
+    df = pd.read_csv(str(os.path.join(data_dir, "hpctoolkit-allgather-graphframe.csv")))
 
     gf.dataframe.reset_index(inplace=True)
     df.reset_index(inplace=True)
