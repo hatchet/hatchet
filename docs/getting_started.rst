@@ -36,11 +36,13 @@ This will create a directory called ``hatchet``.
 Install and Build Hatchet
 -------------------------
 
-To build hatchet and update your PYTHONPATH, run the folllowing bash script from the hatchet root directory:
+To build hatchet and update your PYTHONPATH, run the following bash script from the hatchet root directory:
 
 .. code-block:: console
 
-    $ ./install.sh
+    $ source ./install.sh
+
+Note: The ``source`` keyword is required to update your PYTHONPATH environment variable. It is not necessary if you have already manually added the hatchet directory in your PYTHONPATH.
 
 Alternatively, you can install hatchet using pip:
 
