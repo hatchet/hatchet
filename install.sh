@@ -1,5 +1,7 @@
-#!/bin/bash
+#!/bin/sh
+
 if [[ "$PYTHONPATH" != *"$PWD"* ]]; then
-	export PYTHONPATH=$PWD:$PYTHONPATH
+	PYTHONPATH=$PWD:$PYTHONPATH
 fi
+
 python setup.py build_ext --inplace 
