@@ -44,6 +44,14 @@ hatchet.util.profiler module
    :undoc-members:
    :show-inheritance:
 
+hatchet.util.timer module
+-------------------------
+
+.. automodule:: hatchet.util.timer
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 Module contents
 ---------------
