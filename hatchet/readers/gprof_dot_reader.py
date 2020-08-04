@@ -12,7 +12,7 @@ import hatchet.graphframe
 from ..node import Node
 from ..graph import Graph
 from ..frame import Frame
-from ..util.profiler import Timer
+from ..util.timer import Timer
 from ..util.config import dot_keywords
 
 
