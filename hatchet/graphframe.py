@@ -559,7 +559,7 @@ class GraphFrame:
         rank=0,
         thread=0,
         depth=10000,
-        highlight_name=True,
+        highlight_name=False,
         invert_colormap=False,
         color=None,  # remove in next release
         threshold=None,  # remove in next release
