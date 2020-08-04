@@ -14,16 +14,7 @@ class Interface(Magics):
 
     # Note to self: Custom magic classes MUST call parent's constructor
     def __init__(self, shell):
-        requireInfo = open("require.config").read()
-        display(
-            Javascript(
-                "require.config({ \
-                 baseUrl: './', \
-                 paths: { "
-                + requireInfo
-                + "} });"
-            )
-        )
+
         super(Interface, self).__init__(shell)
         # Clean up namespace function
         display(
