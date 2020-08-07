@@ -236,17 +236,15 @@
     
     // Global min/max are the last entry of forestMetrics;
     forestMetrics.push(forestMinMax); 
-    console.log("end forestMinMax", forestMinMax);
         
     var i = 0,
         duration = 750;
 
     // Helper function for determining which nodes are in brush
     function rectContains(selection, points) {
-      console.log("Check the absolute position of the point");
       if (selection) {
-          var isBrushed = selection[0][0] <= points.mainGy && selection[1][0] >= points.mainGy && // Check X coordinate
-            selection[0][1] <= points.mainGx && selection[1][1] >= points.mainGx  // And Y coordinate
+          var isBrushed = selection[0][0] <= points.yMainG && selection[1][0] >= points.yMainG && // Check X coordinate
+            selection[0][1] <= points.xMainG && selection[1][1] >= points.xMainG  // And Y coordinate
           //Remember points are at (y,x)
           return isBrushed;
       }
@@ -286,7 +284,7 @@
             .style("fill", "white")
             .attr('cursor', 'pointer');
         var brush = d3.brush()
-          .extent([[0, 0], [2*height, 2*width]])
+          .extent([[0, 0], [2*width, 2*(height + margin.top + margin.bottom)]])
           .on("brush end", brushmove);
           
         const gBrush = mainG.append('g')
@@ -607,16 +605,15 @@
           d.y0 = d.y;
 
           // Store the overall position based on group   
-          d.xMainG = d.x+margin.left; //katy
-          d.yMainG = d.y+treeHeight*treeIndex;
-          //console.log("g: ", groupIndex, "x", d.x, " y", d.y, " mainx", d.xMainG, "mainy", d.yMainG);
+          d.xMainG = d.x + treeHeight * treeIndex + margin.top; //katy
+          d.yMainG = d.y + margin.left;
+          
           });
       }
       
       //When metricSelect is changed (metric_col)
       d3.select('#metricSelect')
           .on('change', function() {
-          //changeMetric(allMin, allMax);
           changeMetric();
       });
           
@@ -703,17 +700,6 @@
               d._children = null;
           }
         update(d, treeData, g); //katy
-    }
-      
-    // Helper function for determining which nodes are in brush
-    function rectContains(selection, points) {
-      console.log("selection", selection, "points", points, points.x, points.y);
-        if (selection) {
-            isBrushed = selection[0][0] <= points.y && selection[1][0] >= points.y && // Check X coordinate
-              selection[0][1] <= points.x && selection[1][1] >= points.x  // And Y coordinate
-            //Remember points are at (y,x)
-            return isBrushed;
-        }
     }
 
     function changeMetric(allMin, allMax) {
