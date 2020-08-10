@@ -37,8 +37,8 @@ class Roundtrip(Magics):
     def loadVisualization(self, line):
         # Get command line args for loading the vis
         args = line.split(" ")
-        name = "roundtripTreeVis" #args[0]
-        javascriptFile = open(args[0]).read() #open(args[1]).read()
+        name = "roundtripTreeVis"  # args[0]
+        javascriptFile = open(args[0]).read()  # open(args[1]).read()
         # self.codeMap[name] = javascriptFile
         # Source input files
         # Set up the object to map input files to what javascript expects
@@ -94,7 +94,7 @@ class Roundtrip(Magics):
         display(HTML(header + javascriptFile + footer))
 
     @line_magic
-    def fetchData(self, dest):    
+    def fetchData(self, dest):
         hook = (
             """
                 var holder = jsNodeSelected;
@@ -107,9 +107,9 @@ class Roundtrip(Magics):
             + """ = '+ holder);
                """
         )
-        
+
         display(Javascript(hook))
-        
+
 
 # Function to make module loading possible
 def load_ipython_extension(ipython):
