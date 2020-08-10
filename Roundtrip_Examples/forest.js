@@ -71,18 +71,22 @@
         .text(d => d)
         .attr('value', (d,i) => i+"|"+d);
         
+    var tooltip = d3.select(element).append("div")
+      .attr('id', 'tooltip')
+      .style('position', 'absolute')
+      .style('top', '5px')
+      .style('right', '15px')
+      .style('padding', '5px')
+      .style('border-radius', '5px')
+      .style('background', '#ccc')
+      .style('color', 'black')
+      .style('font-size', '14px')
+      .style('font-family', 'monospace')
+      .html('<p>Click a node or "Select nodes" to see more info</p>');
+     
     var svg = d3.select(element).append("svg") //element
         .attr("width", width + margin.right + margin.left)
-        .attr("height",  height + margin.top + margin.bottom);
-        
-    var tooltip = svg.append("g")
-              .attr("id", "tooltip")
-              .append("rect")
-              .attr("width", '200px')
-              .attr("height", "20px")
-              .attr("x", 200)
-              .attr("y", 12)
-              .style("fill", "white");   
+        .attr("height",  height + margin.top + margin.bottom);   
 
      var brushOn = 1;
      var colorScheme = 1; //default=1 : invert=-1
@@ -202,7 +206,7 @@
       currentRoot.x0 = height;
       currentRoot.y0 = margin.left;
       
-      //Record the width of the tree //Katy?
+      //Record the width of the tree 
       var currentTreeMap = treemap(currentRoot);
       var newg = mainG.append("g")
         .attr('class', 'group '+treeIndex)
@@ -285,7 +289,8 @@
             .attr('cursor', 'pointer');
         var brush = d3.brush()
           .extent([[0, 0], [2*width, 2*(height + margin.top + margin.bottom)]])
-          .on("brush end", brushmove);
+          .on('brush', brushmove)
+          .on('end', brushend);
           
         const gBrush = mainG.append('g')
           .attr('class', 'brush')
@@ -403,7 +408,7 @@
     } 
         
     // Update colorScale with min and max
-    function colorScale(nodeMetric, treeIndex) { //Katy
+    function colorScale(nodeMetric, treeIndex) { 
         var curMetric = d3.select('#metricSelect').property('value');
         if (treeIndex == -1) {
           var colorSchemeUsed = setColors(treeIndex);
@@ -459,10 +464,6 @@
             });
         }
     });
-
-
-    //d3.select(self.frameElement).style("height", "500px");
-    //cleanUp(); //katy
 
     function update(source, treeData, g) {
     
@@ -605,7 +606,7 @@
           d.y0 = d.y;
 
           // Store the overall position based on group   
-          d.xMainG = d.x + treeHeight * treeIndex + margin.top; //katy
+          d.xMainG = d.x + treeHeight * treeIndex + margin.top; 
           d.yMainG = d.y + margin.left;
           
           });
@@ -617,13 +618,16 @@
           changeMetric();
       });
           
-    // To pretty print the node data
+    // To pretty print the node data as a IPython table
     function printNodeData(nodeList) {
       var nodeStr = '';
-
-      for (var i=0; i<nodeList.length; i++) {
-        nodeStr = nodeStr + nodeList[i].data.name + ': ' + nodeList[i].data.metrics.time + 's (' + nodeList[i].data.metrics["time (inc)"]+'s inc)';
+      var numNodes = nodeList.length;
+      //lay the nodes out in a table
+      nodeStr = '<table><tr><td>Name</td><td>Time</td><td>Time (inc)</td></tr>'; //make this custom
+      for (var i=0; i<numNodes; i++) {
+          nodeStr += '<tr><td>'+nodeList[i].data.name+'</td><td>'+nodeList[i].data.metrics.time+'s </td><td>'+nodeList[i].data.metrics["time (inc)"]+'s</td></tr>';
       }
+      nodeStr = nodeStr + '</table>';
       return nodeStr;
     }
         
@@ -654,24 +658,17 @@
         
     function updateTooltip(nodeList) {
         d3.selectAll("#tooltip text").remove();
-        
         var tipText = printNodeData(nodeList);
-        var textLength = tipText.length;
-        var textLength = tipText.split(' |')[0].length;
-        var textHeight = tipText.split(' |').length;
-        d3.select("#tooltip rect")
-            .transition()
-            .duration(duration/100)
-            .attr("width", textLength*10);
-
-        var tooltip = d3.select('#tooltip')
-        .append("text")
-        .attr('x', 300)
-        .attr('y', 12)
-        .text(tipText)
-        .attr('font-family', 'monospace')
-        .attr('font-size', '15px');
+        var longestName = 0;
+        nodeList.forEach(function(d){
+          var nodeData = d.data.name+': '+d.data.metrics.time+'s ('+d.data.metrics["time (inc)"]+'s inc)';
+          if (nodeData.length > longestName) {
+            longestName = nodeData.length;
+          } 
+        });
         
+        d3.select('#tooltip')
+        .html(tipText);
     }
 
     function click(d) {
@@ -686,7 +683,6 @@
                 return e._children ? "#89c3e0" : 'black';}
         })
         .style('stroke-width', e => e == selectedData ? '4px' : '1px');
-        console.log("jsNodeSelected",jsNodeSelected);
         
     }    
           
@@ -699,7 +695,7 @@
               d.children = d._children;
               d._children = null;
           }
-        update(d, treeData, g); //katy
+        update(d, treeData, g); 
     }
 
     function changeMetric(allMin, allMax) {
@@ -741,16 +737,27 @@
         brushedNodes.each(d => brushedData.push(d));
       
         highlightNodes(brushedNodes);
+    }
+    function brushend() {
+        const { selection } = d3.event;
+        
+        if (!selection) {
+            highlightNodes([]);
+        return;
+        }
+        // Slow, unoptimized
+        const brushedNodes = d3.selectAll(".circleNode")
+          .filter(d => rectContains(selection, d));
+
+        const brushedData = [];
+        brushedNodes.each(d => brushedData.push(d));
+    
         updateTooltip(brushedData);
         jsNodeSelected = printQuery(brushedData);
-        console.log("brush jsNodeSelected", jsNodeSelected);
-        /* Optimized: https://peterbeshai.com/blog/2016-12-03-brushing-in-scatterplots-with-d3-and-quadtrees/*/
-
-    }
-        
+    }  
       
  })
-})(element); //katy
+})(element);
 
 
 
