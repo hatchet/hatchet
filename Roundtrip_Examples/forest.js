@@ -1,8 +1,7 @@
 //d3.v4
 // brushing help: https://peterbeshai.com/blog/2016-12-03-brushing-in-scatterplots-with-d3-and-quadtrees/
 (function(element) {
-    require(['https://d3js.org/d3.v4.min.js'], function(d3) {
-    
+   require(['https://d3js.org/d3.v4.min.js'], function(d3) {
     var cleanTree = argList[0].replace(/'/g, '"');
     
     var forestData = JSON.parse(cleanTree);
@@ -47,7 +46,7 @@
     treeHeight = 300,
     //var margin = {top: 0, right: 0, bottom: 0, left: 0},
     width = window.innerWidth - margin.right - margin.left,
-    height = treeHeight * numberOfTrees, //window.innerHeight - margin.top - margin.bottom,
+    height = treeHeight * (numberOfTrees+1), //window.innerHeight - margin.top - margin.bottom,
     gOffset = [{x: margin.left, y: margin.top}], //keep track of translations to know absolute position
     spreadFactor = 150;
     
@@ -620,10 +619,14 @@
           
     // To pretty print the node data as a IPython table
     function printNodeData(nodeList) {
-      var nodeStr = '';
+      var nodeStr = '<table><tr><td>name</td>';
       var numNodes = nodeList.length;
       //lay the nodes out in a table
-      nodeStr = '<table><tr><td>Name</td><td>Time</td><td>Time (inc)</td></tr>'; //make this custom
+      for (var i=0; i<metricColumns.length; i++){
+        console.log(metricColumns);
+        nodeStr += '<td>'+ metricColumns[i] +'</td>';
+      }
+      nodeStr += '</tr>';
       for (var i=0; i<numNodes; i++) {
           nodeStr += '<tr><td>'+nodeList[i].data.name+'</td><td>'+nodeList[i].data.metrics.time+'s </td><td>'+nodeList[i].data.metrics["time (inc)"]+'s</td></tr>';
       }
