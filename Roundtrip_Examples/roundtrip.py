@@ -10,12 +10,12 @@ from IPython.display import HTML, Javascript, display
 
 
 @magics_class
-class Interface(Magics):
+class Roundtrip(Magics):
 
     # Note to self: Custom magic classes MUST call parent's constructor
     def __init__(self, shell):
 
-        super(Interface, self).__init__(shell)
+        super(Roundtrip, self).__init__(shell)
         # Clean up namespace function
         display(
             HTML(
@@ -37,14 +37,14 @@ class Interface(Magics):
     def loadVisualization(self, line):
         # Get command line args for loading the vis
         args = line.split(" ")
-        name = args[0]
-        javascriptFile = open(args[1]).read()
+        name = "roundtripTreeVis" #args[0]
+        javascriptFile = open(args[0]).read() #open(args[1]).read()
         # self.codeMap[name] = javascriptFile
         # Source input files
-        # Set up the object to map inout files to what javascript expects
+        # Set up the object to map input files to what javascript expects
         argList = "<script> var argList = []; var elementTop = null; var cell_idx = -1</script>"
         displayObj = display(HTML(argList), display_id=True)
-        for i in range(2, len(args), 1):
+        for i in range(1, len(args), 1):
             if "%" in args[i]:
                 # print(self.shell.user_ns[args[i][1:]])
                 args[i] = self.shell.user_ns[args[i][1:]]
@@ -76,6 +76,7 @@ class Interface(Magics):
         self.runViz(name, javascriptFile)
 
     def runViz(self, name, javascriptFile):
+        name = "roundtripTreeVis"
         header = (
             """
                   <div id=\""""
@@ -93,20 +94,11 @@ class Interface(Magics):
         display(HTML(header + javascriptFile + footer))
 
     @line_magic
-    def fetchData(self, line):
-        args = line[1:-1].split()
-        dest = args[1][:-1]
-        source = args[2]  # in JS: jsNodeSelected
-
-        # display(Javascript('console.log("WE HAVE NEWLINES", '+source+')'))
-
+    def fetchData(self, dest):    
         hook = (
             """
-                var holder = """
-            + str(source)
-            + """;
+                var holder = jsNodeSelected;
                 holder = '"' + holder + '"';
-                //console.log('holder:', holder);
                 IPython.notebook.kernel.execute('"""
             + str(dest)
             + """ = '+ holder);
@@ -115,9 +107,10 @@ class Interface(Magics):
             + """ = '+ holder);
                """
         )
+        
         display(Javascript(hook))
-
+        
 
 # Function to make module loading possible
 def load_ipython_extension(ipython):
-    ipython.register_magics(Interface)
+    ipython.register_magics(Roundtrip)
