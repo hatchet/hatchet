@@ -30,6 +30,7 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 import hatchet
+from hatchet.version import __version__
 
 
 class ConsoleRenderer:
@@ -87,7 +88,7 @@ class ConsoleRenderer:
             r"  / __ \/ __ `/ __/ ___/ __ \/ _ \/ __/",
             r" / / / / /_/ / /_/ /__/ / / /  __/ /_  ",
             r"/_/ /_/\__,_/\__/\___/_/ /_/\___/\__/  {:>2}".format(
-                "v" + hatchet.__version__
+                "v" + __version__
             ),
             r"",
             r"",

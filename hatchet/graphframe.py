@@ -19,7 +19,7 @@ from .query_matcher import QueryMatcher
 from .external.console import ConsoleRenderer
 from .util.dot import trees_to_dot
 from .util.deprecated import deprecated_params
-from .util.profiler import Timer
+from .util.timer import Timer
 
 try:
     import hatchet.cython_modules.libs.graphframe_modules as _gfm_cy

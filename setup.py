@@ -7,7 +7,7 @@ from setuptools import setup
 from setuptools import Extension
 from codecs import open
 from os import path
-from version import __version__
+from hatchet.version import __version__
 
 here = path.abspath(path.dirname(__file__))
 
