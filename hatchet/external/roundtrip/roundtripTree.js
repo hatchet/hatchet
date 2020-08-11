@@ -2,7 +2,7 @@
 // brushing help: https://peterbeshai.com/blog/2016-12-03-brushing-in-scatterplots-with-d3-and-quadtrees/
 (function(element) {
    require(['https://d3js.org/d3.v4.min.js'], function(d3) {
-      
+   
     var cleanTree = argList[0].replace(/'/g, '"');
     
     var forestData = JSON.parse(cleanTree);

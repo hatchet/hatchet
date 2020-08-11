@@ -6,6 +6,7 @@ from IPython.display import HTML, Javascript, display
    File: roundtrip.py
    Purpose: Pass data between Jupyter Python cells and
    Javascript variables.
+   Hatchet-specific.
 """
 
 
@@ -37,9 +38,24 @@ class Roundtrip(Magics):
     def loadVisualization(self, line):
         # Get command line args for loading the vis
         args = line.split(" ")
-        name = "roundtripTreeVis"  # args[0]
-        javascriptFile = open(args[0]).read()  # open(args[1]).read()
-        # self.codeMap[name] = javascriptFile
+        name = "roundtripTreeVis" 
+        path = ""
+        if '"' in args[0]:
+            path = args[0].replace('"', '')
+        elif "'" in args[0]:
+            path = args[0].replace("'", '')
+        else:
+            #Path is a variable from the nb namespace
+            path = self.shell.user_ns[args[0]]
+      
+        fileAndPath = ""
+        if path[-1] == '/': 
+            fileAndPath = path + "roundtripTree.js"
+        else: 
+            fileAndPath = path + "/roundtripTree.js"
+            
+        javascriptFile = open(fileAndPath).read()
+        
         # Source input files
         # Set up the object to map input files to what javascript expects
         argList = "<script> var argList = []; var elementTop = null; var cell_idx = -1</script>"
