@@ -86,6 +86,20 @@ def osu_allgather_hpct_db(data_dir, tmpdir):
 
 
 @pytest.fixture
+def cycle_cprofile_pstats(data_dir, tmpdir):
+    """Builds a temporary directory containing the pstats from a profile of the hpctoolkit_reader function."""
+    cprof_pstats_dir = os.path.join(data_dir, "cprofile-cycle-profile-pstats")
+    cprof_pstats_file = os.path.join(
+        cprof_pstats_dir, "cprofile-cycle-profile-pstats.prof"
+    )
+
+    shutil.copy(cprof_pstats_file, str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), "cprofile-cycle-profile-pstats.prof")
+
+    return tmpfile
+
+
+@pytest.fixture
 def calc_pi_caliper_json(data_dir, tmpdir):
     """Builds a temporary directory containing the calc-pi JSON file."""
     cali_json_dir = os.path.join(data_dir, "caliper-cpi-json")
