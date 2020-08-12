@@ -638,7 +638,7 @@
       return nodeStr;
     }
         
-    jsNodeSelected = 'Alert: no node(s) selected';
+    jsNodeSelected = "['*']"; //default: select all nodes
         
     function printQuery(nodeList) {
        
@@ -650,7 +650,7 @@
             }
             
         }
-        var queryStr = "<no query generated>";
+        var queryStr = "['<no query generated>']";
         if (nodeList.length > 1) {
             // This way is for subtrees?
             queryStr = "[{'name': '" +leftMostNode.data.name +"'},'*']"; 
