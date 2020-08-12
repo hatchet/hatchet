@@ -42,41 +42,40 @@ class Roundtrip(Magics):
         name = "roundtripTreeVis" + str(self.id_number)
         path = ""
         if '"' in args[0]:
-            path = args[0].replace('"', '')
+            path = args[0].replace('"', "")
         elif "'" in args[0]:
-            path = args[0].replace("'", '')
+            path = args[0].replace("'", "")
         else:
-            #Path is a variable from the nb namespace
+            # Path is a variable from the nb namespace
             path = self.shell.user_ns[args[0]]
-      
+
         fileAndPath = ""
-        if path[-1] == '/': 
+        if path[-1] == "/":
             fileAndPath = path + "roundtripTree.js"
-        else: 
+        else:
             fileAndPath = path + "/roundtripTree.js"
-            
+
         javascriptFile = open(fileAndPath).read()
-        
+
         # Source input files
         # Set up the object to map input files to what javascript expects
         argList = "<script> var argList = []; var elementTop = null; var cell_idx = -1;</script>"
-        
+
         displayObj = display(HTML(argList), display_id=True)
-        
+
         args[1] = self.shell.user_ns[args[1]]
         displayObj.update(Javascript('argList.push("' + str(args[1]) + '")'))
-        
+
         # Get curent cell id
         self.codeMap[name] = javascriptFile
-        
+
         preRun = """
         // Grab current context
         elementTop = element.get(0);"""
         displayObj.update(Javascript(preRun))
-        
+
         self.runViz(name, javascriptFile)
         self.id_number += 1
-        
 
     def runViz(self, name, javascriptFile):
         name = "roundtripTreeVis" + str(self.id_number)
@@ -98,26 +97,25 @@ class Roundtrip(Magics):
 
     @line_magic
     def fetchData(self, dest):
-        #added eval() to 'execute' the JS list-as-string as a Python list
-        
+        # added eval() to 'execute' the JS list-as-string as a Python list
+
         hook = (
             """
                 var holder = jsNodeSelected;
                 holder = '"' + holder + '"';
                 IPython.notebook.kernel.execute('"""
             + str(dest)
-            + """ = '+ eval(holder)); 
+            + """ = '+ eval(holder));
                 //console.log('"""
             + str(dest)
             + """ = '+ holder);
                """
         )
-        
+
         display(Javascript(hook))
-        
-        #self.shell.user_ns[dest] = jsNodeSelected
+
+        # self.shell.user_ns[dest] = jsNodeSelected
         return display(Javascript(hook))
-        
 
 
 # Function to make module loading possible
