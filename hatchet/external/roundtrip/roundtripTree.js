@@ -4,7 +4,7 @@
    require(['https://d3js.org/d3.v4.min.js'], function(d3) {
    
     var cleanTree = argList[0].replace(/'/g, '"');
-    
+       
     var forestData = JSON.parse(cleanTree);
     
     var rootNodeNames = [];
@@ -103,7 +103,7 @@
            brushOn = -1 * brushOn;
            activateBrush(brushOn);
          });
-      d3.select('#selectButton').append('text')
+      d3.select(element).select('#selectButton').append('text')
          .attr("x", 3)
          .attr("y", 12)
          .text('Select nodes')
@@ -121,7 +121,7 @@
          .attr('height', '15px')
          .attr('x', 90).attr('y', 0).attr('rx', 5)
          .style('fill', '#ccc');
-      d3.select('#colorButton').append('text')
+      d3.select(element).select('#colorButton').append('text')
          .attr("x", 93)
          .attr("y", 12)
          .text('Colors: default')
@@ -130,9 +130,9 @@
          .attr('cursor', 'pointer')
          .on('click', function() {
              colorScheme = -1 * colorScheme;
-             var curMetric = d3.select('#metricSelect').property('value');
-             var curLegend = d3.select('#unifyLegends').text();
-             d3.selectAll(".circleNode")
+             var curMetric = d3.select(element).select('#metricSelect').property('value');
+             var curLegend = d3.select(element).select('#unifyLegends').text();
+             d3.select(element).selectAll(".circleNode")
                .transition()
                .duration(duration)
                .style('fill', function(d){ 
@@ -162,7 +162,7 @@
          .attr('y', 0)
          .attr('rx', 5)
          .style('fill', '#ccc');
-      d3.select('#unifyLegends').append('text')
+      d3.select(element).select('#unifyLegends').append('text')
          .attr("x", 195)
          .attr("y", 12)
          .text('Legends: unified')
@@ -170,7 +170,7 @@
          .attr("font-size", "12px")
          .attr('cursor', 'pointer')
          .on('click', function() {
-            var curMetric = d3.select('#metricSelect').property('value');
+            var curMetric = d3.select(element).select('#metricSelect').property('value');
             var sameLegend = true;
             if (d3.select(this).text() == 'Legends: unified') {
               d3.select(this).text('Legends: indiv.');
@@ -179,12 +179,13 @@
                 setColorLegend(treeIndex);
               }
             } else {
+              
               d3.select(this).text('Legends: unified');
               sameLegend = true;
               setColorLegend(-1);
             }
             
-            d3.selectAll(".circleNode")
+            d3.select(element).selectAll(".circleNode")
               .transition()
               .duration(duration)
               .style("fill", function(d){ 
@@ -257,7 +258,7 @@
 
     function highlightNodes(brushedNodes) {
         if (brushedNodes.length == 0) {
-            d3.selectAll("circle")
+            d3.select(element).selectAll("circle")
             .style("stroke", 'black')
             .style("stroke-width", "1px");
             return;
@@ -272,20 +273,20 @@
       
       if (brushOn > 0) {
           //Turn brush off
-          d3.select("#selectButton rect")
+          d3.select(element).select("#selectButton rect")
               .style("fill", "#ccc")
               .attr('cursor', 'pointer');
-          d3.select("#selectButton text")
+          d3.select(element).select("#selectButton text")
               .style("fill", "black")
               .attr('cursor', 'pointer');
           d3.selectAll('.brush').remove();
           brushOn = -brushOn;
       }
       else{
-        d3.select("#selectButton rect")
+        d3.select(element).select("#selectButton rect")
             .style("fill", "black")
             .attr('cursor', 'pointer');
-        d3.select("#selectButton text")
+        d3.select(element).select("#selectButton text")
             .style("fill", "white")
             .attr('cursor', 'pointer');
         var brush = d3.brush()
@@ -323,24 +324,24 @@
         var colorSchemeUsed;
         if (treeIndex == -1) { //all trees are displayed
           if (colorScheme == 1) {
-            d3.select('#colorButton text')
+            d3.select(element).select('#colorButton text')
             .text('Colors: default');
             colorSchemeUsed = allTreesColors;
           } 
           else {
-            d3.select('#colorButton text')
+            d3.select(element).select('#colorButton text')
             .text('Colors: inverted');
             colorSchemeUsed = invertedAllTrees;
           }
         }
         else { //single tree is displayed
           if (colorScheme == 1) {
-            d3.select('#colorButton text')
+            d3.select(element).select('#colorButton text')
             .text('Colors: default');
             colorSchemeUsed = regularColors[treeIndex];
           }
           else {
-              d3.select('#colorButton text')
+              d3.select(element).select('#colorButton text')
               .text('Colors: inverted');
               colorSchemeUsed = invertColors[treeIndex];
           }
@@ -377,7 +378,7 @@
     }
 
     function setColorLegend(treeIndex) {
-        var curMetric = d3.select('#metricSelect').property('value');
+        var curMetric = d3.select(element).select('#metricSelect').property('value');
         if (treeIndex == -1) { //unified color legend
           
           var metric_range = forestMinMax[curMetric].max - forestMinMax[curMetric].min;
@@ -394,14 +395,14 @@
           var colorSchemeUsed = setColors(treeIndex);
           var legendClass = '.legend' + treeIndex;
         }
-        d3.selectAll(legendClass + ' rect')
+        d3.select(element).selectAll(legendClass + ' rect')
             .transition()
             .duration(duration)
             .attr('fill', function(d, i){
               return colorSchemeUsed[d];
             })
             .attr('stroke', 'black');
-        d3.selectAll(legendClass + ' text')
+        d3.select(element).selectAll(legendClass + ' text')
             .text((d,i) => {
               return colorScaleDomain[6-d-1]+' - '+colorScaleDomain[6-d]; 
             })
@@ -410,7 +411,7 @@
         
     // Update colorScale with min and max
     function colorScale(nodeMetric, treeIndex) { 
-        var curMetric = d3.select('#metricSelect').property('value');
+        var curMetric = d3.select(element).select('#metricSelect').property('value');
         if (treeIndex == -1) {
           var colorSchemeUsed = setColors(treeIndex);
           var metric_range = forestMinMax[curMetric].max - forestMinMax[curMetric].min;
@@ -436,21 +437,21 @@
         else { return colorSchemeUsed[5]; }
     }
 
-    d3.select('#treeRootSelect')
+    d3.select(element).select('#treeRootSelect')
         .on('change', function() {
-          var rootIndex = d3.select('#treeRootSelect').property('value').split("|")[0];
-          var rootName = d3.select('#treeRootSelect').property('value').split("|")[1];
+          var rootIndex = d3.select(element).select('#treeRootSelect').property('value').split("|")[0];
+          var rootName = d3.select(element).select('#treeRootSelect').property('value').split("|")[1];
           if (rootName == "Show all trees") {
-            d3.selectAll(".group ").attr('transform', function(){
+            d3.select(element).selectAll(".group ").attr('transform', function(){
               var groupIndex = d3.select(this).attr("class").split(" ")[1];
               return 'translate('+margin.left+","+(treeHeight*groupIndex+margin.top)+")"
             });
                 
-            d3.selectAll(".group ").style("display", "inline-block");
+            d3.select(element).selectAll(".group ").style("display", "inline-block");
             
           }
           else {
-            d3.selectAll(".group ").style("display", function(){
+            d3.select(element).selectAll(".group ").style("display", function(){
               var groupIndex = d3.select(this).attr("class").split(" ")[1];
               if (groupIndex == rootIndex) { 
                 // Move this displayed tree to the top
@@ -471,9 +472,9 @@
 
     function update(source, treeData, g) {
     
-      var curMetric = d3.select('#metricSelect').property('value');
+      var curMetric = d3.select(element).select('#metricSelect').property('value');
       var treeIndex = g.attr("class").split(" ")[1]; 
-      if (d3.select('#unifyLegends').text() == 'Legends: unified') {
+      if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
           setColorLegend(-1);
       } else {
           setColorLegend(treeIndex);  
@@ -508,7 +509,7 @@
           .attr('class', 'circleNode')
           .attr("r", 1e-6)
           .style("fill", function(d){ 
-              if (d3.select('#unifyLegends').text() == 'Legends: unified') {
+              if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
                   return colorScale(d.data.metrics[curMetric], -1);
                 }
                 return colorScale(d.data.metrics[curMetric], d.treeIndex);
@@ -536,7 +537,7 @@
       nodeUpdate.select('circle.circleNode')
           .attr("r", 10)
           .style('fill', function(d){
-              if (d3.select('#unifyLegends').text() == 'Legends: unified') {
+              if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
                 return colorScale(d.data.metrics[curMetric], -1);
               }
               return colorScale(d.data.metrics[curMetric], d.treeIndex); })
@@ -617,7 +618,7 @@
       }
       
       //When metricSelect is changed (metric_col)
-      d3.select('#metricSelect')
+      d3.select(element).select('#metricSelect')
           .on('change', function() {
           changeMetric();
       });
@@ -665,7 +666,7 @@
     }
         
     function updateTooltip(nodeList) {
-        d3.selectAll("#tooltip text").remove();
+        d3.select(element).selectAll("#tooltip text").remove();
         var tipText = printNodeData(nodeList);
         var longestName = 0;
         nodeList.forEach(function(d){
@@ -675,7 +676,7 @@
           } 
         });
         
-        d3.select('#tooltip')
+        d3.select(element).select('#tooltip')
         .html(tipText);
     }
 
@@ -684,10 +685,10 @@
         jsNodeSelected = printQuery([d]);
         
         var selectedData = d;
-        d3.selectAll('.circleNode').style('stroke', function(e){
+        d3.select(element).selectAll('.circleNode').style('stroke', function(e){
             if (e == selectedData) return 'black';
             else { 
-                var curMetric = d3.select('#metricSelect').property('value');
+                var curMetric = d3.select(element).select('#metricSelect').property('value');
                 return e._children ? "#89c3e0" : 'black';}
         })
         .style('stroke-width', e => e == selectedData ? '4px' : '1px');
@@ -707,19 +708,17 @@
     }
 
     function changeMetric(allMin, allMax) {
-        var curMetric = d3.select('#metricSelect').property('value');
-        // maxtime = allMax[curMetric];
-        // mintime = allMin[curMetric];
-        var nodes = d3.selectAll(".circleNode");
+        var curMetric = d3.select(element).select('#metricSelect').property('value');
+        var nodes = d3.select(element).selectAll(".circleNode");
         
         for (var treeIndex=0; treeIndex<numberOfTrees; treeIndex++){
             setColorLegend(treeIndex);
         
-            d3.selectAll(".group ").selectAll(".circleNode")
+            d3.select(element).selectAll(".group ").selectAll(".circleNode")
                 .transition()
                 .duration(duration)
                 .style("fill", function(d){ 
-                  if (d3.select('#unifyLegends').text() == 'Legends: unified') {
+                  if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
                     return colorScale(d.data.metrics[curMetric], -1);
                   }
                   return colorScale(d.data.metrics[curMetric], d.treeIndex);
@@ -738,7 +737,7 @@
         return;
         }
         // Slow, unoptimized
-        const brushedNodes = d3.selectAll(".circleNode")
+        const brushedNodes = d3.select(element).selectAll(".circleNode")
           .filter(d => rectContains(selection, d));
 
         const brushedData = [];
@@ -754,7 +753,7 @@
         return;
         }
         // Slow, unoptimized
-        const brushedNodes = d3.selectAll(".circleNode")
+        const brushedNodes = d3.select(element).selectAll(".circleNode")
           .filter(d => rectContains(selection, d));
 
         const brushedData = [];

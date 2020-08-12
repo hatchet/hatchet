@@ -17,6 +17,7 @@ class Roundtrip(Magics):
     def __init__(self, shell):
 
         super(Roundtrip, self).__init__(shell)
+        self.id_number = 0
         # Clean up namespace function
         display(
             HTML(
@@ -38,7 +39,7 @@ class Roundtrip(Magics):
     def loadVisualization(self, line):
         # Get command line args for loading the vis
         args = line.split(" ")
-        name = "roundtripTreeVis" 
+        name = "roundtripTreeVis" + str(self.id_number)
         path = ""
         if '"' in args[0]:
             path = args[0].replace('"', '')
@@ -58,41 +59,27 @@ class Roundtrip(Magics):
         
         # Source input files
         # Set up the object to map input files to what javascript expects
-        argList = "<script> var argList = []; var elementTop = null; var cell_idx = -1</script>"
+        argList = "<script> var argList = []; var elementTop = null; var cell_idx = -1;</script>"
+        
         displayObj = display(HTML(argList), display_id=True)
-        for i in range(1, len(args), 1):
-            if "%" in args[i]:
-                # print(self.shell.user_ns[args[i][1:]])
-                args[i] = self.shell.user_ns[args[i][1:]]
-            if isinstance(args[i], str) and "." in args[i]:
-                if "." in args[i] and args[i].split(".")[1] in self.inputType.keys():
-                    displayObj.update(
-                        HTML(
-                            "<script src="
-                            + args[i]
-                            + " type="
-                            + self.inputType[args[i].split(".")[1]]
-                            + "></script>"
-                        )
-                    )
-                if args[i].split(".")[1] == "html" or args[i].split(".")[1] == "css":
-                    fileVal = open(args[i]).read()
-                    display(HTML(fileVal))
-            if isinstance(args[i], str) and '"' in args[i]:
-                args[i] = args[i].replace('"', '\\"')
-            if isinstance(args[i], str) and "\n" in args[i]:
-                args[i] = args[i].replace("\n", "\\n")
-            displayObj.update(Javascript('argList.push("' + str(args[i]) + '")'))
+        
+        args[1] = self.shell.user_ns[args[1]]
+        displayObj.update(Javascript('argList.push("' + str(args[1]) + '")'))
+        
         # Get curent cell id
         self.codeMap[name] = javascriptFile
+        
         preRun = """
         // Grab current context
         elementTop = element.get(0);"""
         displayObj.update(Javascript(preRun))
+        
         self.runViz(name, javascriptFile)
+        self.id_number += 1
+        
 
     def runViz(self, name, javascriptFile):
-        name = "roundtripTreeVis"
+        name = "roundtripTreeVis" + str(self.id_number)
         header = (
             """
                   <div id=\""""
@@ -111,20 +98,26 @@ class Roundtrip(Magics):
 
     @line_magic
     def fetchData(self, dest):
+        #added eval() to 'execute' the JS list-as-string as a Python list
+        
         hook = (
             """
                 var holder = jsNodeSelected;
                 holder = '"' + holder + '"';
                 IPython.notebook.kernel.execute('"""
             + str(dest)
-            + """ = '+ holder);
+            + """ = '+ eval(holder)); 
                 //console.log('"""
             + str(dest)
             + """ = '+ holder);
                """
         )
-
+        
         display(Javascript(hook))
+        
+        #self.shell.user_ns[dest] = jsNodeSelected
+        return display(Javascript(hook))
+        
 
 
 # Function to make module loading possible
