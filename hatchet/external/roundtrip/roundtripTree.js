@@ -61,7 +61,7 @@
         .attr('value', d => d);
     document.getElementById("metricSelect").style.margin = "10px 10px 10px 0px";  
     
-    d3.select(element).append('label').attr('for', 'treeRootSelect').text(' Display:');
+    d3.select(element).append('label').style('margin','0 0 0 10px').attr('for', 'treeRootSelect').text(' Display:');
     var treeRootInput = d3.select(element).append("select") //element
         .attr("id", "treeRootSelect")
         .selectAll('option')
