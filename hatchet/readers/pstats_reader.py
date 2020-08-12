@@ -56,12 +56,10 @@ class PstatsReader:
             # visited but valid node.
             if not cycle_flag:
                 pruned_list.append(child)
-                cycle_flag = False
+            cycle_flag = False
 
         node.children = pruned_list
-
-        self.stack.pop(-1)
-        return False
+        return
 
     def _get_src(self, stat):
         """Gets the source/parent of our current desitnation node"""
@@ -149,6 +147,7 @@ class PstatsReader:
         # cycles and fix infinite loops problems with output
         for i in range(len(list_roots)):
             self._prune_cycles(list_roots[i])
+            self.visited = []
 
         return list_roots
 
