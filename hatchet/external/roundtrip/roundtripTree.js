@@ -45,13 +45,12 @@
     // ************** Generate the tree diagram  *****************
     var margin = {top: 20, right: 20, bottom: 80, left: 20},
     treeHeight = 300,
-    //var margin = {top: 0, right: 0, bottom: 0, left: 0},
     width = window.innerWidth - margin.right - margin.left,
-    height = treeHeight * (numberOfTrees+1), //window.innerHeight - margin.top - margin.bottom,
+    height = treeHeight * (numberOfTrees+1), 
     gOffset = [{x: margin.left, y: margin.top}], //keep track of translations to know absolute position
     spreadFactor = 150;
     
-
+    d3.select(element).append('label').attr('for', 'metricSelect').text('Color by:');
     var metricInput = d3.select(element).append("select") //element
         .attr("id", "metricSelect")
         .selectAll('option')
@@ -60,7 +59,9 @@
         .append('option')
         .text(d => d)
         .attr('value', d => d);
-   
+    document.getElementById("metricSelect").style.margin = "10px 10px 10px 0px";  
+    
+    d3.select(element).append('label').attr('for', 'treeRootSelect').text(' Display:');
     var treeRootInput = d3.select(element).append("select") //element
         .attr("id", "treeRootSelect")
         .selectAll('option')
@@ -70,7 +71,8 @@
         .attr('selected', d => d.name == 'Show all trees' ? true : false)
         .text(d => d)
         .attr('value', (d,i) => i+"|"+d);
-        
+    document.getElementById("treeRootSelect").style.margin = "10px 10px 10px 10px";    
+    
     var tooltip = d3.select(element).append("div")
       .attr('id', 'tooltip')
       .style('position', 'absolute')
@@ -206,7 +208,6 @@
       currentRoot.x0 = height;
       currentRoot.y0 = margin.left;
       
-      //Record the width of the tree 
       var currentTreeMap = treemap(currentRoot);
       var newg = mainG.append("g")
         .attr('class', 'group '+treeIndex)
@@ -464,6 +465,9 @@
             });
         }
     });
+       
+    //d3.select(self.frameElement).style("height", "500px");
+    //cleanUp(); //katy
 
     function update(source, treeData, g) {
     
@@ -624,7 +628,6 @@
       var numNodes = nodeList.length;
       //lay the nodes out in a table
       for (var i=0; i<metricColumns.length; i++){
-        console.log(metricColumns);
         nodeStr += '<td>'+ metricColumns[i] +'</td>';
       }
       nodeStr += '</tr>';
@@ -650,14 +653,15 @@
         var queryStr = "<no query generated>";
         if (nodeList.length > 1) {
             // This way is for subtrees?
-            queryStr = "query = [{'name': '" +leftMostNode.data.name +"'},'*'}]"; 
+            queryStr = "[{'name': '" +leftMostNode.data.name +"'},'*']"; 
         }
         else {
             //Single node query
-            queryStr = "query = [{'name': '"+leftMostNode.data.name+"'}]";
+            queryStr = "[{'name': '"+leftMostNode.data.name+"'}]";
         }
 
         return queryStr;
+        
     }
         
     function updateTooltip(nodeList) {
