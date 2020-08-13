@@ -191,3 +191,11 @@ def test_tree(lulesh_caliper_json):
     )
     assert "662712.000 EvalEOSForElems" in output
     assert "2895319.000 LagrangeNodal" in output
+
+
+def test_graphframe_to_literal(lulesh_caliper_json):
+    """Sanity test a GraphFrame object with known data."""
+    gf = GraphFrame.from_caliper_json(str(lulesh_caliper_json))
+    graph_literal = gf.to_literal()
+
+    assert len(graph_literal) == len(gf.graph.roots)

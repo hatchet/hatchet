@@ -191,3 +191,18 @@ def test_allgather(data_dir, osu_allgather_hpct_db):
 
     for v1, v2 in zip(ti1, ti2):
         assert v1 == v2
+
+
+def test_graphframe_to_literal(data_dir, calc_pi_hpct_db):
+    """Sanity test a GraphFrame object with known data."""
+    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+    graph_literal = gf.to_literal()
+
+    assert len(graph_literal) == len(gf.graph.roots)
+
+
+def test_graphframe_to_literal_with_threads(data_dir, osu_allgather_hpct_db):
+    gf = GraphFrame.from_hpctoolkit(str(osu_allgather_hpct_db))
+    graph_literal = gf.to_literal()
+
+    assert len(graph_literal) == len(gf.graph.roots)
