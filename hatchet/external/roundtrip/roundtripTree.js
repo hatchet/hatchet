@@ -1,7 +1,6 @@
 //d3.v4
 (function (element) {
     require(['https://d3js.org/d3.v4.min.js'], function (d3) {
-
         var cleanTree = argList[0].replace(/'/g, '"');
 
         var forestData = JSON.parse(cleanTree);
@@ -37,7 +36,6 @@
             forestMinMax[metricColumns[j]]["min"] = Number.MAX_VALUE;
             forestMinMax[metricColumns[j]]["max"] = 0;
         }
-
 
         rootNodeNames.push("Show all trees");
 
@@ -150,7 +148,6 @@
                             setColorLegend(treeIndex);
                         }
                     }
-
                 });
         var unifyLegends = svg.append('g')
                 .attr('id', 'unifyLegends')
@@ -178,7 +175,6 @@
                             setColorLegend(treeIndex);
                         }
                     } else {
-
                         d3.select(this).text('Legends: unified');
                         sameLegend = true;
                         setColorLegend(-1);
@@ -202,7 +198,6 @@
         // Add a group and tree for each forestData[i]
 
         for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
-
             currentTreeData = forestData[treeIndex];
             currentRoot = d3.hierarchy(currentTreeData, d => d.children);
             currentRoot.x0 = height;
@@ -229,14 +224,12 @@
                         forestMinMax[tempMetric].min = d.data.metrics[tempMetric];
                     }
                 }
-
             });
 
             addColorLegendRects(newg);
 
             update(currentRoot, currentTreeMap, newg);
             newg.style("display", "inline-block");
-
         } //end for-loop "add tree"
 
         // Global min/max are the last entry of forestMetrics;
@@ -269,7 +262,6 @@
         }
 
         function activateBrush(brushOn) {
-
             if (brushOn > 0) {
                 //Turn brush off
                 d3.select(element).select("#selectButton rect")
@@ -404,7 +396,6 @@
                     .text((d, i) => {
                         return colorScaleDomain[6 - d - 1] + ' - ' + colorScaleDomain[6 - d];
                     })
-
         }
 
         // Update colorScale with min and max
@@ -414,7 +405,6 @@
                 var colorSchemeUsed = setColors(treeIndex);
                 var metric_range = forestMinMax[curMetric].max - forestMinMax[curMetric].min;
                 var proportion_of_total = (nodeMetric - forestMinMax[curMetric].min) / metric_range;
-
             } else {
                 var colorSchemeUsed = setColors(treeIndex);
                 var metric_range = forestMetrics[treeIndex][curMetric].max - forestMetrics[treeIndex][curMetric].min;
@@ -456,7 +446,6 @@
                         });
 
                         d3.select(element).selectAll(".group ").style("display", "inline-block");
-
                     } else {
                         d3.select(element).selectAll(".group ").style("display", function () {
                             var groupIndex = d3.select(this).attr("class").split(" ")[1];
@@ -477,7 +466,6 @@
         //cleanUp(); //katy
 
         function update(source, treeData, g) {
-
             var curMetric = d3.select(element).select('#metricSelect').property('value');
             var treeIndex = g.attr("class").split(" ")[1];
             if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
@@ -554,7 +542,6 @@
                         return "translate(" + d.y + "," + d.x + ")";
                     });
 
-
             nodeUpdate.select('circle.circleNode')
                     .attr("r", 10)
                     .style('fill', function (d) {
@@ -570,7 +557,6 @@
                     .style('stroke-width', d => d._children ? '6px' : '1px')
                     .attr('cursor', 'pointer');
 
-
             // Transition exiting nodes to the parent's new position.
             var nodeExit = node.exit().transition()
                     .duration(duration)
@@ -584,8 +570,6 @@
 
             nodeExit.select("text")
                     .style("fill-opacity", 1);
-
-
 
             /******** Links ********/
             // Creates a curved (diagonal) path from parent to the child nodes
@@ -671,14 +655,12 @@
         jsNodeSelected = "['*']"; //default: select all nodes
 
         function printQuery(nodeList) {
-
             var leftMostNode = {depth: Number.MAX_VALUE, data: {name: 'default'}};
             var lastNode = "";
             for (var i = 0; i < nodeList.length; i++) {
                 if (nodeList[i].depth < leftMostNode.depth) {
                     leftMostNode = nodeList[i];
                 }
-
             }
             var queryStr = "['<no query generated>']";
             if (nodeList.length > 1) {
@@ -690,7 +672,6 @@
             }
 
             return queryStr;
-
         }
 
         function updateTooltip(nodeList) {
@@ -773,6 +754,7 @@
 
             highlightNodes(brushedNodes);
         }
+
         function brushend() {
             const {selection} = d3.event;
 
@@ -789,6 +771,6 @@
 
             updateTooltip(brushedData);
             jsNodeSelected = printQuery(brushedData);
-       } 
+       }
     });
 })(element);
