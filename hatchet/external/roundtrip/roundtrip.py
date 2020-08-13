@@ -15,7 +15,6 @@ class Roundtrip(Magics):
 
     # Note to self: Custom magic classes MUST call parent's constructor
     def __init__(self, shell):
-
         super(Roundtrip, self).__init__(shell)
         self.id_number = 0
         # Clean up namespace function
