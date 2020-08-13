@@ -292,9 +292,6 @@
         }
 
         function setColors(treeIndex) {
-            //var gyrColors = ["#005f00","#ffd700","#d70000"]; //old hatchet
-            // var invertColors = ["#005f00", "#00af00", "#00ff00", "#ffd900", "#ff8800", "#ff0000"];
-            // var regularColors = ["#ff0000", "#ff8800", "#ffd900","#00ff00",  "#00af00", "#005f00"]; //hatchet 2.0
             var invertColors = [['#edf8e9', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c'], //green
                 ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#de2d26', '#a50f15'], //red
                 ['#eff3ff', '#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08519c'], //blue
@@ -415,7 +412,6 @@
                 }
             }
 
-//         return colorSchemeUsed;
             if (proportion_of_total > 0.9) {
                 return colorSchemeUsed[0];
             }
@@ -462,9 +458,6 @@
                     }
                 });
 
-        //d3.select(self.frameElement).style("height", "500px");
-        //cleanUp(); //katy
-
         function update(source, treeData, g) {
             var curMetric = d3.select(element).select('#metricSelect').property('value');
             var treeIndex = g.attr("class").split(" ")[1];
@@ -483,11 +476,6 @@
                 d.y = d.depth * spreadFactor;
                 d.treeIndex = treeIndex;
             });
-
-            // const quadtree = d3.quadtree() //TODO optimize
-            // .x(d => d.x + margin.left)
-            // .y(d => d.y + margin.top)
-            // .addAll(nodes);
 
             // Update the nodes…
             var node = g.selectAll("g.node")
@@ -664,7 +652,7 @@
             }
             var queryStr = "['<no query generated>']";
             if (nodeList.length > 1) {
-                // This way is for subtrees?
+                // This query is for subtrees
                 queryStr = "[{'name': '" + leftMostNode.data.name + "'},'*']";
             } else {
                 //Single node query
