@@ -44,7 +44,7 @@ def test_tree(cycle_cprofile_pstats):
         highlight_name=False,
         invert_colormap=False,
     )
-    assert "0.257 g pstats_reader_test.py" in output
+    assert "g pstats_reader_test.py" in output
     assert "<method 'disable' ...Profiler' objects> ~" in output
 
     output = ConsoleRenderer(unicode=True, color=False).render(
@@ -61,5 +61,5 @@ def test_tree(cycle_cprofile_pstats):
         highlight_name=False,
         invert_colormap=False,
     )
-    assert "23.022 f pstats_reader_test.py" in output
+    assert "f pstats_reader_test.py" in output
     assert re.match("(.|\n)*recursive(.|\n)*recursive", output)

@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 import os
+import sys
 import shutil
 import struct
 from glob import glob
@@ -89,12 +90,20 @@ def osu_allgather_hpct_db(data_dir, tmpdir):
 def cycle_cprofile_pstats(data_dir, tmpdir):
     """Builds a temporary directory containing the pstats from a profile of the hpctoolkit_reader function."""
     cprof_pstats_dir = os.path.join(data_dir, "cprofile-cycle-profile-pstats")
-    cprof_pstats_file = os.path.join(
-        cprof_pstats_dir, "cprofile-cycle-profile-pstats.prof"
-    )
+    if sys.version_info[0] == 2:
+        cprof_pstats_file = os.path.join(
+            cprof_pstats_dir, "cprofile-cycle-profile-pstats-py2.pstats"
+        )
+    else:
+        cprof_pstats_file = os.path.join(
+            cprof_pstats_dir, "cprofile-cycle-profile-pstats.pstats"
+        )
 
     shutil.copy(cprof_pstats_file, str(tmpdir))
-    tmpfile = os.path.join(str(tmpdir), "cprofile-cycle-profile-pstats.prof")
+    if sys.version_info[0] == 2:
+        tmpfile = os.path.join(str(tmpdir), "cprofile-cycle-profile-pstats-py2.pstats")
+    else:
+        tmpfile = os.path.join(str(tmpdir), "cprofile-cycle-profile-pstats.pstats")
 
     return tmpfile
 
