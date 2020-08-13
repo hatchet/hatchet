@@ -23,7 +23,6 @@ class Roundtrip(Magics):
                 "<script>function cleanUp() { argList =[]; element = null; cell_idx = -1}</script>"
             )
         )
-        display(HTML("<style>.container { width:100% !important; }</style>"))
 
     inputType = {
         "js": "text/javascript",
@@ -73,10 +72,10 @@ class Roundtrip(Magics):
         elementTop = element.get(0);"""
         displayObj.update(Javascript(preRun))
 
-        self.runViz(name, javascriptFile)
+        self.runVis(name, javascriptFile)
         self.id_number += 1
 
-    def runViz(self, name, javascriptFile):
+    def runVis(self, name, javascriptFile):
         name = "roundtripTreeVis" + str(self.id_number)
         header = (
             """
@@ -113,7 +112,6 @@ class Roundtrip(Magics):
 
         display(Javascript(hook))
 
-        # self.shell.user_ns[dest] = jsNodeSelected
         return display(Javascript(hook))
 
 
