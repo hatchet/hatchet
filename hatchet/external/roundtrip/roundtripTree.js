@@ -42,10 +42,9 @@
         // ************** Generate the tree diagram  *****************
         var margin = {top: 20, right: 20, bottom: 80, left: 20},
                 treeHeight = 300,
-                width = window.innerWidth - margin.right - margin.left,
+                width = element.clientWidth - margin.right - margin.left,
                 height = treeHeight * (numberOfTrees + 1),
-                gOffset = [{x: margin.left, y: margin.top}], //keep track of translations to know absolute position
-                spreadFactor = 150;
+                gOffset = [{x: margin.left, y: margin.top}]; //keep track of translations to know absolute position
 
         d3.select(element).append('label').attr('for', 'metricSelect').text('Color by:');
         var metricInput = d3.select(element).append("select") //element
@@ -470,7 +469,8 @@
             // Compute the new tree layout
             var nodes = treeData.descendants();
             var links = treeData.descendants().slice(1);
-
+            console.log("width", width);
+            spreadFactor = width / (treeData.height + 1);
             // Normalize for fixed-depth.
             nodes.forEach(function (d) {
                 d.y = d.depth * spreadFactor;
