@@ -37,8 +37,9 @@ class PstatsReader:
         self.id = 0
         self.visited = []
         self.stack = []
+        self.cycles = []
 
-    def _prune_cycles(self, node):
+    def _find_cycles(self, node):
         """Performs a depth first search and removes back edges when found"""
         self.visited.append(node)
         self.stack.append(node)
@@ -48,17 +49,17 @@ class PstatsReader:
 
         for child in node.children:
             if child not in self.visited:
-                self._prune_cycles(child)
+                self._find_cycles(child)
             elif child in self.stack:
                 cycle_flag = True
 
-            # Needed to load children in the case of an already
-            # visited but valid node.
             if not cycle_flag:
                 pruned_list.append(child)
             cycle_flag = False
 
         node.children = pruned_list
+
+        self.stack.pop(-1)
         return
 
     def _get_src(self, stat):
@@ -81,7 +82,6 @@ class PstatsReader:
 
     def create_graph(self):
         """Performs the creation of our node graph"""
-        print(pstats.__file__)
         stats_dict = pstats.Stats(self.pstats_file).__dict__["stats"]
 
         # We iterate through each function/node in our stats dict
@@ -146,8 +146,9 @@ class PstatsReader:
         # Removes back edges from graph to remove
         # cycles and fix infinite loops problems with output
         for i in range(len(list_roots)):
-            self._prune_cycles(list_roots[i])
+            self._find_cycles(list_roots[i])
             self.visited = []
+            self.stack = []
 
         return list_roots
 
