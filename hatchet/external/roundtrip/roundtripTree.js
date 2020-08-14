@@ -537,6 +537,7 @@
                     .text(function (d) {
                         return d.data.name;
                     })
+                    .attr('transform', 'rotate( -15)')
                     .style("stroke-width", "3px")
                     .style("font", "12px monospace");
 
