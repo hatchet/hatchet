@@ -664,17 +664,34 @@
 
         function printQuery(nodeList) {
             var leftMostNode = {depth: Number.MAX_VALUE, data: {name: 'default'}};
+            var rightMostNode = {depth: 0, data: {name: 'default'}};
             var lastNode = "";
+            var selectionIsAChain = false;
+            
             for (var i = 0; i < nodeList.length; i++) {
                 if (nodeList[i].depth < leftMostNode.depth) {
                     leftMostNode = nodeList[i];
                 }
+                if (nodeList[i].depth > rightMostNode.depth) {
+                    rightMostNode = nodeList[i];
+                }
+                if ((i > 1) && (nodeList[i].x == nodeList[i-1].x)) {
+                    selectionIsAChain = true;
+                }
+                else { 
+                    selectionIsAChain = false;
+                }
             }
             var queryStr = "['<no query generated>']";
-            if (nodeList.length > 1) {
+            if ((nodeList.length > 1) && (selectionIsAChain)) {
+                // This query is for chains
+                queryStr = "[{'name': '" + leftMostNode.data.name + "'}, '*', {'name': '" + rightMostNode.data.name + "'}]";
+            } 
+            else if (nodeList.length > 1) {
                 // This query is for subtrees
-                queryStr = "[{'name': '" + leftMostNode.data.name + "'},'*']";
-            } else {
+                queryStr = "[{'name': '" + leftMostNode.data.name + "'}, '*']";
+            } 
+            else {
                 //Single node query
                 queryStr = "[{'name': '" + leftMostNode.data.name + "'}]";
             }
