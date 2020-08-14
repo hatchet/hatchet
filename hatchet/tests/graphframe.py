@@ -615,7 +615,7 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
     assert u"55.000 H ◀" in output
 
 
-def test_groupby_aggregate_simple(mock_dag_literal_module):
+def test_groupby_aggregate_no_reindex_simple(mock_dag_literal_module):
     r"""Test reindex on a simple graph:
 
           a                              main
@@ -638,13 +638,43 @@ def test_groupby_aggregate_simple(mock_dag_literal_module):
 
     groupby_func = ["module"]
     agg_func = {"time (inc)": np.max, "time": np.max}
-    out_gf = gf.groupby_aggregate(groupby_func, agg_func)
+    out_gf = gf.groupby_aggregate(groupby_func, agg_func, reindex=False)
+
+    assert all(m in out_gf.dataframe.name.values for m in modules)
+    assert out_gf.graph is gf.graph
+
+
+def test_groupby_aggregate_reindex_simple(mock_dag_literal_module):
+    r"""Test reindex on a simple graph:
+
+          a                              main
+         / \                             /  \
+        b   e       groupby module     foo  bar
+        |   |       -------------->     |    |
+        c   f                         graz  baz
+
+        Node   Module
+         a     main
+         b     foo
+         c     graz
+         e     bar
+         f     baz
+
+    """
+    modules = ["main", "foo", "graz", "bar", "baz"]
+
+    gf = GraphFrame.from_literal(mock_dag_literal_module)
+
+    groupby_func = ["module"]
+    agg_func = {"time (inc)": np.max, "time": np.max}
+    out_gf = gf.groupby_aggregate(groupby_func, agg_func, reindex=True)
 
     assert all(m in out_gf.dataframe.name.values for m in modules)
     assert len(out_gf.graph) == len(modules)
+    assert out_gf.graph is not gf.graph
 
 
-def test_groupby_aggregate_complex(mock_dag_literal_module_complex):
+def test_groupby_aggregate_no_reindex_complex(mock_dag_literal_module_complex):
     r"""Test reindex on a complex graph:
 
           a                              main
@@ -669,13 +699,47 @@ def test_groupby_aggregate_complex(mock_dag_literal_module_complex):
 
     groupby_func = ["module"]
     agg_func = {"time (inc)": np.sum, "time": np.sum}
-    out_gf = gf.groupby_aggregate(groupby_func, agg_func)
+    out_gf = gf.groupby_aggregate(groupby_func, agg_func, reindex=False)
+
+    assert all(m in out_gf.dataframe.name.values for m in modules)
+    assert out_gf.graph is gf.graph
+
+
+def test_groupby_aggregate_reindex_complex(mock_dag_literal_module_complex):
+    r"""Test reindex on a complex graph:
+
+          a                              main
+         / \                             /  \
+        b   e       groupby module     foo  bar
+        |           -------------->     |
+        c                             graz
+        |
+        d
+
+        Node   Module
+         a     main
+         b     foo
+         c     graz
+         d     graz
+         e     bar
+
+    """
+    modules = ["main", "foo", "graz", "bar"]
+
+    gf = GraphFrame.from_literal(mock_dag_literal_module_complex)
+
+    groupby_func = ["module"]
+    agg_func = {"time (inc)": np.sum, "time": np.sum}
+    out_gf = gf.groupby_aggregate(groupby_func, agg_func, reindex=True)
 
     assert all(m in out_gf.dataframe.name.values for m in modules)
     assert len(out_gf.graph) == len(modules)
+    assert out_gf.graph is not gf.graph
 
 
-def test_groupby_aggregate_more_complex(mock_dag_literal_module_more_complex):
+def test_groupby_aggregate_no_reindex_more_complex(
+    mock_dag_literal_module_more_complex,
+):
     r"""Test reindex on a more complex graph:
 
           a                              main
@@ -701,10 +765,43 @@ def test_groupby_aggregate_more_complex(mock_dag_literal_module_more_complex):
 
     groupby_func = ["module"]
     agg_func = {"time (inc)": np.sum, "time": np.sum}
-    out_gf = gf.groupby_aggregate(groupby_func, agg_func)
+    out_gf = gf.groupby_aggregate(groupby_func, agg_func, reindex=False)
+
+    assert all(m in out_gf.dataframe.name.values for m in modules)
+    assert out_gf.graph is gf.graph
+
+
+def test_groupby_aggregate_reindex_more_complex(mock_dag_literal_module_more_complex):
+    r"""Test reindex on a more complex graph:
+
+          a                              main
+         / \                             /  \
+        b   e       groupby module     foo--bar
+        |   |       -------------->     |
+        c   f                         graz
+        |
+        d
+
+        Node   Module
+         a     main
+         b     foo
+         c     graz
+         d     graz
+         e     bar
+         f     foo
+
+    """
+    modules = ["main", "foo", "graz", "bar"]
+
+    gf = GraphFrame.from_literal(mock_dag_literal_module_more_complex)
+
+    groupby_func = ["module"]
+    agg_func = {"time (inc)": np.sum, "time": np.sum}
+    out_gf = gf.groupby_aggregate(groupby_func, agg_func, reindex=True)
 
     assert all(m in out_gf.dataframe.name.values for m in modules)
     assert len(out_gf.graph) == len(modules)
+    assert out_gf.graph is not gf.graph
 
 
 def test_depth(mock_graph_literal):

@@ -723,7 +723,7 @@ class GraphFrame:
 
         return self
 
-    def groupby_aggregate(self, groupby_function, agg_function):
+    def groupby_aggregate(self, groupby_function, agg_function, reindex=True):
         """Groupby-aggregate dataframe and reindex the Graph.
 
         Reindex the graph to match the groupby-aggregated dataframe.
@@ -734,6 +734,7 @@ class GraphFrame:
             self (graphframe): self's graphframe
             groupby_function: groupby function on dataframe
             agg_function: aggregate function on dataframe
+            reindex (boolean, optional): if True, automatically call reindex for the user
 
         Return:
             (GraphFrame): new graphframe with reindexed graph and groupby-aggregated dataframe
@@ -749,7 +750,7 @@ class GraphFrame:
         # length is equal to length of dataframe index (after groupby-aggregate)
         node_dicts = []
 
-        def reindex(node, parent, visited):
+        def reindex_graph(node, parent, visited):
             """Reindex the graph.
 
             Connect super nodes to children according to relationships from old graph.
@@ -788,7 +789,7 @@ class GraphFrame:
             if node not in visited:
                 visited.add(node)
                 for child in node.children:
-                    reindex(child, super_node, visited)
+                    reindex_graph(child, super_node, visited)
 
         # groupby-aggregate dataframe based on user-supplied functions
         groupby_obj = self.dataframe.groupby(groupby_function)
@@ -811,7 +812,7 @@ class GraphFrame:
         # reindex graph by traversing old graph
         visited = set()
         for root in self.graph.roots:
-            reindex(root, None, visited)
+            reindex_graph(root, None, visited)
 
         # append super nodes to groupby-aggregate dataframe
         df_index = list(agg_df.index.names)
@@ -824,12 +825,15 @@ class GraphFrame:
         # reset index
         tmp_df.set_index(df_index, inplace=True)
 
-        # update _hatchet_nid in reindexed graph and groupby-aggregate dataframe
-        graph = Graph(new_roots)
-        graph.enumerate_traverse()
+        if reindex:
+            # update _hatchet_nid in reindexed graph and groupby-aggregate dataframe
+            graph = Graph(new_roots)
+            graph.enumerate_traverse()
 
-        # put it all together
-        new_gf = GraphFrame(graph, tmp_df, self.exc_metrics, self.inc_metrics)
+            # put it all together
+            new_gf = GraphFrame(graph, tmp_df, self.exc_metrics, self.inc_metrics)
+        else:
+            new_gf = GraphFrame(self.graph, tmp_df, self.exc_metrics, self.inc_metrics)
         new_gf.drop_index_levels()
         return new_gf
 
