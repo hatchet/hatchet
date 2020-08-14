@@ -194,8 +194,23 @@
                 .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         var treemap = d3.tree().size([(treeHeight), width - margin.left]);
-        // Add a group and tree for each forestData[i]
 
+        var maxHeight = 0;
+        // Find the tallest tree for layout purposes (used to set a uniform spreadFactor)
+        for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
+            currentTreeData = forestData[treeIndex];
+            currentRoot = d3.hierarchy(currentTreeData, d => d.children);
+            
+            currentRoot.x0 = height;
+            currentRoot.y0 = margin.left;
+
+            var currentTreeMap = treemap(currentRoot);
+            if (currentTreeMap.height > maxHeight) {
+                maxHeight = currentTreeMap.height;
+            }
+        }
+        
+        // Add a group and tree for each forestData[i]
         for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
             currentTreeData = forestData[treeIndex];
             currentRoot = d3.hierarchy(currentTreeData, d => d.children);
@@ -469,8 +484,8 @@
             // Compute the new tree layout
             var nodes = treeData.descendants();
             var links = treeData.descendants().slice(1);
-            console.log("width", width);
-            spreadFactor = width / (treeData.height + 1);
+            
+            spreadFactor = width / (maxHeight + 1);
             // Normalize for fixed-depth.
             nodes.forEach(function (d) {
                 d.y = d.depth * spreadFactor;
