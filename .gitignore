@@ -2,6 +2,6 @@
 .cache
 .pytest_cache
 hatchet/cython_modules/libs/subtract_metrics.*.so
-
+.ipynb_checkpoints
 docs/_build
 
