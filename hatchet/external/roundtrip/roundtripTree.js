@@ -377,6 +377,9 @@
 
         function setColorLegend(treeIndex) {
             var curMetric = d3.select(element).select('#metricSelect').property('value');
+            if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') { 
+                treeIndex = -1;
+            }
             if (treeIndex == -1) { //unified color legend
 
                 var metric_range = forestMinMax[curMetric].max - forestMinMax[curMetric].min;
