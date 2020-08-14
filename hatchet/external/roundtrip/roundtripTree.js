@@ -489,12 +489,14 @@
             var links = treeData.descendants().slice(1);
             
             spreadFactor = width / (maxHeight + 1);
+            legendOffset = 30;
             // Normalize for fixed-depth.
             nodes.forEach(function (d) {
+                d.x = d.x + legendOffset;
                 d.y = d.depth * spreadFactor;
                 d.treeIndex = treeIndex;
             });
-
+            
             // Update the nodes…
             var node = g.selectAll("g.node")
                     .data(nodes, function (d) {
