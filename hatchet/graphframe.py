@@ -217,6 +217,7 @@ class GraphFrame:
 
         df = pd.DataFrame({"node": list(graph.traverse())})
         df["time"] = [1.0] * len(graph)
+        df["name"] = [n.frame['name'] for n in graph.traverse()]
         df.set_index(["node"], inplace=True)
         df.sort_index(inplace=True)
 

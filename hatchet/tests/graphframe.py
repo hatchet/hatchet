@@ -7,6 +7,7 @@
 
 import pytest
 
+import re
 import numpy as np
 import pandas as pd
 
@@ -724,7 +725,6 @@ def test_depth(mock_graph_literal):
     assert nnodes_depth_2 == 7
     assert max_depth == 5
 
-
 def test_tree_deprecated_parameters(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
 
@@ -742,3 +742,58 @@ def test_tree_deprecated_parameters(mock_graph_literal):
 
     with pytest.raises(TypeError):
         gf.tree(metric="time", metric_column="time")
+
+def test_output_with_cycle_graphs():
+    r"""Test three output modes on a graph with cycles,
+        multiple parents and children.
+
+        a --
+       / \ /
+      b   c
+       \ /
+        d
+       / \
+      e   f
+    """
+
+
+    dot_edges = [
+    # d has two parents and two children
+    '"1" -> "2";',
+    '"5" -> "2";',
+    '"2" -> "3";',
+    '"2" -> "4";',
+    # a -> c -> a cycle
+    '"0" -> "5";',
+    '"5" -> "0";'
+    ]
+
+    a = Node(Frame(name="a"))
+    d = Node(Frame(name="d"))
+    gf = GraphFrame.from_lists(
+        [a,
+            ["b",
+                [d],
+            ],
+            ["c",
+                [d,
+                    ["e"],
+                    ["f"]
+                ],
+                [a]
+            ]
+        ]
+    )
+
+    treeout = gf.tree()
+    dotout = gf.to_dot()
+
+
+    # check dot is correct
+    for edge in dot_edges:
+        assert edge in dotout
+
+    assert treeout.count('a') == 2
+    assert treeout.count('d') == 2
+    assert treeout.count('e') == 1
+    assert treeout.count('f') == 1
