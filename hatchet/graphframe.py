@@ -637,6 +637,65 @@ class GraphFrame:
 
         return folded_stack
 
+    def to_literal(self, name="name", rank=0, thread=0):
+        """Format this graph as a list of dictionaries for Roundtrip
+           visualizations.
+        """
+        graph_literal = []
+
+        def metrics_to_dict(hnode):
+            if (
+                "rank" in self.dataframe.index.names
+                and "thread" in self.dataframe.index.names
+            ):
+                df_index = (hnode, rank, thread)
+            elif "rank" in self.dataframe.index.names:
+                df_index = (hnode, rank)
+            elif "thread" in self.dataframe.index.names:
+                df_index = (hnode, thread)
+            else:
+                df_index = hnode
+
+            metrics_dict = {}
+            for m in sorted(self.inc_metrics + self.exc_metrics):
+                node_metric_val = self.dataframe.loc[df_index, m]
+                metrics_dict[m] = node_metric_val
+
+            return metrics_dict
+
+        def add_nodes(hnode):
+            if (
+                "rank" in self.dataframe.index.names
+                and "thread" in self.dataframe.index.names
+            ):
+                df_index = (hnode, rank, thread)
+            elif "rank" in self.dataframe.index.names:
+                df_index = (hnode, rank)
+            elif "thread" in self.dataframe.index.names:
+                df_index = (hnode, thread)
+            else:
+                df_index = hnode
+
+            node_dict = {}
+
+            node_name = self.dataframe.loc[df_index, name]
+
+            node_dict["name"] = node_name
+            node_dict["metrics"] = metrics_to_dict(hnode)
+
+            if hnode.children:
+                node_dict["children"] = []
+
+                for child in sorted(hnode.children, key=lambda n: n.frame):
+                    node_dict["children"].append(add_nodes(child))
+
+            return node_dict
+
+        for root in sorted(self.graph.roots, key=lambda n: n.frame):
+            graph_literal.append(add_nodes(root))
+
+        return graph_literal
+
     def _operator(self, other, op, *args, **kwargs):
         """Generic function to apply operator to two dataframes and store
         result in self.
