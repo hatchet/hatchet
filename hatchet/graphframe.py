@@ -217,7 +217,7 @@ class GraphFrame:
 
         df = pd.DataFrame({"node": list(graph.traverse())})
         df["time"] = [1.0] * len(graph)
-        df["name"] = [n.frame['name'] for n in graph.traverse()]
+        df["name"] = [n.frame["name"] for n in graph.traverse()]
         df.set_index(["node"], inplace=True)
         df.sort_index(inplace=True)
 
@@ -643,6 +643,7 @@ class GraphFrame:
            visualizations.
         """
         graph_literal = []
+        visited = []
 
         def metrics_to_dict(hnode):
             if (
@@ -684,7 +685,8 @@ class GraphFrame:
             node_dict["name"] = node_name
             node_dict["metrics"] = metrics_to_dict(hnode)
 
-            if hnode.children:
+            if hnode.children and hnode not in visited:
+                visited.append(hnode)
                 node_dict["children"] = []
 
                 for child in sorted(hnode.children, key=lambda n: n.frame):

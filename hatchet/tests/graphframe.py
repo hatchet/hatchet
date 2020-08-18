@@ -7,7 +7,6 @@
 
 import pytest
 
-import re
 import numpy as np
 import pandas as pd
 
@@ -725,6 +724,7 @@ def test_depth(mock_graph_literal):
     assert nnodes_depth_2 == 7
     assert max_depth == 5
 
+
 def test_tree_deprecated_parameters(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
 
@@ -743,6 +743,7 @@ def test_tree_deprecated_parameters(mock_graph_literal):
     with pytest.raises(TypeError):
         gf.tree(metric="time", metric_column="time")
 
+
 def test_output_with_cycle_graphs():
     r"""Test three output modes on a graph with cycles,
         multiple parents and children.
@@ -756,44 +757,52 @@ def test_output_with_cycle_graphs():
       e   f
     """
 
-
     dot_edges = [
-    # d has two parents and two children
-    '"1" -> "2";',
-    '"5" -> "2";',
-    '"2" -> "3";',
-    '"2" -> "4";',
-    # a -> c -> a cycle
-    '"0" -> "5";',
-    '"5" -> "0";'
+        # d has two parents and two children
+        '"1" -> "2";',
+        '"5" -> "2";',
+        '"2" -> "3";',
+        '"2" -> "4";',
+        # a -> c -> a cycle
+        '"0" -> "5";',
+        '"5" -> "0";',
     ]
 
     a = Node(Frame(name="a"))
     d = Node(Frame(name="d"))
-    gf = GraphFrame.from_lists(
-        [a,
-            ["b",
-                [d],
-            ],
-            ["c",
-                [d,
-                    ["e"],
-                    ["f"]
-                ],
-                [a]
-            ]
-        ]
-    )
+    gf = GraphFrame.from_lists([a, ["b", [d]], ["c", [d, ["e"], ["f"]], [a]]])
 
+    lit_list = gf.to_literal()
     treeout = gf.tree()
     dotout = gf.to_dot()
 
+    # scan through litout produced dictionary for edges
+    a_children = [n["name"] for n in lit_list[0]["children"]]
+    a_c_children = [n["name"] for n in lit_list[0]["children"][1]["children"]]
+    a_b_children = [n["name"] for n in lit_list[0]["children"][0]["children"]]
 
-    # check dot is correct
+    assert len(lit_list) == 1
+    assert len(a_children) == 2
+
+    # a -> (b,c)
+    assert "b" in a_children
+    assert "c" in a_children
+
+    # a -> c -> a cycle
+    assert "a" in a_c_children
+
+    # d has two parents
+    assert "d" in a_c_children
+    assert "d" in a_b_children
+
+    # check certian edges are in dot
     for edge in dot_edges:
         assert edge in dotout
 
-    assert treeout.count('a') == 2
-    assert treeout.count('d') == 2
-    assert treeout.count('e') == 1
-    assert treeout.count('f') == 1
+    # check that a certian number of occurences
+    # of same node are in tree indicating multiple
+    # edges
+    assert treeout.count("a") == 2
+    assert treeout.count("d") == 2
+    assert treeout.count("e") == 1
+    assert treeout.count("f") == 1
