@@ -211,7 +211,7 @@ def test_filter_squash():
     check_filter_no_squash(
         GraphFrame.from_lists(("a", ("b", "c"), ("d", "e"))),
         lambda row: row["node"].frame["name"] in ("a", "c", "e"),
-        3  # a, c, e
+        3,  # a, c, e
     )
 
 
@@ -239,7 +239,7 @@ def test_filter_squash_with_merge():
     check_filter_no_squash(
         GraphFrame.from_lists(("a", ("b", "c"), ("d", "c"))),
         lambda row: row["node"].frame["name"] in ("a", "c"),
-        3  # a, c, c
+        3,  # a, c, c
     )
 
 
@@ -271,7 +271,7 @@ def test_filter_squash_with_rootless_merge():
             ("a", ("b", "e", "f", "g"), ("c", "e", "f", "g"), ("d", "e", "f", "g"))
         ),
         lambda row: row["node"].frame["name"] not in ("a", "b", "c", "d"),
-        9  # e, f, g, e, f, g, e, f, g
+        9,  # e, f, g, e, f, g, e, f, g
     )
 
 
@@ -295,7 +295,7 @@ def test_filter_squash_different_roots():
     check_filter_no_squash(
         GraphFrame.from_lists(("a", ("b", "c"), ("d", "e"))),
         lambda row: row["node"].frame["name"] != "a",
-        4  # b, c, d, e
+        4,  # b, c, d, e
     )
 
 
@@ -322,7 +322,7 @@ def test_filter_squash_diamond():
     check_filter_no_squash(
         GraphFrame.from_lists(("a", ("b", d), ("c", d))),
         lambda row: row["node"].frame["name"] not in ("b", "c"),
-        2  # a, d
+        2,  # a, d
     )
 
 
@@ -356,7 +356,7 @@ def test_filter_squash_bunny():
     check_filter_no_squash(
         GraphFrame.from_lists(("e", "f", diamond), ("g", diamond, "h")),
         lambda row: row["node"].frame["name"] not in ("a", "b", "c"),
-        5  # e, d, f, g, h
+        5,  # e, d, f, g, h
     )
 
 
@@ -391,7 +391,7 @@ def test_filter_squash_bunny_to_goat():
     check_filter_no_squash(
         GraphFrame.from_lists(("e", "f", diamond), ("g", diamond, "h")),
         lambda row: row["node"].frame["name"] not in ("a", "c"),
-        6  # e, b, d, f, g, h
+        6,  # e, b, d, f, g, h
     )
 
 
@@ -426,7 +426,7 @@ def test_filter_squash_bunny_to_goat_with_merge():
     check_filter_no_squash(
         GraphFrame.from_lists(("e", "f", diamond), ("g", diamond, "h")),
         lambda row: row["node"].frame["name"] not in ("a", "c"),
-        5  # e, b, f, g, h
+        5,  # e, b, f, g, h
     )
 
 
