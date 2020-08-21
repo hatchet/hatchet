@@ -273,7 +273,7 @@ class GraphFrame:
 
         self.dataframe = agg_df
 
-    def filter(self, filter_obj, squash=False):
+    def filter(self, filter_obj, squash=True):
         """Filter the dataframe using a user-supplied function.
 
         Arguments:

@@ -148,36 +148,46 @@ def test_subtree_product():
     assert gf.dataframe.loc[e, "out2"] == 2
 
 
-def check_filter_squash(gf, filter_func, expected_graph, expected_inc_time):
+def check_filter_no_squash(gf, filter_func, num_rows):
     """Ensure filtering and squashing results in the right Graph and GraphFrame."""
     orig_graph = gf.graph.copy()
-
-    filtered = gf.filter(filter_func)
-    index_names = filtered.dataframe.index.names
+    filtered = gf.filter(filter_func, squash=False)
     filtered.dataframe.reset_index(inplace=True)
+
     assert filtered.graph is gf.graph
     assert filtered.graph == orig_graph
-    assert all(n in filtered.graph.traverse() for n in filtered.dataframe["node"])
-    filtered.dataframe.set_index(index_names, inplace=True)
+    assert len(filtered.dataframe) == num_rows
 
-    squashed = filtered.squash()
-    index_names = squashed.dataframe.index.names
-    squashed.dataframe.reset_index(inplace=True, drop=False)
-    assert filtered.graph is not squashed.graph
-    assert squashed.graph == expected_graph
-    assert len(squashed.dataframe.index) == len(expected_graph)
-    squashed_node_names = list(expected_graph.traverse(attrs="name"))
+
+def check_filter_squash(gf, filter_func, expected_graph, expected_inc_time):
+    """Ensure filtering and squashing results in the right Graph and GraphFrame."""
+    filtered_squashed = gf.filter(filter_func)
+    index_names = filtered_squashed.dataframe.index.names
+    filtered_squashed.dataframe.reset_index(inplace=True)
+
+    assert filtered_squashed.graph is not gf.graph
     assert all(
-        n.frame["name"] in squashed_node_names for n in squashed.dataframe["node"]
+        n in filtered_squashed.graph.traverse()
+        for n in filtered_squashed.dataframe["node"]
     )
-    squashed.dataframe.set_index(index_names, inplace=True)
+    filtered_squashed.dataframe.set_index(index_names, inplace=True)
+
+    filtered_squashed.dataframe.reset_index(inplace=True, drop=False)
+    assert filtered_squashed.graph == expected_graph
+    assert len(filtered_squashed.dataframe.index) == len(expected_graph)
+    filtered_squashed_node_names = list(expected_graph.traverse(attrs="name"))
+    assert all(
+        n.frame["name"] in filtered_squashed_node_names
+        for n in filtered_squashed.dataframe["node"]
+    )
+    filtered_squashed.dataframe.set_index(index_names, inplace=True)
 
     # verify inclusive metrics at different nodes
-    nodes = list(squashed.graph.traverse())
+    nodes = list(filtered_squashed.graph.traverse())
     assert len(nodes) == len(expected_inc_time)
 
     assert expected_inc_time == [
-        squashed.dataframe.loc[node, "time (inc)"] for node in nodes
+        filtered_squashed.dataframe.loc[node, "time (inc)"] for node in nodes
     ]
 
 
@@ -196,6 +206,12 @@ def test_filter_squash():
         lambda row: row["node"].frame["name"] in ("a", "c", "e"),
         Graph.from_lists(("a", "c", "e")),
         [3, 1, 1],  # a, c, e
+    )
+
+    check_filter_no_squash(
+        GraphFrame.from_lists(("a", ("b", "c"), ("d", "e"))),
+        lambda row: row["node"].frame["name"] in ("a", "c", "e"),
+        3,  # a, c, e
     )
 
 
@@ -218,6 +234,12 @@ def test_filter_squash_with_merge():
         lambda row: row["node"].frame["name"] in ("a", "c"),
         Graph.from_lists(("a", "c")),
         [3, 2],  # a, c
+    )
+
+    check_filter_no_squash(
+        GraphFrame.from_lists(("a", ("b", "c"), ("d", "c"))),
+        lambda row: row["node"].frame["name"] in ("a", "c"),
+        3,  # a, c, c
     )
 
 
@@ -244,6 +266,14 @@ def test_filter_squash_with_rootless_merge():
         [3, 3, 3],  # e, f, g
     )
 
+    check_filter_no_squash(
+        GraphFrame.from_lists(
+            ("a", ("b", "e", "f", "g"), ("c", "e", "f", "g"), ("d", "e", "f", "g"))
+        ),
+        lambda row: row["node"].frame["name"] not in ("a", "b", "c", "d"),
+        9,  # e, f, g, e, f, g, e, f, g
+    )
+
 
 def test_filter_squash_different_roots():
     r"""Test squash on a simple tree with one root but make multiple roots.
@@ -260,6 +290,12 @@ def test_filter_squash_different_roots():
         lambda row: row["node"].frame["name"] != "a",
         Graph.from_lists(("b", "c"), ("d", "e")),
         [2, 1, 2, 1],  # b, c, d, e
+    )
+
+    check_filter_no_squash(
+        GraphFrame.from_lists(("a", ("b", "c"), ("d", "e"))),
+        lambda row: row["node"].frame["name"] != "a",
+        4,  # b, c, d, e
     )
 
 
@@ -281,6 +317,12 @@ def test_filter_squash_diamond():
         lambda row: row["node"].frame["name"] not in ("b", "c"),
         Graph.from_lists(("a", "d")),
         [2, 1],  # a, d
+    )
+
+    check_filter_no_squash(
+        GraphFrame.from_lists(("a", ("b", d), ("c", d))),
+        lambda row: row["node"].frame["name"] not in ("b", "c"),
+        2,  # a, d
     )
 
 
@@ -309,6 +351,12 @@ def test_filter_squash_bunny():
         lambda row: row["node"].frame["name"] not in ("a", "b", "c"),
         Graph.from_lists(("e", new_d, "f"), ("g", new_d, "h")),
         [3, 1, 1, 3, 1],  # e, d, f, g, h
+    )
+
+    check_filter_no_squash(
+        GraphFrame.from_lists(("e", "f", diamond), ("g", diamond, "h")),
+        lambda row: row["node"].frame["name"] not in ("a", "b", "c"),
+        5,  # e, d, f, g, h
     )
 
 
@@ -340,6 +388,12 @@ def test_filter_squash_bunny_to_goat():
         [4, 2, 1, 1, 4, 1],  # e, b, d, f, g, h
     )
 
+    check_filter_no_squash(
+        GraphFrame.from_lists(("e", "f", diamond), ("g", diamond, "h")),
+        lambda row: row["node"].frame["name"] not in ("a", "c"),
+        6,  # e, b, d, f, g, h
+    )
+
 
 @pytest.mark.xfail(reason="Hatchet does not yet handle merging with parents properly.")
 def test_filter_squash_bunny_to_goat_with_merge():
@@ -369,37 +423,81 @@ def test_filter_squash_bunny_to_goat_with_merge():
         [4, 2, 1, 4, 1],  # e, b, f, g, h
     )
 
+    check_filter_no_squash(
+        GraphFrame.from_lists(("e", "f", diamond), ("g", diamond, "h")),
+        lambda row: row["node"].frame["name"] not in ("a", "c"),
+        5,  # e, b, f, g, h
+    )
 
-def test_filter_squash_mock_literal(mock_graph_literal):
+
+def test_filter_no_squash_mock_literal(mock_graph_literal):
     """Test the squash operation with a foo-bar tree."""
     gf = GraphFrame.from_literal(mock_graph_literal)
     nodes = list(gf.graph.traverse())
     assert not all(gf.dataframe.loc[nodes, "time"] > 5.0)
-    filtered_gf = gf.filter(lambda x: x["time"] > 5.0)
+    filtered_gf = gf.filter(lambda x: x["time"] > 5.0, squash=False)
+    assert filtered_gf.graph is gf.graph
+    filtered_gf.dataframe.reset_index(drop=False, inplace=True)
+    assert all(n in filtered_gf.graph.traverse() for n in filtered_gf.dataframe["node"])
 
-    squashed_gf = filtered_gf.squash()
-    squashed_nodes = list(squashed_gf.graph.traverse())
-    assert all(squashed_gf.dataframe.loc[squashed_nodes, "time"] > 5.0)
-    assert len(squashed_gf.graph) == 7
+
+def test_filter_squash_mock_literal(mock_graph_literal):
+    """Test the squash operation with a foo-bar tree."""
+    gf = GraphFrame.from_literal(mock_graph_literal)
+
+    nodes = list(gf.graph.traverse())
+    assert not all(gf.dataframe.loc[nodes, "time"] > 5.0)
+    filtered_squashed_gf = gf.filter(lambda x: x["time"] > 5.0, squash=True)
+
+    filtered_squashed_nodes = list(filtered_squashed_gf.graph.traverse())
+    assert all(
+        filtered_squashed_gf.dataframe.loc[filtered_squashed_nodes, "time"] > 5.0
+    )
+    assert len(filtered_squashed_gf.graph) == 7
+
+
+def test_filter_no_squash_mock_literal_multi_subtree_merge(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    gf.drop_index_levels()
+    filtlist = [1, 3, 7, 9, 21, 23]
+    filtered_gf = gf.filter(lambda x: x["node"]._hatchet_nid in filtlist, squash=False)
+    assert filtered_gf.graph is gf.graph
+    filtered_gf.dataframe.reset_index(drop=False, inplace=True)
+    assert all(n in filtered_gf.graph.traverse() for n in filtered_gf.dataframe["node"])
 
 
 def test_filter_squash_mock_literal_multi_subtree_merge(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
     gf.drop_index_levels()
     filtlist = [1, 3, 7, 9, 21, 23]
-    filtered_gf = gf.filter(lambda x: x["node"]._hatchet_nid in filtlist)
-    squashed_gf = filtered_gf.squash()
-    squashed_nodes = list(squashed_gf.graph.traverse())
-    assert len(squashed_gf.graph) == 2
+    filtered_squashed_gf = gf.filter(
+        lambda x: x["node"]._hatchet_nid in filtlist, squash=True
+    )
+    filtered_squashed_nodes = list(filtered_squashed_gf.graph.traverse())
+    assert len(filtered_squashed_gf.graph) == 2
     assert all(
         [
             n.frame.attrs["name"] == "bar" or n.frame.attrs["name"] == "grault"
-            for n in squashed_nodes
+            for n in filtered_squashed_nodes
         ]
     )
 
 
-def test_filter_query_high_level(mock_graph_literal):
+def test_filter_query_no_squash_high_level(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    path = [
+        {"time (inc)": ">= 30.0"},
+        (2, {"name": "[^b][a-z]+"}),
+        ("*", {"name": "[^b][a-z]+"}),
+        {"name": "gr[a-z]+"},
+    ]
+    filtered_gf = gf.filter(path, squash=False)
+    assert filtered_gf.graph is gf.graph
+    filtered_gf.dataframe.reset_index(drop=False, inplace=True)
+    assert all(n in filtered_gf.graph.traverse() for n in filtered_gf.dataframe["node"])
+
+
+def test_filter_query_squash_high_level(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
     path = [
         {"time (inc)": ">= 30.0"},
@@ -419,18 +517,53 @@ def test_filter_query_high_level(mock_graph_literal):
             ]
         )
     )
-    filtered_gf = gf.filter(path)
-    squashed_gf = filtered_gf.squash()
-    squashed_nodes = list(squashed_gf.graph.traverse())
-    assert len(squashed_nodes) == len(match)
+    filtered_squashed_gf = gf.filter(path, squash=True)
+    filtered_squashed_nodes = list(filtered_squashed_gf.graph.traverse())
+    assert len(filtered_squashed_nodes) == len(match)
     assert (
-        (squashed_gf.dataframe.loc[squashed_nodes, "time (inc)"] >= 30.0)
-        | (~squashed_gf.dataframe.loc[squashed_nodes, "name"].str.startswith("b"))
-        | (squashed_gf.dataframe.loc[squashed_nodes, "name"].str.startswith("gr"))
+        (
+            filtered_squashed_gf.dataframe.loc[filtered_squashed_nodes, "time (inc)"]
+            >= 30.0
+        )
+        | (
+            ~filtered_squashed_gf.dataframe.loc[
+                filtered_squashed_nodes, "name"
+            ].str.startswith("b")
+        )
+        | (
+            filtered_squashed_gf.dataframe.loc[
+                filtered_squashed_nodes, "name"
+            ].str.startswith("gr")
+        )
     ).all()
 
 
-def test_filter_query_low_level(mock_graph_literal):
+def test_filter_query_no_squash_low_level(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+
+    def time_filt(row):
+        return row["time (inc)"] >= 30.0
+
+    def no_b_filt(row):
+        return not row["name"].startswith("b")
+
+    def gr_name_filt(row):
+        return row["name"].startswith("gr")
+
+    query = (
+        QueryMatcher()
+        .match(".", time_filt)
+        .rel(2, no_b_filt)
+        .rel("*", no_b_filt)
+        .rel(".", gr_name_filt)
+    )
+    filtered_gf = gf.filter(query, squash=False)
+    filtered_gf.dataframe.reset_index(drop=False, inplace=True)
+    assert filtered_gf.graph is gf.graph
+    assert all(n in filtered_gf.graph.traverse() for n in filtered_gf.dataframe["node"])
+
+
+def test_filter_query_squash_low_level(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
 
     def time_filt(row):
@@ -461,14 +594,24 @@ def test_filter_query_low_level(mock_graph_literal):
             ]
         )
     )
-    filtered_gf = gf.filter(query)
-    squashed_gf = filtered_gf.squash()
-    squashed_nodes = list(squashed_gf.graph.traverse())
-    assert len(squashed_nodes) == len(match)
+    filtered_squashed_gf = gf.filter(query, squash=True)
+    filtered_squashed_nodes = list(filtered_squashed_gf.graph.traverse())
+    assert len(filtered_squashed_nodes) == len(match)
     assert (
-        (squashed_gf.dataframe.loc[squashed_nodes, "time (inc)"] >= 30.0)
-        | (~squashed_gf.dataframe.loc[squashed_nodes, "name"].str.startswith("b"))
-        | (squashed_gf.dataframe.loc[squashed_nodes, "name"].str.startswith("gr"))
+        (
+            filtered_squashed_gf.dataframe.loc[filtered_squashed_nodes, "time (inc)"]
+            >= 30.0
+        )
+        | (
+            ~filtered_squashed_gf.dataframe.loc[
+                filtered_squashed_nodes, "name"
+            ].str.startswith("b")
+        )
+        | (
+            filtered_squashed_gf.dataframe.loc[
+                filtered_squashed_nodes, "name"
+            ].str.startswith("gr")
+        )
     ).all()
 
 
@@ -476,7 +619,7 @@ def test_filter_bad_argument(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
     fake_filter = {"bad": "filter"}
     with pytest.raises(InvalidFilter):
-        gf.filter(fake_filter)
+        gf.filter(fake_filter, squash=False)
 
 
 def test_filter_emtpy_graphframe(mock_graph_literal):
@@ -489,7 +632,7 @@ def test_filter_emtpy_graphframe(mock_graph_literal):
         {"time (inc)": 7.5, "time": 7.5},
     ]
     with pytest.raises(EmptyFilter):
-        gf.filter(empty_filter)
+        gf.filter(empty_filter, squash=False)
 
 
 def test_tree(mock_graph_literal):
