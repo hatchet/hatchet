@@ -148,22 +148,23 @@ def test_subtree_product():
     assert gf.dataframe.loc[e, "out2"] == 2
 
 
-def check_filter_no_squash(gf, filter_func, expected_graph, expected_inc_time):
+def check_filter_no_squash(gf, filter_func, num_rows):
     """Ensure filtering and squashing results in the right Graph and GraphFrame."""
     orig_graph = gf.graph.copy()
-
     filtered = gf.filter(filter_func, squash=False)
     filtered.dataframe.reset_index(inplace=True)
+
     assert filtered.graph is gf.graph
     assert filtered.graph == orig_graph
-    assert all(n in filtered.graph.traverse() for n in filtered.dataframe["node"])
+    assert len(filtered.dataframe) == num_rows
 
 
 def check_filter_squash(gf, filter_func, expected_graph, expected_inc_time):
     """Ensure filtering and squashing results in the right Graph and GraphFrame."""
-    filtered_squashed = gf.filter(filter_func, squash=True)
+    filtered_squashed = gf.filter(filter_func)
     index_names = filtered_squashed.dataframe.index.names
     filtered_squashed.dataframe.reset_index(inplace=True)
+
     assert filtered_squashed.graph is not gf.graph
     assert all(
         n in filtered_squashed.graph.traverse()
@@ -210,8 +211,7 @@ def test_filter_squash():
     check_filter_no_squash(
         GraphFrame.from_lists(("a", ("b", "c"), ("d", "e"))),
         lambda row: row["node"].frame["name"] in ("a", "c", "e"),
-        Graph.from_lists(("a", "c", "e")),
-        [3, 1, 1],  # a, c, e
+        3  # a, c, e
     )
 
 
@@ -239,8 +239,7 @@ def test_filter_squash_with_merge():
     check_filter_no_squash(
         GraphFrame.from_lists(("a", ("b", "c"), ("d", "c"))),
         lambda row: row["node"].frame["name"] in ("a", "c"),
-        Graph.from_lists(("a", "c")),
-        [3, 2],  # a, c
+        3  # a, c, c
     )
 
 
@@ -272,8 +271,7 @@ def test_filter_squash_with_rootless_merge():
             ("a", ("b", "e", "f", "g"), ("c", "e", "f", "g"), ("d", "e", "f", "g"))
         ),
         lambda row: row["node"].frame["name"] not in ("a", "b", "c", "d"),
-        Graph.from_lists(["e"], ["f"], ["g"]),
-        [3, 3, 3],  # e, f, g
+        9  # e, f, g, e, f, g, e, f, g
     )
 
 
@@ -297,8 +295,7 @@ def test_filter_squash_different_roots():
     check_filter_no_squash(
         GraphFrame.from_lists(("a", ("b", "c"), ("d", "e"))),
         lambda row: row["node"].frame["name"] != "a",
-        Graph.from_lists(("b", "c"), ("d", "e")),
-        [2, 1, 2, 1],  # b, c, d, e
+        4  # b, c, d, e
     )
 
 
@@ -325,8 +322,7 @@ def test_filter_squash_diamond():
     check_filter_no_squash(
         GraphFrame.from_lists(("a", ("b", d), ("c", d))),
         lambda row: row["node"].frame["name"] not in ("b", "c"),
-        Graph.from_lists(("a", "d")),
-        [2, 1],  # a, d
+        2  # a, d
     )
 
 
@@ -360,8 +356,7 @@ def test_filter_squash_bunny():
     check_filter_no_squash(
         GraphFrame.from_lists(("e", "f", diamond), ("g", diamond, "h")),
         lambda row: row["node"].frame["name"] not in ("a", "b", "c"),
-        Graph.from_lists(("e", new_d, "f"), ("g", new_d, "h")),
-        [3, 1, 1, 3, 1],  # e, d, f, g, h
+        5  # e, d, f, g, h
     )
 
 
@@ -396,8 +391,7 @@ def test_filter_squash_bunny_to_goat():
     check_filter_no_squash(
         GraphFrame.from_lists(("e", "f", diamond), ("g", diamond, "h")),
         lambda row: row["node"].frame["name"] not in ("a", "c"),
-        Graph.from_lists(("e", new_b, new_d, "f"), ("g", new_b, new_d, "h")),
-        [4, 2, 1, 1, 4, 1],  # e, b, d, f, g, h
+        6  # e, b, d, f, g, h
     )
 
 
@@ -432,8 +426,7 @@ def test_filter_squash_bunny_to_goat_with_merge():
     check_filter_no_squash(
         GraphFrame.from_lists(("e", "f", diamond), ("g", diamond, "h")),
         lambda row: row["node"].frame["name"] not in ("a", "c"),
-        Graph.from_lists(("e", new_b, "f"), ("g", new_b, "h")),
-        [4, 2, 1, 4, 1],  # e, b, f, g, h
+        5  # e, b, f, g, h
     )
 
 
