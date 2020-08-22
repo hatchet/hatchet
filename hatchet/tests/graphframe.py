@@ -726,7 +726,7 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
         invert_colormap=False,
     )
     assert "0.000 C" in output
-    assert u"-5.000 D ▶" in output
+    assert u"nan D ▶" in output
     assert u"10.000 H ◀" in output
 
     gf5 = gf1 - gf3

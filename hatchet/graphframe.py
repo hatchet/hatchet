@@ -838,11 +838,11 @@ class GraphFrame:
                 [chr(n) for n in self_missing_node]
             )
 
-        # for nodes that only exist in other, set the metric to be 0 (since
+        # for nodes that only exist in other, set the metric to be nan (since
         # it's a missing node in self)
         # replaces individual metric assignments with np.zeros
         for j in all_metrics:
-            other_not_in_self[j] = np.zeros(onis_len)
+            other_not_in_self[j] = np.full(onis_len, np.nan)
 
         # append missing rows (nodes that exist in other, but not in self) to self's
         # dataframe
