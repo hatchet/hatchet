@@ -555,12 +555,12 @@ class GraphFrame:
             lambda x: node_map[id(x)]
         )
 
-        self.dataframe.set_index(self_index_names, inplace=True, drop=True)
-        other.dataframe.set_index(other_index_names, inplace=True, drop=True)
-
         # add missing rows to copy of self's dataframe in preparation for
         # operation
         self._insert_missing_rows(other)
+
+        self.dataframe.set_index(self_index_names, inplace=True, drop=True)
+        other.dataframe.set_index(other_index_names, inplace=True, drop=True)
 
         self.graph = union_graph
         other.graph = union_graph
@@ -762,119 +762,97 @@ class GraphFrame:
             )
         )
 
-        # add an id for fast indexing in
-        with self.timer.phase("adding ids"):
-            self.dataframe.insert(0, "id", range(0, len(self.dataframe)))
-            other.dataframe.insert(0, "id", range(0, len(other.dataframe)))
-
-        with self.timer.phase("search preprocessing"):
-            self_hsh_ndx = self.dataframe.reset_index()["node"]
-            other_hsh_ndx = other.dataframe.reset_index()["node"]
-
-            self_hsh_ndx = np.array(
-                [x.__hash__() for x in self_hsh_ndx], dtype=np.uint64
+        # make two 2D nparrays arrays with two columns:
+        # the hashed value of a node and a numerical index
+        # Many operations are stacked here to reduce the need for storing
+        # large intermedary datasets
+        self_hsh_ndx = np.vstack(
+            (
+                np.array(
+                    [x.__hash__() for x in self.dataframe["node"]], dtype=np.uint64
+                ),
+                self.dataframe.index.values.astype(np.uint64),
             )
-            other_hsh_ndx = np.array(
-                [x.__hash__() for x in other_hsh_ndx], dtype=np.uint64
+        ).T
+        other_hsh_ndx = np.vstack(
+            (
+                np.array(
+                    [x.__hash__() for x in other.dataframe["node"]], dtype=np.uint64
+                ),
+                other.dataframe.index.values.astype(np.uint64),
             )
+        ).T
 
-            self_hsh_ndx = np.vstack(
-                (
-                    self_hsh_ndx.astype(np.uint64),
-                    self.dataframe["id"].values.astype(np.uint64),
-                )
-            ).T
-            other_hsh_ndx = np.vstack(
-                (
-                    other_hsh_ndx.astype(np.uint64),
-                    other.dataframe["id"].values.astype(np.uint64),
-                )
-            ).T
-
-            self_hsh_ndx_sorted = self_hsh_ndx[self_hsh_ndx[:, 0].argsort()]
-            other_hsh_ndx_sorted = other_hsh_ndx[other_hsh_ndx[:, 0].argsort()]
+        # sort our 2d arrays by hashed node value so a binary search can be used
+        #  in the cython function fast_not_isin
+        self_hsh_ndx_sorted = self_hsh_ndx[self_hsh_ndx[:, 0].argsort()]
+        other_hsh_ndx_sorted = other_hsh_ndx[other_hsh_ndx[:, 0].argsort()]
 
         # get nodes that exist in other, but not in self, set metric columns to 0 for
         # these rows
-        # other_not_in_self = other.dataframe[
-        #     ~other.dataframe.index.isin(self.dataframe.index)
-        # ]
-        # # get nodes that exist in self, but not in other
-        # self_not_in_other = self.dataframe[
-        #     ~self.dataframe.index.isin(other.dataframe.index)
-        # ]
+        other_not_in_self = other.dataframe[
+            _gfm_cy.fast_not_isin(
+                other_hsh_ndx_sorted,
+                self_hsh_ndx_sorted,
+                other_hsh_ndx_sorted.shape[0],
+                self_hsh_ndx_sorted.shape[0],
+            )
+        ]
+        # get nodes that exist in self, but not in other
+        self_not_in_other = self.dataframe[
+            _gfm_cy.fast_not_isin(
+                self_hsh_ndx_sorted,
+                other_hsh_ndx_sorted,
+                self_hsh_ndx_sorted.shape[0],
+                other_hsh_ndx_sorted.shape[0],
+            )
+        ]
 
-        with self.timer.phase("optimized search"):
-            # get nodes that exist in other, but not in self, set metric columns to 0 for
-            # these rows
-            other_not_in_self = other.dataframe[
-                _gfm_cy.fast_not_isin(
-                    other_hsh_ndx_sorted,
-                    self_hsh_ndx_sorted,
-                    other_hsh_ndx_sorted.shape[0],
-                    self_hsh_ndx_sorted.shape[0],
-                )
-            ]
-            # get nodes that exist in self, but not in other
-            self_not_in_other = self.dataframe[
-                _gfm_cy.fast_not_isin(
-                    self_hsh_ndx_sorted,
-                    other_hsh_ndx_sorted,
-                    self_hsh_ndx_sorted.shape[0],
-                    other_hsh_ndx_sorted.shape[0],
-                )
-            ]
 
-        with self.timer.phase("adding columns"):
-            # if there are missing nodes in either self or other, add a new column
-            # called _missing_node
-            if not self_not_in_other.empty:
-                self.dataframe.loc[:, "_missing_node"] = np.zeros(
+        # if there are missing nodes in either self or other, add a new column
+        # called _missing_node
+        if not self_not_in_other.empty:
+            self.dataframe = self.dataframe.assign(_missing_node = np.zeros(
+                len(self.dataframe), dtype=np.ubyte
+            ))
+        if not other_not_in_self.empty:
+            # initialize with R to save filling in later
+            other_not_in_self = other_not_in_self.assign(_missing_node = [
+                "R" for x in range(len(other_not_in_self))
+            ])
+
+            # add a new column to self if other has nodes not in self
+            if self_not_in_other.empty:
+                self.dataframe["_missing_node"] = np.zeros(
                     len(self.dataframe), dtype=np.ubyte
                 )
-            if not other_not_in_self.empty:
-                # initialize with R to save filling in later
-                other_not_in_self.loc[:, "_missing_node"] = [
-                    "R" for x in range(len(other_not_in_self))
-                ]
 
-                # add a new column to self if other has nodes not in self
-                if self_not_in_other.empty:
-                    self.dataframe.loc[:, "_missing_node"] = np.zeros(
-                        len(self.dataframe), dtype=np.ubyte
-                    )
+        # get lengths to pass into
+        onis_len = len(other_not_in_self)
+        snio_len = len(self_not_in_other)
 
-        with self.timer.phase("optimizied L and R"):
-            # get lengths to pass into
-            onis_len = len(other_not_in_self)
-            snio_len = len(self_not_in_other)
+        # case where self is a superset of other
+        if snio_len != 0:
+            self_missing_node = self.dataframe["_missing_node"].values
+            snio_indices = self_not_in_other.index.values
 
-            # case where self is a superset of other
-            if snio_len != 0:
-                self_missing_node = self.dataframe["_missing_node"].values
-                snio_indices = self_not_in_other["id"].values
+            # This function adds "L" to all nodes in self.dataframe['_missing_node'] which
+            # are in self but not in the other graphframe & convert from bytes to chars
+            _gfm_cy.add_L(snio_len, self_missing_node, snio_indices)
+            self.dataframe["_missing_node"] = np.array(
+                [chr(n) for n in self_missing_node]
+            )
 
-                # This function adds "L" to all nodes in self.dataframe['_missing_node'] which
-                # are in self but not in the other graphframe & convert from bytes to chars
-                _gfm_cy.add_L(snio_len, self_missing_node, snio_indices)
-                self.dataframe["_missing_node"] = np.array(
-                    [chr(n) for n in self_missing_node]
-                )
 
-            # for nodes that only exist in other, set the metric to be 0 (since
-            # it's a missing node in sel)
-            # replaces individual metric assignments with np.zeros
-            for j in all_metrics:
-                other_not_in_self[j] = np.zeros(onis_len)
+        # for nodes that only exist in other, set the metric to be 0 (since
+        # it's a missing node in sel)
+        # replaces individual metric assignments with np.zeros
+        for j in all_metrics:
+            other_not_in_self[j] = np.zeros(onis_len)
 
-        with self.timer.phase("rebuilding df"):
-            # append missing rows (nodes that exist in other, but not self) to self's
-            # dataframe
-            # self.dataframe = self.dataframe.append(other_not_in_self, sort=True)
-            self.dataframe = pd.concat([self.dataframe, other_not_in_self], sort=True)
-
-        self.dataframe = self.dataframe.drop(["id"], axis=1)
-        other.dataframe = other.dataframe.drop(["id"], axis=1)
+        # append missing rows (nodes that exist in other, but not self) to self's
+        # dataframe
+        self.dataframe = pd.concat([self.dataframe, other_not_in_self], axis=0, sort=True)
 
         return self
 
