@@ -808,18 +808,17 @@ class GraphFrame:
             )
         ]
 
-
         # if there are missing nodes in either self or other, add a new column
         # called _missing_node
         if not self_not_in_other.empty:
-            self.dataframe = self.dataframe.assign(_missing_node = np.zeros(
-                len(self.dataframe), dtype=np.ubyte
-            ))
+            self.dataframe = self.dataframe.assign(
+                _missing_node=np.zeros(len(self.dataframe), dtype=np.ubyte)
+            )
         if not other_not_in_self.empty:
             # initialize with R to save filling in later
-            other_not_in_self = other_not_in_self.assign(_missing_node = [
-                "R" for x in range(len(other_not_in_self))
-            ])
+            other_not_in_self = other_not_in_self.assign(
+                _missing_node=["R" for x in range(len(other_not_in_self))]
+            )
 
             # add a new column to self if other has nodes not in self
             if self_not_in_other.empty:
@@ -843,7 +842,6 @@ class GraphFrame:
                 [chr(n) for n in self_missing_node]
             )
 
-
         # for nodes that only exist in other, set the metric to be 0 (since
         # it's a missing node in sel)
         # replaces individual metric assignments with np.zeros
@@ -852,7 +850,9 @@ class GraphFrame:
 
         # append missing rows (nodes that exist in other, but not self) to self's
         # dataframe
-        self.dataframe = pd.concat([self.dataframe, other_not_in_self], axis=0, sort=True)
+        self.dataframe = pd.concat(
+            [self.dataframe, other_not_in_self], axis=0, sort=True
+        )
 
         return self
 

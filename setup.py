@@ -7,7 +7,6 @@ from setuptools import setup
 from setuptools import Extension
 from codecs import open
 from os import path
-from hatchet.version import __version__
 
 here = path.abspath(path.dirname(__file__))
 
@@ -15,9 +14,16 @@ here = path.abspath(path.dirname(__file__))
 with open(path.join(here, "README.md"), encoding="utf-8") as f:
     long_description = f.read()
 
+# Get the version in a safe way which does not refrence hatchet `__init__` file
+# per python docs: https://packaging.python.org/guides/single-sourcing-package-version/
+version = {}
+with open("./hatchet/version.py") as fp:
+    exec(fp.read(), version)
+
+
 setup(
     name="hatchet",
-    version=__version__,
+    version=version["__version__"],
     description="A Python library for analyzing hierarchical performance data",
     url="https://github.com/LLNL/hatchet",
     author="Abhinav Bhatele",

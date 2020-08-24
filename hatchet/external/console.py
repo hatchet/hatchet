@@ -29,7 +29,6 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import hatchet
 from hatchet.version import __version__
 
 
@@ -87,9 +86,7 @@ class ConsoleRenderer:
             r"   / /_  ____ _/ /______/ /_  ___  / /_",
             r"  / __ \/ __ `/ __/ ___/ __ \/ _ \/ __/",
             r" / / / / /_/ / /_/ /__/ / / /  __/ /_  ",
-            r"/_/ /_/\__,_/\__/\___/_/ /_/\___/\__/  {:>2}".format(
-                "v" + __version__
-            ),
+            r"/_/ /_/\__,_/\__/\___/_/ /_/\___/\__/  {:>2}".format("v" + __version__),
             r"",
             r"",
         ]
