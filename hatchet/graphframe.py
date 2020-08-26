@@ -5,10 +5,14 @@
 
 import sys
 import traceback
+import math
+
 from collections import defaultdict
+from functools import partial
 
 import pandas as pd
 import numpy as np
+import multiprocess as mp
 
 from .node import Node
 from .graph import Graph
@@ -29,6 +33,9 @@ except ImportError:
     traceback.print_exc()
     raise
 
+def parallel_apply(filter, subframe):
+    filtered_rows = subframe.apply(filter, axis=1)
+    return filtered_rows
 
 class GraphFrame:
     """An input dataset is read into an object of this type, which includes a graph
@@ -293,8 +300,17 @@ class GraphFrame:
         filtered_df = None
 
         if callable(filter_obj):
-            filtered_rows = dataframe_copy.apply(filter_obj, axis=1)
+            subframes = np.array_split(dataframe_copy, mp.cpu_count())
+            p = mp.Pool(mp.cpu_count())
+            func = partial(parallel_apply, filter_obj)
+
+            filtered_rows = pd.concat(p.map(func, subframes))
             filtered_df = dataframe_copy[filtered_rows]
+            #
+            # filtered_rows = dataframe_copy.apply(filter_obj, axis=1)
+            # filtered_df = dataframe_copy[filtered_rows]
+            #
+            # print(filtered_df)
         elif isinstance(filter_obj, list) or isinstance(filter_obj, QueryMatcher):
             query = filter_obj
             if isinstance(filter_obj, list):
