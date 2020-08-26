@@ -34,7 +34,9 @@ except ImportError:
     raise
 
 def parallel_apply(filter, subframe):
+    print("Start ", mp.current_process().pid)
     filtered_rows = subframe.apply(filter, axis=1)
+    print("End ", mp.current_process().pid)
     return filtered_rows
 
 class GraphFrame:
@@ -305,6 +307,9 @@ class GraphFrame:
             func = partial(parallel_apply, filter_obj)
 
             filtered_rows = pd.concat(p.map(func, subframes))
+            # result = p.map_async(func, subframes)
+            #
+            # filtered_rows = pd.concat(result.get())
             filtered_df = dataframe_copy[filtered_rows]
             #
             # filtered_rows = dataframe_copy.apply(filter_obj, axis=1)
