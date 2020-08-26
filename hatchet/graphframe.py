@@ -39,6 +39,7 @@ def parallel_apply(filter, subframe):
     filtered_rows = subframe.apply(filter, axis=1)
     print("End ", mp.current_process().pid)
     return filtered_rows
+    filtered_rows = subframe.apply(filter, axis=1)
 
 class GraphFrame:
     """An input dataset is read into an object of this type, which includes a graph
