@@ -1,4 +1,5 @@
 import pstats
+import sys
 import pandas as pd
 
 
@@ -6,6 +7,17 @@ import hatchet.graphframe
 from ..node import Node
 from ..graph import Graph
 from ..frame import Frame
+
+
+def print_incomptable_msg(stats_file):
+    """
+        Function which makes the syntax cleaner in Profiler.write_to_file().
+    """
+    errmsg = """\n Error: Incompatible pstats file ({})\n Please run your code in Python {} to read in this file. \n"""
+    if sys.version_info[0] == 2:
+        print(errmsg.format(stats_file, 3))
+    if sys.version_info[0] == 3:
+        print(errmsg.format(stats_file, 2.7))
 
 
 class StatData:
@@ -33,35 +45,6 @@ class PstatsReader:
         self.name_to_hnode = {}
         self.name_to_dict = {}
 
-        # variables for DFS cycle pruning algorithm
-        self.id = 0
-        self.visited = []
-        self.stack = []
-        self.cycles = []
-
-    def _find_cycles(self, node):
-        """Performs a depth first search and removes back edges when found"""
-        self.visited.append(node)
-        self.stack.append(node)
-
-        pruned_list = []
-        cycle_flag = False
-
-        for child in node.children:
-            if child not in self.visited:
-                self._find_cycles(child)
-            elif child in self.stack:
-                cycle_flag = True
-
-            if not cycle_flag:
-                pruned_list.append(child)
-            cycle_flag = False
-
-        node.children = pruned_list
-
-        self.stack.pop(-1)
-        return
-
     def _get_src(self, stat):
         """Gets the source/parent of our current desitnation node"""
         return stat[StatData.SRCNODE]
@@ -82,7 +65,12 @@ class PstatsReader:
 
     def create_graph(self):
         """Performs the creation of our node graph"""
-        stats_dict = pstats.Stats(self.pstats_file).__dict__["stats"]
+        try:
+            stats_dict = pstats.Stats(self.pstats_file).__dict__["stats"]
+        except ValueError:
+            print_incomptable_msg(self.pstats_file)
+            raise
+        list_roots = []
 
         # We iterate through each function/node in our stats dict
         for dst_module_data, dst_stats in stats_dict.items():
@@ -97,64 +85,53 @@ class PstatsReader:
             dst_hnode = self.name_to_hnode.get(dst_name)
             if not dst_hnode:
                 # create a node if it doesn't exist yet
-                dst_hnode = Node(
-                    Frame({"type": "function", "name": dst_name}), None, hnid=self.id
-                )
+                dst_hnode = Node(Frame({"type": "function", "name": dst_name}), None)
                 self.name_to_hnode[dst_name] = dst_hnode
                 self._add_node_metadata(dst_name, dst_module_data, dst_stats, dst_hnode)
-                self.id += 1
 
             # get all parents of our current destination node
             # create source nodes and link with destination node
             srcs = self._get_src(dst_stats)
-            for src_module_data in srcs.keys():
-                src_name = src_module_data[NameData.FNCNAME]
+            if srcs == {}:
+                list_roots.append(dst_hnode)
+            else:
+                for src_module_data in srcs.keys():
+                    src_name = src_module_data[NameData.FNCNAME]
 
-                if src_name is not None:
-                    src_name = "{}:{}:{}".format(
-                        src_name,
-                        src_module_data[NameData.FILE].split("/")[-1],
-                        src_module_data[NameData.LINE],
-                    )
-                    src_hnode = self.name_to_hnode.get(src_name)
-
-                    if not src_hnode:
-                        # create a node if it doesn't exist yet
-                        src_hnode = Node(
-                            Frame({"type": "function", "name": src_name}),
-                            None,
-                            hnid=self.id,
+                    if src_name is not None:
+                        src_name = "{}:{}:{}".format(
+                            src_name,
+                            src_module_data[NameData.FILE].split("/")[-1],
+                            src_module_data[NameData.LINE],
                         )
-                        self.name_to_hnode[src_name] = src_hnode
+                        src_hnode = self.name_to_hnode.get(src_name)
 
-                        # lookup stat data for source here
-                        src_stats = stats_dict[src_module_data]
-                        self._add_node_metadata(
-                            src_name, src_module_data, src_stats, src_hnode
-                        )
-                        self.id += 1
+                        if not src_hnode:
+                            # create a node if it doesn't exist yet
+                            src_hnode = Node(
+                                Frame({"type": "function", "name": src_name}), None
+                            )
+                            self.name_to_hnode[src_name] = src_hnode
 
-                if src_name is not None:
-                    dst_hnode.add_parent(src_hnode)
-                    src_hnode.add_child(dst_hnode)
+                            # lookup stat data for source here
+                            src_stats = stats_dict[src_module_data]
+                            self._add_node_metadata(
+                                src_name, src_module_data, src_stats, src_hnode
+                            )
+                        dst_hnode.add_parent(src_hnode)
+                        src_hnode.add_child(dst_hnode)
 
-        list_roots = []
-        for (key, val) in self.name_to_hnode.items():
-            if not val.parents:
-                list_roots.append(val)
-
-        # Removes back edges from graph to remove
-        # cycles and fix infinite loops problems with output
-        for i in range(len(list_roots)):
-            self._find_cycles(list_roots[i])
-            self.visited = []
-            self.stack = []
+        # list_roots = []
+        # for (key, val) in self.name_to_hnode.items():
+        #     if not val.parents:
+        #         list_roots.append(val)
 
         return list_roots
 
     def read(self):
         roots = self.create_graph()
         graph = Graph(roots)
+        graph.enumerate_traverse()
 
         dataframe = pd.DataFrame.from_dict(data=list(self.name_to_dict.values()))
         index = ["node"]
