@@ -135,7 +135,7 @@ def calc_pi_callgrind_dot(data_dir, tmpdir):
 
 @pytest.fixture
 def mock_graph_literal():
-    """ Creates a mock tree
+    """Creates a mock tree
 
     Metasyntactic variables: https://www.ietf.org/rfc/rfc3092.txt
     """

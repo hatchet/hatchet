@@ -10,7 +10,7 @@ from hatchet.graph import Graph
 
 def test_from_lists():
     """Ensure we can traverse roots in correct order without repeating a
-       shared subdag.
+    shared subdag.
     """
     d = Node(Frame(name="d"))
     diamond_subdag = Node.from_lists(("a", ("b", d), ("c", d)))

@@ -162,8 +162,7 @@ class CaliperReader:
         return list_roots
 
     def read(self):
-        """ Read the caliper JSON file to extract the calling context tree.
-        """
+        """Read the caliper JSON file to extract the calling context tree."""
         with self.timer.phase("read json"):
             self.read_json_sections()
 

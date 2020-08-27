@@ -4,140 +4,111 @@
 # SPDX-License-Identifier: MIT
 
 import cProfile
+import traceback
+import sys
+import os
+
+from datetime import datetime
+
+try:
+    from StringIO import StringIO  # python2
+except ImportError:
+    from io import StringIO  # python3
 import pstats
-import io
+
+
+def print_incomptable_msg(stats_file):
+    """
+    Function which makes the syntax cleaner in Profiler.write_to_file().
+    """
+
+    errmsg = """ Incompatible pstats file: {}\n Please run your code in Python {} to read in this file. """
+    if sys.version_info[0] == 2:
+        print(errmsg.format(stats_file, 3))
+    if sys.version_info[0] == 3:
+        print(errmsg.format(stats_file, 2.7))
+    traceback.print_exc()
 
 
 # class for profiling
 class Profiler:
-    def __init__(self, prf=cProfile.Profile()):
-        self.prf = prf
-        self.running_total = 0
+    """
+    Wrapper class around cProfile.
+    Exports a pstats file to be read by hpctoolkit.
+    """
+
+    def __init__(self):
+        self._prf = cProfile.Profile()
+        self._output = "hatchet_profile"
+        self._active = False
 
     def start(self):
         """
-            Description: Place before the block of code to be profiled.
+        Description: Place before the block of code to be profiled.
         """
-        self.prf.enable()
+        if self._active:
+            print(
+                "Start dissallowed in scope where profile is running. Please add Profiler.stop() before attempting start."
+            )
+            raise
 
-    def end(self):
+        self._active = True
+        self._prf.enable()
+
+    def stop(self):
         """
-            Description: Place at the end of the block of code being profiled.
-            Return: The total runtime of the last profile attempt
+        Description: Place at the end of the block of code being profiled.
         """
-        self.prf.disable()
-        return self.getLastRuntime()
+
+        self._active = False
+        self._prf.disable()
+        self.write_to_file()
 
     def reset(self):
         """
-            Description: If profiling across multiple different files or different
-            functionalities in one program run, this must be called between
-            profile instances to clear out data from prior start-stop block.
+        Description: Resets the profilier.
         """
-        self.prf = cProfile.Profile()
-        self.running_total = 0
+        if self._active:
+            print(
+                "Reset dissallowed in scope where profile is running. Please add Profiler.stop() before attempting reset."
+            )
+            raise
 
-    def getLastRuntime(self):
+        self._prf = cProfile.Profile()
+
+    def __str__(self):
         """
-            Description: Retrieves the last runtime from a sequence of profiles if
-            profiling in a loop to get average statistics.
+        Description: Writes stats object out as a string.
         """
-        last = pstats.Stats(self.prf).__dict__["total_tt"] - self.running_total
-        self.running_total += last
-        return last
+        s = StringIO()
+        pstats.Stats(self._prf, stream=s).print_stats()
+        return s.getvalue()
 
-    def getRuntime(self):
+    def write_to_file(self, filename="", add_pstats_files=[]):
         """
-            Description: Get the total cumulative runtime logged by this profilier.
-            Reset by calls to .reset().
+        Description: Write the pstats object to a binary
+        file to be read in by an appropriate source.
         """
-        return pstats.Stats(self.prf).__dict__["total_tt"]
+        sts = pstats.Stats(self._prf)
 
-    def getStats(self):
-        """
-            Description: Get stats as a pstats output.
-        """
-        s = io.StringIO()
-        return pstats.Stats(self.prf, stream=s)
+        if len(add_pstats_files) > 0:
+            for stats_file in add_pstats_files:
+                try:
+                    sts.add(stats_file)
+                except ValueError:
+                    print_incomptable_msg(stats_file)
+                    raise
 
-    def getAverageRuntime(self, num_of_runs):
-        """
-            Description: Get average runtime over a number of trials. Takes the cumulative
-            runtime and divides by the number of trials attempted.
-        """
-        return pstats.Stats(self.prf).__dict__["total_tt"] / num_of_runs
-
-    # sorting options
-    # 'calls', 'cumulative', 'filename', 'ncalls', 'pcalls', 'line', 'name', 'nfl' (name file line), 'stdname', 'time'
-    def dumpSortedStats(self, sortby="cumulative", filename="prof.txt"):
-        """
-            Description: Dump the total statistics from this current profile to a
-            file. Cleared by calls to reset. If running profile over multiple trials,
-            this dumps cumulative runtime across all trials: use dumpAverageStats()
-            instead.
-        """
-        with open(filename, "w") as f:
-            sts = pstats.Stats(self.prf, stream=f)
-            sts.sort_stats(sortby)
-            sts.print_stats()
-
-    def calcAvgStatsHelper(self, obj, num_of_runs):
-        for stat in obj:
-            lst = []
-            for val in range(0, 4):
-                if val < 2:
-                    var = int(obj[stat][val]) // num_of_runs
-                    lst.append(var)
-                else:
-                    lst.append(obj[stat][val] / num_of_runs)
-            if len(obj[stat]) > 4:
-                lst.append(obj[stat][4])
-
-            obj[stat] = tuple(lst)
-            if len(obj[stat]) > 4 and obj[stat][4] is not {}:
-                self.calcAvgStatsHelper(obj[stat][4], num_of_runs)
-
-    def dumpAverageStats(
-        self, sortby="cumulative", filename="avg_prof.txt", num_of_runs=1
-    ):
-        """
-            Description: Dump the average runtime statistics from this current profile to a
-            file. Cleared by calls to reset. All runtimes and statistics for every function call
-            is averaged over num_of_runs.
-        """
-        with open(filename, "w") as f:
-            f.write("\n\n Averaged over {} trials \n\n".format(num_of_runs))
-            sts = pstats.Stats(self.prf, stream=f)
-            if num_of_runs != 1:
-                self.calcAvgStatsHelper(sts.__dict__["stats"], num_of_runs)
-                sts.__dict__["total_tt"] = sts.__dict__["total_tt"] / num_of_runs
-                sts.__dict__["total_calls"] = sts.__dict__["total_calls"] // num_of_runs
-                sts.__dict__["prim_calls"] = sts.__dict__["prim_calls"] // num_of_runs
-            sts.sort_stats(sortby)
-            sts.print_stats()
-
-    # collect data like max/min/median for output
-
-
-# TODO: function for calling profile n times with a particular endpoint
-# TODO: output data for later visualization
-
-
-# profile wrapper
-def profile(funct):
-    def wrapper(*args, **kwargs):
-        pr = cProfile.Profile()
-        pr.enable()
-
-        ret = funct(*args, **kwargs)
-
-        pr.disable()
-        s = io.StringIO()
-        sortby = "cumulative"
-        ps = pstats.Stats(pr, stream=s).sort_stats(sortby)
-        ps.print_stats()
-        print(s.getvalue())
-
-        return ret
-
-    return wrapper
+        if filename == "":
+            if os.path.exists(self._output + ".pstats"):
+                now = datetime.now().strftime("%H%M%S")
+                self.write_to_file(
+                    "{}_{}.pstats".format(self._output, now), add_pstats_files
+                )
+            else:
+                sts.dump_stats(self._output + ".pstats")
+        else:
+            if os.path.exists(filename):
+                now = datetime.now().strftime("%H%M%S")
+                filename = "{}_{}.pstats".format(filename, now)
+            sts.dump_stats(filename)
