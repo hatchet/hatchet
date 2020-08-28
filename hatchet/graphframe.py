@@ -13,6 +13,7 @@ from functools import partial
 import pandas as pd
 import numpy as np
 import multiprocess as mp
+import psutil
 
 from .node import Node
 from .graph import Graph
@@ -303,7 +304,8 @@ class GraphFrame:
 
         if callable(filter_obj):
             subframes = np.array_split(dataframe_copy, mp.cpu_count())
-            p = mp.Pool(mp.cpu_count())
+            print(mp.cpu_count(), psutil.cpu_count(logical=False))
+            p = mp.Pool(psutil.cpu_count(logical=False))
             func = partial(parallel_apply, filter_obj)
 
             filtered_rows = pd.concat(p.map(func, subframes))
