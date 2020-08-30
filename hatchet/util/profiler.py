@@ -34,12 +34,12 @@ def print_incomptable_msg(stats_file):
 class Profiler:
     """
     Wrapper class around cProfile.
-    Exports a pstats file to be read by hpctoolkit.
+    Exports a pstats file to be read by the pstats reader.
     """
 
     def __init__(self):
         self._prf = cProfile.Profile()
-        self._output = "hatchet_profile"
+        self._output = "hatchet-profile"
         self._active = False
 
     def start(self):
@@ -48,7 +48,7 @@ class Profiler:
         """
         if self._active:
             print(
-                "Start dissallowed in scope where profile is running. Please add Profiler.stop() before attempting start."
+                "Start dissallowed in scope where profiler is running. Please add Profiler.stop() before attempting start."
             )
             raise
 
@@ -70,7 +70,7 @@ class Profiler:
         """
         if self._active:
             print(
-                "Reset dissallowed in scope where profile is running. Please add Profiler.stop() before attempting reset."
+                "Reset dissallowed in scope where profiler is running. Please add Profiler.stop() before attempting reset."
             )
             raise
 
