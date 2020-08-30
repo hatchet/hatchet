@@ -94,15 +94,13 @@ def hatchet_cycle_pstats(data_dir, tmpdir):
         cprof_pstats_file = os.path.join(
             cprof_pstats_dir, "cprofile-cycle-py2.pstats"
         )
+        shutil.copy(cprof_pstats_file, str(tmpdir))
+        tmpfile = os.path.join(str(tmpdir), "cprofile-cycle-py2.pstats")
     else:
         cprof_pstats_file = os.path.join(
             cprof_pstats_dir, "cprofile-cycle.pstats"
         )
-
-    shutil.copy(cprof_pstats_file, str(tmpdir))
-    if sys.version_info[0] == 2:
-        tmpfile = os.path.join(str(tmpdir), "cprofile-cycle-py2.pstats")
-    else:
+        shutil.copy(cprof_pstats_file, str(tmpdir))
         tmpfile = os.path.join(str(tmpdir), "cprofile-cycle.pstats")
 
     return tmpfile
