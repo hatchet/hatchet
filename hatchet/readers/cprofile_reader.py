@@ -1,12 +1,17 @@
+# Copyright 2017-2020 Lawrence Livermore National Security, LLC and other
+# Hatchet Project Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: MIT
+
 import pstats
 import sys
 import pandas as pd
 
 
 import hatchet.graphframe
-from ..node import Node
-from ..graph import Graph
-from ..frame import Frame
+from hatchet.node import Node
+from hatchet.graph import Graph
+from hatchet.frame import Frame
 
 
 def print_incomptable_msg(stats_file):
@@ -46,11 +51,13 @@ class CProfileReader:
         self.name_to_dict = {}
 
     def _get_src(self, stat):
-        """Gets the source/parent of our current desitnation node"""
+        """Gets the source/parent of our current destination node"""
         return stat[StatData.SRCNODE]
 
     def _add_node_metadata(self, stat_name, stat_module_data, stats, hnode):
-        """Puts all the metadata associated with a node in a dictionary to insert into pandas."""
+        """Puts all the metadata associated with a node in a dictionary to insert
+        into pandas.
+        """
         node_dict = {
             "file": stat_module_data[NameData.FILE],
             "line": stat_module_data[NameData.LINE],
@@ -120,11 +127,6 @@ class CProfileReader:
                             )
                         dst_hnode.add_parent(src_hnode)
                         src_hnode.add_child(dst_hnode)
-
-        # list_roots = []
-        # for (key, val) in self.name_to_hnode.items():
-        #     if not val.parents:
-        #         list_roots.append(val)
 
         return list_roots
 
