@@ -11,7 +11,7 @@ from ..frame import Frame
 
 def print_incomptable_msg(stats_file):
     """
-        Function which makes the syntax cleaner in Profiler.write_to_file().
+    Function which makes the syntax cleaner in Profiler.write_to_file().
     """
     errmsg = """\n Error: Incompatible pstats file ({})\n Please run your code in Python {} to read in this file. \n"""
     if sys.version_info[0] == 2:
