@@ -10,8 +10,8 @@ from hatchet import GraphFrame
 from hatchet.external.console import ConsoleRenderer
 
 
-def test_graphframe(cycle_cprofile_pstats):
-    gf = GraphFrame.from_cprofile(str(cycle_cprofile_pstats))
+def test_graphframe(hatchet_cycle_pstats):
+    gf = GraphFrame.from_cprofile(str(hatchet_cycle_pstats))
 
     assert len(gf.dataframe.groupby("file")) == 4
     assert len(gf.dataframe.groupby("name")) == 9
@@ -27,8 +27,8 @@ def test_graphframe(cycle_cprofile_pstats):
             assert gf.dataframe[col].dtype == np.object
 
 
-def test_tree(cycle_cprofile_pstats):
-    gf = GraphFrame.from_cprofile(str(cycle_cprofile_pstats))
+def test_tree(hatchet_cycle_pstats):
+    gf = GraphFrame.from_cprofile(str(hatchet_cycle_pstats))
 
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,

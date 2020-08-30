@@ -87,23 +87,23 @@ def osu_allgather_hpct_db(data_dir, tmpdir):
 
 
 @pytest.fixture
-def cycle_cprofile_pstats(data_dir, tmpdir):
+def hatchet_cycle_pstats(data_dir, tmpdir):
     """Builds a temporary directory containing the pstats from a profile of the hpctoolkit_reader function."""
-    cprof_pstats_dir = os.path.join(data_dir, "cprofile-cycle-profile-pstats")
+    cprof_pstats_dir = os.path.join(data_dir, "cprofile-hatchet-pstats")
     if sys.version_info[0] == 2:
         cprof_pstats_file = os.path.join(
-            cprof_pstats_dir, "cprofile-cycle-profile-pstats-py2.pstats"
+            cprof_pstats_dir, "cprofile-cycle-py2.pstats"
         )
     else:
         cprof_pstats_file = os.path.join(
-            cprof_pstats_dir, "cprofile-cycle-profile-pstats.pstats"
+            cprof_pstats_dir, "cprofile-cycle.pstats"
         )
 
     shutil.copy(cprof_pstats_file, str(tmpdir))
     if sys.version_info[0] == 2:
-        tmpfile = os.path.join(str(tmpdir), "cprofile-cycle-profile-pstats-py2.pstats")
+        tmpfile = os.path.join(str(tmpdir), "cprofile-cycle-py2.pstats")
     else:
-        tmpfile = os.path.join(str(tmpdir), "cprofile-cycle-profile-pstats.pstats")
+        tmpfile = os.path.join(str(tmpdir), "cprofile-cycle.pstats")
 
     return tmpfile
 
