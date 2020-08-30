@@ -29,8 +29,8 @@ Examples of performance analysis using hatchet are available [here](https://hatc
 
 ### Contributing
 
-Hatchet is an open source project. We welcome contributions via pull requests
-and questions, feature requests or bug reports via issues.
+Hatchet is an open source project. We welcome contributions via pull requests,
+and questions, feature requests, or bug reports via issues.
 
 You can also reach the hatchet developers by email at: [hatchet-help@listserv.umd.edu](mailto:hatchet-help@listserv.umd.edu).
 
