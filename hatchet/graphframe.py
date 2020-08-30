@@ -641,7 +641,7 @@ class GraphFrame:
 
     def to_literal(self, name="name", rank=0, thread=0):
         """Format this graph as a list of dictionaries for Roundtrip
-           visualizations.
+        visualizations.
         """
         graph_literal = []
         visited = []
