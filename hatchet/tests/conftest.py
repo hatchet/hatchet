@@ -91,15 +91,12 @@ def hatchet_cycle_pstats(data_dir, tmpdir):
     """Builds a temporary directory containing the pstats from a profile of the hpctoolkit_reader function."""
     cprof_pstats_dir = os.path.join(data_dir, "cprofile-hatchet-pstats")
     if sys.version_info[0] == 2:
-        cprof_pstats_file = os.path.join(
-            cprof_pstats_dir, "cprofile-cycle-py2.pstats"
-        )
+        cprof_pstats_file = os.path.join(cprof_pstats_dir, "cprofile-cycle-py2.pstats")
+
         shutil.copy(cprof_pstats_file, str(tmpdir))
         tmpfile = os.path.join(str(tmpdir), "cprofile-cycle-py2.pstats")
     else:
-        cprof_pstats_file = os.path.join(
-            cprof_pstats_dir, "cprofile-cycle.pstats"
-        )
+        cprof_pstats_file = os.path.join(cprof_pstats_dir, "cprofile-cycle.pstats")
         shutil.copy(cprof_pstats_file, str(tmpdir))
         tmpfile = os.path.join(str(tmpdir), "cprofile-cycle.pstats")
 
