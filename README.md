@@ -27,7 +27,6 @@ See the [Getting Started](https://hatchet.readthedocs.io/en/latest/getting_start
 
 Examples of performance analysis using hatchet are available [here](https://hatchet.readthedocs.io/en/latest/analysis_examples.html).
 
-
 ### Contributing
 
 Hatchet is an open source project. We welcome contributions via pull requests,
