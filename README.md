@@ -25,7 +25,7 @@ directory to your `PYTHONPATH`.
 
 See the [Getting Started](https://hatchet.readthedocs.io/en/latest/getting_started.html) page for basic examples and usage. Full documentation is available in the [User Guide](https://hatchet.readthedocs.io/en/latest/user_guide.html).
 
-Examples of performance analysis using hatchet are available [here](https://hatchet.readthedocs.io/en/latest/analysis_examples.html)
+Examples of performance analysis using hatchet are available [here](https://hatchet.readthedocs.io/en/latest/analysis_examples.html).
 
 
 ### Contributing
