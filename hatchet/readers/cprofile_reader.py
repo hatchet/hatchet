@@ -43,21 +43,43 @@ class NameData:
     FNCNAME = 2
 
 
-class CProfileReader:
+class PstatsReader:
     def __init__(self, filename):
         self.pstats_file = filename
 
         self.name_to_hnode = {}
         self.name_to_dict = {}
 
+    def _create_node_and_row(self, fn_data, fn_name, stats_dict):
+        """
+        Description: Takes a profiled function as specified in a pstats file
+        and creates a node for it and adds a new line of metadata to our
+        dataframe if it does not exist.
+        """
+        u_fn_name = "{}:{}:{}".format(
+            fn_name,
+            fn_data[NameData.FILE].split("/")[-1],
+            fn_data[NameData.LINE],
+        )
+        fn_hnode = self.name_to_hnode.get(u_fn_name)
+
+        if not fn_hnode:
+            # create a node if it doesn't exist yet
+            fn_hnode = Node(Frame({"type": "function", "name": fn_name}), None)
+            self.name_to_hnode[u_fn_name] = fn_hnode
+
+            # lookup stat data for source here
+            fn_stats = stats_dict[fn_data]
+            self._add_node_metadata(fn_name, fn_data, fn_stats, fn_hnode)
+
+        return fn_hnode
+
     def _get_src(self, stat):
-        """Gets the source/parent of our current destination node"""
+        """Gets the source/parent of our current desitnation node"""
         return stat[StatData.SRCNODE]
 
     def _add_node_metadata(self, stat_name, stat_module_data, stats, hnode):
-        """Puts all the metadata associated with a node in a dictionary to insert
-        into pandas.
-        """
+        """Puts all the metadata associated with a node in a dictionary to insert into pandas."""
         node_dict = {
             "file": stat_module_data[NameData.FILE],
             "line": stat_module_data[NameData.LINE],
@@ -82,19 +104,7 @@ class CProfileReader:
         # We iterate through each function/node in our stats dict
         for dst_module_data, dst_stats in stats_dict.items():
             dst_name = dst_module_data[NameData.FNCNAME]
-
-            # need unique name for a particular node
-            dst_name = "{}:{}:{}".format(
-                dst_name,
-                dst_module_data[NameData.FILE].split("/")[-1],
-                dst_module_data[NameData.LINE],
-            )
-            dst_hnode = self.name_to_hnode.get(dst_name)
-            if not dst_hnode:
-                # create a node if it doesn't exist yet
-                dst_hnode = Node(Frame({"type": "function", "name": dst_name}), None)
-                self.name_to_hnode[dst_name] = dst_hnode
-                self._add_node_metadata(dst_name, dst_module_data, dst_stats, dst_hnode)
+            dst_hnode = self._create_node_and_row(dst_module_data, dst_name, stats_dict)
 
             # get all parents of our current destination node
             # create source nodes and link with destination node
@@ -106,25 +116,9 @@ class CProfileReader:
                     src_name = src_module_data[NameData.FNCNAME]
 
                     if src_name is not None:
-                        src_name = "{}:{}:{}".format(
-                            src_name,
-                            src_module_data[NameData.FILE].split("/")[-1],
-                            src_module_data[NameData.LINE],
+                        src_hnode = self._create_node_and_row(
+                            src_module_data, src_name, stats_dict
                         )
-                        src_hnode = self.name_to_hnode.get(src_name)
-
-                        if not src_hnode:
-                            # create a node if it doesn't exist yet
-                            src_hnode = Node(
-                                Frame({"type": "function", "name": src_name}), None
-                            )
-                            self.name_to_hnode[src_name] = src_hnode
-
-                            # lookup stat data for source here
-                            src_stats = stats_dict[src_module_data]
-                            self._add_node_metadata(
-                                src_name, src_module_data, src_stats, src_hnode
-                            )
                         dst_hnode.add_parent(src_hnode)
                         src_hnode.add_child(dst_hnode)
 
