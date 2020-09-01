@@ -1,8 +1,14 @@
-# Description: All cython code related to graphframe.py
+# Copyright 2017-2020 Lawrence Livermore National Security, LLC and other
+# Hatchet Project Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: MIT
+
 import cython
 import numpy as np
 from libc.math cimport floor
 
+
+# Description: All cython code related to graphframe.py
 @cython.boundscheck(False)
 def add_L(const long snio_len, char[:] self_missing_node, const long[:] snio_indices):
     """
