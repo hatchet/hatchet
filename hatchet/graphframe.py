@@ -105,6 +105,14 @@ class GraphFrame:
         return GprofDotReader(filename).read()
 
     @staticmethod
+    def from_cprofile(filename):
+        """Read in a pstats/prof file generated using python's cProfile."""
+        # import this lazily to avoid circular dependencies
+        from .readers.cprofile_reader import CProfileReader
+
+        return CProfileReader(filename).read()
+
+    @staticmethod
     def from_literal(graph_dict):
         """Create a GraphFrame from a list of dictionaries.
 
