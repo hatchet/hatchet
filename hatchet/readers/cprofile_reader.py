@@ -43,7 +43,7 @@ class NameData:
     FNCNAME = 2
 
 
-class PstatsReader:
+class CProfileReader:
     def __init__(self, filename):
         self.pstats_file = filename
 
