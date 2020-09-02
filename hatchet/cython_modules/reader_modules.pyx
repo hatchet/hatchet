@@ -5,7 +5,6 @@
 
 import cython
 
-# @cython.boundscheck(False)
 def subtract_exclusive_metric_vals(long nid, long parent_nid, double[:] metrics, long num_stmt_nodes, long stride):
   cdef long ref_nid = nid
   cdef long ref_pnid = parent_nid
