@@ -10,7 +10,9 @@ if __name__ == "__main__":
     if python_version[0] == 2:
         pstats_file = "../../../hatchet/tests/data/cprofile-hatchet-pstats/cprofile-cycle-py2.pstats"
     elif python_version[0] == 3:
-        pstats_file = "../../../hatchet/tests/data/cprofile-hatchet-pstats/cprofile-cycle.pstats"
+        pstats_file = (
+            "../../../hatchet/tests/data/cprofile-hatchet-pstats/cprofile-cycle.pstats"
+        )
 
     # Use hatchet's ``from_cprofile`` API to read in the pstats file. The result
     # is stored into Hatchet's GraphFrame.
