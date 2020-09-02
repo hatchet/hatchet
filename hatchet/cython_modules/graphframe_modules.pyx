@@ -19,10 +19,12 @@ def add_L(const long snio_len, char[:] self_missing_node, const long[:] snio_ind
 
 cpdef fast_not_isin(const unsigned long long[:,:] arr1, const unsigned long long[:,:] arr2, const long arr1_len, const long arr2_len):
     """
-    Descripton: A fast substution for the pandas isin function.
+    Descripton: A fast check to see if each element in arr1 exists in arr2. This returns a vector mask eqivalent to what the operation ~df.isin( ... ) would return.
     Arguments:
       arr1 (unisgned long long [][]): The array of values we are searching for.
-      arr2 (unsigned long long [][]): The array of values we are searching in.
+      arr2 (unsigned long long [][]): The sorted array of values we are searching in.
+    Returns:
+      result (bool []): A boolean mask over arr1 indicating whether each element is or is not in the function. True indicates that an element is not in arr2.
     """
     result = np.zeros(len(arr1), dtype=np.bool_)
     cdef long index = -1
