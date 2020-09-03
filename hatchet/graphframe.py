@@ -17,7 +17,6 @@ from .query_matcher import QueryMatcher
 from .external.console import ConsoleRenderer
 from .util.dot import trees_to_dot
 from .util.deprecated import deprecated_params
-from .util.timer import Timer
 
 try:
     import hatchet.cython_modules.libs.graphframe_modules as _gfm_cy
@@ -66,7 +65,6 @@ class GraphFrame:
         self.dataframe = dataframe
         self.exc_metrics = [] if exc_metrics is None else exc_metrics
         self.inc_metrics = [] if inc_metrics is None else inc_metrics
-        self.timer = Timer()
 
     @staticmethod
     def from_hpctoolkit(dirname):
