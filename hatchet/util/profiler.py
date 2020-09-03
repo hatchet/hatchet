@@ -21,7 +21,6 @@ def print_incomptable_msg(stats_file):
     """
     Function which makes the syntax cleaner in Profiler.write_to_file().
     """
-
     errmsg = """ Incompatible pstats file: {}\n Please run your code in Python {} to read in this file. """
     if sys.version_info[0] == 2:
         print(errmsg.format(stats_file, 3))

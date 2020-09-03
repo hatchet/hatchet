@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 import sys
+import traceback
 from collections import defaultdict
 
 import pandas as pd
@@ -16,6 +17,17 @@ from .query_matcher import QueryMatcher
 from .external.console import ConsoleRenderer
 from .util.dot import trees_to_dot
 from .util.deprecated import deprecated_params
+
+try:
+    import hatchet.cython_modules.libs.graphframe_modules as _gfm_cy
+except ImportError:
+    print("-" * 80)
+    print(
+        """Error: Shared object (.so) not found for cython module.\n\tPlease run install.sh from the hatchet root directory to build modules."""
+    )
+    print("-" * 80)
+    traceback.print_exc()
+    raise
 
 
 class GraphFrame:
@@ -539,12 +551,12 @@ class GraphFrame:
             lambda x: node_map[id(x)]
         )
 
-        self.dataframe.set_index(self_index_names, inplace=True, drop=True)
-        other.dataframe.set_index(other_index_names, inplace=True, drop=True)
-
         # add missing rows to copy of self's dataframe in preparation for
         # operation
         self._insert_missing_rows(other)
+
+        self.dataframe.set_index(self_index_names, inplace=True, drop=True)
+        other.dataframe.set_index(other_index_names, inplace=True, drop=True)
 
         self.graph = union_graph
         other.graph = union_graph
@@ -746,51 +758,97 @@ class GraphFrame:
             )
         )
 
+        # make two 2D nparrays arrays with two columns:
+        # 1) the hashed value of a node and 2) a numerical index
+        # Many operations are stacked here to reduce the need for storing
+        # large intermediary datasets
+        self_hsh_ndx = np.vstack(
+            (
+                np.array(
+                    [x.__hash__() for x in self.dataframe["node"]], dtype=np.uint64
+                ),
+                self.dataframe.index.values.astype(np.uint64),
+            )
+        ).T
+        other_hsh_ndx = np.vstack(
+            (
+                np.array(
+                    [x.__hash__() for x in other.dataframe["node"]], dtype=np.uint64
+                ),
+                other.dataframe.index.values.astype(np.uint64),
+            )
+        ).T
+
+        # sort our 2D arrays by hashed node value so a binary search can be used
+        # in the cython function fast_not_isin
+        self_hsh_ndx_sorted = self_hsh_ndx[self_hsh_ndx[:, 0].argsort()]
+        other_hsh_ndx_sorted = other_hsh_ndx[other_hsh_ndx[:, 0].argsort()]
+
         # get nodes that exist in other, but not in self, set metric columns to 0 for
         # these rows
         other_not_in_self = other.dataframe[
-            ~other.dataframe.index.isin(self.dataframe.index)
+            _gfm_cy.fast_not_isin(
+                other_hsh_ndx_sorted,
+                self_hsh_ndx_sorted,
+                other_hsh_ndx_sorted.shape[0],
+                self_hsh_ndx_sorted.shape[0],
+            )
         ]
         # get nodes that exist in self, but not in other
         self_not_in_other = self.dataframe[
-            ~self.dataframe.index.isin(other.dataframe.index)
+            _gfm_cy.fast_not_isin(
+                self_hsh_ndx_sorted,
+                other_hsh_ndx_sorted,
+                self_hsh_ndx_sorted.shape[0],
+                other_hsh_ndx_sorted.shape[0],
+            )
         ]
 
         # if there are missing nodes in either self or other, add a new column
         # called _missing_node
         if not self_not_in_other.empty:
-            new_df = pd.DataFrame(index=self.dataframe.index)
-            new_df["_missing_node"] = ""
-            self.dataframe = self.dataframe.join(new_df)
+            self.dataframe = self.dataframe.assign(
+                _missing_node=np.zeros(len(self.dataframe), dtype=np.ubyte)
+            )
         if not other_not_in_self.empty:
-            new_df = pd.DataFrame(index=other_not_in_self.index)
-            new_df["_missing_node"] = ""
-            other_not_in_self = other_not_in_self.join(new_df)
+            # initialize with R to save filling in later
+            other_not_in_self = other_not_in_self.assign(
+                _missing_node=["R" for x in range(len(other_not_in_self))]
+            )
 
             # add a new column to self if other has nodes not in self
             if self_not_in_other.empty:
-                new_df = pd.DataFrame(index=self.dataframe.index)
-                new_df["_missing_node"] = ""
-                self.dataframe = self.dataframe.join(new_df)
+                self.dataframe["_missing_node"] = np.zeros(
+                    len(self.dataframe), dtype=np.ubyte
+                )
 
-        # for nodes that only exist in self, set value to be "L" indicating
-        # it exists in left graphframe
-        for i in self_not_in_other.index:
-            # a value of L indicates that the node exists in self, but not other
-            self.dataframe.at[i, "_missing_node"] = "L"
+        # get lengths to pass into
+        onis_len = len(other_not_in_self)
+        snio_len = len(self_not_in_other)
+
+        # case where self is a superset of other
+        if snio_len != 0:
+            self_missing_node = self.dataframe["_missing_node"].values
+            snio_indices = self_not_in_other.index.values
+
+            # This function adds "L" to all nodes in self.dataframe['_missing_node'] which
+            # are in self but not in the other graphframe & convert from bytes to chars
+            _gfm_cy.add_L(snio_len, self_missing_node, snio_indices)
+            self.dataframe["_missing_node"] = np.array(
+                [chr(n) for n in self_missing_node]
+            )
 
         # for nodes that only exist in other, set the metric to be 0 (since
-        # it's a missing node in sel), and set value of _missing_node to be "R"
-        # indicating it exists in right graphframe
-        for i in other_not_in_self.index:
-            for j in all_metrics:
-                other_not_in_self.at[i, j] = 0
-            # a value of R indicates that the node exists in other, but not self
-            other_not_in_self.at[i, "_missing_node"] = "R"
+        # it's a missing node in self)
+        # replaces individual metric assignments with np.zeros
+        for j in all_metrics:
+            other_not_in_self[j] = np.zeros(onis_len)
 
-        # append missing rows (nodes that exist in other, but not self) to self's
+        # append missing rows (nodes that exist in other, but not in self) to self's
         # dataframe
-        self.dataframe = self.dataframe.append(other_not_in_self, sort=True)
+        self.dataframe = pd.concat(
+            [self.dataframe, other_not_in_self], axis=0, sort=True
+        )
 
         return self
 
