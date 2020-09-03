@@ -761,9 +761,9 @@ class GraphFrame:
         )
 
         # make two 2D nparrays arrays with two columns:
-        # the hashed value of a node and a numerical index
+        # 1) the hashed value of a node and 2) a numerical index
         # Many operations are stacked here to reduce the need for storing
-        # large intermedary datasets
+        # large intermediary datasets
         self_hsh_ndx = np.vstack(
             (
                 np.array(
@@ -781,8 +781,8 @@ class GraphFrame:
             )
         ).T
 
-        # sort our 2d arrays by hashed node value so a binary search can be used
-        #  in the cython function fast_not_isin
+        # sort our 2D arrays by hashed node value so a binary search can be used
+        # in the cython function fast_not_isin
         self_hsh_ndx_sorted = self_hsh_ndx[self_hsh_ndx[:, 0].argsort()]
         other_hsh_ndx_sorted = other_hsh_ndx[other_hsh_ndx[:, 0].argsort()]
 
@@ -841,12 +841,12 @@ class GraphFrame:
             )
 
         # for nodes that only exist in other, set the metric to be 0 (since
-        # it's a missing node in sel)
+        # it's a missing node in self)
         # replaces individual metric assignments with np.zeros
         for j in all_metrics:
             other_not_in_self[j] = np.zeros(onis_len)
 
-        # append missing rows (nodes that exist in other, but not self) to self's
+        # append missing rows (nodes that exist in other, but not in self) to self's
         # dataframe
         self.dataframe = pd.concat(
             [self.dataframe, other_not_in_self], axis=0, sort=True
