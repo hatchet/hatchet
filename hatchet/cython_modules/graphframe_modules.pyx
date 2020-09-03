@@ -16,7 +16,7 @@ def add_L(const long snio_len, char[:] self_missing_node, const long[:] snio_ind
         self_missing_node[snio_indices[i]] = 'L'
 
 cpdef fast_not_isin(const unsigned long long[:,:] arr1, const unsigned long long[:,:] arr2, const long arr1_len, const long arr2_len):
-    """Check if elements in arr1 exists in arr2.
+    """Check if elements in arr1 exist in arr2.
 
     A fast check to see if each element in arr1 exists in arr2. This returns a
     vector mask equivalent to what the operation ~df.isin( ... ) would return.
