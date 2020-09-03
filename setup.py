@@ -40,11 +40,11 @@ setup(
     ext_modules=[
         Extension(
             "hatchet.cython_modules.libs.subtract_metrics",
-            ["hatchet/cython_modules/subtract_metrics.c"]
+            ["hatchet/cython_modules/subtract_metrics.c"],
         ),
         Extension(
             "hatchet.cython_modules.libs.graphframe_modules",
-            ["hatchet/cython_modules/graphframe_modules.c"]
+            ["hatchet/cython_modules/graphframe_modules.c"],
         ),
     ],
 )

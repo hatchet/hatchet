@@ -11,6 +11,7 @@ import traceback
 
 import numpy as np
 import pandas as pd
+
 # import modin.pandas as pd
 import multiprocessing as mp
 import multiprocessing.sharedctypes
@@ -210,7 +211,6 @@ class HPCToolkitReader:
         # if number of threads per rank is 1, we do not need to keep the thread ID column
         if self.num_threads_per_rank == 1:
             del self.df_metrics["thread"]
-
 
         # used to speedup parse_xml_node
         self.np_metrics = self.df_metrics[self.metric_columns].values
