@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 import os
+import sys
 import shutil
 import struct
 from glob import glob
@@ -86,6 +87,23 @@ def osu_allgather_hpct_db(data_dir, tmpdir):
 
 
 @pytest.fixture
+def hatchet_cycle_pstats(data_dir, tmpdir):
+    """Builds a temporary directory containing the pstats from a profile of the hpctoolkit_reader function."""
+    cprof_pstats_dir = os.path.join(data_dir, "cprofile-hatchet-pstats")
+    if sys.version_info[0] == 2:
+        cprof_pstats_file = os.path.join(cprof_pstats_dir, "cprofile-cycle-py2.pstats")
+
+        shutil.copy(cprof_pstats_file, str(tmpdir))
+        tmpfile = os.path.join(str(tmpdir), "cprofile-cycle-py2.pstats")
+    else:
+        cprof_pstats_file = os.path.join(cprof_pstats_dir, "cprofile-cycle.pstats")
+        shutil.copy(cprof_pstats_file, str(tmpdir))
+        tmpfile = os.path.join(str(tmpdir), "cprofile-cycle.pstats")
+
+    return tmpfile
+
+
+@pytest.fixture
 def calc_pi_caliper_json(data_dir, tmpdir):
     """Builds a temporary directory containing the calc-pi JSON file."""
     cali_json_dir = os.path.join(data_dir, "caliper-cpi-json")
@@ -135,7 +153,7 @@ def calc_pi_callgrind_dot(data_dir, tmpdir):
 
 @pytest.fixture
 def mock_graph_literal():
-    """ Creates a mock tree
+    """Creates a mock tree
 
     Metasyntactic variables: https://www.ietf.org/rfc/rfc3092.txt
     """

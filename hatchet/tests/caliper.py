@@ -133,11 +133,8 @@ def test_filter_squash_unify_caliper_data(lulesh_caliper_json):
     gf1.dataframe.set_index(gf1_index_names, inplace=True)
     gf2.dataframe.set_index(gf2_index_names, inplace=True)
 
-    filter_gf1 = gf1.filter(lambda x: x["name"].startswith("Calc"))
-    filter_gf2 = gf2.filter(lambda x: x["name"].startswith("Calc"))
-
-    squash_gf1 = filter_gf1.squash()
-    squash_gf2 = filter_gf2.squash()
+    squash_gf1 = gf1.filter(lambda x: x["name"].startswith("Calc"))
+    squash_gf2 = gf2.filter(lambda x: x["name"].startswith("Calc"))
 
     squash_gf1.unify(squash_gf2)
 
@@ -191,3 +188,11 @@ def test_tree(lulesh_caliper_json):
     )
     assert "662712.000 EvalEOSForElems" in output
     assert "2895319.000 LagrangeNodal" in output
+
+
+def test_graphframe_to_literal(lulesh_caliper_json):
+    """Sanity test a GraphFrame object with known data."""
+    gf = GraphFrame.from_caliper_json(str(lulesh_caliper_json))
+    graph_literal = gf.to_literal()
+
+    assert len(graph_literal) == len(gf.graph.roots)

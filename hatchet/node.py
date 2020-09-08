@@ -219,7 +219,10 @@ In the above examples, the 'a' represents a Node with its
 
         def _from_lists(lists, parent):
             if isinstance(lists, (tuple, list)):
-                node = Node(Frame(name=lists[0]))
+                if isinstance(lists[0], Node):
+                    node = lists[0]
+                elif isinstance(lists[0], str):
+                    node = Node(Frame(name=lists[0]))
                 children = lists[1:]
                 for val in children:
                     _ = _from_lists(val, node)

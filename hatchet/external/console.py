@@ -29,7 +29,7 @@
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
 
-import hatchet
+from hatchet.version import __version__
 
 
 class ConsoleRenderer:
@@ -37,6 +37,7 @@ class ConsoleRenderer:
         self.unicode = unicode
         self.color = color
         self.colors = self.colors_enabled if color else self.colors_disabled
+        self.visited = []
 
     def render(self, roots, dataframe, **kwargs):
         result = self.render_preamble()
@@ -85,9 +86,7 @@ class ConsoleRenderer:
             r"   / /_  ____ _/ /______/ /_  ___  / /_",
             r"  / __ \/ __ `/ __/ ___/ __ \/ _ \/ __/",
             r" / / / / /_/ / /_/ /__/ / / /  __/ /_  ",
-            r"/_/ /_/\__,_/\__/\___/_/ /_/\___/\__/  {:>2}".format(
-                "v" + hatchet.__version__
-            ),
+            r"/_/ /_/\__,_/\__/\___/_/ /_/\___/\__/  {:>2}".format("v" + __version__),
             r"",
             r"",
         ]
@@ -198,20 +197,24 @@ class ConsoleRenderer:
             else:
                 indents = {"├": u"|- ", "│": u"|  ", "└": u"`- ", " ": u"   "}
 
-            sorted_children = sorted(node.children, key=lambda n: n.frame)
-            if sorted_children:
-                last_child = sorted_children[-1]
+            # ensures that we never revisit nodes in the case of
+            # large complex graphs
+            if node not in self.visited:
+                self.visited.append(node)
+                sorted_children = sorted(node.children, key=lambda n: n.frame)
+                if sorted_children:
+                    last_child = sorted_children[-1]
 
-            for child in sorted_children:
-                if child is not last_child:
-                    c_indent = child_indent + indents["├"]
-                    cc_indent = child_indent + indents["│"]
-                else:
-                    c_indent = child_indent + indents["└"]
-                    cc_indent = child_indent + indents[" "]
-                result += self.render_frame(
-                    child, dataframe, indent=c_indent, child_indent=cc_indent
-                )
+                for child in sorted_children:
+                    if child is not last_child:
+                        c_indent = child_indent + indents["├"]
+                        cc_indent = child_indent + indents["│"]
+                    else:
+                        c_indent = child_indent + indents["└"]
+                        cc_indent = child_indent + indents[" "]
+                    result += self.render_frame(
+                        child, dataframe, indent=c_indent, child_indent=cc_indent
+                    )
         else:
             result = ""
             indents = {"├": u"", "│": u"", "└": u"", " ": u""}

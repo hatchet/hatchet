@@ -20,22 +20,27 @@ def trees_to_dot(roots, dataframe, metric, name, rank, thread, threshold):
     all_edges = ""
 
     # call to_dot for each root in the graph
+    visited = []
     for root in roots:
-        (nodes, edges) = to_dot(root, dataframe, metric, name, rank, thread, threshold)
+        (nodes, edges) = to_dot(
+            root, dataframe, metric, name, rank, thread, threshold, visited
+        )
         all_nodes += nodes
         all_edges += edges
 
     text += all_nodes + "\n" + all_edges + "\n}\n"
+
     return text
 
 
-def to_dot(hnode, dataframe, metric, name, rank, thread, threshold):
+def to_dot(hnode, dataframe, metric, name, rank, thread, threshold, visited):
     """Write to graphviz dot format."""
     colormap = matplotlib.cm.Reds
     min_time = dataframe[metric].min()
     max_time = dataframe[metric].max()
 
     def add_nodes_and_edges(hnode):
+
         # set dataframe index based on if rank is a part of the index
         if "rank" in dataframe.index.names and "thread" in dataframe.index.names:
             df_index = (hnode, rank, thread)
@@ -54,7 +59,7 @@ def to_dot(hnode, dataframe, metric, name, rank, thread, threshold):
         color = matplotlib.colors.rgb2hex(colormap(weight))
 
         # only display nodes whose metric is greater than some threshold
-        if node_time >= threshold * max_time:
+        if (node_time >= threshold * max_time) and (hnode not in visited):
             node_string = '"{0}" [color="{1}", label="{2}" shape=oval];\n'.format(
                 node_id, color, node_name
             )
@@ -80,12 +85,12 @@ def to_dot(hnode, dataframe, metric, name, rank, thread, threshold):
                 if child_time >= threshold * max_time:
                     children.append(child)
 
+            visited.append(hnode)
             for child in children:
                 # add edges
                 child_id = child._hatchet_nid
 
                 edge_string += '"{0}" -> "{1}";\n'.format(node_id, child_id)
-
                 (nodes, edges) = add_nodes_and_edges(child)
                 node_string += nodes
                 edge_string += edges

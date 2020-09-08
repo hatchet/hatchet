@@ -25,8 +25,14 @@ directory to your `PYTHONPATH`.
 
 See the [Getting Started](https://hatchet.readthedocs.io/en/latest/getting_started.html) page for basic examples and usage. Full documentation is available in the [User Guide](https://hatchet.readthedocs.io/en/latest/user_guide.html).
 
-Examples of performance analysis using hatchet are available [here](https://hatchet.readthedocs.io/en/latest/advanced_examples.html).
+Examples of performance analysis using hatchet are available [here](https://hatchet.readthedocs.io/en/latest/analysis_examples.html).
 
+### Contributing
+
+Hatchet is an open source project. We welcome contributions via pull requests,
+and questions, feature requests, or bug reports via issues.
+
+You can also reach the hatchet developers by email at: [hatchet-help@listserv.umd.edu](mailto:hatchet-help@listserv.umd.edu).
 
 ### Authors
 

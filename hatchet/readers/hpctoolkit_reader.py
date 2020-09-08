@@ -21,7 +21,7 @@ except ImportError:
 
 # cython imports
 try:
-    import hatchet.cython_modules.libs.subtract_metrics as smc
+    import hatchet.cython_modules.libs.reader_modules as _crm
 except ImportError:
     print("-" * 80)
     print(
@@ -375,7 +375,7 @@ class HPCToolkitReader:
             # metric values from the parent's values
             for i, column in enumerate(self.metric_columns):
                 if "(inc)" not in column:
-                    smc.subtract_exclusive_metric_vals(
+                    _crm.subtract_exclusive_metric_vals(
                         nid,
                         parent_nid,
                         self.np_metrics.T[i],
