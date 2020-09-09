@@ -289,14 +289,12 @@ class GraphFrame:
         index_names = dataframe_copy.index.names
         dataframe_copy.reset_index(inplace=True)
 
-        dataframe_copy["node"] = dataframe_copy["node"].apply(
-            lambda x: node_clone[x])
+        dataframe_copy["node"] = dataframe_copy["node"].apply(lambda x: node_clone[x])
 
         dataframe_copy.set_index(index_names, inplace=True)
 
         return GraphFrame(
-            graph_copy, dataframe_copy, list(
-                self.exc_metrics), list(self.inc_metrics)
+            graph_copy, dataframe_copy, list(self.exc_metrics), list(self.inc_metrics)
         )
 
     def drop_index_levels(self, function=np.mean):
@@ -341,8 +339,7 @@ class GraphFrame:
                 query = QueryMatcher(filter_obj)
             query_matches = query.apply(self)
             match_set = list(set().union(*query_matches))
-            filtered_df = dataframe_copy.loc[dataframe_copy["node"].isin(
-                match_set)]
+            filtered_df = dataframe_copy.loc[dataframe_copy["node"].isin(match_set)]
         else:
             raise InvalidFilter(
                 "The argument passed to filter must be a callable, a query path list, or a QueryMatcher object."
@@ -404,8 +401,7 @@ class GraphFrame:
             if node not in visited:
                 visited.add(node)
                 for child in node.children:
-                    transitive |= rewire(
-                        child, new_node or new_parent, visited)
+                    transitive |= rewire(child, new_node or new_parent, visited)
 
             if new_node:
                 # since new_node exists in the squashed graph, we only
@@ -529,16 +525,14 @@ class GraphFrame:
                     self.dataframe.index, pd.core.index.MultiIndex
                 )
             except AttributeError:
-                is_index_or_multiindex = isinstance(
-                    self.dataframe.index, pd.MultiIndex)
+                is_index_or_multiindex = isinstance(self.dataframe.index, pd.MultiIndex)
 
             if is_index_or_multiindex:
                 for i in self.dataframe.loc[(node), out_columns].index.unique():
                     # TODO: if you take the list constructor away from the
                     # TODO: assignment below, this assignment gives NaNs. Why?
                     self.dataframe.loc[(node, i), out_columns] = list(
-                        function(
-                            self.dataframe.loc[(subgraph_nodes, i), columns])
+                        function(self.dataframe.loc[(subgraph_nodes, i), columns])
                     )
             else:
                 # TODO: if you take the list constructor away from the
@@ -574,8 +568,7 @@ class GraphFrame:
         self.dataframe.reset_index(inplace=True)
         other.dataframe.reset_index(inplace=True)
 
-        self.dataframe["node"] = self.dataframe["node"].apply(
-            lambda x: node_map[id(x)])
+        self.dataframe["node"] = self.dataframe["node"].apply(lambda x: node_map[id(x)])
         other.dataframe["node"] = other.dataframe["node"].apply(
             lambda x: node_map[id(x)]
         )
@@ -666,8 +659,7 @@ class GraphFrame:
             for hnode in root.traverse():
                 callpath = hnode.path()
                 for i in range(0, len(callpath) - 1):
-                    folded_stack = folded_stack + \
-                        callpath[i].attrs[name] + "; "
+                    folded_stack = folded_stack + callpath[i].attrs[name] + "; "
                 folded_stack = folded_stack + callpath[-1].attrs[name] + " "
 
                 # set dataframe index based on if rank and thread are part of the index
@@ -684,8 +676,7 @@ class GraphFrame:
                     df_index = hnode
 
                 folded_stack = (
-                    folded_stack +
-                    str(self.dataframe.loc[df_index, metric]) + "\n"
+                    folded_stack + str(self.dataframe.loc[df_index, metric]) + "\n"
                 )
 
         return folded_stack
@@ -770,8 +761,7 @@ class GraphFrame:
             )
         )
 
-        self.dataframe.update(
-            op(other.dataframe[all_metrics], *args, **kwargs))
+        self.dataframe.update(op(other.dataframe[all_metrics], *args, **kwargs))
 
         return self
 
@@ -960,8 +950,7 @@ class GraphFrame:
         for k, v in groupby_obj.groups.items():
             node_name = k
             node_type = agg_df.index.name
-            super_node = Node(
-                Frame({"name": node_name, "type": node_type}), None, nid)
+            super_node = Node(Frame({"name": node_name, "type": node_type}), None, nid)
             n = {"node": super_node, "nid": nid, "name": node_name}
             node_dicts.append(n)
             nid += 1

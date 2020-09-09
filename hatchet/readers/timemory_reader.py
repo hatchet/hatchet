@@ -11,7 +11,6 @@ from ..node import Node
 from ..graph import Graph
 from ..frame import Frame
 from ..util.timer import Timer
-from ..util.config import dot_keywords
 
 
 class TimemoryReader:
@@ -131,7 +130,7 @@ class TimemoryReader:
             if _rank is not None:
                 _keys["rank"] = _rank
             _keys["tid"] = _dict["inclusive"]["tid"]
-            _labels = None if not "type" in _prop else _prop["type"]
+            _labels = None if "type" not in _prop else _prop["type"]
             # if the data is multi-dimensional
             _md = True if not isinstance(_labels, str) else False
 
@@ -171,7 +170,6 @@ class TimemoryReader:
             is a dummy for the root or is used for sychronizing data
             between multiple threads
             """
-            _stats = _dict["inclusive"]["stats"]
             _nchild = len(_dict["children"])
             if _nchild == 0:
                 print("Skipping {}...".format(_key))
@@ -194,7 +192,6 @@ class TimemoryReader:
             based on whether distributed memory parallelism (DMP)
             (e.g. MPI, UPC++) was supported and active
             """
-            _n = len(_itr)
             for i in range(len(_itr)):
                 _dict = _itr[i]
                 _idx = None if _offset is None else i + _offset
@@ -214,18 +211,18 @@ class TimemoryReader:
             both UPC++ and MPI), the number of threads in
             the application, and the total number of processes
             """
-            if not _key in _dict:
+            if _key not in _dict:
                 _dict[_key] = {}
             try:
                 _dict[_key]["properties"] = remove_keys(
                     itr["properties"], "cereal_class_version")
-            except:
+            except KeyError:
                 pass
             for k in ("type", "description", "unit_value",
                       "unit_repr", "thread_scope_only",
                       "mpi_size", "upcxx_size",
                       "thread_count", "process_count"):
-                if not k in _dict[_key] or _dict[_key][k] is None:
+                if k not in _dict[_key] or _dict[_key][k] is None:
                     if k in itr:
                         _dict[_key][k] = itr[k]
                     else:
