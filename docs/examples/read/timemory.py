@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-import sys
 import argparse
 import hatchet as ht
 
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("-m", "--metric", default="sum", type=str,
-                        help="Metric to display")
+    parser.add_argument(
+        "-m", "--metric", default="sum", type=str, help="Metric to display"
+    )
     args, argv = parser.parse_known_args()
     files = argv[:]
     if not files:
