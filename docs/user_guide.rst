@@ -185,12 +185,28 @@ node, use a tuple with the first element being the wildcard and the second eleme
 To use a default value for either the wildcard or the filter, simply provide the other part of the abstract
 node on its own (no need for a tuple). The user **must** provide at least one of the parts of the above
 definition of an abstract node. For more information on Hatchet's graph query language, including how
-to use the low-level API, look at **LINK FOR THE QUERY LANGUAGE PAGE HERE**.
+to use the low-level API, look at the :doc:`expanded query language documentation <./query_language_guide>`.
 
-The query language example below looks for a path that matches first a single node with name
+.. image:: images/sample-graph.png
+   :scale: 30 %
+   :align: right
+
+The query language example below looks for all paths that match first a single node with name
 `solvers`, followed by 0 or more nodes with an inclusive time greater than 10,
 followed by a single node with name that starts with `p` and ends in an integer
-and has an inclusive time greater than or equal to 10.
+and has an inclusive time greater than or equal to 10. When applied to the graph shown on the right,
+the returned GraphFrame contains the nodes shown in the table on the right.
+
+..
+    TODO
+    This bar is added to try to force the sample-graph.png and
+    query-dataframe.png images to be placed one above the other.
+    If anyone can find a better way to do this, please change it.
+|
+
+.. image:: images/query-dataframe.png
+   :scale: 35 %
+   :align: right
 
 Filter is one of the operations that leads to the graph object and DataFrame
 object becoming inconsistent. After a filter operation, there are nodes in the
@@ -199,10 +215,6 @@ Typically, the user will perform a squash on the GraphFrame after a filter
 operation to make the graph and DataFrame objects consistent again. This can be done
 either by manually calling the ``squash`` function on the new GraphFrame or by
 setting the ``squash`` parameter of the ``filter`` function to ``True``.
-
-.. image:: images/query-dataframe.png
-   :scale: 35 %
-   :align: right
 
 .. code-block:: python
 
