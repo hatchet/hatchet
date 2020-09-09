@@ -68,11 +68,13 @@ class TimemoryReader:
             which is typically in the form <FUNC>@<FILE>:<LINE>/...
             """
             _name = _prop["properties"]["id"]
-            _keys = {"name": _prefix,
-                     "metric": _name,
-                     "function": "null",
-                     "file": "null",
-                     "line": "null"}
+            _keys = {
+                "name": _prefix,
+                "metric": _name,
+                "function": "null",
+                "file": "null",
+                "line": "null",
+            }
             _pre = _prefix.split("/")
             if len(_pre) > 0:
                 _func = _pre[:1][0]
@@ -94,12 +96,10 @@ class TimemoryReader:
                 _ret = [_obj]
             elif isinstance(_obj, dict):
                 for _key, _item in _obj.items():
-                    _ret.append(_key.strip().replace(
-                        " ", "-").replace("_", "-"))
+                    _ret.append(_key.strip().replace(" ", "-").replace("_", "-"))
             elif isinstance(_obj, list) or isinstance(_obj, tuple):
                 for _item in _obj:
-                    _ret.append(_item.strip().replace(
-                        " ", "-").replace("_", "-"))
+                    _ret.append(_item.strip().replace(" ", "-").replace("_", "-"))
             return _ret
 
         def get_md_entries(_obj, _suffix):
@@ -215,13 +215,21 @@ class TimemoryReader:
                 _dict[_key] = {}
             try:
                 _dict[_key]["properties"] = remove_keys(
-                    itr["properties"], "cereal_class_version")
+                    itr["properties"], "cereal_class_version"
+                )
             except KeyError:
                 pass
-            for k in ("type", "description", "unit_value",
-                      "unit_repr", "thread_scope_only",
-                      "mpi_size", "upcxx_size",
-                      "thread_count", "process_count"):
+            for k in (
+                "type",
+                "description",
+                "unit_value",
+                "unit_repr",
+                "thread_scope_only",
+                "mpi_size",
+                "upcxx_size",
+                "thread_count",
+                "process_count",
+            ):
                 if k not in _dict[_key] or _dict[_key][k] is None:
                     if k in itr:
                         _dict[_key][k] = itr[k]
