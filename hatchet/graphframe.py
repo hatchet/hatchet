@@ -66,10 +66,10 @@ class GraphFrame:
         if dataframe is None:
             raise ValueError("GraphFrame() requires a DataFrame")
 
-        if "node" not in list(dataframe.index.names):
-            raise ValueError(
-                "DataFrames passed to GraphFrame() must have an index called 'node'."
-            )
+#        if "node" not in list(dataframe.index.names):
+#            raise ValueError(
+#                "DataFrames passed to GraphFrame() must have an index called 'node'."
+#            )
 
         self.graph = graph
         self.dataframe = dataframe
@@ -117,6 +117,19 @@ class GraphFrame:
         from .readers.caliper_reader import CaliperReader
 
         return CaliperReader(filename_or_stream).read()
+
+    @staticmethod
+    def from_caliper_db(json_str):
+        """Read in a Caliper `cali-query` JSON-split file or an open file object.
+
+        Args:
+            filename_or_stream (str or file-like): name of a Caliper JSON-split
+                output file, or an open file object to read one
+        """
+        # import this lazily to avoid circular dependencies
+        from .readers.caliper_db_reader import CaliperDBReader
+
+        return CaliperDBReader(json_str).read()
 
     @staticmethod
     def from_gprof_dot(filename):
