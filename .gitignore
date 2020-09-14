@@ -4,6 +4,4 @@
 hatchet/cython_modules/libs/subtract_metrics.*.so
 .ipynb_checkpoints
 docs/_build
-/build
-/dist
-/hatchet.egg-info
+
