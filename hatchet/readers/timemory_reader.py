@@ -70,8 +70,7 @@ class TimemoryReader:
             _name = _prop["properties"]["id"]
             _keys = {
                 "name": _prefix,
-                "metric": _name,
-                "function": "null",
+                "type": "region",
                 "file": "null",
                 "line": "null",
             }
@@ -83,8 +82,8 @@ class TimemoryReader:
                 if len(_func) == 2:
                     _func = [_func[0]] + _func[1].split(":")
                 _keys["name"] = "/".join([_func[0]] + _tail)
-                _keys["function"] = _func[0]
                 if len(_func) == 3:
+                    _keys["type"] = "function"
                     _keys["file"] = _func[1]
                     _keys["line"] = _func[2]
             return _keys
@@ -118,18 +117,25 @@ class TimemoryReader:
             # If the hash is zero, that indicates that the node
             # is a dummy for the root or is used for sychronizing data
             # between multiple threads
-            if _dict["inclusive"]["hash"] == 0:
+            if _dict["node"]["hash"] == 0:
                 if "children" in _dict:
                     for _child in _dict["children"]:
                         parse_node(_key, _child, _hparent, _rank)
                 return
 
             _prop = self.properties[_key]
-            _keys = get_keys(_prop, _dict["inclusive"]["prefix"])
-            _keys["count"] = _dict["inclusive"]["stats"]["count"]
+            _keys = get_keys(_prop, _dict["node"]["prefix"])
             if _rank is not None:
-                _keys["rank"] = _rank
-            _keys["tid"] = _dict["inclusive"]["tid"]
+                _keys["nid"] = _rank
+            _extra = {}
+            _extra["count"] = _dict["node"]["inclusive"]["entry"]["laps"]
+            _extra["tid"] = _dict["node"]["tid"]
+            _extra["pid"] = _dict["node"]["pid"]
+            # aggregated results have a list of threads and processes
+            if len(_extra["tid"]) == 1:
+                _extra["tid"] = _extra["tid"][0]
+            if len(_extra["pid"]) == 1:
+                _extra["pid"] = _extra["pid"][0]
             _labels = None if "type" not in _prop else _prop["type"]
             # if the data is multi-dimensional
             _md = True if not isinstance(_labels, str) else False
@@ -137,8 +143,8 @@ class TimemoryReader:
             _hnode = Node(Frame(_keys), _hparent)
 
             _remove = ["cereal_class_version", "count"]
-            _inc_stats = remove_keys(_dict["inclusive"]["stats"], _remove)
-            _exc_stats = remove_keys(_dict["exclusive"]["stats"], _remove)
+            _inc_stats = remove_keys(_dict["node"]["inclusive"]["stats"], _remove)
+            _exc_stats = remove_keys(_dict["node"]["exclusive"]["stats"], _remove)
 
             if _md:
                 _suffix = get_md_suffix(_labels)
@@ -148,11 +154,12 @@ class TimemoryReader:
             _inc_stats = patch_keys(_inc_stats, ".inc")
             _exc_stats = patch_keys(_exc_stats, "")
 
+            add_metrics(_extra)
             add_metrics(_exc_stats)
             add_metrics(_inc_stats)
 
             node_dicts.append(
-                dict({"node": _hnode, **_keys}, **_exc_stats, **_inc_stats)
+                dict({"node": _hnode, **_keys}, **_extra, **_exc_stats, **_inc_stats)
             )
 
             if _hparent is None:
@@ -179,7 +186,7 @@ class TimemoryReader:
             else:
                 print("Adding {}...".format(_key))
 
-            if _dict["inclusive"]["hash"] > 0:
+            if _dict["node"]["hash"] > 0:
                 parse_node(_key, _dict, None, _rank)
             elif "children" in _dict:
                 # call for all children
