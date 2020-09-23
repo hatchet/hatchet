@@ -31,6 +31,8 @@
 
 from hatchet.version import __version__
 
+import numpy as np
+
 
 class ConsoleRenderer:
     def __init__(self, unicode=False, color=False):
@@ -59,12 +61,22 @@ class ConsoleRenderer:
 
         if self.invert_colormap:
             self.colors.colormap.reverse()
+
+        # grab the min and max metric value, ignoring inf and nan values
         if "rank" in dataframe.index.names:
-            self.max_metric = (dataframe.xs(self.rank, level=1))[self.metric].max()
-            self.min_metric = (dataframe.xs(self.rank, level=1))[self.metric].min()
+            self.max_metric = (
+                dataframe.replace([np.inf, -np.inf], np.nan).xs(self.rank, level=1)
+            )[self.metric].max()
+            self.min_metric = (
+                dataframe.replace([np.inf, -np.inf], np.nan).xs(self.rank, level=1)
+            )[self.metric].min()
         else:
-            self.max_metric = dataframe[self.metric].max()
-            self.min_metric = dataframe[self.metric].min()
+            self.max_metric = dataframe.replace([np.inf, -np.inf], np.nan)[
+                self.metric
+            ].max()
+            self.min_metric = dataframe.replace([np.inf, -np.inf], np.nan)[
+                self.metric
+            ].min()
 
         if self.unicode:
             self.lr_arrows = {"◀": u"◀ ", "▶": u"▶ "}
@@ -239,8 +251,10 @@ class ConsoleRenderer:
             return self.colors.colormap[3]
         elif proportion_of_total > 0.1:
             return self.colors.colormap[4]
-        else:
+        elif proportion_of_total >= 0:
             return self.colors.colormap[5]
+        else:
+            return self.colors.blue
 
     def _ansi_color_for_name(self, node_name):
         if self.highlight is False:
@@ -261,6 +275,9 @@ class ConsoleRenderer:
             "\033[38;5;34m",  # light green
             "\033[38;5;22m",  # dark green
         ]
+
+        blue = "\033[34m"
+        cyan = "\033[36m"
 
         bg_white_255 = "\033[48;5;246m"
         dark_gray_255 = "\033[38;5;232m"
