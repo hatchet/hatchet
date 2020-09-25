@@ -108,13 +108,14 @@ class CaliperReader:
                 self.json_cols[idx] = "rank"
             if item == "module#cali.sampler.pc":
                 self.json_cols[idx] = "module"
-            if item == "sum#time.duration" or item == "sum#avg#sum#time.duration":
+            if item == "sum#time.duration":
                 self.json_cols[idx] = "time"
-            if (
-                item == "inclusive#sum#time.duration"
-                or item == "sum#avg#inclusive#sum#time.duration"
-            ):
+            if item == "inclusive#sum#time.duration":
                 self.json_cols[idx] = "time (inc)"
+            if item == "sum#avg#sum#time.duration":
+                self.json_cols[idx] = "avg time"
+            if item == "sum#avg#inclusive#sum#time.duration":
+                self.json_cols[idx] = "avg time (inc)"
 
         # make list of metric columns
         self.metric_columns = []
