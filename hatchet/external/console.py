@@ -181,7 +181,7 @@ class ConsoleRenderer:
 
             if "_missing_node" in dataframe.columns:
                 left_or_right = dataframe.loc[df_index, "_missing_node"]
-                if left_or_right == "":
+                if left_or_right == 0:
                     lr_decorator = ""
                 elif left_or_right == "L":
                     lr_decorator = u" {c.left}{decorator}{c.end}".format(
