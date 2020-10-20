@@ -7,6 +7,8 @@
 
 from __future__ import division
 
+import os
+
 import pytest
 
 import numpy as np
@@ -1155,3 +1157,17 @@ def test_inc_metric_only(mock_graph_inc_metric_only):
     assert all(filt_gf.dataframe["time (inc)"].values == [130, 55, 55])
     assert gf.inc_metrics == filt_gf.inc_metrics
     assert gf.exc_metrics == filt_gf.exc_metrics
+
+
+def test_hdf_load_store(mock_graph_literal):
+    if os.path.exists("test_gframe.hdf"):
+        os.remove("test_gframe.hdf")
+    gf_orig = GraphFrame.from_literal(mock_graph_literal)
+    gf_orig.to_hdf("test_gframe.hdf", "test_key")
+    gf_loaded = GraphFrame.from_hdf("test_gframe.hdf", "test_key")
+
+    assert gf_orig.dataframe.equals(gf_loaded.dataframe)
+    assert gf_orig.graph == gf_loaded.graph
+
+    if os.path.exists("test_gframe.hdf"):
+        os.remove("test_gframe.hdf")

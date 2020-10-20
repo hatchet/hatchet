@@ -258,6 +258,28 @@ class GraphFrame:
         gf.update_inclusive_columns()
         return gf
 
+    @staticmethod
+    def from_hdf(filename, key=None):
+        # import this lazily to avoid circular dependencies
+        from .readers.hdf5_reader import HDF5Reader
+
+        return HDF5Reader(filename).read(key=key)
+
+    def to_hdf(
+        self,
+        filename,
+        key="hatchet_graphframe",
+        complevel=None,
+        complib="zlib",
+        nan_rep=None,
+    ):
+        # import this lazily to avoid circular dependencies
+        from .writers.hdf5_writer import HDF5Writer
+
+        HDF5Writer(filename).write(
+            self, key=key, complevel=complevel, complib=complib, nan_rep=nan_rep
+        )
+
     def copy(self):
         """Return a shallow copy of the graphframe.
 
