@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+from itertools import groupby
 from numbers import Real
 import re
 import pandas as pd
@@ -42,10 +43,10 @@ class QueryMatcher:
                 first_no_drop_indices = {"val": True}
 
                 def filter_series(df_row):
-                    node = df_row.name
                     matches = True
                     for k, v in attr_filter.items():
                         if k == "depth":
+                            node = df_row.name
                             if isinstance(v, str) and v.lower().startswith(compops):
                                 matches = matches and eval("{} {}".format(node._depth, v))
                             elif isinstance(v, Real):
@@ -58,6 +59,7 @@ class QueryMatcher:
                                 )
                             continue
                         if k == "node_id":
+                            node = df_row.name
                             if isinstance(v, str) and v.lower().startswith(compops):
                                 matches = matches and eval("{} {}".format(node._hatchet_nid, v))
                             elif isinstance(v, Real):
@@ -463,6 +465,7 @@ class QueryMatcher:
                 for s in sub_match:
                     if s is not None:
                         new_matches.append(m + s)
+                new_matches = [l for l, _ in groupby(new_matches)]
             # Overwrite the old matches with the updated matches
             matches = new_matches
             # If all the existing partial matches were not able to be
