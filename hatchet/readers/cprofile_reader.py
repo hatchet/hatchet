@@ -57,9 +57,7 @@ class CProfileReader:
         dataframe if it does not exist.
         """
         u_fn_name = "{}:{}:{}".format(
-            fn_name,
-            fn_data[NameData.FILE].split("/")[-1],
-            fn_data[NameData.LINE],
+            fn_name, fn_data[NameData.FILE].split("/")[-1], fn_data[NameData.LINE],
         )
         fn_hnode = self.name_to_hnode.get(u_fn_name)
 

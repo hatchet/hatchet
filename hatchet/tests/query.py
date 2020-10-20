@@ -496,141 +496,54 @@ def test_apply_indices(calc_pi_hpct_db):
     gf.drop_index_levels()
     assert query.apply(gf) == matches
 
+
 def test_high_level_depth(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
-    query = QueryMatcher([
-        ("*", {"depth": 1})
-    ])
+    query = QueryMatcher([("*", {"depth": 1})])
     roots = gf.graph.roots
     matches = [[c] for r in roots for c in r.children]
     assert query.apply(gf) == matches
 
-    query = QueryMatcher([
-        ("*", {"depth": "<= 2"})
-    ])
+    query = QueryMatcher([("*", {"depth": "<= 2"})])
     matches = [
-        [
-            roots[0],
-            roots[0].children[0],
-            roots[0].children[0].children[0]
-        ],
-        [
-            roots[0].children[0],
-            roots[0].children[0].children[0]
-        ],
-        [
-            roots[0].children[0].children[0]
-        ],
-        [
-            roots[0],
-            roots[0].children[0],
-            roots[0].children[0].children[1]
-        ],
-        [
-            roots[0].children[0],
-            roots[0].children[0].children[1]
-        ],
-        [
-            roots[0].children[0].children[1]
-        ],
-        [
-            roots[0],
-            roots[0].children[1],
-            roots[0].children[1].children[0]
-        ],
-        [
-            roots[0].children[1],
-            roots[0].children[1].children[0]
-        ],
-        [
-            roots[0].children[1].children[0]
-        ],
-        [
-            roots[0],
-            roots[0].children[2],
-            roots[0].children[2].children[0]
-        ],
-        [
-            roots[0].children[2],
-            roots[0].children[2].children[0]
-        ],
-        [
-            roots[0].children[2].children[0]
-        ],
-        [
-            roots[0],
-            roots[0].children[2],
-            roots[0].children[2].children[1]
-        ],
-        [
-            roots[0].children[2],
-            roots[0].children[2].children[1]
-        ],
-        [
-            roots[0].children[2].children[1]
-        ],
-        [
-            roots[1],
-            roots[1].children[0],
-            roots[1].children[0].children[0]
-        ],
-        [
-            roots[1].children[0],
-            roots[1].children[0].children[0]
-        ],
-        [
-            roots[1].children[0].children[0]
-        ],
-        [
-            roots[1],
-            roots[1].children[0],
-            roots[1].children[0].children[1]
-        ],
-        [
-            roots[1].children[0],
-            roots[1].children[0].children[1]
-        ],
-        [
-            roots[1].children[0].children[1]
-        ]
+        [roots[0], roots[0].children[0], roots[0].children[0].children[0]],
+        [roots[0].children[0], roots[0].children[0].children[0]],
+        [roots[0].children[0].children[0]],
+        [roots[0], roots[0].children[0], roots[0].children[0].children[1]],
+        [roots[0].children[0], roots[0].children[0].children[1]],
+        [roots[0].children[0].children[1]],
+        [roots[0], roots[0].children[1], roots[0].children[1].children[0]],
+        [roots[0].children[1], roots[0].children[1].children[0]],
+        [roots[0].children[1].children[0]],
+        [roots[0], roots[0].children[2], roots[0].children[2].children[0]],
+        [roots[0].children[2], roots[0].children[2].children[0]],
+        [roots[0].children[2].children[0]],
+        [roots[0], roots[0].children[2], roots[0].children[2].children[1]],
+        [roots[0].children[2], roots[0].children[2].children[1]],
+        [roots[0].children[2].children[1]],
+        [roots[1], roots[1].children[0], roots[1].children[0].children[0]],
+        [roots[1].children[0], roots[1].children[0].children[0]],
+        [roots[1].children[0].children[0]],
+        [roots[1], roots[1].children[0], roots[1].children[0].children[1]],
+        [roots[1].children[0], roots[1].children[0].children[1]],
+        [roots[1].children[0].children[1]],
     ]
     assert sorted(query.apply(gf)) == sorted(matches)
+
 
 def test_high_level_hatchet_nid(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
-    query = QueryMatcher([
-        ("*", {"node_id": ">= 20"})
-    ])
+    query = QueryMatcher([("*", {"node_id": ">= 20"})])
     root = gf.graph.roots[1]
     matches = [
-        [
-            root,
-            root.children[0],
-            root.children[0].children[0]
-        ],
-        [
-            root.children[0],
-            root.children[0].children[0]
-        ],
-        [
-            root.children[0].children[0]
-        ],
-        [
-            root,
-            root.children[0],
-            root.children[0].children[1]
-        ],
-        [
-            root.children[0],
-            root.children[0].children[1]
-        ],
-        [
-            root.children[0].children[1]
-        ]
+        [root, root.children[0], root.children[0].children[0]],
+        [root.children[0], root.children[0].children[0]],
+        [root.children[0].children[0]],
+        [root, root.children[0], root.children[0].children[1]],
+        [root.children[0], root.children[0].children[1]],
+        [root.children[0].children[1]],
     ]
     assert sorted(query.apply(gf)) == sorted(matches)
 
-    query = QueryMatcher([
-        {"node_id": 0}
-    ])
+    query = QueryMatcher([{"node_id": 0}])
     assert query.apply(gf) == [[gf.graph.roots[0]]]
