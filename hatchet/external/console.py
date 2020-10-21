@@ -89,6 +89,9 @@ class ConsoleRenderer:
         if self.color is True:
             result += self.render_legend()
 
+        if self.invert_colormap:
+            self.colors.colormap.reverse()
+
         return result
 
     # pylint: disable=W1401
