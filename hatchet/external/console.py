@@ -40,7 +40,6 @@ class ConsoleRenderer:
         self.color = color
         self.colors = self.colors_enabled if color else self.colors_disabled
         self.visited = []
-        self.last_invert_colormap_value = False
 
     def render(self, roots, dataframe, **kwargs):
         result = self.render_preamble()
@@ -60,8 +59,7 @@ class ConsoleRenderer:
         self.highlight = kwargs["highlight_name"]
         self.invert_colormap = kwargs["invert_colormap"]
 
-        if self.invert_colormap != self.last_invert_colormap_value:
-            self.last_invert_colormap_value = self.invert_colormap
+        if self.invert_colormap:
             self.colors.colormap.reverse()
 
         # grab the min and max metric value, ignoring inf and nan values
@@ -90,6 +88,9 @@ class ConsoleRenderer:
 
         if self.color is True:
             result += self.render_legend()
+
+        if self.invert_colormap:
+            self.colors.colormap.reverse()
 
         return result
 
