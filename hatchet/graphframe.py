@@ -137,8 +137,8 @@ class GraphFrame:
             dag_ldict = [
                 {
                     "name": "A",
-                    "metrics": {"time (inc)": 130.0, "time": 0.0},
                     "type": "function",
+                    "metrics": {"time (inc)": 130.0, "time": 0.0},
                     "children": [
                         {
                             "name": "B",
