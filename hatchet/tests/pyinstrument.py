@@ -1,7 +1,9 @@
-# Copyright 2017-2020 Lawrence Livermore National Security, LLC and other
-# Hatchet Project Developers. See the top-level LICENSE file for details.
+# Copyright 2020 University of Maryland and other Hatchet Project
+# Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
+
+import json
 
 import numpy as np
 
@@ -9,8 +11,52 @@ from hatchet import GraphFrame
 from hatchet.external.console import ConsoleRenderer
 
 
-def test_graphframe(pyinstrument_json_file):
-    gf = GraphFrame.from_pyinstrument(pyinstrument_json_file)
+def test_graphframe(hatchet_pyinstrument_json):
+    """Sanity test a GraphFrame object with known data."""
+
+    def test_children(child_dict, gf):
+
+        df = gf.dataframe.loc[
+            (gf.dataframe["file"] == child_dict["file_path_short"])
+            & (gf.dataframe["line"] == child_dict["line_no"])
+            & (gf.dataframe["name"] == child_dict["function"])
+            & (gf.dataframe["time (inc)"] == child_dict["time"])
+            & (gf.dataframe["is_application_code"] == child_dict["is_application_code"])
+        ]
+
+        assert len(df.index) == 1
+        assert df.index[0].frame["name"] == child_dict["function"]
+
+        child_number = 0
+        if "children" in child_dict:
+            for child in child_dict["children"]:
+                child_number += 1
+                test_children(child, gf)
+
+        assert len(df.index[0].children) == child_number
+
+    gf = GraphFrame.from_pyinstrument(str(hatchet_pyinstrument_json))
+
+    # Read from the input file.
+    graph_dict = []
+    with open(str(hatchet_pyinstrument_json)) as pyinstrument_json:
+        graph_dict = [json.load(pyinstrument_json)]
+
+    for i in range(len(graph_dict)):
+        for j in range(len(gf.graph.roots)):
+            # Roots should be the same.
+            assert (
+                graph_dict[i]["root_frame"]["function"]
+                == gf.graph.roots[j].frame["name"]
+            )
+
+        child_number = 0
+        if "children" in graph_dict[i]["root_frame"]:
+            for child in graph_dict[i]["root_frame"]["children"]:
+                child_number += 1
+                test_children(child, gf)
+        # Number of children should be the same.
+        assert len(gf.graph.roots[j].children) == child_number
 
     assert len(gf.dataframe.groupby("name")) == 44
 
@@ -27,8 +73,9 @@ def test_graphframe(pyinstrument_json_file):
             assert gf.dataframe[col].dtype == np.object
 
 
-def test_tree(pyinstrument_json_file):
-    gf = GraphFrame.from_pyinstrument(pyinstrument_json_file)
+def test_tree(hatchet_pyinstrument_json):
+    """Sanity test a GraphFrame object with known data."""
+    gf = GraphFrame.from_pyinstrument(str(hatchet_pyinstrument_json))
 
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
@@ -65,9 +112,9 @@ def test_tree(pyinstrument_json_file):
     assert "0.063 from_caliper_json hatchet/graphframe.py" in output
 
 
-def test_graphframe_to_literal(pyinstrument_json_file):
+def test_graphframe_to_literal(hatchet_pyinstrument_json):
     """Sanity test a GraphFrame object with known data."""
-    gf = GraphFrame.from_pyinstrument(pyinstrument_json_file)
+    gf = GraphFrame.from_pyinstrument(str(hatchet_pyinstrument_json))
     graph_literal = gf.to_literal()
 
     assert len(graph_literal) == len(gf.graph.roots)

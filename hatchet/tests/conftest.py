@@ -152,6 +152,20 @@ def calc_pi_callgrind_dot(data_dir, tmpdir):
 
 
 @pytest.fixture
+def hatchet_pyinstrument_json(data_dir, tmpdir):
+    """Builds a temporary directory containing the pyinstrument Hatchet json file."""
+    pyinstrument_json_dir = os.path.join(data_dir, "pyinstrument-hatchet-json")
+    pyinstrument_json_file = os.path.join(
+        pyinstrument_json_dir, "pyinstrument-hatchet-profile.json"
+    )
+
+    shutil.copy(pyinstrument_json_file, str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), "pyinstrument-hatchet-profile.json")
+
+    return tmpfile
+
+
+@pytest.fixture
 def mock_graph_literal():
     """Creates a mock tree
 
