@@ -35,9 +35,9 @@ except ImportError:
     raise
 
 def parallel_apply(filter, subframe):
-    print("Start ", mp.current_process().pid)
+    print("Start ", mp.current_process().pid, flush=True)
     filtered_rows = subframe.apply(filter, axis=1)
-    print("End ", mp.current_process().pid)
+    print("End ", mp.current_process().pid, flush=True)
     return filtered_rows
 
 class GraphFrame:
