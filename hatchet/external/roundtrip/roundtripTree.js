@@ -655,7 +655,17 @@
             }
             nodeStr += '</tr>';
             for (var i = 0; i < numNodes; i++) {
-                nodeStr += '<tr><td>' + nodeList[i].data.name + '</td><td>' + nodeList[i].data.metrics.time + 's </td><td>' + nodeList[i].data.metrics["time (inc)"] + 's</td></tr>';
+                for (var j = 0; j < metricColumns.length; j++) {
+                    if (j == 0) {
+                        nodeStr += '<tr><td>' + nodeList[i].data.name + '</td><td>' + nodeList[i].data.metrics[metricColumns[j]] + '</td><td>';
+                    }
+                    else if (j == metricColumns.length - 1) {
+                        nodeStr += nodeList[i].data.metrics[metricColumns[j]] + '</td></tr>';
+                    }
+                    else {
+                        nodeStr += nodeList[i].data.metrics[metricColumns[j]];
+                    }
+                }
             }
             nodeStr = nodeStr + '</table>';
             return nodeStr;
