@@ -1,6 +1,6 @@
 #!/bin/sh
 
-if [[ "$PYTHONPATH" != *"$PWD"* ]]; then
+if [ "$PYTHONPATH" != *"$PWD"* ]; then
 	PYTHONPATH=$PWD:$PYTHONPATH
 fi
 
