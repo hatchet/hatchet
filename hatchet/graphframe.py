@@ -126,7 +126,7 @@ class GraphFrame:
 
     @staticmethod
     def from_pyinstrument(filename):
-        """Read in a pstats/prof file generated using python's cProfile."""
+        """Read in a JSON file generated using Pyinstrument."""
         # import this lazily to avoid circular dependencies
         from .readers.pyinstrument_reader import PyinstrumentReader
 
