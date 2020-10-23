@@ -168,34 +168,43 @@ operation.
    :scale: 40 %
    :align: right
 
-An alternative way to filter the DataFrame is to supply a query object. A query object 
-is a list of *abstract graph nodes* that specifies a graph path pattern to search for in the
-GraphFrame. An *abstract graph node* is made up of two parts:
+An alternative way to filter the DataFrame is to supply a query path in the
+form of a query object. A query object is a list of *abstract graph nodes* that
+specifies a call path pattern to search for in the GraphFrame. An *abstract
+graph node* is made up of two parts:
 
-* A wildcard that specifies the number of real nodes to match to the abstract node. This is
-  represented as either a string with value "." (match one node), "*" (match zero or more nodes),
-  or "+" (match one or more nodes) or an integer (match exactly that number of nodes). By default,
-  the wildcard is "." (or 1).
-* A filter that is used to determine whether a real node matches the abstract node. In the high-level
-  API, this is represented as a Python dictionary keyed on column names from the DataFrame. By default,
-  the filter is an "always true" filter (represented as an empty dictionary).
+* A wildcard that specifies the number of real nodes to match to the abstract
+  node. This is represented as either a string with value "." (match one node),
+  "*" (match zero or more nodes), or "+" (match one or more nodes) or an integer
+  (match exactly that number of nodes). By default, the wildcard is "." (or 1).
+* A filter that is used to determine whether a real node matches the abstract
+  node. In the high-level API, this is represented as a Python dictionary keyed
+  on column names from the DataFrame. By default, the filter is an "always true"
+  filter (represented as an empty dictionary).
 
-The query object is represented as a Python list of abstract nodes. To specify both parts of an abstract
-node, use a tuple with the first element being the wildcard and the second element being the filter.
-To use a default value for either the wildcard or the filter, simply provide the other part of the abstract
-node on its own (no need for a tuple). The user **must** provide at least one of the parts of the above
-definition of an abstract node. For more information on Hatchet's graph query language, including how
-to use the low-level API, look at the :doc:`expanded query language documentation <./query_language_guide>`.
+The query object is represented as a Python list of abstract nodes. To specify
+both parts of an abstract node, use a tuple with the first element being the
+wildcard and the second element being the filter.  To use a default value for
+either the wildcard or the filter, simply provide the other part of the
+abstract node on its own (no need for a tuple). The user **must** provide at
+least one of the parts of the above definition of an abstract node.
+
+..
+  For more
+  information on Hatchet's graph query language, including how to use the
+  low-level API, look at the :doc:`expanded query language documentation
+  <./query_language_guide>`.
 
 .. image:: images/sample-graph.png
    :scale: 30 %
    :align: right
 
-The query language example below looks for all paths that match first a single node with name
-`solvers`, followed by 0 or more nodes with an inclusive time greater than 10,
-followed by a single node with name that starts with `p` and ends in an integer
-and has an inclusive time greater than or equal to 10. When applied to the graph shown on the right,
-the returned GraphFrame contains the nodes shown in the table on the right.
+The query language example below looks for all paths that match first a single
+node with name `solvers`, followed by 0 or more nodes with an inclusive time
+greater than 10, followed by a single node with name that starts with `p` and
+ends in an integer and has an inclusive time greater than or equal to 10. When
+the query is used to filter and squash the the graph shown on the right, the
+returned GraphFrame contains the nodes shown in the table on the right.
 
 ..
     TODO
@@ -212,9 +221,9 @@ Filter is one of the operations that leads to the graph object and DataFrame
 object becoming inconsistent. After a filter operation, there are nodes in the
 graph that do not return any rows when used to index into the DataFrame.
 Typically, the user will perform a squash on the GraphFrame after a filter
-operation to make the graph and DataFrame objects consistent again. This can be done
-either by manually calling the ``squash`` function on the new GraphFrame or by
-setting the ``squash`` parameter of the ``filter`` function to ``True``.
+operation to make the graph and DataFrame objects consistent again. This can be
+done either by manually calling the ``squash`` function on the new GraphFrame
+or by setting the ``squash`` parameter of the ``filter`` function to ``True``.
 
 .. code-block:: python
 
