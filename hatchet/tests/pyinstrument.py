@@ -17,9 +17,9 @@ def test_graphframe(hatchet_pyinstrument_json):
     def test_children(child_dict, gf):
 
         df = gf.dataframe.loc[
-            (gf.dataframe["file"] == child_dict["file_path_short"])
+            (gf.dataframe["name"] == child_dict["function"])
+            & (gf.dataframe["file"] == child_dict["file_path_short"])
             & (gf.dataframe["line"] == child_dict["line_no"])
-            & (gf.dataframe["name"] == child_dict["function"])
             & (gf.dataframe["time (inc)"] == child_dict["time"])
             & (gf.dataframe["is_application_code"] == child_dict["is_application_code"])
         ]
@@ -30,33 +30,33 @@ def test_graphframe(hatchet_pyinstrument_json):
         child_number = 0
         if "children" in child_dict:
             for child in child_dict["children"]:
+                # to calculate the number of children
                 child_number += 1
                 test_children(child, gf)
 
+        # number of children should be the same.
         assert len(df.index[0].children) == child_number
 
+    # create a graphframe using from_pyinstrument
     gf = GraphFrame.from_pyinstrument(str(hatchet_pyinstrument_json))
 
-    # Read from the input file.
     graph_dict = []
+    # read directly from the input file to compare it with the graphframe.
     with open(str(hatchet_pyinstrument_json)) as pyinstrument_json:
-        graph_dict = [json.load(pyinstrument_json)]
+        graph_dict = json.load(pyinstrument_json)
 
-    for i in range(len(graph_dict)):
-        for j in range(len(gf.graph.roots)):
-            # Roots should be the same.
-            assert (
-                graph_dict[i]["root_frame"]["function"]
-                == gf.graph.roots[j].frame["name"]
-            )
+        # roots should be the same
+        assert graph_dict["root_frame"]["function"] == gf.graph.roots[0].frame["name"]
 
         child_number = 0
-        if "children" in graph_dict[i]["root_frame"]:
-            for child in graph_dict[i]["root_frame"]["children"]:
+        if "children" in graph_dict["root_frame"]:
+            for child in graph_dict["root_frame"]["children"]:
+                # to calculate the number of children
                 child_number += 1
                 test_children(child, gf)
-        # Number of children should be the same.
-        assert len(gf.graph.roots[j].children) == child_number
+
+        # number of children should be the same.
+        assert len(gf.graph.roots[0].children) == child_number
 
     assert len(gf.dataframe.groupby("name")) == 44
 

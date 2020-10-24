@@ -16,7 +16,7 @@ from hatchet.frame import Frame
 class PyinstrumentReader:
     def __init__(self, filename):
         self.pyinstrument_json_filename = filename
-        self.graph_dict = []
+        self.graph_dict = {}
         self.list_roots = []
         self.node_dicts = []
 
@@ -26,7 +26,7 @@ class PyinstrumentReader:
             recursively on all children."""
 
             hnode = Node(
-                Frame({"type": "function", "name": child_dict["function"]}), hparent
+                Frame({"name": child_dict["function"], "type": "function"}), hparent
             )
 
             child_node_dict = {
@@ -44,41 +44,41 @@ class PyinstrumentReader:
 
             if "children" in child_dict:
                 for child in child_dict["children"]:
+                    # Pyinstrument's time metric actually stores inclusive time.
+                    # To calculate exclusive time, we subtract the children's time
+                    # from the parent's time.
                     child_node_dict["time"] -= child["time"]
                     parse_node_literal(child, hnode)
 
         # start with creating a node_dict for each root
-        for i in range(len(self.graph_dict)):
-            graph_root = Node(
-                Frame(
-                    {
-                        "type": "function",
-                        "name": self.graph_dict[i]["root_frame"]["function"],
-                    }
-                ),
-                None,
-            )
+        graph_root = Node(
+            Frame(
+                {"name": self.graph_dict["root_frame"]["function"], "type": "function"}
+            ),
+            None,
+        )
 
-            node_dict = {
-                "node": graph_root,
-                "name": self.graph_dict[i]["root_frame"]["function"],
-                "file": self.graph_dict[i]["root_frame"]["file_path_short"],
-                "line": self.graph_dict[i]["root_frame"]["line_no"],
-                "time": self.graph_dict[i]["root_frame"]["time"],
-                "time (inc)": self.graph_dict[i]["root_frame"]["time"],
-                "is_application_code": self.graph_dict[i]["root_frame"][
-                    "is_application_code"
-                ],
-            }
+        node_dict = {
+            "node": graph_root,
+            "name": self.graph_dict["root_frame"]["function"],
+            "file": self.graph_dict["root_frame"]["file_path_short"],
+            "line": self.graph_dict["root_frame"]["line_no"],
+            "time": self.graph_dict["root_frame"]["time"],
+            "time (inc)": self.graph_dict["root_frame"]["time"],
+            "is_application_code": self.graph_dict["root_frame"]["is_application_code"],
+        }
 
-            self.node_dicts.append(node_dict)
-            self.list_roots.append(graph_root)
+        self.node_dicts.append(node_dict)
+        self.list_roots.append(graph_root)
 
-            # call recursively on all children of root
-            if "children" in self.graph_dict[i]["root_frame"]:
-                for child in self.graph_dict[i]["root_frame"]["children"]:
-                    node_dict["time"] -= child["time"]
-                    parse_node_literal(child, graph_root)
+        # call recursively on all children of root
+        if "children" in self.graph_dict["root_frame"]:
+            for child in self.graph_dict["root_frame"]["children"]:
+                # Pyinstrument's time metric actually stores inclusive time.
+                # To calculate exclusive time, we subtract the children's time
+                # from the parent's time.
+                node_dict["time"] -= child["time"]
+                parse_node_literal(child, graph_root)
 
         graph = Graph(self.list_roots)
         graph.enumerate_traverse()
@@ -87,7 +87,7 @@ class PyinstrumentReader:
 
     def read(self):
         with open(self.pyinstrument_json_filename) as pyinstrument_json:
-            self.graph_dict = [json.load(pyinstrument_json)]
+            self.graph_dict = json.load(pyinstrument_json)
 
         graph = self.create_graph()
 
