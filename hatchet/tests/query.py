@@ -564,6 +564,10 @@ def test_high_level_depth_index_levels(calc_pi_hpct_db):
     ]
     assert sorted(query.apply(gf)) == sorted(matches)
 
+    query = QueryMatcher([("*", {"depth": 0})])
+    matches = [[root]]
+    assert query.apply(gf) == matches
+
 
 def test_high_level_node_id_index_levels(calc_pi_hpct_db):
     gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
@@ -578,3 +582,7 @@ def test_high_level_node_id_index_levels(calc_pi_hpct_db):
         [root.children[0].children[0]],
     ]
     assert sorted(query.apply(gf)) == sorted(matches)
+
+    query = QueryMatcher([("*", {"node_id": 0})])
+    matches = [[root]]
+    assert query.apply(gf) == matches
