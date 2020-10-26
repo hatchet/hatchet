@@ -22,17 +22,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import subprocess
 import numpy as np
+
+from hatchet import GraphFrame
+from hatchet.external.console import ConsoleRenderer
 
 import pytest
 
-from hatchet import GraphFrame
-from hatchet.readers.timemory_reader import TimemoryReader
-from hatchet.util.executable import which
-from hatchet.external.console import ConsoleRenderer
+timemory_avail = True
+try:
+    import timemory
+except ImportError:
+    timemory_avail = False
 
 
+@pytest.mark.skipif(not timemory_avail, reason="timemory package not available")
 def test_graphframe(timemory_json_data):
     """Sanity test a GraphFrame object with known data."""
     import timemory
@@ -53,9 +57,9 @@ def test_graphframe(timemory_json_data):
             assert gf.dataframe[col].dtype == np.object
 
 
+@pytest.mark.skipif(not timemory_avail, reason="timemory package not available")
 def test_tree(timemory_json_data):
     """Sanity test a GraphFrame object with known data."""
-    from timemory.component import WallClock
 
     gf = GraphFrame.from_timemory(timemory_json_data)
 
@@ -96,6 +100,7 @@ def test_tree(timemory_json_data):
     print(output)
 
 
+@pytest.mark.skipif(not timemory_avail, reason="timemory package not available")
 def test_graphframe_to_literal(timemory_json_data):
     """Sanity test a GraphFrame object with known data."""
     gf = GraphFrame.from_timemory(timemory_json_data)

@@ -4,12 +4,39 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
-from timemory.profiler import Profiler
-from timemory.trace import Tracer
-from timemory.component import WallClock, CpuClock
+import pytest
 
-components = [WallClock.id(), CpuClock.id()]
+timemory_avail = True
+try:
+    from timemory.profiler import Profiler
+    from timemory.trace import Tracer
+    from timemory.component import WallClock, CpuClock
+except ImportError:
+    timemory_avail = False
+
+    class FakeComponent:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        @staticmethod
+        def id():
+            pass
+
+    class FakeProfiler:
+        def __init__(self, *args, **kwargs):
+            pass
+
+        def __call__(self, func):
+            pass
+
+    WallClock = FakeComponent
+    CpuClock = FakeComponent
+    Profiler = FakeProfiler
+    Tracer = FakeProfiler
+
+
 ncnt = 0
+components = [WallClock.id(), CpuClock.id()]
 
 
 def eval_func(arr, tol):
