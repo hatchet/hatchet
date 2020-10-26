@@ -181,6 +181,8 @@ class GraphFrame:
             select (list of str):
                 A list of strings which match the component enumeration names
         """
+        from .readers.timemory_reader import TimemoryReader
+
         if input is not None:
             try:
                 return TimemoryReader(input, select).read()
