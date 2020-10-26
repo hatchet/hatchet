@@ -125,6 +125,14 @@ class GraphFrame:
         return CProfileReader(filename).read()
 
     @staticmethod
+    def from_pyinstrument(filename):
+        """Read in a JSON file generated using Pyinstrument."""
+        # import this lazily to avoid circular dependencies
+        from .readers.pyinstrument_reader import PyinstrumentReader
+
+        return PyinstrumentReader(filename).read()
+
+    @staticmethod
     def from_literal(graph_dict):
         """Create a GraphFrame from a list of dictionaries.
 
@@ -137,18 +145,22 @@ class GraphFrame:
             dag_ldict = [
                 {
                     "name": "A",
+                    "type": "function",
                     "metrics": {"time (inc)": 130.0, "time": 0.0},
                     "children": [
                         {
                             "name": "B",
+                            "type": "function",
                             "metrics": {"time (inc)": 20.0, "time": 5.0},
                             "children": [
                                 {
                                     "name": "C",
+                                    "type": "function",
                                     "metrics": {"time (inc)": 5.0, "time": 5.0},
                                     "children": [
                                         {
                                             "name": "D",
+                                            "type": "function",
                                             "metrics": {"time (inc)": 8.0, "time": 1.0},
                                         }
                                     ],
@@ -157,9 +169,14 @@ class GraphFrame:
                         },
                         {
                             "name": "E",
+                            "type": "function",
                             "metrics": {"time (inc)": 55.0, "time": 10.0},
                             "children": [
-                                {"name": "H", "metrics": {"time (inc)": 1.0, "time": 9.0}}
+                                {
+                                    "name": "H",
+                                    "type": "function",
+                                    "metrics": {"time (inc)": 1.0, "time": 9.0}
+                                }
                             ],
                         },
                     ],
@@ -175,7 +192,9 @@ class GraphFrame:
             recursively on all children.
             """
 
-            hnode = Node(Frame({"name": child_dict["name"]}), hparent)
+            hnode = Node(
+                Frame({"name": child_dict["name"], "type": child_dict["type"]}), hparent
+            )
 
             node_dicts.append(
                 dict(
@@ -193,7 +212,10 @@ class GraphFrame:
 
         # start with creating a node_dict for each root
         for i in range(len(graph_dict)):
-            graph_root = Node(Frame({"name": graph_dict[i]["name"]}), None)
+            graph_root = Node(
+                Frame({"name": graph_dict[i]["name"], "type": graph_dict[i]["type"]}),
+                None,
+            )
 
             node_dict = {"node": graph_root, "name": graph_dict[i]["name"]}
             node_dict.update(**graph_dict[i]["metrics"])
