@@ -40,8 +40,10 @@ install:
   - pip list
 
 script:
-  - pip install --upgrade scikit-build
-  - pip install --upgrade -vv --pre timemory --install-option=--disable-{tools,gotcha,c}
+  - if [[ "$(echo ${TRAVIS_PYTHON_VERSION} | sed 's/\.//g')" -ge "36" ]]; then
+      pip install --upgrade scikit-build;
+      pip install --upgrade --no-cache-dir -vv --pre timemory --install-option=--disable-{c,tools,gotcha};
+    fi
   - PYTHONPATH=. coverage run $(which pytest)
   - cd $TRAVIS_BUILD_DIR
   - echo -e "TRAVIS_BUILD_DIR:" ${TRAVIS_BUILD_DIR}
