@@ -23,6 +23,10 @@ from .external.console import ConsoleRenderer
 from .util.dot import trees_to_dot
 from .util.deprecated import deprecated_params
 
+from .util.timer import Timer
+
+T = Timer()
+
 try:
     import hatchet.cython_modules.libs.graphframe_modules as _gfm_cy
 except ImportError:
@@ -36,8 +40,13 @@ except ImportError:
 
 def parallel_apply(filter, subframe):
     print("Start ", mp.current_process().pid, flush=True)
+    T.start_phase("P: {}".format(mp.current_process().pid))
     filtered_rows = subframe.apply(filter, axis=1)
+    T.end_phase()
     print("End ", mp.current_process().pid, flush=True)
+
+    print(T, "\n")
+
     return filtered_rows
 
 class GraphFrame:
@@ -303,15 +312,24 @@ class GraphFrame:
         filtered_df = None
 
         if callable(filter_obj):
-            subframes = np.array_split(dataframe_copy, mp.cpu_count())
-            print(mp.cpu_count(), psutil.cpu_count(logical=False))
+            # deep copy?
+                # is this a shallow copy
+                # defining the dataset as global
+                # init_shared_array => creating a global (array)
+            # verify this is a deep copy
+            # mp.shared ctypes .rawarray
+            # shared datatype for Pandas
+            #
+            subframes = np.array_split(dataframe_copy, psutil.cpu_count(logical=False))
+            # print(mp.cpu_count(), psutil.cpu_count(logical=False))
             p = mp.Pool(psutil.cpu_count(logical=False))
             func = partial(parallel_apply, filter_obj)
+            returns = p.map(func, subframes)
+            p.close()
+            p.join()
 
-            filtered_rows = pd.concat(p.map(func, subframes))
-            # result = p.map_async(func, subframes)
-            #
-            # filtered_rows = pd.concat(result.get())
+            filtered_rows = pd.concat(returns)
+
             filtered_df = dataframe_copy[filtered_rows]
             #
             # filtered_rows = dataframe_copy.apply(filter_obj, axis=1)
