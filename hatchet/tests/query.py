@@ -555,30 +555,12 @@ def test_high_level_depth_index_levels(calc_pi_hpct_db):
 
     query = QueryMatcher([("*", {"depth": "<= 2"})])
     matches = [
-        [
-            root,
-            root.children[0],
-            root.children[0].children[0]
-        ],
-        [
-            root.children[0],
-            root.children[0].children[0]
-        ],
-        [
-            root.children[0].children[0]
-        ],
-        [
-            root,
-            root.children[0],
-            root.children[0].children[1]
-        ],
-        [
-            root.children[0],
-            root.children[0].children[1]
-        ],
-        [
-            root.children[0].children[1]
-        ]
+        [root, root.children[0], root.children[0].children[0]],
+        [root.children[0], root.children[0].children[0]],
+        [root.children[0].children[0]],
+        [root, root.children[0], root.children[0].children[1]],
+        [root.children[0], root.children[0].children[1]],
+        [root.children[0].children[1]],
     ]
     assert sorted(query.apply(gf)) == sorted(matches)
 
@@ -589,24 +571,10 @@ def test_high_level_node_id_index_levels(calc_pi_hpct_db):
 
     query = QueryMatcher([("*", {"node_id": "<= 2"})])
     matches = [
-        [
-            root,
-            root.children[0],
-        ],
-        [
-            root.children[0],
-        ],
-        [
-            root,
-            root.children[0],
-            root.children[0].children[0]
-        ],
-        [
-            root.children[0],
-            root.children[0].children[0]
-        ],
-        [
-            root.children[0].children[0]
-        ]
+        [root, root.children[0],],
+        [root.children[0],],
+        [root, root.children[0], root.children[0].children[0]],
+        [root.children[0], root.children[0].children[0]],
+        [root.children[0].children[0]],
     ]
     assert sorted(query.apply(gf)) == sorted(matches)
