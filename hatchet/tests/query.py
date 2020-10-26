@@ -547,3 +547,66 @@ def test_high_level_hatchet_nid(mock_graph_literal):
 
     query = QueryMatcher([{"node_id": 0}])
     assert query.apply(gf) == [[gf.graph.roots[0]]]
+
+
+def test_high_level_depth_index_levels(calc_pi_hpct_db):
+    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+    root = gf.graph.roots[0]
+
+    query = QueryMatcher([("*", {"depth": "<= 2"})])
+    matches = [
+        [
+            root,
+            root.children[0],
+            root.children[0].children[0]
+        ],
+        [
+            root.children[0],
+            root.children[0].children[0]
+        ],
+        [
+            root.children[0].children[0]
+        ],
+        [
+            root,
+            root.children[0],
+            root.children[0].children[1]
+        ],
+        [
+            root.children[0],
+            root.children[0].children[1]
+        ],
+        [
+            root.children[0].children[1]
+        ]
+    ]
+    assert sorted(query.apply(gf)) == sorted(matches)
+
+
+def test_high_level_node_id_index_levels(calc_pi_hpct_db):
+    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+    root = gf.graph.roots[0]
+
+    query = QueryMatcher([("*", {"node_id": "<= 2"})])
+    matches = [
+        [
+            root,
+            root.children[0],
+        ],
+        [
+            root.children[0],
+        ],
+        [
+            root,
+            root.children[0],
+            root.children[0].children[0]
+        ],
+        [
+            root.children[0],
+            root.children[0].children[0]
+        ],
+        [
+            root.children[0].children[0]
+        ]
+    ]
+    assert sorted(query.apply(gf)) == sorted(matches)
