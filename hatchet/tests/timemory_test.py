@@ -39,7 +39,6 @@ except ImportError:
 @pytest.mark.skipif(not timemory_avail, reason="timemory package not available")
 def test_graphframe(timemory_json_data):
     """Sanity test a GraphFrame object with known data."""
-    import timemory
     from timemory.component import WallClock
 
     wc_s = WallClock.id()  # string identifier

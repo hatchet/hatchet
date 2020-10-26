@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
-import pytest
 
 timemory_avail = True
 try:
