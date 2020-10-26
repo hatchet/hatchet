@@ -717,3 +717,34 @@ def mock_dag_literal_module_more_complex():
     ]
 
     return dag_ldict
+
+
+@pytest.fixture
+def timemory_json_data():
+
+    import numpy as np
+    import timemory
+    from timemory.bundle import marker
+    from timemory.profiler import Config as ProfilerConfig
+    from timemory.trace import Config as TracerConfig
+    from timemory_func import prof_func, trace_func, components
+
+    # disable automatic output during finalization
+    timemory.settings.auto_output = False
+
+    with marker(components, key="main"):
+        nx = 50
+        ny = 50
+        tol = 5.0e-2
+        profl_arr = np.random.rand(nx, ny)
+        trace_arr = np.zeros([nx, ny], dtype=np.float)
+        trace_arr[:, :] = profl_arr[:, :]
+
+        # ProfilerConfig.only_filenames = [__file__]
+        ProfilerConfig.trace_c = True
+        prof_func(profl_arr, tol)
+
+        TracerConfig.only_filenames = ["timemory_func.py", "_methods.py"]
+        trace_func(trace_arr, tol)
+
+    return timemory.get(hierarchy=True)

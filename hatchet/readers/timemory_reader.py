@@ -1,7 +1,26 @@
-# Copyright 2017-2020 Lawrence Livermore National Security, LLC and other
-# Hatchet Project Developers. See the top-level LICENSE file for details.
+# MIT License
 #
-# SPDX-License-Identifier: MIT
+# Copyright (c) 2018, The Regents of the University of California,
+# through Lawrence Berkeley National Laboratory (subject to receipt of any
+# required approvals from the U.S. Dept. of Energy).  All rights reserved.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
 
 import json
 import pandas as pd
@@ -16,19 +35,41 @@ from ..util.timer import Timer
 class TimemoryReader:
     """Read in timemory JSON output"""
 
-    def __init__(self, input):
-        if isinstance(input, str) and input.endswith("json"):
+    def __init__(self, input, select=None):
+        if isinstance(input, dict):
+            self.graph_dict = input
+        elif isinstance(input, str) and input.endswith("json"):
             with open(input) as f:
                 self.graph_dict = json.load(f)
         elif not isinstance(input, str):
             self.graph_dict = json.loads(input.read())
         else:
-            self.graph_dict = input
+            raise TypeError("inpyt must be dict, json file, or string")
         self.name_to_hnode = {}
         self.name_to_dict = {}
         self.timer = Timer()
         self.metric_cols = []
         self.properties = {}
+        if select is None:
+            self.select = select
+        elif isinstance(select, list):
+
+            if select:
+
+                def _get_select(val):
+                    if isinstance(val, str):
+                        return val.lower()
+                    elif callable(val):
+                        return val().lower()
+                    raise TypeError(
+                        "Items in select must be string or callable: {}".format(
+                            type(val).__name__
+                        )
+                    )
+
+                self.select = [_get_select(v) for v in select]
+        else:
+            raise TypeError("select must be None or list of string")
 
     def create_graph(self):
         """Create graph frame"""
@@ -62,30 +103,79 @@ class TimemoryReader:
                 if key not in self.metric_cols:
                     self.metric_cols.append(key)
 
+        def process_regex(_data):
+            """Process the regex data for func/file/line info"""
+            _tmp = {}
+            if _data is not None and len(_data.groups()) > 0:
+                for _key in ("head", "func", "file", "line", "tail"):
+                    try:
+                        _val = _data.group(_key)
+                        if _val:
+                            _tmp[_key] = _val
+                    except Exception:
+                        pass
+            return _tmp if _tmp else None
+
+        def perform_regex(_itr):
+            """Performs a search for standard configurations of function + file + line"""
+            import re
+
+            _tmp = process_regex(
+                re.search(
+                    r"(?P<head>.+)([ \t]+)\[(?P<func>\S+)([/])(?P<file>\S+):(?P<line>[0-9]+)\]$",
+                    _itr,
+                )
+            )
+            if not _tmp:
+                _tmp = process_regex(
+                    re.search(
+                        r"(?P<func>\S+)([@/])(?P<file>\S+):(?P<line>[0-9]+)[/]*(?P<tail>.*)",
+                        _itr,
+                    )
+                )
+            if not _tmp:
+                _tmp = process_regex(
+                    re.search(
+                        r"(?P<func>\S+)([@/])(?P<file>\S+)([/])(?P<tail>.*)", _itr
+                    )
+                )
+            if not _tmp:
+                _tmp = process_regex(
+                    re.search(r"(?P<func>\S+):(?P<line>[0-9]+)([/]*)(?P<tail>.*)", _itr)
+                )
+            return _tmp if _tmp else None
+
         def get_keys(_prop, _prefix):
             """Get the standard set of dictionary entries.
             Also, parses the prefix for func-file-line info
-            which is typically in the form <FUNC>@<FILE>:<LINE>/...
+            which is typically in the form:
+                <FUNC>@<FILE>:<LINE>/...
+                <FUNC>/<FILE>:<LINE>/...
+                <SOURCE>    [<FUNC>/<FILE>:<LINE>]
             """
-            _name = _prop["properties"]["id"]
+            # _name = _prop["properties"]["id"]
             _keys = {
-                "name": _prefix,
                 "type": "region",
-                "file": "null",
-                "line": "null",
+                "name": _prefix,
             }
-            _pre = _prefix.split("/")
-            if len(_pre) > 0:
-                _func = _pre[:1][0]
-                _tail = _pre[1:]
-                _func = _func.split("@")
-                if len(_func) == 2:
-                    _func = [_func[0]] + _func[1].split(":")
-                _keys["name"] = "/".join([_func[0]] + _tail)
-                if len(_func) == 3:
-                    _keys["type"] = "function"
-                    _keys["file"] = _func[1]
-                    _keys["line"] = _func[2]
+            _pdict = perform_regex(_prefix)
+            if _pdict is not None:
+                if "head" in _pdict:
+                    _keys["type"] = "statement"
+                    _keys["line"] = _pdict["line"]
+                    _keys["file"] = _pdict["file"]
+                    _keys["name"] = _pdict["head"].rstrip()
+                else:
+                    if "line" in _pdict:
+                        _keys["type"] = "statement"
+                        _keys["line"] = _pdict["line"]
+                        if "tail" in _pdict:
+                            if "#" in _pdict["tail"]:
+                                _keys["type"] = "loop"
+                    _keys["name"] = _pdict["func"]
+                    _keys["file"] = _pdict["file"] if "file" in _pdict else "unknown"
+                    if "tail" in _pdict:
+                        _keys["name"] = "{}/{}".format(_keys["name"], _pdict["tail"])
             return _keys
 
         def get_md_suffix(_obj):
@@ -246,6 +336,9 @@ class TimemoryReader:
         for key, itr in graph_dict["timemory"].items():
             # strip out the namespace if provided
             key = key.replace("tim::", "").replace("component::", "").lower()
+            # check for selection
+            if self.select is not None and key not in self.select:
+                continue
             # read in properties
             read_properties(self.properties, key, itr)
             # if no DMP supported
