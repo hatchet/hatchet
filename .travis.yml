@@ -32,8 +32,6 @@ jobs:
 
 install:
   - pip install --upgrade -r requirements.txt
-  - pip install --upgrade scikit-build
-  - pip install --upgrade -vv --pre timemory --install-option=--disable-{tools,gotcha,c}
   - if [[ "$TRAVIS_PYTHON_VERSION" == "3.7" ]]; then
         pip install --upgrade black;
     fi
@@ -42,6 +40,8 @@ install:
   - pip list
 
 script:
+  - pip install --upgrade scikit-build
+  - pip install --upgrade -vv --pre timemory --install-option=--disable-{tools,gotcha,c}
   - PYTHONPATH=. coverage run $(which pytest)
   - cd $TRAVIS_BUILD_DIR
   - echo -e "TRAVIS_BUILD_DIR:" ${TRAVIS_BUILD_DIR}
