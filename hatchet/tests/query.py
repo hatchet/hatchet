@@ -530,6 +530,10 @@ def test_high_level_depth(mock_graph_literal):
     ]
     assert sorted(query.apply(gf)) == sorted(matches)
 
+    with pytest.raises(InvalidQueryFilter):
+        query = QueryMatcher([{"depth": "hello"}])
+        query.apply(gf)
+
 
 def test_high_level_hatchet_nid(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
@@ -547,6 +551,10 @@ def test_high_level_hatchet_nid(mock_graph_literal):
 
     query = QueryMatcher([{"node_id": 0}])
     assert query.apply(gf) == [[gf.graph.roots[0]]]
+
+    with pytest.raises(InvalidQueryFilter):
+        query = QueryMatcher([{"node_id": "hello"}])
+        query.apply(gf)
 
 
 def test_high_level_depth_index_levels(calc_pi_hpct_db):
@@ -568,6 +576,10 @@ def test_high_level_depth_index_levels(calc_pi_hpct_db):
     matches = [[root]]
     assert query.apply(gf) == matches
 
+    with pytest.raises(InvalidQueryFilter):
+        query = QueryMatcher([{"depth": "hello"}])
+        query.apply(gf)
+
 
 def test_high_level_node_id_index_levels(calc_pi_hpct_db):
     gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
@@ -586,3 +598,7 @@ def test_high_level_node_id_index_levels(calc_pi_hpct_db):
     query = QueryMatcher([("*", {"node_id": 0})])
     matches = [[root]]
     assert query.apply(gf) == matches
+
+    with pytest.raises(InvalidQueryFilter):
+        query = QueryMatcher([{"node_id": "hello"}])
+        query.apply(gf)
