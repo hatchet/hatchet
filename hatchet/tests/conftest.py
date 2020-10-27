@@ -725,7 +725,6 @@ def timemory_json_data():
     import numpy as np
     import timemory
     from timemory.bundle import marker
-    from timemory.profiler import Config as ProfilerConfig
     from timemory.trace import Config as TracerConfig
     from timemory_func import prof_func, trace_func, components
 
