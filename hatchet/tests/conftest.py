@@ -726,10 +726,13 @@ def timemory_json_data():
     import timemory
     from timemory.bundle import marker
     from timemory.trace import Config as TracerConfig
+    from timemory.profiler import Config as ProfilerConfig
     from timemory_func import prof_func, trace_func, components
 
     # disable automatic output during finalization
-    timemory.settings.auto_output = False
+    timemory.settings.auto_output = True
+    # enable flat collection because of the coverage exe
+    timemory.settings.flat_profile = True
 
     with marker(components, key="main"):
         nx = 10
@@ -739,10 +742,12 @@ def timemory_json_data():
         trace_arr = np.zeros([nx, ny], dtype=np.float)
         trace_arr[:, :] = profl_arr[:, :]
 
-        # ProfilerConfig.only_filenames = [__file__]
+        # restrict the scope of the profiler
+        ProfilerConfig.only_filenames = ["timemory_func.py", "_methods.py"]
         prof_func(profl_arr, tol)
 
-        TracerConfig.only_filenames = ["timemory_func.py", "_methods.py"]
+        # restrict the scope of the tracer
+        TracerConfig.only_filenames = ["timemory_func.py"]
         trace_func(trace_arr, tol)
 
     return timemory.get(hierarchy=True)
