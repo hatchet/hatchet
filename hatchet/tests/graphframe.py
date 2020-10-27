@@ -5,6 +5,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+from __future__ import division
+
 import pytest
 
 import numpy as np
@@ -758,6 +760,40 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
     assert "0.000 A" in output
     assert u"5.000 C ◀" in output
     assert u"55.000 H ◀" in output
+
+
+def test_div_decorator(small_mock1, small_mock2):
+    gf1 = GraphFrame.from_literal(small_mock1)
+    gf2 = GraphFrame.from_literal(small_mock2)
+
+    assert len(gf1.graph) == 6
+    assert len(gf2.graph) == 7
+
+    gf3 = gf1 / gf2
+
+    assert len(gf3.graph) == 8
+    assert gf3.dataframe.loc[gf3.dataframe["_missing_node"] == "R"].shape[0] == 2
+    assert gf3.dataframe.loc[gf3.dataframe["_missing_node"] == "L"].shape[0] == 1
+    assert gf3.dataframe.loc[gf3.dataframe["_missing_node"] == ""].shape[0] == 5
+
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf3.graph.roots,
+        gf3.dataframe,
+        metric_column="time",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
+        rank=0,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        invert_colormap=False,
+    )
+    assert "1.000 C" in output
+    assert "inf B" in output
+    assert u"nan D ▶" in output
+    assert u"10.000 H ◀" in output
 
 
 def test_groupby_aggregate_simple(mock_dag_literal_module):

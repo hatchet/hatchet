@@ -494,7 +494,7 @@ def small_mock2():
                 {
                     "name": "B",
                     "type": "function",
-                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "metrics": {"time (inc)": 20.0, "time": 0.0},
                     "children": [
                         {
                             "name": "C",
