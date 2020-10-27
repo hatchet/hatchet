@@ -63,7 +63,7 @@ script:
       pip install --upgrade scikit-build;
       pip install --upgrade --no-cache-dir --no-deps -v --pre timemory --install-option=--disable-{c,gotcha,tools};
     fi
-  - PYTHONPATH=. coverage run $(which pytest)
+  - TIMEMORY_ENABLE_SIGNAL_HANDLER=ON PYTHONPATH=. coverage run $(which pytest) -v
 
 after_success:
   - codecov --env PYTHON_VERSION --required --flags "${TEST_SUITE}${TRAVIS_OS_NAME}"

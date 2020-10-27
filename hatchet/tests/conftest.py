@@ -733,15 +733,14 @@ def timemory_json_data():
     timemory.settings.auto_output = False
 
     with marker(components, key="main"):
-        nx = 50
-        ny = 50
+        nx = 10
+        ny = 10
         tol = 5.0e-2
         profl_arr = np.random.rand(nx, ny)
         trace_arr = np.zeros([nx, ny], dtype=np.float)
         trace_arr[:, :] = profl_arr[:, :]
 
         # ProfilerConfig.only_filenames = [__file__]
-        ProfilerConfig.trace_c = True
         prof_func(profl_arr, tol)
 
         TracerConfig.only_filenames = ["timemory_func.py", "_methods.py"]
