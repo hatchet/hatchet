@@ -43,10 +43,6 @@ install:
   - pip list
 
 script:
-  - if [[ "$(echo ${TRAVIS_PYTHON_VERSION} | sed 's/\.//g')" -ge "36" ]]; then
-      pip install --upgrade scikit-build;
-      pip install --upgrade --no-cache-dir --no-deps -v --pre timemory --install-option=--disable-{c,gotcha,tools};
-    fi
   - PYTHONPATH=. coverage run $(which pytest)
   - cd $TRAVIS_BUILD_DIR
   - echo -e "TRAVIS_BUILD_DIR:" ${TRAVIS_BUILD_DIR}
@@ -63,6 +59,10 @@ script:
   - cd ../../
   - echo -e "PWD:" ${PWD}
   - which cali-query
+  - if [[ "$(echo ${TRAVIS_PYTHON_VERSION} | sed 's/\.//g')" -ge "36" ]]; then
+      pip install --upgrade scikit-build;
+      pip install --upgrade --no-cache-dir --no-deps -v --pre timemory --install-option=--disable-{c,gotcha,tools};
+    fi
   - PYTHONPATH=. coverage run $(which pytest)
 
 after_success:
