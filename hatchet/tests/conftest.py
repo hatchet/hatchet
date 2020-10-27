@@ -730,7 +730,7 @@ def timemory_json_data():
     from timemory_func import prof_func, trace_func, components
 
     # disable automatic output during finalization
-    timemory.settings.auto_output = True
+    timemory.settings.auto_output = False
     # enable flat collection because of the coverage exe
     timemory.settings.flat_profile = True
 
