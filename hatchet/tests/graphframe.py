@@ -707,9 +707,11 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
     gf4 = gf1 - gf2
 
     assert len(gf4.graph) == 8
-    assert gf4.dataframe.loc[gf4.dataframe["_missing_node"] == "R"].shape[0] == 2
-    assert gf4.dataframe.loc[gf4.dataframe["_missing_node"] == "L"].shape[0] == 1
-    assert gf4.dataframe.loc[gf4.dataframe["_missing_node"] == ""].shape[0] == 5
+    assert gf4.dataframe.loc[gf4.dataframe["_missing_node"] == 2].shape[0] == 2  # "R"
+    assert gf4.dataframe.loc[gf4.dataframe["_missing_node"] == 1].shape[0] == 1  # "L"
+    assert (
+        gf4.dataframe.loc[gf4.dataframe["_missing_node"] == 0].shape[0] == 5
+    )  # "" or same in both
 
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf4.graph.roots,
@@ -735,9 +737,9 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
     assert len(gf3.graph) == 4
 
     assert len(gf5.graph) == 6
-    assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == "R"].shape[0] == 0
-    assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == "L"].shape[0] == 2
-    assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == ""].shape[0] == 4
+    assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == 2].shape[0] == 0  # "R"
+    assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == 1].shape[0] == 2  # "L"
+    assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == 0].shape[0] == 4  # ""
 
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf5.graph.roots,

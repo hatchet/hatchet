@@ -822,18 +822,18 @@ class GraphFrame:
         # called _missing_node
         if not self_not_in_other.empty:
             self.dataframe = self.dataframe.assign(
-                _missing_node=np.zeros(len(self.dataframe), dtype=np.ubyte)
+                _missing_node=np.zeros(len(self.dataframe), dtype=np.short)
             )
         if not other_not_in_self.empty:
-            # initialize with R to save filling in later
+            # initialize with 2 to save filling in later
             other_not_in_self = other_not_in_self.assign(
-                _missing_node=["R" for x in range(len(other_not_in_self))]
+                _missing_node=[int(2) for x in range(len(other_not_in_self))]
             )
 
             # add a new column to self if other has nodes not in self
             if self_not_in_other.empty:
                 self.dataframe["_missing_node"] = np.zeros(
-                    len(self.dataframe), dtype=np.ubyte
+                    len(self.dataframe), dtype=np.short
                 )
 
         # get lengths to pass into
@@ -845,11 +845,11 @@ class GraphFrame:
             self_missing_node = self.dataframe["_missing_node"].values
             snio_indices = self_not_in_other.index.values
 
-            # This function adds "L" to all nodes in self.dataframe['_missing_node'] which
-            # are in self but not in the other graphframe & convert from bytes to chars
+            # This function adds 1 to all nodes in self.dataframe['_missing_node'] which
+            # are in self but not in the other graphframe
             _gfm_cy.add_L(snio_len, self_missing_node, snio_indices)
             self.dataframe["_missing_node"] = np.array(
-                [chr(n) for n in self_missing_node]
+                [n for n in self_missing_node], dtype=np.short
             )
 
         # for nodes that only exist in other, set the metric to be nan (since
