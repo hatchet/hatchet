@@ -13,12 +13,12 @@
         "libraries": [
             "m"
         ],
-        "name": "graphframe_modules",
+        "name": "hatchet.cython_modules.graphframe_modules",
         "sources": [
             "graphframe_modules.pyx"
         ]
     },
-    "module_name": "graphframe_modules"
+    "module_name": "hatchet.cython_modules.graphframe_modules"
 }
 END: Cython Metadata */
 
@@ -620,8 +620,8 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__graphframe_modules
-#define __PYX_HAVE_API__graphframe_modules
+#define __PYX_HAVE__hatchet__cython_modules__graphframe_modules
+#define __PYX_HAVE_API__hatchet__cython_modules__graphframe_modules
 /* Early includes */
 #include <math.h>
 #include "pythread.h"
@@ -1668,7 +1668,7 @@ static int __Pyx_ValidateAndInit_memviewslice(
                 PyObject *original_obj);
 
 /* ObjectToMemviewSlice.proto */
-static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_char(PyObject *, int writable_flag);
+static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_short(PyObject *, int writable_flag);
 
 /* ObjectToMemviewSlice.proto */
 static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_long__const__(PyObject *, int writable_flag);
@@ -1727,7 +1727,7 @@ static PyObject *__pyx_memoryviewslice_assign_item_from_object(struct __pyx_memo
 
 /* Module declarations from 'libc.math' */
 
-/* Module declarations from 'graphframe_modules' */
+/* Module declarations from 'hatchet.cython_modules.graphframe_modules' */
 static PyTypeObject *__pyx_array_type = 0;
 static PyTypeObject *__pyx_MemviewEnum_type = 0;
 static PyTypeObject *__pyx_memoryview_type = 0;
@@ -1739,8 +1739,8 @@ static PyObject *contiguous = 0;
 static PyObject *indirect_contiguous = 0;
 static int __pyx_memoryview_thread_locks_used;
 static PyThread_type_lock __pyx_memoryview_thread_locks[8];
-static PyObject *__pyx_f_18graphframe_modules_fast_not_isin(__Pyx_memviewslice, __Pyx_memviewslice, long const , long const , int __pyx_skip_dispatch); /*proto*/
-static PyObject *__pyx_f_18graphframe_modules_binary_search(__Pyx_memviewslice, long const , unsigned PY_LONG_LONG const ); /*proto*/
+static PyObject *__pyx_f_7hatchet_14cython_modules_18graphframe_modules_fast_not_isin(__Pyx_memviewslice, __Pyx_memviewslice, long const , long const , int __pyx_skip_dispatch); /*proto*/
+static PyObject *__pyx_f_7hatchet_14cython_modules_18graphframe_modules_binary_search(__Pyx_memviewslice, long const , unsigned PY_LONG_LONG const ); /*proto*/
 static struct __pyx_array_obj *__pyx_array_new(PyObject *, Py_ssize_t, char *, char *, char *); /*proto*/
 static void *__pyx_align_pointer(void *, size_t); /*proto*/
 static PyObject *__pyx_memoryview_new(PyObject *, int, int, __Pyx_TypeInfo *); /*proto*/
@@ -1774,14 +1774,14 @@ static void __pyx_memoryview_refcount_objects_in_slice(char *, Py_ssize_t *, Py_
 static void __pyx_memoryview_slice_assign_scalar(__Pyx_memviewslice *, int, size_t, void *, int); /*proto*/
 static void __pyx_memoryview__slice_assign_scalar(char *, Py_ssize_t *, Py_ssize_t *, int, size_t, void *); /*proto*/
 static PyObject *__pyx_unpickle_Enum__set_state(struct __pyx_MemviewEnum_obj *, PyObject *); /*proto*/
-static __Pyx_TypeInfo __Pyx_TypeInfo_char = { "char", NULL, sizeof(char), { 0 }, 0, 'H', IS_UNSIGNED(char), 0 };
+static __Pyx_TypeInfo __Pyx_TypeInfo_short = { "short", NULL, sizeof(short), { 0 }, 0, IS_UNSIGNED(short) ? 'U' : 'I', IS_UNSIGNED(short), 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_long__const__ = { "const long", NULL, sizeof(long const ), { 0 }, 0, IS_UNSIGNED(long const ) ? 'U' : 'I', IS_UNSIGNED(long const ), 0 };
 static __Pyx_TypeInfo __Pyx_TypeInfo_unsigned_PY_LONG_LONG__const__ = { "const unsigned long long", NULL, sizeof(unsigned PY_LONG_LONG const ), { 0 }, 0, IS_UNSIGNED(unsigned PY_LONG_LONG const ) ? 'U' : 'I', IS_UNSIGNED(unsigned PY_LONG_LONG const ), 0 };
-#define __Pyx_MODULE_NAME "graphframe_modules"
-extern int __pyx_module_is_main_graphframe_modules;
-int __pyx_module_is_main_graphframe_modules = 0;
+#define __Pyx_MODULE_NAME "hatchet.cython_modules.graphframe_modules"
+extern int __pyx_module_is_main_hatchet__cython_modules__graphframe_modules;
+int __pyx_module_is_main_hatchet__cython_modules__graphframe_modules = 0;
 
-/* Implementation of 'graphframe_modules' */
+/* Implementation of 'hatchet.cython_modules.graphframe_modules' */
 static PyObject *__pyx_builtin_range;
 static PyObject *__pyx_builtin_ValueError;
 static PyObject *__pyx_builtin_MemoryError;
@@ -1864,7 +1864,6 @@ static const char __pyx_k_setstate_cython[] = "__setstate_cython__";
 static const char __pyx_k_pyx_unpickle_Enum[] = "__pyx_unpickle_Enum";
 static const char __pyx_k_self_missing_node[] = "self_missing_node";
 static const char __pyx_k_cline_in_traceback[] = "cline_in_traceback";
-static const char __pyx_k_graphframe_modules[] = "graphframe_modules";
 static const char __pyx_k_strided_and_direct[] = "<strided and direct>";
 static const char __pyx_k_strided_and_indirect[] = "<strided and indirect>";
 static const char __pyx_k_contiguous_and_direct[] = "<contiguous and direct>";
@@ -1888,6 +1887,7 @@ static const char __pyx_k_Invalid_mode_expected_c_or_fortr[] = "Invalid mode, ex
 static const char __pyx_k_Out_of_bounds_on_buffer_access_a[] = "Out of bounds on buffer access (axis %d)";
 static const char __pyx_k_Unable_to_convert_item_to_object[] = "Unable to convert item to object";
 static const char __pyx_k_got_differing_extents_in_dimensi[] = "got differing extents in dimension %d (got %d and %d)";
+static const char __pyx_k_hatchet_cython_modules_graphfram[] = "hatchet.cython_modules.graphframe_modules";
 static const char __pyx_k_no_default___reduce___due_to_non[] = "no default __reduce__ due to non-trivial __cinit__";
 static const char __pyx_k_unable_to_allocate_shape_and_str[] = "unable to allocate shape and strides.";
 static PyObject *__pyx_n_s_ASCII;
@@ -1939,8 +1939,8 @@ static PyObject *__pyx_n_s_fortran;
 static PyObject *__pyx_n_u_fortran;
 static PyObject *__pyx_n_s_getstate;
 static PyObject *__pyx_kp_s_got_differing_extents_in_dimensi;
-static PyObject *__pyx_n_s_graphframe_modules;
 static PyObject *__pyx_kp_s_graphframe_modules_pyx;
+static PyObject *__pyx_n_s_hatchet_cython_modules_graphfram;
 static PyObject *__pyx_n_s_i;
 static PyObject *__pyx_n_s_id;
 static PyObject *__pyx_n_s_import;
@@ -1992,8 +1992,8 @@ static PyObject *__pyx_kp_s_unable_to_allocate_shape_and_str;
 static PyObject *__pyx_n_s_unpack;
 static PyObject *__pyx_n_s_update;
 static PyObject *__pyx_n_s_zeros;
-static PyObject *__pyx_pf_18graphframe_modules_add_L(CYTHON_UNUSED PyObject *__pyx_self, long __pyx_v_snio_len, __Pyx_memviewslice __pyx_v_self_missing_node, __Pyx_memviewslice __pyx_v_snio_indices); /* proto */
-static PyObject *__pyx_pf_18graphframe_modules_2fast_not_isin(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_arr1, __Pyx_memviewslice __pyx_v_arr2, long __pyx_v_arr1_len, long __pyx_v_arr2_len); /* proto */
+static PyObject *__pyx_pf_7hatchet_14cython_modules_18graphframe_modules_add_L(CYTHON_UNUSED PyObject *__pyx_self, long __pyx_v_snio_len, __Pyx_memviewslice __pyx_v_self_missing_node, __Pyx_memviewslice __pyx_v_snio_indices); /* proto */
+static PyObject *__pyx_pf_7hatchet_14cython_modules_18graphframe_modules_2fast_not_isin(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_arr1, __Pyx_memviewslice __pyx_v_arr2, long __pyx_v_arr1_len, long __pyx_v_arr2_len); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array___cinit__(struct __pyx_array_obj *__pyx_v_self, PyObject *__pyx_v_shape, Py_ssize_t __pyx_v_itemsize, PyObject *__pyx_v_format, PyObject *__pyx_v_mode, int __pyx_v_allocate_buffer); /* proto */
 static int __pyx_array___pyx_pf_15View_dot_MemoryView_5array_2__getbuffer__(struct __pyx_array_obj *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_array___pyx_pf_15View_dot_MemoryView_5array_4__dealloc__(struct __pyx_array_obj *__pyx_v_self); /* proto */
@@ -2073,18 +2073,19 @@ static PyObject *__pyx_codeobj__20;
 static PyObject *__pyx_codeobj__27;
 /* Late includes */
 
-/* "graphframe_modules.pyx":7
- * 
+/* "hatchet/cython_modules/graphframe_modules.pyx":13
+ * # Description: All cython code related to graphframe.py
  * @cython.boundscheck(False)
- * def add_L(const long snio_len, char[:] self_missing_node, const long[:] snio_indices):             # <<<<<<<<<<<<<<
+ * def add_L(const long snio_len, short[:] self_missing_node, const long[:] snio_indices):             # <<<<<<<<<<<<<<
+ *     """Adds a '1' representing an 'L' where rows are in self but not in other."""
  *     for i in range(snio_len):
- *       self_missing_node[snio_indices[i]] = 'L'
  */
 
 /* Python wrapper */
-static PyObject *__pyx_pw_18graphframe_modules_1add_L(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyMethodDef __pyx_mdef_18graphframe_modules_1add_L = {"add_L", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_18graphframe_modules_1add_L, METH_VARARGS|METH_KEYWORDS, 0};
-static PyObject *__pyx_pw_18graphframe_modules_1add_L(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_7hatchet_14cython_modules_18graphframe_modules_1add_L(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_7hatchet_14cython_modules_18graphframe_modules_add_L[] = "Adds a '1' representing an 'L' where rows are in self but not in other.";
+static PyMethodDef __pyx_mdef_7hatchet_14cython_modules_18graphframe_modules_1add_L = {"add_L", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_7hatchet_14cython_modules_18graphframe_modules_1add_L, METH_VARARGS|METH_KEYWORDS, __pyx_doc_7hatchet_14cython_modules_18graphframe_modules_add_L};
+static PyObject *__pyx_pw_7hatchet_14cython_modules_18graphframe_modules_1add_L(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   long __pyx_v_snio_len;
   __Pyx_memviewslice __pyx_v_self_missing_node = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_snio_indices = { 0, 0, { 0 }, { 0 }, { 0 } };
@@ -2119,17 +2120,17 @@ static PyObject *__pyx_pw_18graphframe_modules_1add_L(PyObject *__pyx_self, PyOb
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_self_missing_node)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("add_L", 1, 3, 3, 1); __PYX_ERR(0, 7, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("add_L", 1, 3, 3, 1); __PYX_ERR(0, 13, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_snio_indices)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("add_L", 1, 3, 3, 2); __PYX_ERR(0, 7, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("add_L", 1, 3, 3, 2); __PYX_ERR(0, 13, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "add_L") < 0)) __PYX_ERR(0, 7, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "add_L") < 0)) __PYX_ERR(0, 13, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 3) {
       goto __pyx_L5_argtuple_error;
@@ -2138,26 +2139,26 @@ static PyObject *__pyx_pw_18graphframe_modules_1add_L(PyObject *__pyx_self, PyOb
       values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
       values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
     }
-    __pyx_v_snio_len = __Pyx_PyInt_As_long(values[0]); if (unlikely((__pyx_v_snio_len == (long)-1) && PyErr_Occurred())) __PYX_ERR(0, 7, __pyx_L3_error)
-    __pyx_v_self_missing_node = __Pyx_PyObject_to_MemoryviewSlice_ds_char(values[1], PyBUF_WRITABLE); if (unlikely(!__pyx_v_self_missing_node.memview)) __PYX_ERR(0, 7, __pyx_L3_error)
-    __pyx_v_snio_indices = __Pyx_PyObject_to_MemoryviewSlice_ds_long__const__(values[2], 0); if (unlikely(!__pyx_v_snio_indices.memview)) __PYX_ERR(0, 7, __pyx_L3_error)
+    __pyx_v_snio_len = __Pyx_PyInt_As_long(values[0]); if (unlikely((__pyx_v_snio_len == (long)-1) && PyErr_Occurred())) __PYX_ERR(0, 13, __pyx_L3_error)
+    __pyx_v_self_missing_node = __Pyx_PyObject_to_MemoryviewSlice_ds_short(values[1], PyBUF_WRITABLE); if (unlikely(!__pyx_v_self_missing_node.memview)) __PYX_ERR(0, 13, __pyx_L3_error)
+    __pyx_v_snio_indices = __Pyx_PyObject_to_MemoryviewSlice_ds_long__const__(values[2], 0); if (unlikely(!__pyx_v_snio_indices.memview)) __PYX_ERR(0, 13, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("add_L", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 7, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("add_L", 1, 3, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 13, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("graphframe_modules.add_L", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("hatchet.cython_modules.graphframe_modules.add_L", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_18graphframe_modules_add_L(__pyx_self, __pyx_v_snio_len, __pyx_v_self_missing_node, __pyx_v_snio_indices);
+  __pyx_r = __pyx_pf_7hatchet_14cython_modules_18graphframe_modules_add_L(__pyx_self, __pyx_v_snio_len, __pyx_v_self_missing_node, __pyx_v_snio_indices);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_18graphframe_modules_add_L(CYTHON_UNUSED PyObject *__pyx_self, long __pyx_v_snio_len, __Pyx_memviewslice __pyx_v_self_missing_node, __Pyx_memviewslice __pyx_v_snio_indices) {
+static PyObject *__pyx_pf_7hatchet_14cython_modules_18graphframe_modules_add_L(CYTHON_UNUSED PyObject *__pyx_self, long __pyx_v_snio_len, __Pyx_memviewslice __pyx_v_self_missing_node, __Pyx_memviewslice __pyx_v_snio_indices) {
   long __pyx_v_i;
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
@@ -2168,11 +2169,11 @@ static PyObject *__pyx_pf_18graphframe_modules_add_L(CYTHON_UNUSED PyObject *__p
   Py_ssize_t __pyx_t_5;
   __Pyx_RefNannySetupContext("add_L", 0);
 
-  /* "graphframe_modules.pyx":8
- * @cython.boundscheck(False)
- * def add_L(const long snio_len, char[:] self_missing_node, const long[:] snio_indices):
+  /* "hatchet/cython_modules/graphframe_modules.pyx":15
+ * def add_L(const long snio_len, short[:] self_missing_node, const long[:] snio_indices):
+ *     """Adds a '1' representing an 'L' where rows are in self but not in other."""
  *     for i in range(snio_len):             # <<<<<<<<<<<<<<
- *       self_missing_node[snio_indices[i]] = 'L'
+ *         self_missing_node[snio_indices[i]] = 1
  * 
  */
   __pyx_t_1 = __pyx_v_snio_len;
@@ -2180,26 +2181,26 @@ static PyObject *__pyx_pf_18graphframe_modules_add_L(CYTHON_UNUSED PyObject *__p
   for (__pyx_t_3 = 0; __pyx_t_3 < __pyx_t_2; __pyx_t_3+=1) {
     __pyx_v_i = __pyx_t_3;
 
-    /* "graphframe_modules.pyx":9
- * def add_L(const long snio_len, char[:] self_missing_node, const long[:] snio_indices):
+    /* "hatchet/cython_modules/graphframe_modules.pyx":16
+ *     """Adds a '1' representing an 'L' where rows are in self but not in other."""
  *     for i in range(snio_len):
- *       self_missing_node[snio_indices[i]] = 'L'             # <<<<<<<<<<<<<<
+ *         self_missing_node[snio_indices[i]] = 1             # <<<<<<<<<<<<<<
  * 
- * # Complexity: O(nlogn)
+ * cpdef fast_not_isin(const unsigned long long[:,:] arr1, const unsigned long long[:,:] arr2, const long arr1_len, const long arr2_len):
  */
     __pyx_t_4 = __pyx_v_i;
     if (__pyx_t_4 < 0) __pyx_t_4 += __pyx_v_snio_indices.shape[0];
     __pyx_t_5 = (*((long const  *) ( /* dim=0 */ (__pyx_v_snio_indices.data + __pyx_t_4 * __pyx_v_snio_indices.strides[0]) )));
     if (__pyx_t_5 < 0) __pyx_t_5 += __pyx_v_self_missing_node.shape[0];
-    *((char *) ( /* dim=0 */ (__pyx_v_self_missing_node.data + __pyx_t_5 * __pyx_v_self_missing_node.strides[0]) )) = 'L';
+    *((short *) ( /* dim=0 */ (__pyx_v_self_missing_node.data + __pyx_t_5 * __pyx_v_self_missing_node.strides[0]) )) = 1;
   }
 
-  /* "graphframe_modules.pyx":7
- * 
+  /* "hatchet/cython_modules/graphframe_modules.pyx":13
+ * # Description: All cython code related to graphframe.py
  * @cython.boundscheck(False)
- * def add_L(const long snio_len, char[:] self_missing_node, const long[:] snio_indices):             # <<<<<<<<<<<<<<
+ * def add_L(const long snio_len, short[:] self_missing_node, const long[:] snio_indices):             # <<<<<<<<<<<<<<
+ *     """Adds a '1' representing an 'L' where rows are in self but not in other."""
  *     for i in range(snio_len):
- *       self_missing_node[snio_indices[i]] = 'L'
  */
 
   /* function exit code */
@@ -2211,16 +2212,16 @@ static PyObject *__pyx_pf_18graphframe_modules_add_L(CYTHON_UNUSED PyObject *__p
   return __pyx_r;
 }
 
-/* "graphframe_modules.pyx":12
+/* "hatchet/cython_modules/graphframe_modules.pyx":18
+ *         self_missing_node[snio_indices[i]] = 1
  * 
- * # Complexity: O(nlogn)
  * cpdef fast_not_isin(const unsigned long long[:,:] arr1, const unsigned long long[:,:] arr2, const long arr1_len, const long arr2_len):             # <<<<<<<<<<<<<<
- *     result = np.zeros(len(arr1), dtype=np.bool_)
- *     cdef long index = -1
+ *     """Check if elements in arr1 exist in arr2.
+ * 
  */
 
-static PyObject *__pyx_pw_18graphframe_modules_3fast_not_isin(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_f_18graphframe_modules_fast_not_isin(__Pyx_memviewslice __pyx_v_arr1, __Pyx_memviewslice __pyx_v_arr2, long const __pyx_v_arr1_len, long const __pyx_v_arr2_len, CYTHON_UNUSED int __pyx_skip_dispatch) {
+static PyObject *__pyx_pw_7hatchet_14cython_modules_18graphframe_modules_3fast_not_isin(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_f_7hatchet_14cython_modules_18graphframe_modules_fast_not_isin(__Pyx_memviewslice __pyx_v_arr1, __Pyx_memviewslice __pyx_v_arr2, long const __pyx_v_arr1_len, long const __pyx_v_arr2_len, CYTHON_UNUSED int __pyx_skip_dispatch) {
   PyObject *__pyx_v_result = NULL;
   long __pyx_v_index;
   unsigned PY_LONG_LONG __pyx_v_prior;
@@ -2247,36 +2248,36 @@ static PyObject *__pyx_f_18graphframe_modules_fast_not_isin(__Pyx_memviewslice _
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("fast_not_isin", 0);
 
-  /* "graphframe_modules.pyx":13
- * # Complexity: O(nlogn)
- * cpdef fast_not_isin(const unsigned long long[:,:] arr1, const unsigned long long[:,:] arr2, const long arr1_len, const long arr2_len):
+  /* "hatchet/cython_modules/graphframe_modules.pyx":32
+ *             the function. True indicates that an element is not in arr2.
+ *     """
  *     result = np.zeros(len(arr1), dtype=np.bool_)             # <<<<<<<<<<<<<<
  *     cdef long index = -1
  *     cdef unsigned long long prior = -1
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 13, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 32, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 13, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 32, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_3 = __Pyx_MemoryView_Len(__pyx_v_arr1); 
-  __pyx_t_1 = __Pyx_PyInt_FromSize_t(__pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 13, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_FromSize_t(__pyx_t_3); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 32, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 13, __pyx_L1_error)
+  __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 32, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_GIVEREF(__pyx_t_1);
   PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_1);
   __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 13, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 32, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 13, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_np); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 32, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
-  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_bool); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 13, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_bool); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 32, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_dtype, __pyx_t_6) < 0) __PYX_ERR(0, 13, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_dtype, __pyx_t_6) < 0) __PYX_ERR(0, 32, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_4, __pyx_t_1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 13, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_t_4, __pyx_t_1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 32, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
@@ -2284,8 +2285,8 @@ static PyObject *__pyx_f_18graphframe_modules_fast_not_isin(__Pyx_memviewslice _
   __pyx_v_result = __pyx_t_6;
   __pyx_t_6 = 0;
 
-  /* "graphframe_modules.pyx":14
- * cpdef fast_not_isin(const unsigned long long[:,:] arr1, const unsigned long long[:,:] arr2, const long arr1_len, const long arr2_len):
+  /* "hatchet/cython_modules/graphframe_modules.pyx":33
+ *     """
  *     result = np.zeros(len(arr1), dtype=np.bool_)
  *     cdef long index = -1             # <<<<<<<<<<<<<<
  *     cdef unsigned long long prior = -1
@@ -2293,7 +2294,7 @@ static PyObject *__pyx_f_18graphframe_modules_fast_not_isin(__Pyx_memviewslice _
  */
   __pyx_v_index = -1L;
 
-  /* "graphframe_modules.pyx":15
+  /* "hatchet/cython_modules/graphframe_modules.pyx":34
  *     result = np.zeros(len(arr1), dtype=np.bool_)
  *     cdef long index = -1
  *     cdef unsigned long long prior = -1             # <<<<<<<<<<<<<<
@@ -2302,7 +2303,7 @@ static PyObject *__pyx_f_18graphframe_modules_fast_not_isin(__Pyx_memviewslice _
  */
   __pyx_v_prior = -1LL;
 
-  /* "graphframe_modules.pyx":16
+  /* "hatchet/cython_modules/graphframe_modules.pyx":35
  *     cdef long index = -1
  *     cdef unsigned long long prior = -1
  *     cdef long i = 0             # <<<<<<<<<<<<<<
@@ -2311,24 +2312,24 @@ static PyObject *__pyx_f_18graphframe_modules_fast_not_isin(__Pyx_memviewslice _
  */
   __pyx_v_i = 0;
 
-  /* "graphframe_modules.pyx":18
+  /* "hatchet/cython_modules/graphframe_modules.pyx":37
  *     cdef long i = 0
  * 
  *     for i in range(arr1_len):             # <<<<<<<<<<<<<<
- *       # mini optimization: don't perform binsearch if we already know node is/isnot in graph
- *       if prior == arr1[i][0]:
+ *         # mini optimization: don't perform binsearch if we already know node is/isnot in graph
+ *         if prior == arr1[i][0]:
  */
   __pyx_t_7 = __pyx_v_arr1_len;
   __pyx_t_8 = __pyx_t_7;
   for (__pyx_t_9 = 0; __pyx_t_9 < __pyx_t_8; __pyx_t_9+=1) {
     __pyx_v_i = __pyx_t_9;
 
-    /* "graphframe_modules.pyx":20
+    /* "hatchet/cython_modules/graphframe_modules.pyx":39
  *     for i in range(arr1_len):
- *       # mini optimization: don't perform binsearch if we already know node is/isnot in graph
- *       if prior == arr1[i][0]:             # <<<<<<<<<<<<<<
- *         result[arr1[i][1]] = result[arr1[i-1][1]]
- *       else:
+ *         # mini optimization: don't perform binsearch if we already know node is/isnot in graph
+ *         if prior == arr1[i][0]:             # <<<<<<<<<<<<<<
+ *             result[arr1[i][1]] = result[arr1[i-1][1]]
+ *         else:
  */
     __pyx_t_10 = __pyx_v_i;
     __pyx_t_11 = 0;
@@ -2343,17 +2344,17 @@ static PyObject *__pyx_f_18graphframe_modules_fast_not_isin(__Pyx_memviewslice _
     } else if (unlikely(__pyx_t_11 >= __pyx_v_arr1.shape[1])) __pyx_t_12 = 1;
     if (unlikely(__pyx_t_12 != -1)) {
       __Pyx_RaiseBufferIndexError(__pyx_t_12);
-      __PYX_ERR(0, 20, __pyx_L1_error)
+      __PYX_ERR(0, 39, __pyx_L1_error)
     }
     __pyx_t_13 = ((__pyx_v_prior == (*((unsigned PY_LONG_LONG const  *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr1.data + __pyx_t_10 * __pyx_v_arr1.strides[0]) ) + __pyx_t_11 * __pyx_v_arr1.strides[1]) )))) != 0);
     if (__pyx_t_13) {
 
-      /* "graphframe_modules.pyx":21
- *       # mini optimization: don't perform binsearch if we already know node is/isnot in graph
- *       if prior == arr1[i][0]:
- *         result[arr1[i][1]] = result[arr1[i-1][1]]             # <<<<<<<<<<<<<<
- *       else:
- *         index = binary_search(arr2, arr2_len, arr1[i][0])
+      /* "hatchet/cython_modules/graphframe_modules.pyx":40
+ *         # mini optimization: don't perform binsearch if we already know node is/isnot in graph
+ *         if prior == arr1[i][0]:
+ *             result[arr1[i][1]] = result[arr1[i-1][1]]             # <<<<<<<<<<<<<<
+ *         else:
+ *             index = binary_search(arr2, arr2_len, arr1[i][0])
  */
       __pyx_t_11 = (__pyx_v_i - 1);
       __pyx_t_10 = 1;
@@ -2368,10 +2369,10 @@ static PyObject *__pyx_f_18graphframe_modules_fast_not_isin(__Pyx_memviewslice _
       } else if (unlikely(__pyx_t_10 >= __pyx_v_arr1.shape[1])) __pyx_t_12 = 1;
       if (unlikely(__pyx_t_12 != -1)) {
         __Pyx_RaiseBufferIndexError(__pyx_t_12);
-        __PYX_ERR(0, 21, __pyx_L1_error)
+        __PYX_ERR(0, 40, __pyx_L1_error)
       }
       __pyx_t_14 = (*((unsigned PY_LONG_LONG const  *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr1.data + __pyx_t_11 * __pyx_v_arr1.strides[0]) ) + __pyx_t_10 * __pyx_v_arr1.strides[1]) )));
-      __pyx_t_6 = __Pyx_GetItemInt(__pyx_v_result, __pyx_t_14, unsigned PY_LONG_LONG const , 0, __Pyx_PyInt_From_unsigned_PY_LONG_LONG, 0, 0, 1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 21, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_GetItemInt(__pyx_v_result, __pyx_t_14, unsigned PY_LONG_LONG const , 0, __Pyx_PyInt_From_unsigned_PY_LONG_LONG, 0, 0, 1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 40, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
       __pyx_t_10 = __pyx_v_i;
       __pyx_t_11 = 1;
@@ -2386,28 +2387,28 @@ static PyObject *__pyx_f_18graphframe_modules_fast_not_isin(__Pyx_memviewslice _
       } else if (unlikely(__pyx_t_11 >= __pyx_v_arr1.shape[1])) __pyx_t_12 = 1;
       if (unlikely(__pyx_t_12 != -1)) {
         __Pyx_RaiseBufferIndexError(__pyx_t_12);
-        __PYX_ERR(0, 21, __pyx_L1_error)
+        __PYX_ERR(0, 40, __pyx_L1_error)
       }
       __pyx_t_14 = (*((unsigned PY_LONG_LONG const  *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr1.data + __pyx_t_10 * __pyx_v_arr1.strides[0]) ) + __pyx_t_11 * __pyx_v_arr1.strides[1]) )));
-      if (unlikely(__Pyx_SetItemInt(__pyx_v_result, __pyx_t_14, __pyx_t_6, unsigned PY_LONG_LONG const , 0, __Pyx_PyInt_From_unsigned_PY_LONG_LONG, 0, 0, 1) < 0)) __PYX_ERR(0, 21, __pyx_L1_error)
+      if (unlikely(__Pyx_SetItemInt(__pyx_v_result, __pyx_t_14, __pyx_t_6, unsigned PY_LONG_LONG const , 0, __Pyx_PyInt_From_unsigned_PY_LONG_LONG, 0, 0, 1) < 0)) __PYX_ERR(0, 40, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-      /* "graphframe_modules.pyx":20
+      /* "hatchet/cython_modules/graphframe_modules.pyx":39
  *     for i in range(arr1_len):
- *       # mini optimization: don't perform binsearch if we already know node is/isnot in graph
- *       if prior == arr1[i][0]:             # <<<<<<<<<<<<<<
- *         result[arr1[i][1]] = result[arr1[i-1][1]]
- *       else:
+ *         # mini optimization: don't perform binsearch if we already know node is/isnot in graph
+ *         if prior == arr1[i][0]:             # <<<<<<<<<<<<<<
+ *             result[arr1[i][1]] = result[arr1[i-1][1]]
+ *         else:
  */
       goto __pyx_L5;
     }
 
-    /* "graphframe_modules.pyx":23
- *         result[arr1[i][1]] = result[arr1[i-1][1]]
- *       else:
- *         index = binary_search(arr2, arr2_len, arr1[i][0])             # <<<<<<<<<<<<<<
- *         if index == -1:
- *             result[arr1[i][1]] = True
+    /* "hatchet/cython_modules/graphframe_modules.pyx":42
+ *             result[arr1[i][1]] = result[arr1[i-1][1]]
+ *         else:
+ *             index = binary_search(arr2, arr2_len, arr1[i][0])             # <<<<<<<<<<<<<<
+ *             if index == -1:
+ *                 result[arr1[i][1]] = True
  */
     /*else*/ {
       __pyx_t_11 = __pyx_v_i;
@@ -2423,30 +2424,30 @@ static PyObject *__pyx_f_18graphframe_modules_fast_not_isin(__Pyx_memviewslice _
       } else if (unlikely(__pyx_t_10 >= __pyx_v_arr1.shape[1])) __pyx_t_12 = 1;
       if (unlikely(__pyx_t_12 != -1)) {
         __Pyx_RaiseBufferIndexError(__pyx_t_12);
-        __PYX_ERR(0, 23, __pyx_L1_error)
+        __PYX_ERR(0, 42, __pyx_L1_error)
       }
-      __pyx_t_6 = __pyx_f_18graphframe_modules_binary_search(__pyx_v_arr2, __pyx_v_arr2_len, (*((unsigned PY_LONG_LONG const  *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr1.data + __pyx_t_11 * __pyx_v_arr1.strides[0]) ) + __pyx_t_10 * __pyx_v_arr1.strides[1]) )))); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 23, __pyx_L1_error)
+      __pyx_t_6 = __pyx_f_7hatchet_14cython_modules_18graphframe_modules_binary_search(__pyx_v_arr2, __pyx_v_arr2_len, (*((unsigned PY_LONG_LONG const  *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr1.data + __pyx_t_11 * __pyx_v_arr1.strides[0]) ) + __pyx_t_10 * __pyx_v_arr1.strides[1]) )))); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 42, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
-      __pyx_t_15 = __Pyx_PyInt_As_long(__pyx_t_6); if (unlikely((__pyx_t_15 == (long)-1) && PyErr_Occurred())) __PYX_ERR(0, 23, __pyx_L1_error)
+      __pyx_t_15 = __Pyx_PyInt_As_long(__pyx_t_6); if (unlikely((__pyx_t_15 == (long)-1) && PyErr_Occurred())) __PYX_ERR(0, 42, __pyx_L1_error)
       __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
       __pyx_v_index = __pyx_t_15;
 
-      /* "graphframe_modules.pyx":24
- *       else:
- *         index = binary_search(arr2, arr2_len, arr1[i][0])
- *         if index == -1:             # <<<<<<<<<<<<<<
- *             result[arr1[i][1]] = True
+      /* "hatchet/cython_modules/graphframe_modules.pyx":43
  *         else:
+ *             index = binary_search(arr2, arr2_len, arr1[i][0])
+ *             if index == -1:             # <<<<<<<<<<<<<<
+ *                 result[arr1[i][1]] = True
+ *             else:
  */
       __pyx_t_13 = ((__pyx_v_index == -1L) != 0);
       if (__pyx_t_13) {
 
-        /* "graphframe_modules.pyx":25
- *         index = binary_search(arr2, arr2_len, arr1[i][0])
- *         if index == -1:
- *             result[arr1[i][1]] = True             # <<<<<<<<<<<<<<
- *         else:
- *             result[arr1[i][1]] = False
+        /* "hatchet/cython_modules/graphframe_modules.pyx":44
+ *             index = binary_search(arr2, arr2_len, arr1[i][0])
+ *             if index == -1:
+ *                 result[arr1[i][1]] = True             # <<<<<<<<<<<<<<
+ *             else:
+ *                 result[arr1[i][1]] = False
  */
         __pyx_t_10 = __pyx_v_i;
         __pyx_t_11 = 1;
@@ -2461,27 +2462,27 @@ static PyObject *__pyx_f_18graphframe_modules_fast_not_isin(__Pyx_memviewslice _
         } else if (unlikely(__pyx_t_11 >= __pyx_v_arr1.shape[1])) __pyx_t_12 = 1;
         if (unlikely(__pyx_t_12 != -1)) {
           __Pyx_RaiseBufferIndexError(__pyx_t_12);
-          __PYX_ERR(0, 25, __pyx_L1_error)
+          __PYX_ERR(0, 44, __pyx_L1_error)
         }
         __pyx_t_14 = (*((unsigned PY_LONG_LONG const  *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr1.data + __pyx_t_10 * __pyx_v_arr1.strides[0]) ) + __pyx_t_11 * __pyx_v_arr1.strides[1]) )));
-        if (unlikely(__Pyx_SetItemInt(__pyx_v_result, __pyx_t_14, Py_True, unsigned PY_LONG_LONG const , 0, __Pyx_PyInt_From_unsigned_PY_LONG_LONG, 0, 0, 1) < 0)) __PYX_ERR(0, 25, __pyx_L1_error)
+        if (unlikely(__Pyx_SetItemInt(__pyx_v_result, __pyx_t_14, Py_True, unsigned PY_LONG_LONG const , 0, __Pyx_PyInt_From_unsigned_PY_LONG_LONG, 0, 0, 1) < 0)) __PYX_ERR(0, 44, __pyx_L1_error)
 
-        /* "graphframe_modules.pyx":24
- *       else:
- *         index = binary_search(arr2, arr2_len, arr1[i][0])
- *         if index == -1:             # <<<<<<<<<<<<<<
- *             result[arr1[i][1]] = True
+        /* "hatchet/cython_modules/graphframe_modules.pyx":43
  *         else:
+ *             index = binary_search(arr2, arr2_len, arr1[i][0])
+ *             if index == -1:             # <<<<<<<<<<<<<<
+ *                 result[arr1[i][1]] = True
+ *             else:
  */
         goto __pyx_L6;
       }
 
-      /* "graphframe_modules.pyx":27
- *             result[arr1[i][1]] = True
- *         else:
- *             result[arr1[i][1]] = False             # <<<<<<<<<<<<<<
+      /* "hatchet/cython_modules/graphframe_modules.pyx":46
+ *                 result[arr1[i][1]] = True
+ *             else:
+ *                 result[arr1[i][1]] = False             # <<<<<<<<<<<<<<
  * 
- *       prior = arr1[i][0]
+ *     prior = arr1[i][0]
  */
       /*else*/ {
         __pyx_t_11 = __pyx_v_i;
@@ -2497,58 +2498,58 @@ static PyObject *__pyx_f_18graphframe_modules_fast_not_isin(__Pyx_memviewslice _
         } else if (unlikely(__pyx_t_10 >= __pyx_v_arr1.shape[1])) __pyx_t_12 = 1;
         if (unlikely(__pyx_t_12 != -1)) {
           __Pyx_RaiseBufferIndexError(__pyx_t_12);
-          __PYX_ERR(0, 27, __pyx_L1_error)
+          __PYX_ERR(0, 46, __pyx_L1_error)
         }
         __pyx_t_14 = (*((unsigned PY_LONG_LONG const  *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr1.data + __pyx_t_11 * __pyx_v_arr1.strides[0]) ) + __pyx_t_10 * __pyx_v_arr1.strides[1]) )));
-        if (unlikely(__Pyx_SetItemInt(__pyx_v_result, __pyx_t_14, Py_False, unsigned PY_LONG_LONG const , 0, __Pyx_PyInt_From_unsigned_PY_LONG_LONG, 0, 0, 1) < 0)) __PYX_ERR(0, 27, __pyx_L1_error)
+        if (unlikely(__Pyx_SetItemInt(__pyx_v_result, __pyx_t_14, Py_False, unsigned PY_LONG_LONG const , 0, __Pyx_PyInt_From_unsigned_PY_LONG_LONG, 0, 0, 1) < 0)) __PYX_ERR(0, 46, __pyx_L1_error)
       }
       __pyx_L6:;
     }
     __pyx_L5:;
+  }
 
-    /* "graphframe_modules.pyx":29
- *             result[arr1[i][1]] = False
+  /* "hatchet/cython_modules/graphframe_modules.pyx":48
+ *                 result[arr1[i][1]] = False
  * 
- *       prior = arr1[i][0]             # <<<<<<<<<<<<<<
+ *     prior = arr1[i][0]             # <<<<<<<<<<<<<<
  * 
  *     return result
  */
-    __pyx_t_10 = __pyx_v_i;
-    __pyx_t_11 = 0;
-    __pyx_t_12 = -1;
-    if (__pyx_t_10 < 0) {
-      __pyx_t_10 += __pyx_v_arr1.shape[0];
-      if (unlikely(__pyx_t_10 < 0)) __pyx_t_12 = 0;
-    } else if (unlikely(__pyx_t_10 >= __pyx_v_arr1.shape[0])) __pyx_t_12 = 0;
-    if (__pyx_t_11 < 0) {
-      __pyx_t_11 += __pyx_v_arr1.shape[1];
-      if (unlikely(__pyx_t_11 < 0)) __pyx_t_12 = 1;
-    } else if (unlikely(__pyx_t_11 >= __pyx_v_arr1.shape[1])) __pyx_t_12 = 1;
-    if (unlikely(__pyx_t_12 != -1)) {
-      __Pyx_RaiseBufferIndexError(__pyx_t_12);
-      __PYX_ERR(0, 29, __pyx_L1_error)
-    }
-    __pyx_v_prior = (*((unsigned PY_LONG_LONG const  *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr1.data + __pyx_t_10 * __pyx_v_arr1.strides[0]) ) + __pyx_t_11 * __pyx_v_arr1.strides[1]) )));
+  __pyx_t_10 = __pyx_v_i;
+  __pyx_t_11 = 0;
+  __pyx_t_12 = -1;
+  if (__pyx_t_10 < 0) {
+    __pyx_t_10 += __pyx_v_arr1.shape[0];
+    if (unlikely(__pyx_t_10 < 0)) __pyx_t_12 = 0;
+  } else if (unlikely(__pyx_t_10 >= __pyx_v_arr1.shape[0])) __pyx_t_12 = 0;
+  if (__pyx_t_11 < 0) {
+    __pyx_t_11 += __pyx_v_arr1.shape[1];
+    if (unlikely(__pyx_t_11 < 0)) __pyx_t_12 = 1;
+  } else if (unlikely(__pyx_t_11 >= __pyx_v_arr1.shape[1])) __pyx_t_12 = 1;
+  if (unlikely(__pyx_t_12 != -1)) {
+    __Pyx_RaiseBufferIndexError(__pyx_t_12);
+    __PYX_ERR(0, 48, __pyx_L1_error)
   }
+  __pyx_v_prior = (*((unsigned PY_LONG_LONG const  *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_arr1.data + __pyx_t_10 * __pyx_v_arr1.strides[0]) ) + __pyx_t_11 * __pyx_v_arr1.strides[1]) )));
 
-  /* "graphframe_modules.pyx":31
- *       prior = arr1[i][0]
+  /* "hatchet/cython_modules/graphframe_modules.pyx":50
+ *     prior = arr1[i][0]
  * 
  *     return result             # <<<<<<<<<<<<<<
  * 
- * # basic binary search algorithm
+ * cdef binary_search(const unsigned long long[:,:] array, const long arr_len, const unsigned long long key):
  */
   __Pyx_XDECREF(__pyx_r);
   __Pyx_INCREF(__pyx_v_result);
   __pyx_r = __pyx_v_result;
   goto __pyx_L0;
 
-  /* "graphframe_modules.pyx":12
+  /* "hatchet/cython_modules/graphframe_modules.pyx":18
+ *         self_missing_node[snio_indices[i]] = 1
  * 
- * # Complexity: O(nlogn)
  * cpdef fast_not_isin(const unsigned long long[:,:] arr1, const unsigned long long[:,:] arr2, const long arr1_len, const long arr2_len):             # <<<<<<<<<<<<<<
- *     result = np.zeros(len(arr1), dtype=np.bool_)
- *     cdef long index = -1
+ *     """Check if elements in arr1 exist in arr2.
+ * 
  */
 
   /* function exit code */
@@ -2558,7 +2559,7 @@ static PyObject *__pyx_f_18graphframe_modules_fast_not_isin(__Pyx_memviewslice _
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
   __Pyx_XDECREF(__pyx_t_6);
-  __Pyx_AddTraceback("graphframe_modules.fast_not_isin", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("hatchet.cython_modules.graphframe_modules.fast_not_isin", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_result);
@@ -2568,8 +2569,9 @@ static PyObject *__pyx_f_18graphframe_modules_fast_not_isin(__Pyx_memviewslice _
 }
 
 /* Python wrapper */
-static PyObject *__pyx_pw_18graphframe_modules_3fast_not_isin(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
-static PyObject *__pyx_pw_18graphframe_modules_3fast_not_isin(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+static PyObject *__pyx_pw_7hatchet_14cython_modules_18graphframe_modules_3fast_not_isin(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static char __pyx_doc_7hatchet_14cython_modules_18graphframe_modules_2fast_not_isin[] = "Check if elements in arr1 exist in arr2.\n\n    A fast check to see if each element in arr1 exists in arr2. This returns a\n    vector mask equivalent to what the operation ~df.isin( ... ) would return.\n\n    Arguments:\n        arr1 (unsigned long long [][]): The array of values we are searching for.\n        arr2 (unsigned long long [][]): The sorted array of values we are searching in.\n\n    Returns:\n        (bool []): A boolean mask over arr1 indicating whether each element is or is not in\n            the function. True indicates that an element is not in arr2.\n    ";
+static PyObject *__pyx_pw_7hatchet_14cython_modules_18graphframe_modules_3fast_not_isin(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   __Pyx_memviewslice __pyx_v_arr1 = { 0, 0, { 0 }, { 0 }, { 0 } };
   __Pyx_memviewslice __pyx_v_arr2 = { 0, 0, { 0 }, { 0 }, { 0 } };
   long __pyx_v_arr1_len;
@@ -2607,23 +2609,23 @@ static PyObject *__pyx_pw_18graphframe_modules_3fast_not_isin(PyObject *__pyx_se
         case  1:
         if (likely((values[1] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_arr2)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("fast_not_isin", 1, 4, 4, 1); __PYX_ERR(0, 12, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("fast_not_isin", 1, 4, 4, 1); __PYX_ERR(0, 18, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  2:
         if (likely((values[2] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_arr1_len)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("fast_not_isin", 1, 4, 4, 2); __PYX_ERR(0, 12, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("fast_not_isin", 1, 4, 4, 2); __PYX_ERR(0, 18, __pyx_L3_error)
         }
         CYTHON_FALLTHROUGH;
         case  3:
         if (likely((values[3] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_arr2_len)) != 0)) kw_args--;
         else {
-          __Pyx_RaiseArgtupleInvalid("fast_not_isin", 1, 4, 4, 3); __PYX_ERR(0, 12, __pyx_L3_error)
+          __Pyx_RaiseArgtupleInvalid("fast_not_isin", 1, 4, 4, 3); __PYX_ERR(0, 18, __pyx_L3_error)
         }
       }
       if (unlikely(kw_args > 0)) {
-        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "fast_not_isin") < 0)) __PYX_ERR(0, 12, __pyx_L3_error)
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "fast_not_isin") < 0)) __PYX_ERR(0, 18, __pyx_L3_error)
       }
     } else if (PyTuple_GET_SIZE(__pyx_args) != 4) {
       goto __pyx_L5_argtuple_error;
@@ -2633,27 +2635,27 @@ static PyObject *__pyx_pw_18graphframe_modules_3fast_not_isin(PyObject *__pyx_se
       values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
       values[3] = PyTuple_GET_ITEM(__pyx_args, 3);
     }
-    __pyx_v_arr1 = __Pyx_PyObject_to_MemoryviewSlice_dsds_unsigned_PY_LONG_LONG__const__(values[0], 0); if (unlikely(!__pyx_v_arr1.memview)) __PYX_ERR(0, 12, __pyx_L3_error)
-    __pyx_v_arr2 = __Pyx_PyObject_to_MemoryviewSlice_dsds_unsigned_PY_LONG_LONG__const__(values[1], 0); if (unlikely(!__pyx_v_arr2.memview)) __PYX_ERR(0, 12, __pyx_L3_error)
-    __pyx_v_arr1_len = __Pyx_PyInt_As_long(values[2]); if (unlikely((__pyx_v_arr1_len == (long)-1) && PyErr_Occurred())) __PYX_ERR(0, 12, __pyx_L3_error)
-    __pyx_v_arr2_len = __Pyx_PyInt_As_long(values[3]); if (unlikely((__pyx_v_arr2_len == (long)-1) && PyErr_Occurred())) __PYX_ERR(0, 12, __pyx_L3_error)
+    __pyx_v_arr1 = __Pyx_PyObject_to_MemoryviewSlice_dsds_unsigned_PY_LONG_LONG__const__(values[0], 0); if (unlikely(!__pyx_v_arr1.memview)) __PYX_ERR(0, 18, __pyx_L3_error)
+    __pyx_v_arr2 = __Pyx_PyObject_to_MemoryviewSlice_dsds_unsigned_PY_LONG_LONG__const__(values[1], 0); if (unlikely(!__pyx_v_arr2.memview)) __PYX_ERR(0, 18, __pyx_L3_error)
+    __pyx_v_arr1_len = __Pyx_PyInt_As_long(values[2]); if (unlikely((__pyx_v_arr1_len == (long)-1) && PyErr_Occurred())) __PYX_ERR(0, 18, __pyx_L3_error)
+    __pyx_v_arr2_len = __Pyx_PyInt_As_long(values[3]); if (unlikely((__pyx_v_arr2_len == (long)-1) && PyErr_Occurred())) __PYX_ERR(0, 18, __pyx_L3_error)
   }
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("fast_not_isin", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 12, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("fast_not_isin", 1, 4, 4, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 18, __pyx_L3_error)
   __pyx_L3_error:;
-  __Pyx_AddTraceback("graphframe_modules.fast_not_isin", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("hatchet.cython_modules.graphframe_modules.fast_not_isin", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_18graphframe_modules_2fast_not_isin(__pyx_self, __pyx_v_arr1, __pyx_v_arr2, __pyx_v_arr1_len, __pyx_v_arr2_len);
+  __pyx_r = __pyx_pf_7hatchet_14cython_modules_18graphframe_modules_2fast_not_isin(__pyx_self, __pyx_v_arr1, __pyx_v_arr2, __pyx_v_arr1_len, __pyx_v_arr2_len);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_18graphframe_modules_2fast_not_isin(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_arr1, __Pyx_memviewslice __pyx_v_arr2, long __pyx_v_arr1_len, long __pyx_v_arr2_len) {
+static PyObject *__pyx_pf_7hatchet_14cython_modules_18graphframe_modules_2fast_not_isin(CYTHON_UNUSED PyObject *__pyx_self, __Pyx_memviewslice __pyx_v_arr1, __Pyx_memviewslice __pyx_v_arr2, long __pyx_v_arr1_len, long __pyx_v_arr2_len) {
   PyObject *__pyx_r = NULL;
   __Pyx_RefNannyDeclarations
   PyObject *__pyx_t_1 = NULL;
@@ -2662,9 +2664,9 @@ static PyObject *__pyx_pf_18graphframe_modules_2fast_not_isin(CYTHON_UNUSED PyOb
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("fast_not_isin", 0);
   __Pyx_XDECREF(__pyx_r);
-  if (unlikely(!__pyx_v_arr1.memview)) { __Pyx_RaiseUnboundLocalError("arr1"); __PYX_ERR(0, 12, __pyx_L1_error) }
-  if (unlikely(!__pyx_v_arr2.memview)) { __Pyx_RaiseUnboundLocalError("arr2"); __PYX_ERR(0, 12, __pyx_L1_error) }
-  __pyx_t_1 = __pyx_f_18graphframe_modules_fast_not_isin(__pyx_v_arr1, __pyx_v_arr2, __pyx_v_arr1_len, __pyx_v_arr2_len, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 12, __pyx_L1_error)
+  if (unlikely(!__pyx_v_arr1.memview)) { __Pyx_RaiseUnboundLocalError("arr1"); __PYX_ERR(0, 18, __pyx_L1_error) }
+  if (unlikely(!__pyx_v_arr2.memview)) { __Pyx_RaiseUnboundLocalError("arr2"); __PYX_ERR(0, 18, __pyx_L1_error) }
+  __pyx_t_1 = __pyx_f_7hatchet_14cython_modules_18graphframe_modules_fast_not_isin(__pyx_v_arr1, __pyx_v_arr2, __pyx_v_arr1_len, __pyx_v_arr2_len, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 18, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_r = __pyx_t_1;
   __pyx_t_1 = 0;
@@ -2673,7 +2675,7 @@ static PyObject *__pyx_pf_18graphframe_modules_2fast_not_isin(CYTHON_UNUSED PyOb
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
-  __Pyx_AddTraceback("graphframe_modules.fast_not_isin", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("hatchet.cython_modules.graphframe_modules.fast_not_isin", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_arr1, 1);
@@ -2683,15 +2685,15 @@ static PyObject *__pyx_pf_18graphframe_modules_2fast_not_isin(CYTHON_UNUSED PyOb
   return __pyx_r;
 }
 
-/* "graphframe_modules.pyx":34
+/* "hatchet/cython_modules/graphframe_modules.pyx":52
+ *     return result
  * 
- * # basic binary search algorithm
  * cdef binary_search(const unsigned long long[:,:] array, const long arr_len, const unsigned long long key):             # <<<<<<<<<<<<<<
- *     # This search returns the index of key if found, -1 if not found
- *     cdef long L = 0
+ *     """Basic Binary Search.
+ * 
  */
 
-static PyObject *__pyx_f_18graphframe_modules_binary_search(__Pyx_memviewslice __pyx_v_array, long const __pyx_v_arr_len, unsigned PY_LONG_LONG const __pyx_v_key) {
+static PyObject *__pyx_f_7hatchet_14cython_modules_18graphframe_modules_binary_search(__Pyx_memviewslice __pyx_v_array, long const __pyx_v_arr_len, unsigned PY_LONG_LONG const __pyx_v_key) {
   long __pyx_v_L;
   long __pyx_v_R;
   long __pyx_v_midpt;
@@ -2707,59 +2709,59 @@ static PyObject *__pyx_f_18graphframe_modules_binary_search(__Pyx_memviewslice _
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("binary_search", 0);
 
-  /* "graphframe_modules.pyx":36
- * cdef binary_search(const unsigned long long[:,:] array, const long arr_len, const unsigned long long key):
- *     # This search returns the index of key if found, -1 if not found
+  /* "hatchet/cython_modules/graphframe_modules.pyx":60
+ *     Returns: The index of key if found, -1 if not found.
+ *     """
  *     cdef long L = 0             # <<<<<<<<<<<<<<
  *     cdef long R = arr_len - 1
  *     cdef long midpt = 0
  */
   __pyx_v_L = 0;
 
-  /* "graphframe_modules.pyx":37
- *     # This search returns the index of key if found, -1 if not found
+  /* "hatchet/cython_modules/graphframe_modules.pyx":61
+ *     """
  *     cdef long L = 0
  *     cdef long R = arr_len - 1             # <<<<<<<<<<<<<<
  *     cdef long midpt = 0
- *     while(L <= R):
+ *     while (L <= R):
  */
   __pyx_v_R = (__pyx_v_arr_len - 1);
 
-  /* "graphframe_modules.pyx":38
+  /* "hatchet/cython_modules/graphframe_modules.pyx":62
  *     cdef long L = 0
  *     cdef long R = arr_len - 1
  *     cdef long midpt = 0             # <<<<<<<<<<<<<<
- *     while(L <= R):
- *       midpt = <long>floor((L+R)/2)
+ *     while (L <= R):
+ *         midpt = <long>floor((L+R)/2)
  */
   __pyx_v_midpt = 0;
 
-  /* "graphframe_modules.pyx":39
+  /* "hatchet/cython_modules/graphframe_modules.pyx":63
  *     cdef long R = arr_len - 1
  *     cdef long midpt = 0
- *     while(L <= R):             # <<<<<<<<<<<<<<
- *       midpt = <long>floor((L+R)/2)
- *       if array[midpt][0] < key:
+ *     while (L <= R):             # <<<<<<<<<<<<<<
+ *         midpt = <long>floor((L+R)/2)
+ *         if array[midpt][0] < key:
  */
   while (1) {
     __pyx_t_1 = ((__pyx_v_L <= __pyx_v_R) != 0);
     if (!__pyx_t_1) break;
 
-    /* "graphframe_modules.pyx":40
+    /* "hatchet/cython_modules/graphframe_modules.pyx":64
  *     cdef long midpt = 0
- *     while(L <= R):
- *       midpt = <long>floor((L+R)/2)             # <<<<<<<<<<<<<<
- *       if array[midpt][0] < key:
- *         L = midpt + 1
+ *     while (L <= R):
+ *         midpt = <long>floor((L+R)/2)             # <<<<<<<<<<<<<<
+ *         if array[midpt][0] < key:
+ *             L = midpt + 1
  */
     __pyx_v_midpt = ((long)floor(__Pyx_div_long((__pyx_v_L + __pyx_v_R), 2)));
 
-    /* "graphframe_modules.pyx":41
- *     while(L <= R):
- *       midpt = <long>floor((L+R)/2)
- *       if array[midpt][0] < key:             # <<<<<<<<<<<<<<
- *         L = midpt + 1
- *       elif array[midpt][0] > key:
+    /* "hatchet/cython_modules/graphframe_modules.pyx":65
+ *     while (L <= R):
+ *         midpt = <long>floor((L+R)/2)
+ *         if array[midpt][0] < key:             # <<<<<<<<<<<<<<
+ *             L = midpt + 1
+ *         elif array[midpt][0] > key:
  */
     __pyx_t_2 = __pyx_v_midpt;
     __pyx_t_3 = 0;
@@ -2774,36 +2776,36 @@ static PyObject *__pyx_f_18graphframe_modules_binary_search(__Pyx_memviewslice _
     } else if (unlikely(__pyx_t_3 >= __pyx_v_array.shape[1])) __pyx_t_4 = 1;
     if (unlikely(__pyx_t_4 != -1)) {
       __Pyx_RaiseBufferIndexError(__pyx_t_4);
-      __PYX_ERR(0, 41, __pyx_L1_error)
+      __PYX_ERR(0, 65, __pyx_L1_error)
     }
     __pyx_t_1 = (((*((unsigned PY_LONG_LONG const  *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_array.data + __pyx_t_2 * __pyx_v_array.strides[0]) ) + __pyx_t_3 * __pyx_v_array.strides[1]) ))) < __pyx_v_key) != 0);
     if (__pyx_t_1) {
 
-      /* "graphframe_modules.pyx":42
- *       midpt = <long>floor((L+R)/2)
- *       if array[midpt][0] < key:
- *         L = midpt + 1             # <<<<<<<<<<<<<<
- *       elif array[midpt][0] > key:
- *         R = midpt - 1
+      /* "hatchet/cython_modules/graphframe_modules.pyx":66
+ *         midpt = <long>floor((L+R)/2)
+ *         if array[midpt][0] < key:
+ *             L = midpt + 1             # <<<<<<<<<<<<<<
+ *         elif array[midpt][0] > key:
+ *             R = midpt - 1
  */
       __pyx_v_L = (__pyx_v_midpt + 1);
 
-      /* "graphframe_modules.pyx":41
- *     while(L <= R):
- *       midpt = <long>floor((L+R)/2)
- *       if array[midpt][0] < key:             # <<<<<<<<<<<<<<
- *         L = midpt + 1
- *       elif array[midpt][0] > key:
+      /* "hatchet/cython_modules/graphframe_modules.pyx":65
+ *     while (L <= R):
+ *         midpt = <long>floor((L+R)/2)
+ *         if array[midpt][0] < key:             # <<<<<<<<<<<<<<
+ *             L = midpt + 1
+ *         elif array[midpt][0] > key:
  */
       goto __pyx_L5;
     }
 
-    /* "graphframe_modules.pyx":43
- *       if array[midpt][0] < key:
- *         L = midpt + 1
- *       elif array[midpt][0] > key:             # <<<<<<<<<<<<<<
- *         R = midpt - 1
- *       else:
+    /* "hatchet/cython_modules/graphframe_modules.pyx":67
+ *         if array[midpt][0] < key:
+ *             L = midpt + 1
+ *         elif array[midpt][0] > key:             # <<<<<<<<<<<<<<
+ *             R = midpt - 1
+ *         else:
  */
     __pyx_t_3 = __pyx_v_midpt;
     __pyx_t_2 = 0;
@@ -2818,39 +2820,39 @@ static PyObject *__pyx_f_18graphframe_modules_binary_search(__Pyx_memviewslice _
     } else if (unlikely(__pyx_t_2 >= __pyx_v_array.shape[1])) __pyx_t_4 = 1;
     if (unlikely(__pyx_t_4 != -1)) {
       __Pyx_RaiseBufferIndexError(__pyx_t_4);
-      __PYX_ERR(0, 43, __pyx_L1_error)
+      __PYX_ERR(0, 67, __pyx_L1_error)
     }
     __pyx_t_1 = (((*((unsigned PY_LONG_LONG const  *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_array.data + __pyx_t_3 * __pyx_v_array.strides[0]) ) + __pyx_t_2 * __pyx_v_array.strides[1]) ))) > __pyx_v_key) != 0);
     if (__pyx_t_1) {
 
-      /* "graphframe_modules.pyx":44
- *         L = midpt + 1
- *       elif array[midpt][0] > key:
- *         R = midpt - 1             # <<<<<<<<<<<<<<
- *       else:
- *         return midpt
+      /* "hatchet/cython_modules/graphframe_modules.pyx":68
+ *             L = midpt + 1
+ *         elif array[midpt][0] > key:
+ *             R = midpt - 1             # <<<<<<<<<<<<<<
+ *         else:
+ *             return midpt
  */
       __pyx_v_R = (__pyx_v_midpt - 1);
 
-      /* "graphframe_modules.pyx":43
- *       if array[midpt][0] < key:
- *         L = midpt + 1
- *       elif array[midpt][0] > key:             # <<<<<<<<<<<<<<
- *         R = midpt - 1
- *       else:
+      /* "hatchet/cython_modules/graphframe_modules.pyx":67
+ *         if array[midpt][0] < key:
+ *             L = midpt + 1
+ *         elif array[midpt][0] > key:             # <<<<<<<<<<<<<<
+ *             R = midpt - 1
+ *         else:
  */
       goto __pyx_L5;
     }
 
-    /* "graphframe_modules.pyx":46
- *         R = midpt - 1
- *       else:
- *         return midpt             # <<<<<<<<<<<<<<
+    /* "hatchet/cython_modules/graphframe_modules.pyx":70
+ *             R = midpt - 1
+ *         else:
+ *             return midpt             # <<<<<<<<<<<<<<
  *     return -1
  */
     /*else*/ {
       __Pyx_XDECREF(__pyx_r);
-      __pyx_t_5 = __Pyx_PyInt_From_long(__pyx_v_midpt); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 46, __pyx_L1_error)
+      __pyx_t_5 = __Pyx_PyInt_From_long(__pyx_v_midpt); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 70, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
       __pyx_r = __pyx_t_5;
       __pyx_t_5 = 0;
@@ -2859,9 +2861,9 @@ static PyObject *__pyx_f_18graphframe_modules_binary_search(__Pyx_memviewslice _
     __pyx_L5:;
   }
 
-  /* "graphframe_modules.pyx":47
- *       else:
- *         return midpt
+  /* "hatchet/cython_modules/graphframe_modules.pyx":71
+ *         else:
+ *             return midpt
  *     return -1             # <<<<<<<<<<<<<<
  */
   __Pyx_XDECREF(__pyx_r);
@@ -2869,18 +2871,18 @@ static PyObject *__pyx_f_18graphframe_modules_binary_search(__Pyx_memviewslice _
   __pyx_r = __pyx_int_neg_1;
   goto __pyx_L0;
 
-  /* "graphframe_modules.pyx":34
+  /* "hatchet/cython_modules/graphframe_modules.pyx":52
+ *     return result
  * 
- * # basic binary search algorithm
  * cdef binary_search(const unsigned long long[:,:] array, const long arr_len, const unsigned long long key):             # <<<<<<<<<<<<<<
- *     # This search returns the index of key if found, -1 if not found
- *     cdef long L = 0
+ *     """Basic Binary Search.
+ * 
  */
 
   /* function exit code */
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_AddTraceback("graphframe_modules.binary_search", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("hatchet.cython_modules.graphframe_modules.binary_search", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XGIVEREF(__pyx_r);
@@ -16028,7 +16030,7 @@ static PyBufferProcs __pyx_tp_as_buffer_array = {
 
 static PyTypeObject __pyx_type___pyx_array = {
   PyVarObject_HEAD_INIT(0, 0)
-  "graphframe_modules.array", /*tp_name*/
+  "hatchet.cython_modules.graphframe_modules.array", /*tp_name*/
   sizeof(struct __pyx_array_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_array, /*tp_dealloc*/
@@ -16147,7 +16149,7 @@ static PyMethodDef __pyx_methods_Enum[] = {
 
 static PyTypeObject __pyx_type___pyx_MemviewEnum = {
   PyVarObject_HEAD_INIT(0, 0)
-  "graphframe_modules.Enum", /*tp_name*/
+  "hatchet.cython_modules.graphframe_modules.Enum", /*tp_name*/
   sizeof(struct __pyx_MemviewEnum_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_Enum, /*tp_dealloc*/
@@ -16408,7 +16410,7 @@ static PyBufferProcs __pyx_tp_as_buffer_memoryview = {
 
 static PyTypeObject __pyx_type___pyx_memoryview = {
   PyVarObject_HEAD_INIT(0, 0)
-  "graphframe_modules.memoryview", /*tp_name*/
+  "hatchet.cython_modules.graphframe_modules.memoryview", /*tp_name*/
   sizeof(struct __pyx_memoryview_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc_memoryview, /*tp_dealloc*/
@@ -16546,7 +16548,7 @@ static struct PyGetSetDef __pyx_getsets__memoryviewslice[] = {
 
 static PyTypeObject __pyx_type___pyx_memoryviewslice = {
   PyVarObject_HEAD_INIT(0, 0)
-  "graphframe_modules._memoryviewslice", /*tp_name*/
+  "hatchet.cython_modules.graphframe_modules._memoryviewslice", /*tp_name*/
   sizeof(struct __pyx_memoryviewslice_obj), /*tp_basicsize*/
   0, /*tp_itemsize*/
   __pyx_tp_dealloc__memoryviewslice, /*tp_dealloc*/
@@ -16622,7 +16624,7 @@ static PyTypeObject __pyx_type___pyx_memoryviewslice = {
 };
 
 static PyMethodDef __pyx_methods[] = {
-  {"fast_not_isin", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_18graphframe_modules_3fast_not_isin, METH_VARARGS|METH_KEYWORDS, 0},
+  {"fast_not_isin", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_7hatchet_14cython_modules_18graphframe_modules_3fast_not_isin, METH_VARARGS|METH_KEYWORDS, __pyx_doc_7hatchet_14cython_modules_18graphframe_modules_2fast_not_isin},
   {0, 0, 0, 0}
 };
 
@@ -16717,8 +16719,8 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_u_fortran, __pyx_k_fortran, sizeof(__pyx_k_fortran), 0, 1, 0, 1},
   {&__pyx_n_s_getstate, __pyx_k_getstate, sizeof(__pyx_k_getstate), 0, 0, 1, 1},
   {&__pyx_kp_s_got_differing_extents_in_dimensi, __pyx_k_got_differing_extents_in_dimensi, sizeof(__pyx_k_got_differing_extents_in_dimensi), 0, 0, 1, 0},
-  {&__pyx_n_s_graphframe_modules, __pyx_k_graphframe_modules, sizeof(__pyx_k_graphframe_modules), 0, 0, 1, 1},
   {&__pyx_kp_s_graphframe_modules_pyx, __pyx_k_graphframe_modules_pyx, sizeof(__pyx_k_graphframe_modules_pyx), 0, 0, 1, 0},
+  {&__pyx_n_s_hatchet_cython_modules_graphfram, __pyx_k_hatchet_cython_modules_graphfram, sizeof(__pyx_k_hatchet_cython_modules_graphfram), 0, 0, 1, 1},
   {&__pyx_n_s_i, __pyx_k_i, sizeof(__pyx_k_i), 0, 0, 1, 1},
   {&__pyx_n_s_id, __pyx_k_id, sizeof(__pyx_k_id), 0, 0, 1, 1},
   {&__pyx_n_s_import, __pyx_k_import, sizeof(__pyx_k_import), 0, 0, 1, 1},
@@ -16773,7 +16775,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, 0, 0, 0, 0, 0, 0}
 };
 static CYTHON_SMALL_CODE int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 8, __pyx_L1_error)
+  __pyx_builtin_range = __Pyx_GetBuiltinName(__pyx_n_s_range); if (!__pyx_builtin_range) __PYX_ERR(0, 15, __pyx_L1_error)
   __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(1, 133, __pyx_L1_error)
   __pyx_builtin_MemoryError = __Pyx_GetBuiltinName(__pyx_n_s_MemoryError); if (!__pyx_builtin_MemoryError) __PYX_ERR(1, 148, __pyx_L1_error)
   __pyx_builtin_enumerate = __Pyx_GetBuiltinName(__pyx_n_s_enumerate); if (!__pyx_builtin_enumerate) __PYX_ERR(1, 151, __pyx_L1_error)
@@ -16982,17 +16984,17 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__18);
   __Pyx_GIVEREF(__pyx_tuple__18);
 
-  /* "graphframe_modules.pyx":7
- * 
+  /* "hatchet/cython_modules/graphframe_modules.pyx":13
+ * # Description: All cython code related to graphframe.py
  * @cython.boundscheck(False)
- * def add_L(const long snio_len, char[:] self_missing_node, const long[:] snio_indices):             # <<<<<<<<<<<<<<
+ * def add_L(const long snio_len, short[:] self_missing_node, const long[:] snio_indices):             # <<<<<<<<<<<<<<
+ *     """Adds a '1' representing an 'L' where rows are in self but not in other."""
  *     for i in range(snio_len):
- *       self_missing_node[snio_indices[i]] = 'L'
  */
-  __pyx_tuple__19 = PyTuple_Pack(4, __pyx_n_s_snio_len, __pyx_n_s_self_missing_node, __pyx_n_s_snio_indices, __pyx_n_s_i); if (unlikely(!__pyx_tuple__19)) __PYX_ERR(0, 7, __pyx_L1_error)
+  __pyx_tuple__19 = PyTuple_Pack(4, __pyx_n_s_snio_len, __pyx_n_s_self_missing_node, __pyx_n_s_snio_indices, __pyx_n_s_i); if (unlikely(!__pyx_tuple__19)) __PYX_ERR(0, 13, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__19);
   __Pyx_GIVEREF(__pyx_tuple__19);
-  __pyx_codeobj__20 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__19, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_graphframe_modules_pyx, __pyx_n_s_add_L, 7, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__20)) __PYX_ERR(0, 7, __pyx_L1_error)
+  __pyx_codeobj__20 = (PyObject*)__Pyx_PyCode_New(3, 0, 4, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__19, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_graphframe_modules_pyx, __pyx_n_s_add_L, 13, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__20)) __PYX_ERR(0, 13, __pyx_L1_error)
 
   /* "View.MemoryView":286
  *         return self.name
@@ -17377,14 +17379,14 @@ if (!__Pyx_RefNanny) {
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_graphframe_modules) {
+  if (__pyx_module_is_main_hatchet__cython_modules__graphframe_modules) {
     if (PyObject_SetAttr(__pyx_m, __pyx_n_s_name_2, __pyx_n_s_main) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "graphframe_modules")) {
-      if (unlikely(PyDict_SetItemString(modules, "graphframe_modules", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "hatchet.cython_modules.graphframe_modules")) {
+      if (unlikely(PyDict_SetItemString(modules, "hatchet.cython_modules.graphframe_modules", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -17405,34 +17407,34 @@ if (!__Pyx_RefNanny) {
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "graphframe_modules.pyx":3
- * # Description: All cython code related to graphframe.py
+  /* "hatchet/cython_modules/graphframe_modules.pyx":7
+ * 
  * import cython
  * import numpy as np             # <<<<<<<<<<<<<<
  * from libc.math cimport floor
  * 
  */
-  __pyx_t_1 = __Pyx_Import(__pyx_n_s_numpy, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 3, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_Import(__pyx_n_s_numpy, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 7, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) __PYX_ERR(0, 3, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) __PYX_ERR(0, 7, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "graphframe_modules.pyx":7
- * 
+  /* "hatchet/cython_modules/graphframe_modules.pyx":13
+ * # Description: All cython code related to graphframe.py
  * @cython.boundscheck(False)
- * def add_L(const long snio_len, char[:] self_missing_node, const long[:] snio_indices):             # <<<<<<<<<<<<<<
+ * def add_L(const long snio_len, short[:] self_missing_node, const long[:] snio_indices):             # <<<<<<<<<<<<<<
+ *     """Adds a '1' representing an 'L' where rows are in self but not in other."""
  *     for i in range(snio_len):
- *       self_missing_node[snio_indices[i]] = 'L'
  */
-  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_18graphframe_modules_1add_L, NULL, __pyx_n_s_graphframe_modules); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 7, __pyx_L1_error)
+  __pyx_t_1 = PyCFunction_NewEx(&__pyx_mdef_7hatchet_14cython_modules_18graphframe_modules_1add_L, NULL, __pyx_n_s_hatchet_cython_modules_graphfram); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 13, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_add_L, __pyx_t_1) < 0) __PYX_ERR(0, 7, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_add_L, __pyx_t_1) < 0) __PYX_ERR(0, 13, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "graphframe_modules.pyx":1
- * # Description: All cython code related to graphframe.py             # <<<<<<<<<<<<<<
- * import cython
- * import numpy as np
+  /* "hatchet/cython_modules/graphframe_modules.pyx":1
+ * # Copyright 2017-2020 Lawrence Livermore National Security, LLC and other             # <<<<<<<<<<<<<<
+ * # Hatchet Project Developers. See the top-level LICENSE file for details.
+ * #
  */
   __pyx_t_1 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -17599,11 +17601,11 @@ if (!__Pyx_RefNanny) {
   __Pyx_XDECREF(__pyx_t_1);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init graphframe_modules", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init hatchet.cython_modules.graphframe_modules", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_CLEAR(__pyx_m);
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init graphframe_modules");
+    PyErr_SetString(PyExc_ImportError, "init hatchet.cython_modules.graphframe_modules");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
@@ -20626,7 +20628,7 @@ no_fail:
 }
 
 /* ObjectToMemviewSlice */
-  static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_char(PyObject *obj, int writable_flag) {
+  static CYTHON_INLINE __Pyx_memviewslice __Pyx_PyObject_to_MemoryviewSlice_ds_short(PyObject *obj, int writable_flag) {
     __Pyx_memviewslice result = { 0, 0, { 0 }, { 0 }, { 0 } };
     __Pyx_BufFmt_StackElem stack[1];
     int axes_specs[] = { (__Pyx_MEMVIEW_DIRECT | __Pyx_MEMVIEW_STRIDED) };
@@ -20637,7 +20639,7 @@ no_fail:
     }
     retcode = __Pyx_ValidateAndInit_memviewslice(axes_specs, 0,
                                                  PyBUF_RECORDS_RO | writable_flag, 1,
-                                                 &__Pyx_TypeInfo_char, stack,
+                                                 &__Pyx_TypeInfo_short, stack,
                                                  &result, obj);
     if (unlikely(retcode == -1))
         goto __pyx_fail;

@@ -182,15 +182,16 @@ class ConsoleRenderer:
                 self._ansi_color_for_name(node_name) + node_name + self.colors.end
             )
 
+            # 0 is "", 1 is "L", and 2 is "R"
             if "_missing_node" in dataframe.columns:
                 left_or_right = dataframe.loc[df_index, "_missing_node"]
-                if left_or_right == "":
+                if left_or_right == 0:
                     lr_decorator = ""
-                elif left_or_right == "L":
+                elif left_or_right == 1:
                     lr_decorator = u" {c.left}{decorator}{c.end}".format(
                         decorator=self.lr_arrows["◀"], c=self.colors
                     )
-                elif left_or_right == "R":
+                elif left_or_right == 2:
                     lr_decorator = u" {c.right}{decorator}{c.end}".format(
                         decorator=self.lr_arrows["▶"], c=self.colors
                     )

@@ -10,10 +10,10 @@ from libc.math cimport floor
 
 # Description: All cython code related to graphframe.py
 @cython.boundscheck(False)
-def add_L(const long snio_len, char[:] self_missing_node, const long[:] snio_indices):
-    """Adds 'L' chars where rows are in self but not in other."""
+def add_L(const long snio_len, short[:] self_missing_node, const long[:] snio_indices):
+    """Adds a '1' where rows are in self but not in other."""
     for i in range(snio_len):
-        self_missing_node[snio_indices[i]] = 'L'
+        self_missing_node[snio_indices[i]] = 1
 
 cpdef fast_not_isin(const unsigned long long[:,:] arr1, const unsigned long long[:,:] arr2, const long arr1_len, const long arr2_len):
     """Check if elements in arr1 exist in arr2.
