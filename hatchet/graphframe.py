@@ -855,7 +855,7 @@ class GraphFrame:
 
             # This function adds 1 to all nodes in self.dataframe['_missing_node'] which
             # are in self but not in the other graphframe
-            _gfm_cy.add_L(snio_len, self_missing_node, snio_indices)
+            _gfm_cy.insert_one_for_self_nodes(snio_len, self_missing_node, snio_indices)
             self.dataframe["_missing_node"] = np.array(
                 [n for n in self_missing_node], dtype=np.short
             )
