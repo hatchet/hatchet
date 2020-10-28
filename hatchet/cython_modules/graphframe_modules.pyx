@@ -10,7 +10,7 @@ from libc.math cimport floor
 
 # Description: All cython code related to graphframe.py
 @cython.boundscheck(False)
-def add_L(const long snio_len, short[:] self_missing_node, const long[:] snio_indices):
+def insert_one_for_self_nodes(const long snio_len, short[:] self_missing_node, const long[:] snio_indices):
     """Adds a '1' where rows are in self but not in other."""
     for i in range(snio_len):
         self_missing_node[snio_indices[i]] = 1
