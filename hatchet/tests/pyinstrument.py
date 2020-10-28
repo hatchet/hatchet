@@ -117,4 +117,6 @@ def test_graphframe_to_literal(hatchet_pyinstrument_json):
     gf = GraphFrame.from_pyinstrument(str(hatchet_pyinstrument_json))
     graph_literal = gf.to_literal()
 
-    assert len(graph_literal) == len(gf.graph.roots)
+    gf2 = GraphFrame.from_literal(graph_literal)
+
+    assert len(gf.graph) == len(gf2.graph)
