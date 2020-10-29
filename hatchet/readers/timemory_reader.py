@@ -44,7 +44,7 @@ class TimemoryReader:
         elif not isinstance(input, str):
             self.graph_dict = json.loads(input.read())
         else:
-            raise TypeError("inpyt must be dict, json file, or string")
+            raise TypeError("input must be dict, json file, or string")
         self.name_to_hnode = {}
         self.name_to_dict = {}
         self.timer = Timer()
@@ -72,7 +72,7 @@ class TimemoryReader:
             raise TypeError("select must be None or list of string")
 
     def create_graph(self):
-        """Create graph frame"""
+        """Create graph and dataframe"""
 
         list_roots = []
         node_dicts = []
@@ -96,9 +96,7 @@ class TimemoryReader:
             return _tmp
 
         def add_metrics(_dict):
-            """Add any keys to metric_cols which don"t already
-            exist
-            """
+            """Add any keys to metric_cols which don't already exist"""
             for key, itr in _dict.items():
                 if key not in self.metric_cols:
                     self.metric_cols.append(key)
@@ -205,7 +203,7 @@ class TimemoryReader:
             """
 
             # If the hash is zero, that indicates that the node
-            # is a dummy for the root or is used for sychronizing data
+            # is a dummy for the root or is used for synchronizing data
             # between multiple threads
             if _dict["node"]["hash"] == 0:
                 if "children" in _dict:
@@ -264,7 +262,7 @@ class TimemoryReader:
         def eval_graph(_key, _dict, _rank):
             """Evaluate the entry and determine if it has relevant data.
             If the hash is zero, that indicates that the node
-            is a dummy for the root or is used for sychronizing data
+            is a dummy for the root or is used for synchronizing data
             between multiple threads
             """
             _nchild = len(_dict["children"])
@@ -285,7 +283,7 @@ class TimemoryReader:
 
         def read_graph(_key, _itr, _offset):
             """The layout of the graph at this stage
-            is subject slightly different structures
+            is subject to slightly different structures
             based on whether distributed memory parallelism (DMP)
             (e.g. MPI, UPC++) was supported and active
             """
