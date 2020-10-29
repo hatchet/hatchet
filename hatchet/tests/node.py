@@ -12,11 +12,11 @@ from hatchet.graph import Graph
 
 def test_from_lists():
     node = Node.from_lists("a")
-    assert node.frame == Frame(name="a")
+    assert node.frame == Frame(name="a", type="None")
 
-    a = Frame(name="a")
-    b = Frame(name="b")
-    c = Frame(name="c")
+    a = Frame(name="a", type="None")
+    b = Frame(name="b", type="None")
+    c = Frame(name="c", type="None")
 
     node = Node.from_lists(["a", ["b", "c"]])
 
@@ -63,12 +63,19 @@ def test_node_repr():
 
 
 def test_path():
-    d = Node(Frame(name="d"))
+    d = Node(Frame(name="d", type="function"))
     node = Node.from_lists(["a", ["b", d]])
 
-    assert d.path() == (Frame(name="a"), Frame(name="b"), Frame(name="d"))
-    assert d.parents[0].path() == (Frame(name="a"), Frame(name="b"))
-    assert node.path() == (Frame(name="a"),)
+    assert d.path() == (
+        Frame(name="a", type="None"),
+        Frame(name="b", type="None"),
+        Frame(name="d", type="function"),
+    )
+    assert d.parents[0].path() == (
+        Frame(name="a", type="None"),
+        Frame(name="b", type="None"),
+    )
+    assert node.path() == (Frame(name="a", type="None"),)
 
     assert d.path(attrs="name") == ("a", "b", "d")
     assert d.parents[0].path(attrs="name") == ("a", "b")
@@ -82,8 +89,16 @@ def test_paths():
         d.path()
 
     assert d.paths() == [
-        (Frame(name="a"), Frame(name="b"), Frame(name="d")),
-        (Frame(name="a"), Frame(name="c"), Frame(name="d")),
+        (
+            Frame(name="a", type="None"),
+            Frame(name="b", type="None"),
+            Frame(name="d", type="None"),
+        ),
+        (
+            Frame(name="a", type="None"),
+            Frame(name="c", type="None"),
+            Frame(name="d", type="None"),
+        ),
     ]
 
     assert d.paths(attrs="name") == [("a", "b", "d"), ("a", "c", "d")]

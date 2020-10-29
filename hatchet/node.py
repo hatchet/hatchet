@@ -222,14 +222,16 @@ In the above examples, the 'a' represents a Node with its
                 if isinstance(lists[0], Node):
                     node = lists[0]
                 elif isinstance(lists[0], str):
-                    node = Node(Frame(name=lists[0]))
+                    node = Node(Frame(name=lists[0], type="None"))
                 children = lists[1:]
                 for val in children:
                     _ = _from_lists(val, node)
             elif isinstance(lists, str):
-                node = Node(Frame(name=lists))
+                node = Node(Frame(name=lists, type="None"))
             elif isinstance(lists, Node):
                 node = lists
+                if "type" not in node.frame.attrs.keys():
+                    node.frame.attrs["type"] = "None"
             else:
                 raise ValueError("Argument must be str, list, or Node: %s" % lists)
 
