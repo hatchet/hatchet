@@ -192,9 +192,15 @@ class GraphFrame:
             recursively on all children.
             """
 
-            hnode = Node(
-                Frame({"name": child_dict["name"], "type": child_dict["type"]}), hparent
-            )
+            if "type" in child_dict:
+                hnode = Node(
+                    Frame({"name": child_dict["name"], "type": child_dict["type"]}),
+                    hparent,
+                )
+            else:
+                hnode = Node(
+                    Frame({"name": child_dict["name"], "type": "None"}), hparent
+                )
 
             node_dicts.append(
                 dict(
@@ -212,10 +218,17 @@ class GraphFrame:
 
         # start with creating a node_dict for each root
         for i in range(len(graph_dict)):
-            graph_root = Node(
-                Frame({"name": graph_dict[i]["name"], "type": graph_dict[i]["type"]}),
-                None,
-            )
+            if "type" in graph_dict[i]:
+                graph_root = Node(
+                    Frame(
+                        {"name": graph_dict[i]["name"], "type": graph_dict[i]["type"]}
+                    ),
+                    None,
+                )
+            else:
+                graph_root = Node(
+                    Frame({"name": graph_dict[i]["name"], "type": "None"}), None
+                )
 
             node_dict = {"node": graph_root, "name": graph_dict[i]["name"]}
             node_dict.update(**graph_dict[i]["metrics"])

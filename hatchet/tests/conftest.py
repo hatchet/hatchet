@@ -179,7 +179,6 @@ def mock_graph_literal():
             "children": [
                 {
                     "name": "bar",
-                    "type": "function",
                     "metrics": {"time (inc)": 20.0, "time": 5.0},
                     "children": [
                         {
@@ -189,7 +188,6 @@ def mock_graph_literal():
                         },
                         {
                             "name": "grault",
-                            "type": "function",
                             "metrics": {"time (inc)": 10.0, "time": 10.0},
                         },
                     ],
@@ -201,7 +199,6 @@ def mock_graph_literal():
                     "children": [
                         {
                             "name": "quux",
-                            "type": "function",
                             "metrics": {"time (inc)": 60.0, "time": 5.0},
                             "children": [
                                 {
@@ -211,7 +208,6 @@ def mock_graph_literal():
                                     "children": [
                                         {
                                             "name": "bar",
-                                            "type": "function",
                                             "metrics": {
                                                 "time (inc)": 20.0,
                                                 "time": 5.0,
@@ -227,7 +223,6 @@ def mock_graph_literal():
                                                 },
                                                 {
                                                     "name": "grault",
-                                                    "type": "function",
                                                     "metrics": {
                                                         "time (inc)": 10.0,
                                                         "time": 10.0,
@@ -237,7 +232,6 @@ def mock_graph_literal():
                                         },
                                         {
                                             "name": "grault",
-                                            "type": "function",
                                             "metrics": {
                                                 "time (inc)": 10.0,
                                                 "time": 10.0,
@@ -323,7 +317,6 @@ def mock_graph_literal():
             "children": [
                 {
                     "name": "bar",
-                    "type": "function",
                     "metrics": {"time (inc)": 20.0, "time": 5.0},
                     "children": [
                         {
@@ -333,7 +326,6 @@ def mock_graph_literal():
                         },
                         {
                             "name": "grault",
-                            "type": "function",
                             "metrics": {"time (inc)": 10.0, "time": 10.0},
                         },
                     ],
