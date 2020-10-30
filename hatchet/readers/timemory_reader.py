@@ -118,32 +118,19 @@ class TimemoryReader:
             """Performs a search for standard configurations of function + file + line"""
             import re
 
-            _tmp = process_regex(
-                re.search(
-                    r"(?P<head>.+)([ \t]+)\[(?P<func>\S+)([/])(?P<file>\S+):(?P<line>[0-9]+)\]$",
-                    _itr,
-                )
-            )
-            if not _tmp:
-                _tmp = process_regex(
-                    re.search(
-                        r"(?P<func>\S+)([@/])(?P<file>\S+):(?P<line>[0-9]+)[/]*(?P<tail>.*)",
-                        _itr,
-                    )
-                )
-            if not _tmp:
-                _tmp = process_regex(
-                    re.search(
-                        r"(?P<func>\S+)([@/])(?P<file>\S+)([/])(?P<tail>.*)", _itr
-                    )
-                )
-            if not _tmp:
-                _tmp = process_regex(
-                    re.search(r"(?P<func>\S+):(?P<line>[0-9]+)([/]*)(?P<tail>.*)", _itr)
-                )
+            _tmp = None
+            for _pattern in [
+                r"(?P<head>.+)([ \t]+)\[(?P<func>\S+)([/])(?P<file>\S+):(?P<line>[0-9]+)\]$",
+                r"(?P<func>\S+)([@/])(?P<file>\S+):(?P<line>[0-9]+)[/]*(?P<tail>.*)",
+                r"(?P<func>\S+)([@/])(?P<file>\S+)([/])(?P<tail>.*)",
+                r"(?P<func>\S+):(?P<line>[0-9]+)([/]*)(?P<tail>.*)",
+            ]:
+                _tmp = process_regex(re.search(_pattern, _itr))
+                if _tmp:
+                    break
             return _tmp if _tmp else None
 
-        def get_keys(_prop, _prefix):
+        def get_keys(_prefix):
             """Get the standard set of dictionary entries.
             Also, parses the prefix for func-file-line info
             which is typically in the form:
@@ -151,7 +138,6 @@ class TimemoryReader:
                 <FUNC>/<FILE>:<LINE>/...
                 <SOURCE>    [<FUNC>/<FILE>:<LINE>]
             """
-            # _name = _prop["properties"]["id"]
             _keys = {
                 "type": "region",
                 "name": _prefix,
@@ -212,7 +198,7 @@ class TimemoryReader:
                 return
 
             _prop = self.properties[_key]
-            _keys = get_keys(_prop, _dict["node"]["prefix"])
+            _keys = get_keys(_dict["node"]["prefix"])
             if _rank is not None:
                 _keys["nid"] = _rank
             _extra = {}
