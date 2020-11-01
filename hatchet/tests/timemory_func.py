@@ -1,5 +1,5 @@
 # Copyright 2020 The Regents of the University of California, through Lawrence
-# Berkeley National Laboratory and other Hatchet Project Developers. See the
+# Berkeley National Laboratory, and other Hatchet Project Developers. See the
 # top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
