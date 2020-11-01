@@ -3,9 +3,12 @@
 #
 # SPDX-License-Identifier: MIT
 
+from itertools import groupby
 from numbers import Real
 import re
+import pandas as pd
 from pandas import DataFrame
+from pandas.core.indexes.multi import MultiIndex
 
 from .node import Node, traversal_order
 
@@ -42,6 +45,36 @@ class QueryMatcher:
                 def filter_series(df_row):
                     matches = True
                     for k, v in attr_filter.items():
+                        if k == "depth":
+                            node = df_row.name
+                            if isinstance(v, str) and v.lower().startswith(compops):
+                                matches = matches and eval(
+                                    "{} {}".format(node._depth, v)
+                                )
+                            elif isinstance(v, Real):
+                                matches = matches and (node._depth == v)
+                            else:
+                                raise InvalidQueryFilter(
+                                    "Attribute {} has a numeric type. Valid filters for this attribute are a string starting with a comparison operator or a real number.".format(
+                                        k
+                                    )
+                                )
+                            continue
+                        if k == "node_id":
+                            node = df_row.name
+                            if isinstance(v, str) and v.lower().startswith(compops):
+                                matches = matches and eval(
+                                    "{} {}".format(node._hatchet_nid, v)
+                                )
+                            elif isinstance(v, Real):
+                                matches = matches and (node._hatchet_nid == v)
+                            else:
+                                raise InvalidQueryFilter(
+                                    "Attribute {} has a numeric type. Valid filters for this attribute are a string starting with a comparison operator or a real number.".format(
+                                        k
+                                    )
+                                )
+                            continue
                         if k not in df_row.keys():
                             return False
                         if isinstance(df_row[k], str):
@@ -94,7 +127,36 @@ class QueryMatcher:
                         )
                         first_no_drop_indices["val"] = False
                     matches = True
+                    node = df_row.name.to_frame().index[0][0]
                     for k, v in attr_filter.items():
+                        if k == "depth":
+                            if isinstance(v, str) and v.lower().startswith(compops):
+                                matches = matches and eval(
+                                    "{} {}".format(node._depth, v)
+                                )
+                            elif isinstance(v, Real):
+                                matches = matches and (node._depth == v)
+                            else:
+                                raise InvalidQueryFilter(
+                                    "Attribute {} has a numeric type. Valid filters for this attribute are a string starting with a comparison operator or a real number.".format(
+                                        k
+                                    )
+                                )
+                            continue
+                        if k == "node_id":
+                            if isinstance(v, str) and v.lower().startswith(compops):
+                                matches = matches and eval(
+                                    "{} {}".format(node._hatchet_nid, v)
+                                )
+                            elif isinstance(v, Real):
+                                matches = matches and (node._hatchet_nid == v)
+                            else:
+                                raise InvalidQueryFilter(
+                                    "Attribute {} has a numeric type. Valid filters for this attribute are a string starting with a comparison operator or a real number.".format(
+                                        k
+                                    )
+                                )
+                            continue
                         if k not in df_row.columns:
                             return False
                         if df_row[k].apply(type).eq(str).all():
@@ -232,7 +294,12 @@ class QueryMatcher:
         # query nodes the current node matches.
         for i, node_query in enumerate(self.query_pattern):
             _, filter_func = node_query
-            if filter_func(gf.dataframe.loc[node]):
+            row = None
+            if isinstance(gf.dataframe.index, MultiIndex):
+                row = pd.concat([gf.dataframe.loc[node]], keys=[node], names=["node"])
+            else:
+                row = gf.dataframe.loc[node]
+            if filter_func(row):
                 matches.append(i)
         self.search_cache[node._hatchet_nid] = matches
 
@@ -406,6 +473,7 @@ class QueryMatcher:
                 for s in sub_match:
                     if s is not None:
                         new_matches.append(m + s)
+                new_matches = [uniq_match for uniq_match, _ in groupby(new_matches)]
             # Overwrite the old matches with the updated matches
             matches = new_matches
             # If all the existing partial matches were not able to be
