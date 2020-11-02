@@ -516,7 +516,12 @@ class GraphFrame:
             return
 
         out_columns = self._init_sum_columns(columns, out_columns)
+
+        # for i, node in enumerate(self.graph.traverse()):
+        #     print(i, node)
+
         for node in self.graph.traverse():
+            # print("Node:", node)
             subgraph_nodes = list(node.traverse())
             # TODO: need a better way of aggregating inclusive metrics when
             # TODO: there is a multi-index
@@ -529,11 +534,30 @@ class GraphFrame:
 
             if is_index_or_multiindex:
                 for i in self.dataframe.loc[(node), out_columns].index.unique():
+                    if not isinstance(i, tuple):
+                        i = tuple([i])
+
                     # TODO: if you take the list constructor away from the
                     # TODO: assignment below, this assignment gives NaNs. Why?
-                    self.dataframe.loc[(node, i), out_columns] = list(
-                        function(self.dataframe.loc[(subgraph_nodes, i), columns])
-                    )
+                    # print("\n","#"*100+"\nSUBGRAPH NODES", type(subframe), "\n\nSUM\n", type(sum), "\n\nDATAFRAME AT NODE {} with i {}\n".format(node, i), type(self.dataframe.loc[(node, i), out_columns]) ,'\n'+"#"*100)
+
+                    for col in out_columns:
+                        print(col, type(col))
+                        # print(subgraph_nodes, type(subgraph_nodes))
+                        # # print(tuple([node])+ i)
+                        # X = self.dataframe.loc[tuple([subgraph_nodes])+i, col]
+                        # Y = self.dataframe.loc[tuple([node])+i, col]
+                        #
+                        # # print("\n\n", i, type(i), "Index NID: {} \n Name: {}".format(node._hatchet_nid, node))
+                        #
+                        # print("\nRHS\n", X, "\n\n")
+                        # print("Type: {}".format(type( X )), "\n")
+                        #
+                        # print("\nLHS\n", Y, "\n\n")
+                        # print("Type: {}".format(type(Y)), "\n")
+
+                        self.dataframe.loc[tuple([node]) + i, col] = [function(self.dataframe.loc[tuple([subgraph_nodes])+i, col])]
+
             else:
                 # TODO: if you take the list constructor away from the
                 # TODO: assignment below, this assignment gives NaNs. Why?
