@@ -958,9 +958,9 @@ def test_output_with_cycle_graphs():
     dotout = gf.to_dot()
 
     # scan through litout produced dictionary for edges
-    a_children = [n["name"] for n in lit_list[0]["children"]]
-    a_c_children = [n["name"] for n in lit_list[0]["children"][1]["children"]]
-    a_b_children = [n["name"] for n in lit_list[0]["children"][0]["children"]]
+    a_children = [n["frame"]["name"] for n in lit_list[0]["children"]]
+    a_c_children = [n["frame"]["name"] for n in lit_list[0]["children"][1]["children"]]
+    a_b_children = [n["frame"]["name"] for n in lit_list[0]["children"][0]["children"]]
 
     assert len(lit_list) == 1
     assert len(a_children) == 2
