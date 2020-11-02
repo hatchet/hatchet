@@ -42,6 +42,10 @@ class Frame:
         if not self.attrs:
             raise ValueError("Frame must be constructed with attributes!")
 
+        # add type to frame if type is not in the attributes dict or kwargs
+        if "type" not in self.attrs:
+            self.attrs["type"] = None
+
         self._tuple_repr = None
 
     def __eq__(self, other):

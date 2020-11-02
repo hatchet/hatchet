@@ -59,7 +59,7 @@ def test_traverse_dag():
 
 def test_node_repr():
     d = Node(Frame(a=1, b=2, c=3))
-    assert repr(d) == "Node({'a': 1, 'b': 2, 'c': 3})"
+    assert repr(d) == "Node({'a': 1, 'b': 2, 'c': 3, 'type': None})"
 
 
 def test_path():
