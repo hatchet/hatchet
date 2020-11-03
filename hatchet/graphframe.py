@@ -517,11 +517,7 @@ class GraphFrame:
 
         out_columns = self._init_sum_columns(columns, out_columns)
 
-        # for i, node in enumerate(self.graph.traverse()):
-        #     print(i, node)
-
         for node in self.graph.traverse():
-            # print("Node:", node)
             subgraph_nodes = list(node.traverse())
             # TODO: need a better way of aggregating inclusive metrics when
             # TODO: there is a multi-index
