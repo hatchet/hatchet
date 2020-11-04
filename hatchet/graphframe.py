@@ -516,7 +516,6 @@ class GraphFrame:
             return
 
         out_columns = self._init_sum_columns(columns, out_columns)
-
         for node in self.graph.traverse():
             subgraph_nodes = list(node.traverse())
             # TODO: need a better way of aggregating inclusive metrics when
@@ -533,7 +532,7 @@ class GraphFrame:
                     if not isinstance(i, tuple):
                         i = tuple([i])
                     for col in out_columns:
-                        # The bizarre layered derefrening here is required to make the final row-index tuple a non-nested tuple
+                        # The bizarre nested dereferencing here is required to make the final row-index tuple a non-nested tuple
                         # structured like: (node, rank, thread)
                         # Originally it was (node, (rank, thread)) and this was causing problems when attempting to access the cells
                         # we were trying to sum over (RHS) and the cell we were trying to put the results into (LHS)
