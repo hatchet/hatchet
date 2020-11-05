@@ -143,6 +143,38 @@ a cross section of the dataframe, say the values for rank 0, like this:
 
   print(gf.dataframe.xs(0, level="rank"))
 
+One can also view the graph in Hatchet's interactive visualization for Jupyter.
+In the Jupyter visualization shown below, users can explore their data by using
+their mouse to select and hide nodes. For those nodes selected, a table in the
+the upper right will display the metadata for the node(s) selected.
+
+.. code-block:: python
+
+  roundtrip_path = "hatchet/external/roundtrip/"
+  %load_ext roundtrip
+  %loadVisualization roundtrip_path literal_graph
+
+.. image:: images/jupyter-tree-overview.png
+   :scale: 70 %
+   :align: center
+
+Once the user has explored their data, the interactive visualization can output
+the corresponding callpath query of the selected nodes. This query can then be
+integrated into future workflows to automate the filtering of the data by the
+query. For the selection above, we can save the resulting query and use it in
+Hatchet's ``filter()`` function to filter the input graph in a Python script. A
+code snippet is shown below, with the resulting filtered graph shown on the
+right. An example notebook of the interactive visualization can be found in the
+`docs/examples/tutorials` directory.
+
+.. image:: images/jupyter-query-filter.png
+   :scale: 12 %
+   :align: right
+
+.. code-block:: python
+
+  %fetchData myQuery
+  filter_gf = gf.filter(myQuery)
 
 Dataframe operations
 ====================
