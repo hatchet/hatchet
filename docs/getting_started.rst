@@ -41,7 +41,7 @@ from the hatchet root directory:
 
 .. code-block:: console
 
-    $ source ./install.sh
+  $ source ./install.sh
 
 Note: The ``source`` keyword is required to update your PYTHONPATH environment
 variable. It is not necessary if you have already manually added the hatchet
