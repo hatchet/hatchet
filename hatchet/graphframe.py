@@ -621,19 +621,14 @@ class GraphFrame:
             node_name = self.dataframe.loc[df_index, name]
 
             node_dict["name"] = node_name
-            for i in hnode.frame.attrs.keys():
-                node_dict[i] = hnode.frame.attrs[i]
             node_dict["metrics"] = metrics_to_dict(hnode)
 
-            if hnode.children:
-                if hnode not in visited:
-                    visited.append(hnode)
-                    node_dict["children"] = []
+            if hnode.children and hnode not in visited:
+                visited.append(hnode)
+                node_dict["children"] = []
 
-                    for child in sorted(hnode.children, key=lambda n: n.frame):
-                        node_dict["children"].append(add_nodes(child))
-                else:
-                    node_dict["duplicate"] = True
+                for child in sorted(hnode.children, key=lambda n: n.frame):
+                    node_dict["children"].append(add_nodes(child))
 
             return node_dict
 
