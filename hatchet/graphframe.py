@@ -624,7 +624,12 @@ class GraphFrame:
             if shell == "ZMQInteractiveShell":
                 color = True
 
-        return ConsoleRenderer(unicode=True, color=color).render(
+        if sys.version_info.major == 2:
+            unicode = False
+        elif sys.version_info.major == 3:
+            unicode = True
+
+        return ConsoleRenderer(unicode=unicode, color=color).render(
             self.graph.roots,
             self.dataframe,
             metric_column=metric_column,

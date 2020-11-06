@@ -92,7 +92,10 @@ class ConsoleRenderer:
         if self.invert_colormap:
             self.colors.colormap.reverse()
 
-        return result
+        if self.unicode:
+            return result
+        else:
+            return result.encode("utf-8")
 
     # pylint: disable=W1401
     def render_preamble(self):
@@ -186,7 +189,7 @@ class ConsoleRenderer:
             if "_missing_node" in dataframe.columns:
                 left_or_right = dataframe.loc[df_index, "_missing_node"]
                 if left_or_right == 0:
-                    lr_decorator = ""
+                    lr_decorator = u""
                 elif left_or_right == 1:
                     lr_decorator = u" {c.left}{decorator}{c.end}".format(
                         decorator=self.lr_arrows["◀"], c=self.colors
