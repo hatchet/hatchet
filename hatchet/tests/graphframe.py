@@ -976,11 +976,11 @@ def test_output_with_cycle_graphs():
     assert "d" in a_c_children
     assert "d" in a_b_children
 
-    # check certian edges are in dot
+    # check certain edges are in dot
     for edge in dot_edges:
         assert edge in dotout
 
-    # check that a certian number of occurences
+    # check that a certain number of occurences
     # of same node are in tree indicating multiple
     # edges
     assert treeout.count("a") == 2

@@ -717,3 +717,124 @@ def mock_dag_literal_module_more_complex():
     ]
 
     return dag_ldict
+
+
+@pytest.fixture
+def mock_graph_literal_duplicates():
+    """Creates a mock tree with duplicate nodes."""
+    graph_dict = [
+        {
+            "name": "a",
+            "type": "function",
+            "metrics": {"time (inc)": 130.0, "time": 0.0},
+            "children": [
+                {
+                    "name": "b",
+                    "type": "function",
+                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "children": [
+                        {
+                            "name": "d",
+                            "type": "function",
+                            "metrics": {"time (inc)": 20.0, "time": 5.0},
+                            "children": [
+                                {
+                                    "name": "e",
+                                    "type": "function",
+                                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                                },
+                                {
+                                    "name": "f",
+                                    "type": "function",
+                                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                                },
+                            ],
+                        }
+                    ],
+                },
+                {
+                    "name": "c",
+                    "type": "function",
+                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "children": [
+                        {
+                            "name": "a",
+                            "duplicate": "True",
+                            "type": "function",
+                            "metrics": {"time (inc)": 20.0, "time": 5.0},
+                        },
+                        {
+                            "name": "d",
+                            "duplicate": "True",
+                            "type": "function",
+                            "metrics": {"time (inc)": 20.0, "time": 5.0},
+                        },
+                    ],
+                },
+            ],
+        }
+    ]
+
+    return graph_dict
+
+
+@pytest.fixture
+def mock_graph_literal_duplicate_first():
+    """Creates a mock tree with node with duplicate first."""
+    graph_dict = [
+        {
+            "name": "a",
+            "duplicate": True,
+            "type": "function",
+            "metrics": {"time (inc)": 130.0, "time": 0.0},
+            "children": [
+                {
+                    "name": "b",
+                    "duplicate": True,
+                    "type": "function",
+                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "children": [
+                        {
+                            "name": "d",
+                            "duplicate": True,
+                            "type": "function",
+                            "metrics": {"time (inc)": 20.0, "time": 5.0},
+                            "children": [
+                                {
+                                    "name": "e",
+                                    "type": "function",
+                                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                                },
+                                {
+                                    "name": "f",
+                                    "type": "function",
+                                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                                },
+                            ],
+                        }
+                    ],
+                },
+                {
+                    "name": "c",
+                    "type": "function",
+                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "children": [
+                        {
+                            "name": "a",
+                            "duplicate": "True",
+                            "type": "function",
+                            "metrics": {"time (inc)": 20.0, "time": 5.0},
+                        },
+                        {
+                            "name": "d",
+                            "duplicate": "True",
+                            "type": "function",
+                            "metrics": {"time (inc)": 20.0, "time": 5.0},
+                        },
+                    ],
+                },
+            ],
+        }
+    ]
+
+    return graph_dict
