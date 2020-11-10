@@ -43,6 +43,7 @@ If you are new to hatchet and want to start using it, see :doc:`Getting Started
 
    getting_started
    user_guide
+   data_generation
    analysis_examples
 
 
@@ -66,9 +67,9 @@ following `paper <http://www.cs.umd.edu/~bhatele/pubs/pdf/2019/sc2019.pdf>`_:
 
 .. toctree::
     :maxdepth: 2
-    :caption: Reference
+    :caption: References
 
-    publications
+   publications
 
 .. toctree::
    :maxdepth: 2
