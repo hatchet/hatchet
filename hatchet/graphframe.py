@@ -543,7 +543,6 @@ class GraphFrame:
                         self.dataframe.loc[df_index1, col] = [
                             function(self.dataframe.loc[df_index2, col])
                         ]
-
             else:
                 # TODO: if you take the list constructor away from the
                 # TODO: assignment below, this assignment gives NaNs. Why?
