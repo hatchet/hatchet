@@ -424,6 +424,9 @@ class GraphFrame:
 
             if is_index_or_multiindex:
                 for i in self.dataframe.loc[(node), out_columns].index.unique():
+                    # i is either rank or a tuple of (rank, thread). We check
+                    # if i is a tuple and if it is, we create a tuple of (node,
+                    # rank, thread). If not, we create a tuple of (node, rank).
                     if isinstance(i, tuple):
                         df_index1 = (node,) + i
                         df_index2 = (subgraph_nodes,) + i
@@ -432,9 +435,6 @@ class GraphFrame:
                         df_index2 = (subgraph_nodes, i)
 
                     for col in out_columns:
-                        # We have changed the dereferencing here to an index variable which accounts for situations where i is a tuple
-                        # Originally it was (node, (rank, thread)) and this was causing problems when attempting to access the cells
-                        # we were trying to sum over (RHS) and the cell we were trying to put the results into (LHS)
                         self.dataframe.loc[df_index1, col] = [
                             function(self.dataframe.loc[df_index2, col])
                         ]
