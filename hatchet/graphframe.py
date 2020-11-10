@@ -424,11 +424,20 @@ class GraphFrame:
 
             if is_index_or_multiindex:
                 for i in self.dataframe.loc[(node), out_columns].index.unique():
-                    # TODO: if you take the list constructor away from the
-                    # TODO: assignment below, this assignment gives NaNs. Why?
-                    self.dataframe.loc[(node, i), out_columns] = list(
-                        function(self.dataframe.loc[(subgraph_nodes, i), columns])
-                    )
+                    if isinstance(i, tuple):
+                        df_index1 = (node,) + i
+                        df_index2 = (subgraph_nodes,) + i
+                    else:
+                        df_index1 = (node, i)
+                        df_index2 = (subgraph_nodes, i)
+
+                    for col in out_columns:
+                        # We have changed the dereferencing here to an index variable which accounts for situations where i is a tuple
+                        # Originally it was (node, (rank, thread)) and this was causing problems when attempting to access the cells
+                        # we were trying to sum over (RHS) and the cell we were trying to put the results into (LHS)
+                        self.dataframe.loc[df_index1, col] = [
+                            function(self.dataframe.loc[df_index2, col])
+                        ]
             else:
                 # TODO: if you take the list constructor away from the
                 # TODO: assignment below, this assignment gives NaNs. Why?
