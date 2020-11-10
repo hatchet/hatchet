@@ -416,23 +416,24 @@ class GraphFrame:
             # TODO: need a better way of aggregating inclusive metrics when
             # TODO: there is a multi-index
             try:
-                is_index_or_multiindex = isinstance(
+                is_multi_index = isinstance(
                     self.dataframe.index, pd.core.index.MultiIndex
                 )
             except AttributeError:
-                is_index_or_multiindex = isinstance(self.dataframe.index, pd.MultiIndex)
+                is_multi_index = isinstance(self.dataframe.index, pd.MultiIndex)
 
-            if is_index_or_multiindex:
-                for i in self.dataframe.loc[(node), out_columns].index.unique():
-                    # i is either rank or a tuple of (rank, thread). We check
-                    # if i is a tuple and if it is, we create a tuple of (node,
-                    # rank, thread). If not, we create a tuple of (node, rank).
-                    if isinstance(i, tuple):
-                        df_index1 = (node,) + i
-                        df_index2 = (subgraph_nodes,) + i
+            if is_multi_index:
+                for rank_thread in self.dataframe.loc[(node), out_columns].index.unique():
+                    # rank_thread is either rank or a tuple of (rank, thread).
+                    # We check if rank_thread is a tuple and if it is, we
+                    # create a tuple of (node, rank, thread). If not, we create
+                    # a tuple of (node, rank).
+                    if isinstance(rank_thread, tuple):
+                        df_index1 = (node,) + rank_thread
+                        df_index2 = (subgraph_nodes,) + rank_thread
                     else:
-                        df_index1 = (node, i)
-                        df_index2 = (subgraph_nodes, i)
+                        df_index1 = (node, rank_thread)
+                        df_index2 = (subgraph_nodes, rank_thread)
 
                     for col in out_columns:
                         self.dataframe.loc[df_index1, col] = [
