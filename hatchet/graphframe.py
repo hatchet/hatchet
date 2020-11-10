@@ -423,7 +423,9 @@ class GraphFrame:
                 is_multi_index = isinstance(self.dataframe.index, pd.MultiIndex)
 
             if is_multi_index:
-                for rank_thread in self.dataframe.loc[(node), out_columns].index.unique():
+                for rank_thread in self.dataframe.loc[
+                    (node), out_columns
+                ].index.unique():
                     # rank_thread is either rank or a tuple of (rank, thread).
                     # We check if rank_thread is a tuple and if it is, we
                     # create a tuple of (node, rank, thread). If not, we create
