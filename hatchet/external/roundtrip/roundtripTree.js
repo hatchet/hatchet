@@ -18,7 +18,7 @@
             var thisTree = forestData[i];
 
             // Get tree names for the display select options
-            rootNodeNames.push(thisTree.name);
+            rootNodeNames.push(thisTree.frame.name);
 
             var thisTreeMetrics = {};
             // init the min/max for all trees' metricColumns
@@ -657,7 +657,7 @@
             for (var i = 0; i < numNodes; i++) {
                 for (var j = 0; j < metricColumns.length; j++) {
                     if (j == 0) {
-                        nodeStr += '<tr><td>' + nodeList[i].data.name + '</td><td>' + nodeList[i].data.metrics[metricColumns[j]] + '</td><td>';
+                        nodeStr += '<tr><td>' + nodeList[i].data.frame.name + '</td><td>' + nodeList[i].data.metrics[metricColumns[j]] + '</td><td>';
                     }
                     else if (j == metricColumns.length - 1) {
                         nodeStr += nodeList[i].data.metrics[metricColumns[j]] + '</td></tr>';
@@ -696,15 +696,15 @@
             var queryStr = "['<no query generated>']";
             if ((nodeList.length > 1) && (selectionIsAChain)) {
                 // This query is for chains
-                queryStr = "[{'name': '" + leftMostNode.data.name + "'}, '*', {'name': '" + rightMostNode.data.name + "'}]";
+                queryStr = "[{'name': '" + leftMostNode.data.frame.name + "'}, '*', {'name': '" + rightMostNode.data.frame.name + "'}]";
             } 
             else if (nodeList.length > 1) {
                 // This query is for subtrees
-                queryStr = "[{'name': '" + leftMostNode.data.name + "'}, '*']";
+                queryStr = "[{'name': '" + leftMostNode.data.frame.name + "'}, '*']";
             } 
             else {
                 //Single node query
-                queryStr = "[{'name': '" + leftMostNode.data.name + "'}]";
+                queryStr = "[{'name': '" + leftMostNode.data.frame.name + "'}]";
             }
 
             return queryStr;
@@ -715,7 +715,7 @@
             var tipText = printNodeData(nodeList);
             var longestName = 0;
             nodeList.forEach(function (d) {
-                var nodeData = d.data.name + ': ' + d.data.metrics.time + 's (' + d.data.metrics["time (inc)"] + 's inc)';
+                var nodeData = d.data.frame.name + ': ' + d.data.metrics.time + 's (' + d.data.metrics["time (inc)"] + 's inc)';
                 if (nodeData.length > longestName) {
                     longestName = nodeData.length;
                 }

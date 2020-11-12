@@ -76,24 +76,33 @@ class LiteralReader:
         """Create node_dict for one node and then call the function
         recursively on all children.
         """
-        frame = None
+        frame = Frame(child_dict["frame"])
         if "duplicate" not in child_dict:
-            frame = Frame({"name": child_dict["name"]})
             hnode = Node(frame, hparent)
 
+            # depending on the node type, the name may not be in the frame
+            node_name = child_dict["frame"].get("name")
+            if not node_name:
+                node_name = child_dict["name"]
+
             node_dict = dict(
-                {"node": hnode, "name": child_dict["name"]}, **child_dict["metrics"]
+                {"node": hnode, "name": node_name}, **child_dict["metrics"]
             )
 
             node_dicts.append(node_dict)
             frame_to_node_dict[frame] = hnode
         elif "duplicate" in child_dict:
-            frame = Frame({"name": child_dict["name"]})
             hnode = frame_to_node_dict.get(frame)
             if not hnode:
                 hnode = Node(frame, hparent)
+
+                # depending on the node type, the name may not be in the frame
+                node_name = child_dict["frame"].get("name")
+                if not node_name:
+                    node_name = child_dict["name"]
+
                 node_dict = dict(
-                    {"node": hnode, "name": child_dict["name"]}, **child_dict["metrics"]
+                    {"node": hnode, "name": node_name}, **child_dict["metrics"]
                 )
                 node_dicts.append(node_dict)
                 frame_to_node_dict[frame] = hnode
@@ -112,11 +121,17 @@ class LiteralReader:
 
         # start with creating a node_dict for each root
         for i in range(len(self.graph_dict)):
-            frame = Frame({"name": self.graph_dict[i]["name"]})
+            frame = Frame(self.graph_dict[i]["frame"])
             graph_root = Node(frame, None)
 
-            node_dict = {"node": graph_root, "name": self.graph_dict[i]["name"]}
-            node_dict.update(**self.graph_dict[i]["metrics"])
+            # depending on the node type, the name may not be in the frame
+            node_name = self.graph_dict[i]["frame"].get("name")
+            if not node_name:
+                node_name = self.graph_dict[i]["name"]
+
+            node_dict = dict(
+                {"node": graph_root, "name": node_name}, **self.graph_dict[i]["metrics"]
+            )
             node_dicts.append(node_dict)
 
             list_roots.append(graph_root)
