@@ -59,6 +59,13 @@ class ConsoleRenderer:
         self.highlight = kwargs["highlight_name"]
         self.invert_colormap = kwargs["invert_colormap"]
 
+        if self.metric not in dataframe.columns:
+            raise KeyError(
+                "metric_column={} does not exist in the dataframe, please select a valid column.".format(
+                    self.metric
+                )
+            )
+
         if self.invert_colormap:
             self.colors.colormap.reverse()
 

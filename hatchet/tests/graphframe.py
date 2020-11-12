@@ -909,17 +909,11 @@ def test_depth(mock_graph_literal):
 def test_tree_deprecated_parameters(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
 
-    with pytest.warns(FutureWarning):
-        gf.tree(color=True, metric="time")
-
-    with pytest.warns(FutureWarning):
+    with pytest.raises(ValueError):
         gf.tree(invert_colors=True)
 
-    with pytest.warns(FutureWarning):
+    with pytest.raises(ValueError):
         gf.tree(name="name")
-
-    with pytest.warns(FutureWarning):
-        gf.tree(threshold=0.2)
 
     with pytest.raises(TypeError):
         gf.tree(metric="time", metric_column="time")

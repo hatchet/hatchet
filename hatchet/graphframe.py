@@ -496,9 +496,6 @@ class GraphFrame:
         expand_names="expand_name",
         context="context_column",
         invert_colors="invert_colormap",
-        color="",
-        threshold="",
-        unicode="",
     )
     def tree(
         self,
@@ -512,9 +509,6 @@ class GraphFrame:
         depth=10000,
         highlight_name=False,
         invert_colormap=False,
-        color=None,  # remove in next release
-        threshold=None,  # remove in next release
-        unicode=None,  # remove in next release
     ):
         """Format this graphframe as a tree and return the resulting string."""
         color = sys.stdout.isatty()
