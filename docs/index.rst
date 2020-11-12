@@ -65,10 +65,10 @@ following `paper <http://www.cs.umd.edu/~bhatele/pubs/pdf/2019/sc2019.pdf>`_:
    basic_tutorial
 
 .. toctree::
-    :maxdepth: 2
-    :caption: Reference
+   :maxdepth: 2
+   :caption: References
 
-    publications
+   publications
 
 .. toctree::
    :maxdepth: 2
