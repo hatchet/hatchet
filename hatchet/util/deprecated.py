@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: MIT
 
 import functools
-import warnings
 
 
 def deprecated_params(**old_to_new):
@@ -29,16 +28,16 @@ def rename_kwargs(fname, old_to_new, kwargs):
 
             # if parameter has been removed
             if not new:
-                warnings.warn(
-                    '{}() parameter "{}=" has been removed.'.format(fname, old),
-                    FutureWarning,
+                raise ValueError(
+                    '{}() parameter "{}=" will be removed in a future release. Please remove it from this script.'.format(
+                        fname, old
+                    )
                 )
             # if parameter has been deprecated and renamed
             else:
-                warnings.warn(
+                raise ValueError(
                     '{}() parameter "{}=" has been deprecated, please use "{}=".'.format(
                         fname, old, new
-                    ),
-                    FutureWarning,
+                    )
                 )
                 kwargs[new] = kwargs.pop(old)
