@@ -85,14 +85,14 @@ class CaliperReader:
         else:
             sys.exit("No hierarchy column in input file")
 
-        # remove data entries containing None in `path` column (null in json file)
-        # first, get column where `path` data is
+        # remove data entries containing None in path hierarchy (null in json file)
+        # first, get column where path hierarchy data is
         # then, parse json_data list of lists to identify lists containing None in
-        # `path` column
-        path_col = self.json_cols.index(self.path_col_name)
+        # that column
+        path_col_idx = self.json_cols.index(self.path_col_name)
         entries_to_remove = []
         for sublist in self.json_data:
-            if sublist[path_col] is None:
+            if sublist[path_col_idx] is None:
                 entries_to_remove.append(sublist)
         # then, remove them from the json_data list
         for i in entries_to_remove:
@@ -171,6 +171,18 @@ class CaliperReader:
 
         # create a dataframe of metrics from the data section
         self.df_json_data = pd.DataFrame(self.json_data, columns=self.json_cols)
+
+        # remove other path hierarchy column from dataframe and associated
+        # caliper lists, if "path" exists in the dataframe columns
+        if (
+            self.path_col_name == "source.function#callpath.address"
+            and "path" in self.df_json_data.columns
+        ):
+            self.df_json_data.drop(["path"], axis=1, inplace=True)
+
+            path_col_idx = self.json_cols.index("path")
+            self.json_cols.pop(path_col_idx)
+            self.json_cols_mdata.pop(path_col_idx)
 
         # map non-numeric columns to their mappings in the nodes section
         for idx, item in enumerate(self.json_cols_mdata):
