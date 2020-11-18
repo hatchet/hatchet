@@ -1171,3 +1171,38 @@ def test_hdf_load_store(mock_graph_literal):
 
     if os.path.exists("test_gframe.hdf"):
         os.remove("test_gframe.hdf")
+
+
+def test_graphframe_offset(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+
+    gf.offset("time", 4, "offset_time_4")
+
+    assert gf.dataframe["time"].sum() == 165
+    assert gf.dataframe["offset_time_4"].sum() == 261
+    assert gf.dataframe["time (inc)"].sum() == 640
+
+    gf.offset("time", -11, "offset_time_11")
+    assert gf.dataframe["offset_time_11"].sum() == -99
+
+    with pytest.raises(ValueError):
+        gf.offset("badcol", 2, "offset_badcol")
+
+
+def test_graphframe_scale(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+
+    gf.scale("time", 3, "scale_time_3")
+
+    assert gf.dataframe["time"].sum() == 165
+    assert gf.dataframe["scale_time_3"].sum() == 495
+    assert gf.dataframe["time (inc)"].sum() == 640
+
+    gf.scale("time", -1, "scale_time_1")
+    assert gf.dataframe["scale_time_1"].sum() == -165
+
+    gf.scale("time", 0.8, "scale_time_8")
+    assert gf.dataframe["scale_time_8"].sum() == 132
+
+    with pytest.raises(ValueError):
+        gf.scale("badcol", 8, "scale_badcol")

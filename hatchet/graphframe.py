@@ -1062,6 +1062,50 @@ class GraphFrame:
         new_gf.drop_index_levels()
         return new_gf
 
+    def offset(self, metric_column, offset, result_col_name):
+        """Offset metric_column by a value.
+
+        Arguments:
+            self (graphframe): self's graphframe
+            metric_column (str): dataframe column to offset
+            offset (int or float, +/-): offset value
+            result_col_name (str): name of column for result
+
+        Return:
+            self's graphframe
+        """
+        # validate metric_column
+        if metric_column not in self.dataframe.columns:
+            raise ValueError("Invalid column specified.")
+
+        self.dataframe[result_col_name] = self.dataframe[metric_column].apply(
+            lambda x: x + offset
+        )
+
+        return self
+
+    def scale(self, metric_column, scalar, result_col_name):
+        """Scale metric_column by a value.
+
+        Arguments:
+            self (graphframe): self's graphframe
+            metric_column (str): dataframe column to offset
+            scalar (int or float, +/-): scalar value
+            result_col_name (str): name of column for result
+
+        Return:
+            self's graphframe
+        """
+        # validate metric_column
+        if metric_column not in self.dataframe.columns:
+            raise ValueError("Invalid column specified.")
+
+        self.dataframe[result_col_name] = self.dataframe[metric_column].apply(
+            lambda x: x * scalar
+        )
+
+        return self
+
     def add(self, other):
         """Returns the column-wise sum of two graphframes as a new graphframe.
 
