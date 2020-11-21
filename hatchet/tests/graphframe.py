@@ -5,6 +5,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+from __future__ import division
+
 import pytest
 
 import numpy as np
@@ -707,9 +709,11 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
     gf4 = gf1 - gf2
 
     assert len(gf4.graph) == 8
-    assert gf4.dataframe.loc[gf4.dataframe["_missing_node"] == "R"].shape[0] == 2
-    assert gf4.dataframe.loc[gf4.dataframe["_missing_node"] == "L"].shape[0] == 1
-    assert gf4.dataframe.loc[gf4.dataframe["_missing_node"] == ""].shape[0] == 5
+    assert gf4.dataframe.loc[gf4.dataframe["_missing_node"] == 2].shape[0] == 2  # "R"
+    assert gf4.dataframe.loc[gf4.dataframe["_missing_node"] == 1].shape[0] == 1  # "L"
+    assert (
+        gf4.dataframe.loc[gf4.dataframe["_missing_node"] == 0].shape[0] == 5
+    )  # "" or same in both
 
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf4.graph.roots,
@@ -735,9 +739,9 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
     assert len(gf3.graph) == 4
 
     assert len(gf5.graph) == 6
-    assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == "R"].shape[0] == 0
-    assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == "L"].shape[0] == 2
-    assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == ""].shape[0] == 4
+    assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == 2].shape[0] == 0  # "R"
+    assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == 1].shape[0] == 2  # "L"
+    assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == 0].shape[0] == 4  # ""
 
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf5.graph.roots,
@@ -756,6 +760,40 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
     assert "0.000 A" in output
     assert u"5.000 C ◀" in output
     assert u"55.000 H ◀" in output
+
+
+def test_div_decorator(small_mock1, small_mock2):
+    gf1 = GraphFrame.from_literal(small_mock1)
+    gf2 = GraphFrame.from_literal(small_mock2)
+
+    assert len(gf1.graph) == 6
+    assert len(gf2.graph) == 7
+
+    gf3 = gf1 / gf2
+
+    assert len(gf3.graph) == 8
+    assert gf3.dataframe.loc[gf3.dataframe["_missing_node"] == 2].shape[0] == 2  # "R"
+    assert gf3.dataframe.loc[gf3.dataframe["_missing_node"] == 1].shape[0] == 1  # "L"
+    assert gf3.dataframe.loc[gf3.dataframe["_missing_node"] == 0].shape[0] == 5  # ""
+
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf3.graph.roots,
+        gf3.dataframe,
+        metric_column="time",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
+        rank=0,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        invert_colormap=False,
+    )
+    assert "1.000 C" in output
+    assert "inf B" in output
+    assert u"nan D ▶" in output
+    assert u"10.000 H ◀" in output
 
 
 def test_groupby_aggregate_simple(mock_dag_literal_module):
@@ -871,17 +909,11 @@ def test_depth(mock_graph_literal):
 def test_tree_deprecated_parameters(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
 
-    with pytest.warns(FutureWarning):
-        gf.tree(color=True, metric="time")
-
-    with pytest.warns(FutureWarning):
+    with pytest.raises(ValueError):
         gf.tree(invert_colors=True)
 
-    with pytest.warns(FutureWarning):
+    with pytest.raises(ValueError):
         gf.tree(name="name")
-
-    with pytest.warns(FutureWarning):
-        gf.tree(threshold=0.2)
 
     with pytest.raises(TypeError):
         gf.tree(metric="time", metric_column="time")
@@ -920,9 +952,9 @@ def test_output_with_cycle_graphs():
     dotout = gf.to_dot()
 
     # scan through litout produced dictionary for edges
-    a_children = [n["name"] for n in lit_list[0]["children"]]
-    a_c_children = [n["name"] for n in lit_list[0]["children"][1]["children"]]
-    a_b_children = [n["name"] for n in lit_list[0]["children"][0]["children"]]
+    a_children = [n["frame"]["name"] for n in lit_list[0]["children"]]
+    a_c_children = [n["frame"]["name"] for n in lit_list[0]["children"][1]["children"]]
+    a_b_children = [n["frame"]["name"] for n in lit_list[0]["children"][0]["children"]]
 
     assert len(lit_list) == 1
     assert len(a_children) == 2
@@ -938,11 +970,11 @@ def test_output_with_cycle_graphs():
     assert "d" in a_c_children
     assert "d" in a_b_children
 
-    # check certian edges are in dot
+    # check certain edges are in dot
     for edge in dot_edges:
         assert edge in dotout
 
-    # check that a certian number of occurences
+    # check that a certain number of occurences
     # of same node are in tree indicating multiple
     # edges
     assert treeout.count("a") == 2

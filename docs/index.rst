@@ -66,6 +66,12 @@ following `paper <http://www.cs.umd.edu/~bhatele/pubs/pdf/2019/sc2019.pdf>`_:
 
 .. toctree::
    :maxdepth: 2
+   :caption: References
+
+   publications
+
+.. toctree::
+   :maxdepth: 2
    :caption: API Docs
 
    Hatchet API Docs <source/hatchet>

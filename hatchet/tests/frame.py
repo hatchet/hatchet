@@ -86,8 +86,14 @@ def test_values():
 
 
 def test_repr():
-    assert repr(Frame(foo="baz", bar="quux")) == "Frame({'bar': 'quux', 'foo': 'baz'})"
+    assert (
+        repr(Frame(foo="baz", bar="quux"))
+        == "Frame({'bar': 'quux', 'foo': 'baz', 'type': 'None'})"
+    )
 
 
 def test_str():
-    assert str(Frame(foo="baz", bar="quux")) == "{'bar': 'quux', 'foo': 'baz'}"
+    assert (
+        str(Frame(foo="baz", bar="quux"))
+        == "{'bar': 'quux', 'foo': 'baz', 'type': 'None'}"
+    )

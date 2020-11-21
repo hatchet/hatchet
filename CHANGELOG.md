@@ -1,3 +1,43 @@
+# v1.3.0 (2020-11-12)
+
+This release introduces a new tree visualization for Jupyter to interact with
+the data, deprecates some of the tree parameters, adds cython as a dependency,
+and contains performance improvements to two of Hatchet's central APIs.
+
+### New features
+
+* Interactive tree visualization in Jupyter
+* Add mult and division API
+* Update hatchet installation steps for cython integration
+* Readers: cprofiler, pyinstrument
+* Graph output formats: to_literal
+* Add profiling APIs to profile Hatchet APIs
+* Update basic tutorial for hatchet
+
+### Changes to existing APIs
+
+* Remove threshold=, color=, and unicode= from tree API
+* Highlighting name disabled by default in terminal tree output
+  is kept in sync with the dataframe
+* Internal performance improvements to unify and HPCToolkit reader, enabling
+  analysis of large datasets
+* For mathematical operations, insert nan values for missing nodes, show values
+  as nan and inf as necessary in dataframe
+* Extend callpath query language to support non-dataframe metrics (e.g., depth,
+  hatchet ID)
+* Literal reader: A node can be defined with a "duplicate": True field if it
+  should be the same node (though in a different callpath). A node also needs
+  "frame" field, which is a dict containing the node "name" and "type" (if
+  necessary).
+
+### Bugfixes
+
+* caliper reader: do not assume "path" column is present, create graph after
+  reading metadata
+* fix updating inclusive columns for multi-indexed dataframes (required as part
+  of squash)
+* fix unicode error in python2 for terminal-based tree output
+
 # v1.2.0 (2020-07-07)
 
 This release adds a syntax query language as an alternative method for

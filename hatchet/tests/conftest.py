@@ -173,61 +173,54 @@ def mock_graph_literal():
     """
     graph_dict = [
         {
-            "name": "foo",
-            "type": "function",
+            "frame": {"name": "foo", "type": "function"},
             "metrics": {"time (inc)": 130.0, "time": 0.0},
             "children": [
                 {
-                    "name": "bar",
-                    "type": "function",
+                    "frame": {"name": "bar"},
                     "metrics": {"time (inc)": 20.0, "time": 5.0},
                     "children": [
                         {
-                            "name": "baz",
-                            "type": "function",
+                            "frame": {"name": "baz", "type": "function"},
                             "metrics": {"time (inc)": 5.0, "time": 5.0},
                         },
                         {
-                            "name": "grault",
-                            "type": "function",
+                            "frame": {"name": "grault"},
                             "metrics": {"time (inc)": 10.0, "time": 10.0},
                         },
                     ],
                 },
                 {
-                    "name": "qux",
-                    "type": "function",
+                    "frame": {"name": "qux", "type": "function"},
                     "metrics": {"time (inc)": 60.0, "time": 0.0},
                     "children": [
                         {
-                            "name": "quux",
-                            "type": "function",
+                            "frame": {"name": "quux"},
                             "metrics": {"time (inc)": 60.0, "time": 5.0},
                             "children": [
                                 {
-                                    "name": "corge",
-                                    "type": "function",
+                                    "frame": {"name": "corge", "type": "function"},
                                     "metrics": {"time (inc)": 55.0, "time": 10.0},
                                     "children": [
                                         {
-                                            "name": "bar",
-                                            "type": "function",
+                                            "frame": {"name": "bar"},
                                             "metrics": {
                                                 "time (inc)": 20.0,
                                                 "time": 5.0,
                                             },
                                             "children": [
                                                 {
-                                                    "name": "baz",
-                                                    "type": "function",
+                                                    "frame": {
+                                                        "name": "baz",
+                                                        "type": "function",
+                                                    },
                                                     "metrics": {
                                                         "time (inc)": 5.0,
                                                         "time": 5.0,
                                                     },
                                                 },
                                                 {
-                                                    "name": "grault",
-                                                    "type": "function",
+                                                    "frame": {"name": "grault"},
                                                     "metrics": {
                                                         "time (inc)": 10.0,
                                                         "time": 10.0,
@@ -236,16 +229,17 @@ def mock_graph_literal():
                                             ],
                                         },
                                         {
-                                            "name": "grault",
-                                            "type": "function",
+                                            "frame": {"name": "grault"},
                                             "metrics": {
                                                 "time (inc)": 10.0,
                                                 "time": 10.0,
                                             },
                                         },
                                         {
-                                            "name": "garply",
-                                            "type": "function",
+                                            "frame": {
+                                                "name": "garply",
+                                                "type": "function",
+                                            },
                                             "metrics": {
                                                 "time (inc)": 15.0,
                                                 "time": 15.0,
@@ -258,44 +252,46 @@ def mock_graph_literal():
                     ],
                 },
                 {
-                    "name": "waldo",
-                    "type": "function",
+                    "frame": {"name": "waldo", "type": "function"},
                     "metrics": {"time (inc)": 50.0, "time": 0.0},
                     "children": [
                         {
-                            "name": "fred",
-                            "type": "function",
+                            "frame": {"name": "fred", "type": "function"},
                             "metrics": {"time (inc)": 35.0, "time": 5.0},
                             "children": [
                                 {
-                                    "name": "plugh",
-                                    "type": "function",
+                                    "frame": {"name": "plugh", "type": "function"},
                                     "metrics": {"time (inc)": 5.0, "time": 5.0},
                                 },
                                 {
-                                    "name": "xyzzy",
-                                    "type": "function",
+                                    "frame": {"name": "xyzzy", "type": "function"},
                                     "metrics": {"time (inc)": 25.0, "time": 5.0},
                                     "children": [
                                         {
-                                            "name": "thud",
-                                            "type": "function",
+                                            "frame": {
+                                                "name": "thud",
+                                                "type": "function",
+                                            },
                                             "metrics": {
                                                 "time (inc)": 25.0,
                                                 "time": 5.0,
                                             },
                                             "children": [
                                                 {
-                                                    "name": "baz",
-                                                    "type": "function",
+                                                    "frame": {
+                                                        "name": "baz",
+                                                        "type": "function",
+                                                    },
                                                     "metrics": {
                                                         "time (inc)": 5.0,
                                                         "time": 5.0,
                                                     },
                                                 },
                                                 {
-                                                    "name": "garply",
-                                                    "type": "function",
+                                                    "frame": {
+                                                        "name": "garply",
+                                                        "type": "function",
+                                                    },
                                                     "metrics": {
                                                         "time (inc)": 15.0,
                                                         "time": 15.0,
@@ -308,8 +304,7 @@ def mock_graph_literal():
                             ],
                         },
                         {
-                            "name": "garply",
-                            "type": "function",
+                            "frame": {"name": "garply", "type": "function"},
                             "metrics": {"time (inc)": 15.0, "time": 15.0},
                         },
                     ],
@@ -317,23 +312,19 @@ def mock_graph_literal():
             ],
         },
         {
-            "name": "waldo",
-            "type": "function",
+            "frame": {"name": "waldo", "type": "function"},
             "metrics": {"time (inc)": 30.0, "time": 10.0},
             "children": [
                 {
-                    "name": "bar",
-                    "type": "function",
+                    "frame": {"name": "bar"},
                     "metrics": {"time (inc)": 20.0, "time": 5.0},
                     "children": [
                         {
-                            "name": "baz",
-                            "type": "function",
+                            "frame": {"name": "baz", "type": "function"},
                             "metrics": {"time (inc)": 5.0, "time": 5.0},
                         },
                         {
-                            "name": "grault",
-                            "type": "function",
+                            "frame": {"name": "grault"},
                             "metrics": {"time (inc)": 10.0, "time": 10.0},
                         },
                     ],
@@ -350,23 +341,19 @@ def mock_dag_literal1():
     """Creates a mock DAG."""
     dag_ldict = [
         {
-            "name": "A",
-            "type": "function",
+            "frame": {"name": "A", "type": "function"},
             "metrics": {"time (inc)": 130.0, "time": 0.0},
             "children": [
                 {
-                    "name": "B",
-                    "type": "function",
+                    "frame": {"name": "B", "type": "function"},
                     "metrics": {"time (inc)": 20.0, "time": 5.0},
                     "children": [
                         {
-                            "name": "C",
-                            "type": "function",
+                            "frame": {"name": "C", "type": "function"},
                             "metrics": {"time (inc)": 5.0, "time": 5.0},
                             "children": [
                                 {
-                                    "name": "D",
-                                    "type": "function",
+                                    "frame": {"name": "D", "type": "function"},
                                     "metrics": {"time (inc)": 8.0, "time": 1.0},
                                 }
                             ],
@@ -374,13 +361,11 @@ def mock_dag_literal1():
                     ],
                 },
                 {
-                    "name": "E",
-                    "type": "function",
+                    "frame": {"name": "E", "type": "function"},
                     "metrics": {"time (inc)": 55.0, "time": 10.0},
                     "children": [
                         {
-                            "name": "F",
-                            "type": "function",
+                            "frame": {"name": "F", "type": "function"},
                             "metrics": {"time (inc)": 1.0, "time": 9.0},
                         }
                     ],
@@ -397,23 +382,19 @@ def mock_dag_literal2():
     """Creates a mock DAG."""
     dag_ldict = [
         {
-            "name": "A",
-            "type": "function",
+            "frame": {"name": "A", "type": "function"},
             "metrics": {"time (inc)": 130.0, "time": 0.0},
             "children": [
                 {
-                    "name": "B",
-                    "type": "function",
+                    "frame": {"name": "B", "type": "function"},
                     "metrics": {"time (inc)": 20.0, "time": 5.0},
                     "children": [
                         {
-                            "name": "C",
-                            "type": "function",
+                            "frame": {"name": "C", "type": "function"},
                             "metrics": {"time (inc)": 5.0, "time": 5.0},
                             "children": [
                                 {
-                                    "name": "D",
-                                    "type": "function",
+                                    "frame": {"name": "D", "type": "function"},
                                     "metrics": {"time (inc)": 8.0, "time": 1.0},
                                 }
                             ],
@@ -421,13 +402,11 @@ def mock_dag_literal2():
                     ],
                 },
                 {
-                    "name": "E",
-                    "type": "function",
+                    "frame": {"name": "E", "type": "function"},
                     "metrics": {"time (inc)": 55.0, "time": 10.0},
                     "children": [
                         {
-                            "name": "H",
-                            "type": "function",
+                            "frame": {"name": "H", "type": "function"},
                             "metrics": {"time (inc)": 1.0, "time": 9.0},
                         }
                     ],
@@ -443,37 +422,31 @@ def mock_dag_literal2():
 def small_mock1():
     ldict = [
         {
-            "name": "A",
-            "type": "function",
+            "frame": {"name": "A", "type": "function"},
             "metrics": {"time (inc)": 130.0, "time": 0.0},
             "children": [
                 {
-                    "name": "B",
-                    "type": "function",
+                    "frame": {"name": "B", "type": "function"},
                     "metrics": {"time (inc)": 20.0, "time": 5.0},
                     "children": [
                         {
-                            "name": "C",
-                            "type": "function",
+                            "frame": {"name": "C", "type": "function"},
                             "metrics": {"time (inc)": 5.0, "time": 5.0},
                         }
                     ],
                 },
                 {
-                    "name": "E",
-                    "type": "function",
+                    "frame": {"name": "E", "type": "function"},
                     "metrics": {"time (inc)": 55.0, "time": 10.0},
                     "children": [
                         {
-                            "name": "F",
-                            "type": "function",
+                            "frame": {"name": "F", "type": "function"},
                             "metrics": {"time (inc)": 1.0, "time": 9.0},
                         }
                     ],
                 },
                 {
-                    "name": "H",
-                    "type": "function",
+                    "frame": {"name": "H", "type": "function"},
                     "metrics": {"time (inc)": 55.0, "time": 10.0},
                 },
             ],
@@ -487,40 +460,33 @@ def small_mock1():
 def small_mock2():
     ldict = [
         {
-            "name": "A",
-            "type": "function",
+            "frame": {"name": "A", "type": "function"},
             "metrics": {"time (inc)": 130.0, "time": 0.0},
             "children": [
                 {
-                    "name": "B",
-                    "type": "function",
-                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "frame": {"name": "B", "type": "function"},
+                    "metrics": {"time (inc)": 20.0, "time": 0.0},
                     "children": [
                         {
-                            "name": "C",
-                            "type": "function",
+                            "frame": {"name": "C", "type": "function"},
                             "metrics": {"time (inc)": 5.0, "time": 5.0},
                         },
                         {
-                            "name": "D",
-                            "type": "function",
+                            "frame": {"name": "D", "type": "function"},
                             "metrics": {"time (inc)": 5.0, "time": 5.0},
                         },
                     ],
                 },
                 {
-                    "name": "E",
-                    "type": "function",
+                    "frame": {"name": "E", "type": "function"},
                     "metrics": {"time (inc)": 55.0, "time": 10.0},
                     "children": [
                         {
-                            "name": "F",
-                            "type": "function",
+                            "frame": {"name": "F", "type": "function"},
                             "metrics": {"time (inc)": 1.0, "time": 9.0},
                         },
                         {
-                            "name": "G",
-                            "type": "function",
+                            "frame": {"name": "G", "type": "function"},
                             "metrics": {"time (inc)": 1.0, "time": 9.0},
                         },
                     ],
@@ -536,23 +502,19 @@ def small_mock2():
 def small_mock3():
     ldict = [
         {
-            "name": "A",
-            "type": "function",
+            "frame": {"name": "A", "type": "function"},
             "metrics": {"time (inc)": 130.0, "time": 0.0},
             "children": [
                 {
-                    "name": "B",
-                    "type": "function",
+                    "frame": {"name": "B", "type": "function"},
                     "metrics": {"time (inc)": 20.0, "time": 5.0},
                 },
                 {
-                    "name": "E",
-                    "type": "function",
+                    "frame": {"name": "E", "type": "function"},
                     "metrics": {"time (inc)": 55.0, "time": 10.0},
                     "children": [
                         {
-                            "name": "F",
-                            "type": "function",
+                            "frame": {"name": "F", "type": "function"},
                             "metrics": {"time (inc)": 1.0, "time": 9.0},
                         }
                     ],
@@ -569,18 +531,15 @@ def mock_dag_literal_module():
     """Creates a mock DAG."""
     dag_ldict = [
         {
-            "name": "A",
-            "type": "function",
+            "frame": {"name": "A", "type": "function"},
             "metrics": {"time (inc)": 130.0, "time": 0.0, "module": "main"},
             "children": [
                 {
-                    "name": "B",
-                    "type": "function",
+                    "frame": {"name": "B", "type": "function"},
                     "metrics": {"time (inc)": 20.0, "time": 5.0, "module": "foo"},
                     "children": [
                         {
-                            "name": "C",
-                            "type": "function",
+                            "frame": {"name": "C", "type": "function"},
                             "metrics": {
                                 "time (inc)": 5.0,
                                 "time": 5.0,
@@ -590,13 +549,11 @@ def mock_dag_literal_module():
                     ],
                 },
                 {
-                    "name": "E",
-                    "type": "function",
+                    "frame": {"name": "E", "type": "function"},
                     "metrics": {"time (inc)": 55.0, "time": 10.0, "module": "bar"},
                     "children": [
                         {
-                            "name": "F",
-                            "type": "function",
+                            "frame": {"name": "F", "type": "function"},
                             "metrics": {
                                 "time (inc)": 1.0,
                                 "time": 9.0,
@@ -617,18 +574,15 @@ def mock_dag_literal_module_complex():
     """Creates a mock DAG."""
     dag_ldict = [
         {
-            "name": "A",
-            "type": "function",
+            "frame": {"name": "A", "type": "function"},
             "metrics": {"time (inc)": 130.0, "time": 1.0, "module": "main"},
             "children": [
                 {
-                    "name": "B",
-                    "type": "function",
+                    "frame": {"name": "B", "type": "function"},
                     "metrics": {"time (inc)": 20.0, "time": 1.0, "module": "foo"},
                     "children": [
                         {
-                            "name": "C",
-                            "type": "function",
+                            "frame": {"name": "C", "type": "function"},
                             "metrics": {
                                 "time (inc)": 6.0,
                                 "time": 1.0,
@@ -636,8 +590,7 @@ def mock_dag_literal_module_complex():
                             },
                             "children": [
                                 {
-                                    "name": "D",
-                                    "type": "function",
+                                    "frame": {"name": "D", "type": "function"},
                                     "metrics": {
                                         "time (inc)": 1.0,
                                         "time": 1.0,
@@ -649,8 +602,7 @@ def mock_dag_literal_module_complex():
                     ],
                 },
                 {
-                    "name": "E",
-                    "type": "function",
+                    "frame": {"name": "E", "type": "function"},
                     "metrics": {"time (inc)": 55.0, "time": 1, "module": "bar"},
                 },
             ],
@@ -665,18 +617,15 @@ def mock_dag_literal_module_more_complex():
     """Creates a mock DAG."""
     dag_ldict = [
         {
-            "name": "A",
-            "type": "function",
+            "frame": {"name": "A", "type": "function"},
             "metrics": {"time (inc)": 130.0, "time": 0.0, "module": "main"},
             "children": [
                 {
-                    "name": "B",
-                    "type": "function",
+                    "frame": {"name": "B", "type": "function"},
                     "metrics": {"time (inc)": 20.0, "time": 5.0, "module": "foo"},
                     "children": [
                         {
-                            "name": "C",
-                            "type": "function",
+                            "frame": {"name": "C", "type": "function"},
                             "metrics": {
                                 "time (inc)": 5.0,
                                 "time": 5.0,
@@ -684,8 +633,7 @@ def mock_dag_literal_module_more_complex():
                             },
                             "children": [
                                 {
-                                    "name": "D",
-                                    "type": "function",
+                                    "frame": {"name": "D", "type": "function"},
                                     "metrics": {
                                         "time (inc)": 8.0,
                                         "time": 1.0,
@@ -697,13 +645,11 @@ def mock_dag_literal_module_more_complex():
                     ],
                 },
                 {
-                    "name": "E",
-                    "type": "function",
+                    "frame": {"name": "E", "type": "function"},
                     "metrics": {"time (inc)": 55.0, "time": 10.0, "module": "bar"},
                     "children": [
                         {
-                            "name": "F",
-                            "type": "function",
+                            "frame": {"name": "F", "type": "function"},
                             "metrics": {
                                 "time (inc)": 1.0,
                                 "time": 1.0,
@@ -717,6 +663,111 @@ def mock_dag_literal_module_more_complex():
     ]
 
     return dag_ldict
+
+
+@pytest.fixture
+def mock_graph_literal_duplicates():
+    """Creates a mock tree with duplicate nodes."""
+    graph_dict = [
+        {
+            "frame": {"name": "a", "type": "function"},
+            "metrics": {"time (inc)": 130.0, "time": 0.0},
+            "children": [
+                {
+                    "frame": {"name": "b", "type": "function"},
+                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "children": [
+                        {
+                            "frame": {"name": "d", "type": "function"},
+                            "metrics": {"time (inc)": 20.0, "time": 5.0},
+                            "children": [
+                                {
+                                    "frame": {"name": "e", "type": "function"},
+                                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                                },
+                                {
+                                    "frame": {"name": "f", "type": "function"},
+                                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                                },
+                            ],
+                        }
+                    ],
+                },
+                {
+                    "frame": {"name": "c", "type": "function"},
+                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "children": [
+                        {
+                            "frame": {"name": "a", "type": "function"},
+                            "duplicate": "True",
+                            "metrics": {"time (inc)": 20.0, "time": 5.0},
+                        },
+                        {
+                            "frame": {"name": "d", "type": "function"},
+                            "duplicate": "True",
+                            "metrics": {"time (inc)": 20.0, "time": 5.0},
+                        },
+                    ],
+                },
+            ],
+        }
+    ]
+
+    return graph_dict
+
+
+@pytest.fixture
+def mock_graph_literal_duplicate_first():
+    """Creates a mock tree with node with duplicate first."""
+    graph_dict = [
+        {
+            "frame": {"name": "a", "type": "function"},
+            "duplicate": True,
+            "metrics": {"time (inc)": 130.0, "time": 0.0},
+            "children": [
+                {
+                    "frame": {"name": "b", "type": "function"},
+                    "duplicate": True,
+                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "children": [
+                        {
+                            "frame": {"name": "d", "type": "function"},
+                            "duplicate": True,
+                            "metrics": {"time (inc)": 20.0, "time": 5.0},
+                            "children": [
+                                {
+                                    "frame": {"name": "e", "type": "function"},
+                                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                                },
+                                {
+                                    "frame": {"name": "f", "type": "function"},
+                                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                                },
+                            ],
+                        }
+                    ],
+                },
+                {
+                    "frame": {"name": "c", "type": "function"},
+                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "children": [
+                        {
+                            "frame": {"name": "a", "type": "function"},
+                            "duplicate": "True",
+                            "metrics": {"time (inc)": 20.0, "time": 5.0},
+                        },
+                        {
+                            "frame": {"name": "d", "type": "function"},
+                            "duplicate": "True",
+                            "metrics": {"time (inc)": 20.0, "time": 5.0},
+                        },
+                    ],
+                },
+            ],
+        }
+    ]
+
+    return graph_dict
 
 
 @pytest.fixture

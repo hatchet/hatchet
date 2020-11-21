@@ -198,11 +198,15 @@ def test_graphframe_to_literal(data_dir, calc_pi_hpct_db):
     gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
     graph_literal = gf.to_literal()
 
-    assert len(graph_literal) == len(gf.graph.roots)
+    gf2 = GraphFrame.from_literal(graph_literal)
+
+    assert len(gf.graph) == len(gf2.graph)
 
 
 def test_graphframe_to_literal_with_threads(data_dir, osu_allgather_hpct_db):
     gf = GraphFrame.from_hpctoolkit(str(osu_allgather_hpct_db))
     graph_literal = gf.to_literal()
 
-    assert len(graph_literal) == len(gf.graph.roots)
+    gf2 = GraphFrame.from_literal(graph_literal)
+
+    assert len(gf.graph) == len(gf2.graph)

@@ -201,116 +201,11 @@ class GraphFrame:
 
     @staticmethod
     def from_literal(graph_dict):
-        """Create a GraphFrame from a list of dictionaries.
+        """Create a GraphFrame from a list of dictionaries."""
+        # import this lazily to avoid circular dependencies
+        from .readers.literal_reader import LiteralReader
 
-        TODO: calculate inclusive metrics automatically.
-
-        Example:
-
-        .. code-block:: console
-
-            dag_ldict = [
-                {
-                    "name": "A",
-                    "type": "function",
-                    "metrics": {"time (inc)": 130.0, "time": 0.0},
-                    "children": [
-                        {
-                            "name": "B",
-                            "type": "function",
-                            "metrics": {"time (inc)": 20.0, "time": 5.0},
-                            "children": [
-                                {
-                                    "name": "C",
-                                    "type": "function",
-                                    "metrics": {"time (inc)": 5.0, "time": 5.0},
-                                    "children": [
-                                        {
-                                            "name": "D",
-                                            "type": "function",
-                                            "metrics": {"time (inc)": 8.0, "time": 1.0},
-                                        }
-                                    ],
-                                }
-                            ],
-                        },
-                        {
-                            "name": "E",
-                            "type": "function",
-                            "metrics": {"time (inc)": 55.0, "time": 10.0},
-                            "children": [
-                                {
-                                    "name": "H",
-                                    "type": "function",
-                                    "metrics": {"time (inc)": 1.0, "time": 9.0}
-                                }
-                            ],
-                        },
-                    ],
-                }
-            ]
-
-        Return:
-            (GraphFrame): graphframe containing data from dictionaries
-        """
-
-        def parse_node_literal(child_dict, hparent):
-            """Create node_dict for one node and then call the function
-            recursively on all children.
-            """
-
-            hnode = Node(
-                Frame({"name": child_dict["name"], "type": child_dict["type"]}), hparent
-            )
-
-            node_dicts.append(
-                dict(
-                    {"node": hnode, "name": child_dict["name"]}, **child_dict["metrics"]
-                )
-            )
-            hparent.add_child(hnode)
-
-            if "children" in child_dict:
-                for child in child_dict["children"]:
-                    parse_node_literal(child, hnode)
-
-        list_roots = []
-        node_dicts = []
-
-        # start with creating a node_dict for each root
-        for i in range(len(graph_dict)):
-            graph_root = Node(
-                Frame({"name": graph_dict[i]["name"], "type": graph_dict[i]["type"]}),
-                None,
-            )
-
-            node_dict = {"node": graph_root, "name": graph_dict[i]["name"]}
-            node_dict.update(**graph_dict[i]["metrics"])
-            node_dicts.append(node_dict)
-
-            list_roots.append(graph_root)
-
-            # call recursively on all children of root
-            if "children" in graph_dict[i]:
-                for child in graph_dict[i]["children"]:
-                    parse_node_literal(child, graph_root)
-
-        graph = Graph(list_roots)
-        graph.enumerate_traverse()
-
-        exc_metrics = []
-        inc_metrics = []
-        for key in graph_dict[i]["metrics"].keys():
-            if "(inc)" in key:
-                inc_metrics.append(key)
-            else:
-                exc_metrics.append(key)
-
-        dataframe = pd.DataFrame(data=node_dicts)
-        dataframe.set_index(["node"], inplace=True)
-        dataframe.sort_index(inplace=True)
-
-        return GraphFrame(graph, dataframe, exc_metrics, inc_metrics)
+        return LiteralReader(graph_dict).read()
 
     @staticmethod
     def from_lists(*lists):
@@ -588,19 +483,31 @@ class GraphFrame:
             # TODO: need a better way of aggregating inclusive metrics when
             # TODO: there is a multi-index
             try:
-                is_index_or_multiindex = isinstance(
+                is_multi_index = isinstance(
                     self.dataframe.index, pd.core.index.MultiIndex
                 )
             except AttributeError:
-                is_index_or_multiindex = isinstance(self.dataframe.index, pd.MultiIndex)
+                is_multi_index = isinstance(self.dataframe.index, pd.MultiIndex)
 
-            if is_index_or_multiindex:
-                for i in self.dataframe.loc[(node), out_columns].index.unique():
-                    # TODO: if you take the list constructor away from the
-                    # TODO: assignment below, this assignment gives NaNs. Why?
-                    self.dataframe.loc[(node, i), out_columns] = list(
-                        function(self.dataframe.loc[(subgraph_nodes, i), columns])
-                    )
+            if is_multi_index:
+                for rank_thread in self.dataframe.loc[
+                    (node), out_columns
+                ].index.unique():
+                    # rank_thread is either rank or a tuple of (rank, thread).
+                    # We check if rank_thread is a tuple and if it is, we
+                    # create a tuple of (node, rank, thread). If not, we create
+                    # a tuple of (node, rank).
+                    if isinstance(rank_thread, tuple):
+                        df_index1 = (node,) + rank_thread
+                        df_index2 = (subgraph_nodes,) + rank_thread
+                    else:
+                        df_index1 = (node, rank_thread)
+                        df_index2 = (subgraph_nodes, rank_thread)
+
+                    for col in out_columns:
+                        self.dataframe.loc[df_index1, col] = [
+                            function(self.dataframe.loc[df_index2, col])
+                        ]
             else:
                 # TODO: if you take the list constructor away from the
                 # TODO: assignment below, this assignment gives NaNs. Why?
@@ -656,9 +563,6 @@ class GraphFrame:
         expand_names="expand_name",
         context="context_column",
         invert_colors="invert_colormap",
-        color="",
-        threshold="",
-        unicode="",
     )
     def tree(
         self,
@@ -672,9 +576,6 @@ class GraphFrame:
         depth=10000,
         highlight_name=False,
         invert_colormap=False,
-        color=None,  # remove in next release
-        threshold=None,  # remove in next release
-        unicode=None,  # remove in next release
     ):
         """Format this graphframe as a tree and return the resulting string."""
         color = sys.stdout.isatty()
@@ -691,7 +592,12 @@ class GraphFrame:
             if shell == "ZMQInteractiveShell":
                 color = True
 
-        return ConsoleRenderer(unicode=True, color=color).render(
+        if sys.version_info.major == 2:
+            unicode = False
+        elif sys.version_info.major == 3:
+            unicode = True
+
+        return ConsoleRenderer(unicode=unicode, color=color).render(
             self.graph.roots,
             self.dataframe,
             metric_column=metric_column,
@@ -793,6 +699,7 @@ class GraphFrame:
             node_name = self.dataframe.loc[df_index, name]
 
             node_dict["name"] = node_name
+            node_dict["frame"] = hnode.frame.attrs
             node_dict["metrics"] = metrics_to_dict(hnode)
 
             if hnode.children and hnode not in visited:
@@ -897,18 +804,18 @@ class GraphFrame:
         # called _missing_node
         if not self_not_in_other.empty:
             self.dataframe = self.dataframe.assign(
-                _missing_node=np.zeros(len(self.dataframe), dtype=np.ubyte)
+                _missing_node=np.zeros(len(self.dataframe), dtype=np.short)
             )
         if not other_not_in_self.empty:
-            # initialize with R to save filling in later
+            # initialize with 2 to save filling in later
             other_not_in_self = other_not_in_self.assign(
-                _missing_node=["R" for x in range(len(other_not_in_self))]
+                _missing_node=[int(2) for x in range(len(other_not_in_self))]
             )
 
             # add a new column to self if other has nodes not in self
             if self_not_in_other.empty:
                 self.dataframe["_missing_node"] = np.zeros(
-                    len(self.dataframe), dtype=np.ubyte
+                    len(self.dataframe), dtype=np.short
                 )
 
         # get lengths to pass into
@@ -920,11 +827,11 @@ class GraphFrame:
             self_missing_node = self.dataframe["_missing_node"].values
             snio_indices = self_not_in_other.index.values
 
-            # This function adds "L" to all nodes in self.dataframe['_missing_node'] which
-            # are in self but not in the other graphframe & convert from bytes to chars
-            _gfm_cy.add_L(snio_len, self_missing_node, snio_indices)
+            # This function adds 1 to all nodes in self.dataframe['_missing_node'] which
+            # are in self but not in the other graphframe
+            _gfm_cy.insert_one_for_self_nodes(snio_len, self_missing_node, snio_indices)
             self.dataframe["_missing_node"] = np.array(
-                [chr(n) for n in self_missing_node]
+                [n for n in self_missing_node], dtype=np.short
             )
 
         # for nodes that only exist in other, set the metric to be nan (since

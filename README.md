@@ -13,8 +13,13 @@ To use hatchet, install it with pip:
 $ pip install hatchet
 ```
 
-Or, if you want to develop with this repo directly, add the cloned
-directory to your `PYTHONPATH`.
+Or, if you want to develop with this repo directly, run the install script from
+the root directory, which will build the cython modules and add the cloned
+directory to your `PYTHONPATH`:
+
+```
+$ source install.sh
+```
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/LLNL/hatchet/develop/screenshot.png" width=800>
