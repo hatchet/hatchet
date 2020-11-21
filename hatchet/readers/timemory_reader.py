@@ -32,6 +32,8 @@ class TimemoryReader:
         self.timer = Timer()
         self.metric_cols = []
         self.properties = {}
+        self.include_tid = False
+        self.include_nid = False
         if select is None:
             self.select = select
         elif isinstance(select, list):
@@ -124,25 +126,23 @@ class TimemoryReader:
                 "type": "region",
                 "name": _prefix,
             }
+            _extra = {"file": "<unknown>", "line": "0"}
             _pdict = perform_regex(_prefix)
             if _pdict is not None:
                 if "head" in _pdict:
-                    _keys["type"] = "statement"
-                    _keys["line"] = _pdict["line"]
-                    _keys["file"] = _pdict["file"]
                     _keys["name"] = _pdict["head"].rstrip()
+                    _extra["line"] = _pdict["line"]
+                    _extra["file"] = _pdict["file"]
                 else:
-                    if "line" in _pdict:
-                        _keys["type"] = "statement"
-                        _keys["line"] = _pdict["line"]
-                        if "tail" in _pdict:
-                            if "#" in _pdict["tail"]:
-                                _keys["type"] = "loop"
                     _keys["name"] = _pdict["func"]
-                    _keys["file"] = _pdict["file"] if "file" in _pdict else "unknown"
+                    _extra["file"] = (
+                        _pdict["file"] if "file" in _pdict else "<unknown file>"
+                    )
+                    if "line" in _pdict:
+                        _extra["line"] = _pdict["line"]
                     if "tail" in _pdict:
                         _keys["name"] = "{}/{}".format(_keys["name"], _pdict["tail"])
-            return _keys
+            return (_keys, _extra)
 
         def get_md_suffix(_obj):
             """Gets a multi-dimensional suffix"""
@@ -180,16 +180,18 @@ class TimemoryReader:
                 return
 
             _prop = self.properties[_key]
-            _keys = get_keys(_dict["node"]["prefix"])
+            _keys, _extra = get_keys(_dict["node"]["prefix"])
             if _rank is not None:
                 _keys["nid"] = _rank
-            _extra = {}
+                self.include_nid = True
             _extra["count"] = _dict["node"]["inclusive"]["entry"]["laps"]
             _extra["tid"] = _dict["node"]["tid"]
             _extra["pid"] = _dict["node"]["pid"]
             # aggregated results have a list of threads and processes
             if len(_extra["tid"]) == 1:
-                _extra["tid"] = _extra["tid"][0]
+                _keys["tid"] = _extra["tid"][0]
+                del _extra["tid"]
+                self.include_tid = True
             if len(_extra["pid"]) == 1:
                 _extra["pid"] = _extra["pid"][0]
             _labels = None if "type" not in _prop else _prop["type"]
@@ -358,8 +360,14 @@ class TimemoryReader:
             else:
                 exc_metrics.append(column)
 
+        indices = ["node"]
+        # this attempt at MultiIndex does not work
+        # if self.include_nid:
+        #    indices.append("nid")
+        # if self.include_tid:
+        #    indices.append("tid")
         dataframe = pd.DataFrame(data=node_dicts)
-        dataframe.set_index(["node"], inplace=True)
+        dataframe.set_index(indices, inplace=True)
         dataframe.sort_index(inplace=True)
 
         return GraphFrame(graph, dataframe, exc_metrics, inc_metrics)
