@@ -49,7 +49,6 @@ def init_shared_array(buf_):
 
 
 def read_metricdb_file(args):
-    print("Start")
     """Read a single metricdb file into a 1D array."""
     filename, num_nodes, num_threads_per_rank, num_metrics, shape = args
     rank = int(
@@ -74,7 +73,6 @@ def read_metricdb_file(args):
     arr[rank_offset : rank_offset + num_nodes, 2] = range(1, num_nodes + 1)
     arr[rank_offset : rank_offset + num_nodes, 3] = rank
     arr[rank_offset : rank_offset + num_nodes, 4] = thread
-    print("end")
 
 class HPCToolkitReader:
     """Read in the various sections of an HPCToolkit experiment.xml file and

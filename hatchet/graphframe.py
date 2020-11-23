@@ -15,6 +15,8 @@ import numpy as np
 import multiprocess as mp
 import psutil
 
+
+from multiprocess import Process, Queue
 from .node import Node
 from .graph import Graph
 from .frame import Frame
@@ -38,16 +40,19 @@ except ImportError:
     traceback.print_exc()
     raise
 
-def parallel_apply(filter, subframe):
+def parallel_apply(filter, subframe, q):
+    print(subframe)
     print("Start ", mp.current_process().pid, flush=True)
     T.start_phase("P: {}".format(mp.current_process().pid))
     filtered_rows = subframe.apply(filter, axis=1)
+    filtered_sf = subframe[filtered_rows]
     T.end_phase()
     print("End ", mp.current_process().pid, flush=True)
 
     print(T, "\n")
 
-    return filtered_rows
+    print(filtered_sf.shape)
+    q.put(filtered_sf)
 
 class GraphFrame:
     """An input dataset is read into an object of this type, which includes a graph
@@ -319,19 +324,31 @@ class GraphFrame:
             # verify this is a deep copy
             # mp.shared ctypes .rawarray
             # shared datatype for Pandas
-            #
-            subframes = np.array_split(dataframe_copy, psutil.cpu_count(logical=False))
-            # print(mp.cpu_count(), psutil.cpu_count(logical=False))
-            p = mp.Pool(psutil.cpu_count(logical=False))
-            func = partial(parallel_apply, filter_obj)
-            returns = p.map(func, subframes)
-            p.close()
-            p.join()
 
-            filtered_rows = pd.concat(returns)
+            q = Queue()
+            processes = []
+            returns = []
+            # subframes = np.array_split(dataframe_copy, psutil.cpu_count(logical=False))
+            subframes = np.array_split(dataframe_copy, psutil.cpu_count())
 
-            filtered_df = dataframe_copy[filtered_rows]
+
+
+            for i in range(psutil.cpu_count()):
+                p = Process(target=parallel_apply, args=(filter_obj, subframes[i], q))
+                p.start()
+                processes.append(p)
+
+            for p in processes:
+                returns.append(q.get())
+
+            filtered_df = pd.concat(returns)
+
+            print(filtered_df)
+
+            # filtered_rows = pd.concat(returns)
             #
+            # filtered_df = dataframe_copy[filtered_rows]
+            # #
             # filtered_rows = dataframe_copy.apply(filter_obj, axis=1)
             # filtered_df = dataframe_copy[filtered_rows]
             #
