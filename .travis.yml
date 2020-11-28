@@ -22,12 +22,15 @@ jobs:
       language: python
     - python: '3.6'
       os: linux
+      dist: bionic
       language: python
     - python: '3.7'
       os: linux
+      dist: bionic
       language: python
     - python: '3.8'
       os: linux
+      dist: bionic
       language: python
 
 install:
@@ -56,6 +59,10 @@ script:
   - cd ../../
   - echo -e "PWD:" ${PWD}
   - which cali-query
+  - if [[ "$(echo ${TRAVIS_PYTHON_VERSION} | sed 's/\.//g')" -ge "36" ]]; then
+      pip install --upgrade scikit-build;
+      pip install --upgrade --no-cache-dir --no-deps -v --pre timemory --install-option=--disable-{c,gotcha,tools};
+    fi
   - PYTHONPATH=. coverage run $(which pytest)
 
 after_success:
