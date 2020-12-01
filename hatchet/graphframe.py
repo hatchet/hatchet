@@ -39,7 +39,8 @@ except ImportError:
 
 
 def parallel_apply(filter, subframe, q):
-    """A function called in parallel which uses pandas apply on a subframe and returns the results via multiprocessing queue function."""
+    """A function called in parallel which uses pandas apply
+    on a subframe and returns the results via multiprocessing queue function."""
     filtered_rows = subframe.apply(filter, axis=1)
     filtered_sf = subframe[filtered_rows]
     q.put(filtered_sf)
@@ -327,6 +328,8 @@ class GraphFrame:
             # appending onto a frame of increasing size.
             for p in processes:
                 returns.append(q.get())
+
+            for p in processes:
                 p.join()
 
             filtered_df = pd.concat(returns)
