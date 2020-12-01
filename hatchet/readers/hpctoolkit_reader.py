@@ -74,6 +74,7 @@ def read_metricdb_file(args):
     arr[rank_offset : rank_offset + num_nodes, 3] = rank
     arr[rank_offset : rank_offset + num_nodes, 4] = thread
 
+
 class HPCToolkitReader:
     """Read in the various sections of an HPCToolkit experiment.xml file and
     metric-db files.

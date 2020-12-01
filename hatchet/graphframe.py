@@ -5,14 +5,11 @@
 
 import sys
 import traceback
-import math
 
 from collections import defaultdict
-from functools import partial
 
 import pandas as pd
 import numpy as np
-import multiprocess as mp
 import psutil
 
 
@@ -40,19 +37,13 @@ except ImportError:
     traceback.print_exc()
     raise
 
+
 def parallel_apply(filter, subframe, q):
-    print(subframe)
-    print("Start ", mp.current_process().pid, flush=True)
-    T.start_phase("P: {}".format(mp.current_process().pid))
+    """A function called in parallel which uses pandas apply on a subframe and returns the results via multiprocessing queue function."""
     filtered_rows = subframe.apply(filter, axis=1)
     filtered_sf = subframe[filtered_rows]
-    T.end_phase()
-    print("End ", mp.current_process().pid, flush=True)
-
-    print(T, "\n")
-
-    print(filtered_sf.shape)
     q.put(filtered_sf)
+
 
 class GraphFrame:
     """An input dataset is read into an object of this type, which includes a graph
@@ -305,6 +296,8 @@ class GraphFrame:
     def filter(self, filter_obj, squash=True):
         """Filter the dataframe using a user-supplied function.
 
+        Note: Operates in parallel on user-supplied lambda functions.
+
         Arguments:
             filter_obj (callable, list, or QueryMatcher): the filter to apply to the GraphFrame.
             squash (boolean, optional): if True, automatically call squash for the user.
@@ -317,42 +310,27 @@ class GraphFrame:
         filtered_df = None
 
         if callable(filter_obj):
-            # deep copy?
-                # is this a shallow copy
-                # defining the dataset as global
-                # init_shared_array => creating a global (array)
-            # verify this is a deep copy
-            # mp.shared ctypes .rawarray
-            # shared datatype for Pandas
-
             q = Queue()
             processes = []
             returns = []
-            # subframes = np.array_split(dataframe_copy, psutil.cpu_count(logical=False))
             subframes = np.array_split(dataframe_copy, psutil.cpu_count())
 
-
-
+            # Manually create a number of processes equal to the number of logical cpus available
             for i in range(psutil.cpu_count()):
                 p = Process(target=parallel_apply, args=(filter_obj, subframes[i], q))
                 p.start()
                 processes.append(p)
 
+            # Stores filtered sunframes in a list: 'returns', for pandas concatenation
+            # This intermediary list is used because pandas concat is faster when
+            # called only once on a list of dataframes, than when called multiple times
+            # appending onto a frame of increasing size.
             for p in processes:
                 returns.append(q.get())
+                p.join()
 
             filtered_df = pd.concat(returns)
 
-            print(filtered_df)
-
-            # filtered_rows = pd.concat(returns)
-            #
-            # filtered_df = dataframe_copy[filtered_rows]
-            # #
-            # filtered_rows = dataframe_copy.apply(filter_obj, axis=1)
-            # filtered_df = dataframe_copy[filtered_rows]
-            #
-            # print(filtered_df)
         elif isinstance(filter_obj, list) or isinstance(filter_obj, QueryMatcher):
             query = filter_obj
             if isinstance(filter_obj, list):
