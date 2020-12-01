@@ -19,7 +19,7 @@ from .util.dot import trees_to_dot
 from .util.deprecated import deprecated_params
 
 try:
-    import hatchet.cython_modules.libs.graphframe_modules as _gfm_cy
+    from .cython_modules.libs import graphframe_modules as _gfm_cy
 except ImportError:
     print("-" * 80)
     print(
