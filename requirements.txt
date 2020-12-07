@@ -9,4 +9,3 @@ numpy
 PyYAML
 cython
 multiprocess
-psutil

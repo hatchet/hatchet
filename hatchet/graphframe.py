@@ -10,7 +10,7 @@ from collections import defaultdict
 
 import pandas as pd
 import numpy as np
-import psutil
+import multiprocess as mp
 
 
 from multiprocess import Process, Queue
@@ -294,7 +294,7 @@ class GraphFrame:
 
         self.dataframe = agg_df
 
-    def filter(self, filter_obj, squash=True):
+    def filter(self, filter_obj, squash=True, parallel=False, num_procs=mp.cpu_count()):
         """Filter the dataframe using a user-supplied function.
 
         Note: Operates in parallel on user-supplied lambda functions.
@@ -311,28 +311,37 @@ class GraphFrame:
         filtered_df = None
 
         if callable(filter_obj):
-            q = Queue()
-            processes = []
-            returns = []
-            subframes = np.array_split(dataframe_copy, psutil.cpu_count())
+            # pandas filter
+            if parallel:
+                q = Queue()
+                processes = []
+                returns = []
+                subframes = np.array_split(dataframe_copy, num_procs)
 
-            # Manually create a number of processes equal to the number of logical cpus available
-            for i in range(psutil.cpu_count()):
-                p = Process(target=parallel_apply, args=(filter_obj, subframes[i], q))
-                p.start()
-                processes.append(p)
+                # Manually create a number of processes equal to the number of logical cpus available
+                for i in range(num_procs):
+                    p = Process(
+                        target=parallel_apply, args=(filter_obj, subframes[i], q)
+                    )
+                    p.start()
+                    processes.append(p)
 
-            # Stores filtered sunframes in a list: 'returns', for pandas concatenation
-            # This intermediary list is used because pandas concat is faster when
-            # called only once on a list of dataframes, than when called multiple times
-            # appending onto a frame of increasing size.
-            for p in processes:
-                returns.append(q.get())
+                # Stores filtered sunframes in a list: 'returns', for pandas concatenation
+                # This intermediary list is used because pandas concat is faster when
+                # called only once on a list of dataframes, than when called multiple times
+                # appending onto a frame of increasing size.
+                for p in processes:
+                    returns.append(q.get())
 
-            for p in processes:
-                p.join()
+                for p in processes:
+                    p.join()
 
-            filtered_df = pd.concat(returns)
+                filtered_df = pd.concat(returns)
+
+            else:
+                # non parallel condition
+                filtered_rows = dataframe_copy.apply(filter_obj, axis=1)
+                filtered_df = dataframe_copy[filtered_rows]
 
         elif isinstance(filter_obj, list) or isinstance(filter_obj, QueryMatcher):
             query = filter_obj
