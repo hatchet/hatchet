@@ -160,10 +160,49 @@ def check_filter_no_squash(gf, filter_func, num_rows):
     assert filtered.graph == orig_graph
     assert len(filtered.dataframe) == num_rows
 
+    # parallel versions of the same test
+    orig_graph = gf.graph.copy()
+    filtered = gf.filter(filter_func, squash=False, parallel=True)
+    filtered.dataframe.reset_index(inplace=True)
+
+    assert filtered.graph is gf.graph
+    assert filtered.graph == orig_graph
+    assert len(filtered.dataframe) == num_rows
+
 
 def check_filter_squash(gf, filter_func, expected_graph, expected_inc_time):
     """Ensure filtering and squashing results in the right Graph and GraphFrame."""
     filtered_squashed = gf.filter(filter_func)
+    index_names = filtered_squashed.dataframe.index.names
+    filtered_squashed.dataframe.reset_index(inplace=True)
+
+    assert filtered_squashed.graph is not gf.graph
+    assert all(
+        n in filtered_squashed.graph.traverse()
+        for n in filtered_squashed.dataframe["node"]
+    )
+    filtered_squashed.dataframe.set_index(index_names, inplace=True)
+
+    filtered_squashed.dataframe.reset_index(inplace=True, drop=False)
+    assert filtered_squashed.graph == expected_graph
+    assert len(filtered_squashed.dataframe.index) == len(expected_graph)
+    filtered_squashed_node_names = list(expected_graph.traverse(attrs="name"))
+    assert all(
+        n.frame["name"] in filtered_squashed_node_names
+        for n in filtered_squashed.dataframe["node"]
+    )
+    filtered_squashed.dataframe.set_index(index_names, inplace=True)
+
+    # verify inclusive metrics at different nodes
+    nodes = list(filtered_squashed.graph.traverse())
+    assert len(nodes) == len(expected_inc_time)
+
+    assert expected_inc_time == [
+        filtered_squashed.dataframe.loc[node, "time (inc)"] for node in nodes
+    ]
+
+    # parallel versions
+    filtered_squashed = gf.filter(filter_func, parallel=True)
     index_names = filtered_squashed.dataframe.index.names
     filtered_squashed.dataframe.reset_index(inplace=True)
 
