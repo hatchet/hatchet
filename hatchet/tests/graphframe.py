@@ -153,7 +153,7 @@ def test_subtree_product():
 def check_filter_no_squash(gf, filter_func, num_rows):
     """Ensure filtering and squashing results in the right Graph and GraphFrame."""
     orig_graph = gf.graph.copy()
-    filtered = gf.filter(filter_func, squash=False)
+    filtered = gf.filter(filter_func, squash=False, num_procs=1)
     filtered.dataframe.reset_index(inplace=True)
 
     assert filtered.graph is gf.graph
@@ -162,7 +162,7 @@ def check_filter_no_squash(gf, filter_func, num_rows):
 
     # parallel versions of the same test
     orig_graph = gf.graph.copy()
-    filtered = gf.filter(filter_func, squash=False, parallel=True)
+    filtered = gf.filter(filter_func, squash=False)
     filtered.dataframe.reset_index(inplace=True)
 
     assert filtered.graph is gf.graph
@@ -172,7 +172,7 @@ def check_filter_no_squash(gf, filter_func, num_rows):
 
 def check_filter_squash(gf, filter_func, expected_graph, expected_inc_time):
     """Ensure filtering and squashing results in the right Graph and GraphFrame."""
-    filtered_squashed = gf.filter(filter_func)
+    filtered_squashed = gf.filter(filter_func, num_procs=1)
     index_names = filtered_squashed.dataframe.index.names
     filtered_squashed.dataframe.reset_index(inplace=True)
 
@@ -202,7 +202,7 @@ def check_filter_squash(gf, filter_func, expected_graph, expected_inc_time):
     ]
 
     # parallel versions
-    filtered_squashed = gf.filter(filter_func, parallel=True)
+    filtered_squashed = gf.filter(filter_func)
     index_names = filtered_squashed.dataframe.index.names
     filtered_squashed.dataframe.reset_index(inplace=True)
 

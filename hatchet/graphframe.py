@@ -294,7 +294,7 @@ class GraphFrame:
 
         self.dataframe = agg_df
 
-    def filter(self, filter_obj, squash=True, parallel=False, num_procs=mp.cpu_count()):
+    def filter(self, filter_obj, squash=True, num_procs=mp.cpu_count()):
         """Filter the dataframe using a user-supplied function.
 
         Note: Operates in parallel on user-supplied lambda functions.
@@ -312,7 +312,7 @@ class GraphFrame:
 
         if callable(filter_obj):
             # pandas filter
-            if parallel:
+            if num_procs > 1:
                 q = Queue()
                 processes = []
                 returns = []
