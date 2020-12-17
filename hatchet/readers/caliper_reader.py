@@ -8,8 +8,10 @@ import sys
 import re
 import subprocess
 import os
+import math
 
 import pandas as pd
+import numpy as np
 
 import hatchet.graphframe
 from hatchet.node import Node
@@ -18,6 +20,7 @@ from hatchet.frame import Frame
 from hatchet.util.timer import Timer
 from hatchet.util.executable import which
 
+unknown_label_counter = 0
 
 class CaliperReader:
     """Read in a Caliper file (`cali` or split JSON) or file-like object."""
@@ -125,9 +128,14 @@ class CaliperReader:
     def create_graph(self):
         list_roots = []
 
+        global unknown_label_counter
+
         # find nodes in the nodes section that represent the path hierarchy
         for idx, node in enumerate(self.json_nodes):
             node_label = node["label"]
+            if node_label == "":
+                node_label = "UNKNOWN " + str(unknown_label_counter)
+                unknown_label_counter += 1
             self.idx_to_label[idx] = node_label
 
             if node["column"] == self.path_col_name:
@@ -172,6 +180,11 @@ class CaliperReader:
         # create a dataframe of metrics from the data section
         self.df_json_data = pd.DataFrame(self.json_data, columns=self.json_cols)
 
+        # when an nid has multiple entries due to the secondary hierarchy
+        # we need to aggregate them for each (nid, rank)
+        grouped = self.df_json_data.groupby([self.nid_col_name, 'rank']).aggregate(np.sum)
+        self.df_json_data = grouped.reset_index()
+
         # map non-numeric columns to their mappings in the nodes section
         for idx, item in enumerate(self.json_cols_mdata):
             if item["is_value"] is False and self.json_cols[idx] != self.nid_col_name:
@@ -193,6 +206,10 @@ class CaliperReader:
                     )
                     self.df_json_data.drop(self.json_cols[idx], axis=1, inplace=True)
                     sourceloc_idx = idx
+                elif self.json_cols[idx] == "path":
+                    # we will only reach here if path is the "secondary"
+                    # hierarchy in the data
+                    self.df_json_data["path"] = self.df_json_data["path"].apply(lambda x: None if (math.isnan(x)) else self.json_nodes[int(x)]["label"])
                 else:
                     self.df_json_data[self.json_cols[idx]] = self.df_json_data[
                         self.json_cols[idx]
