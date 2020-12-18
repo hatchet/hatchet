@@ -12,8 +12,6 @@ import pandas as pd
 import numpy as np
 import multiprocess as mp
 
-
-from multiprocess import Process, Queue
 from .node import Node
 from .graph import Graph
 from .frame import Frame
@@ -34,12 +32,12 @@ except ImportError:
     raise
 
 
-def parallel_apply(filter, subframe, q):
+def parallel_apply(filter, subframe, queue):
     """A function called in parallel which uses pandas apply
     on a subframe and returns the results via multiprocessing queue function."""
     filtered_rows = subframe.apply(filter, axis=1)
     filtered_sf = subframe[filtered_rows]
-    q.put(filtered_sf)
+    queue.put(filtered_sf)
 
 
 class GraphFrame:
@@ -309,30 +307,31 @@ class GraphFrame:
         if callable(filter_obj):
             # pandas filter
             if num_procs > 1:
-                q = Queue()
+                queue = mp.Queue()
                 processes = []
-                returns = []
+                returned_frames = []
                 subframes = np.array_split(dataframe_copy, num_procs)
 
                 # Manually create a number of processes equal to the number of logical cpus available
-                for i in range(num_procs):
-                    p = Process(
-                        target=parallel_apply, args=(filter_obj, subframes[i], q)
+                for proc_num in range(num_procs):
+                    process = mp.Process(
+                        target=parallel_apply,
+                        args=(filter_obj, subframes[proc_num], queue),
                     )
-                    p.start()
-                    processes.append(p)
+                    process.start()
+                    processes.append(process)
 
                 # Stores filtered sunframes in a list: 'returns', for pandas concatenation
                 # This intermediary list is used because pandas concat is faster when
                 # called only once on a list of dataframes, than when called multiple times
                 # appending onto a frame of increasing size.
-                for p in processes:
-                    returns.append(q.get())
+                for proc in range(num_procs):
+                    returned_frames.append(queue.get())
 
-                for p in processes:
-                    p.join()
+                for proc in processes:
+                    proc.join()
 
-                filtered_df = pd.concat(returns)
+                filtered_df = pd.concat(returned_frames)
 
             else:
                 # non parallel condition

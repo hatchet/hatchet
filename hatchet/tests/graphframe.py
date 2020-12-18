@@ -152,6 +152,8 @@ def test_subtree_product():
 
 def check_filter_no_squash(gf, filter_func, num_rows):
     """Ensure filtering and squashing results in the right Graph and GraphFrame."""
+
+    # sequential tests
     orig_graph = gf.graph.copy()
     filtered = gf.filter(filter_func, squash=False, num_procs=1)
     filtered.dataframe.reset_index(inplace=True)
@@ -172,6 +174,8 @@ def check_filter_no_squash(gf, filter_func, num_rows):
 
 def check_filter_squash(gf, filter_func, expected_graph, expected_inc_time):
     """Ensure filtering and squashing results in the right Graph and GraphFrame."""
+
+    # sequential tests
     filtered_squashed = gf.filter(filter_func, num_procs=1)
     index_names = filtered_squashed.dataframe.index.names
     filtered_squashed.dataframe.reset_index(inplace=True)
