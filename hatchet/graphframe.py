@@ -5,10 +5,12 @@
 
 import sys
 import traceback
+
 from collections import defaultdict
 
 import pandas as pd
 import numpy as np
+import multiprocess as mp
 
 from .node import Node
 from .graph import Graph
@@ -28,6 +30,14 @@ except ImportError:
     print("-" * 80)
     traceback.print_exc()
     raise
+
+
+def parallel_apply(filter_function, dataframe, queue):
+    """A function called in parallel, which does a pandas apply on part of a
+    dataframe and returns the results via multiprocessing queue function."""
+    filtered_rows = dataframe.apply(filter_function, axis=1)
+    filtered_df = dataframe[filtered_rows]
+    queue.put(filtered_df)
 
 
 class GraphFrame:
@@ -278,8 +288,10 @@ class GraphFrame:
 
         self.dataframe = agg_df
 
-    def filter(self, filter_obj, squash=True):
+    def filter(self, filter_obj, squash=True, num_procs=mp.cpu_count()):
         """Filter the dataframe using a user-supplied function.
+
+        Note: Operates in parallel on user-supplied lambda functions.
 
         Arguments:
             filter_obj (callable, list, or QueryMatcher): the filter to apply to the GraphFrame.
@@ -293,9 +305,44 @@ class GraphFrame:
         filtered_df = None
 
         if callable(filter_obj):
-            filtered_rows = dataframe_copy.apply(filter_obj, axis=1)
-            filtered_df = dataframe_copy[filtered_rows]
+            # applying pandas filter using the callable function
+            if num_procs > 1:
+                # perform filter in parallel (default)
+                queue = mp.Queue()
+                processes = []
+                returned_frames = []
+                subframes = np.array_split(dataframe_copy, num_procs)
+
+                # Manually create a number of processes equal to the number of
+                # logical cpus available
+                for pid in range(num_procs):
+                    process = mp.Process(
+                        target=parallel_apply,
+                        args=(filter_obj, subframes[pid], queue),
+                    )
+                    process.start()
+                    processes.append(process)
+
+                # Stores filtered subframes in a list: 'returned_frames', for
+                # pandas concatenation. This intermediary list is used because
+                # pandas concat is faster when called only once on a list of
+                # dataframes, than when called multiple times appending onto a
+                # frame of increasing size.
+                for pid in range(num_procs):
+                    returned_frames.append(queue.get())
+
+                for proc in processes:
+                    proc.join()
+
+                filtered_df = pd.concat(returned_frames)
+
+            else:
+                # perform filter sequentiually if num_procs = 1
+                filtered_rows = dataframe_copy.apply(filter_obj, axis=1)
+                filtered_df = dataframe_copy[filtered_rows]
+
         elif isinstance(filter_obj, list) or isinstance(filter_obj, QueryMatcher):
+            # use a callpath query to apply the filter
             query = filter_obj
             if isinstance(filter_obj, list):
                 query = QueryMatcher(filter_obj)

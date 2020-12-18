@@ -8,3 +8,4 @@ pep8-naming
 numpy
 PyYAML
 cython
+multiprocess
