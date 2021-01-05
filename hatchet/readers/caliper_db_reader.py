@@ -16,13 +16,13 @@ from hatchet.util.timer import Timer
 class CaliperDBReader:
     """Read in a Caliper file using Caliper's native python reader."""
 
-    def __init__(self, records):
+    def __init__(self, cali_reader):
         """Read from Caliper python reader (cali).
 
         Args:
-            records (list): caliper records
+            records (CaliperReader): caliper reader object (after read() is called)
         """
-        self.records = records
+        self.cali_reader = cali_reader
 
         self.metric_columns = set()
         self.node_dicts = []
@@ -37,7 +37,7 @@ class CaliperDBReader:
         parent_hnode = None
 
         # find nodes in the nodes section that represent the path hierarchy
-        for node in self.records:
+        for node in self.cali_reader.records:
             metrics = {}
             node_label = ""
             if ctx in node:
@@ -54,7 +54,10 @@ class CaliperDBReader:
                             elif i == "name":
                                 metrics[i] = node[i]
                             else:
-                                metrics[i] = float(node[i])
+                                if self.cali_reader.attribute(i).attribute_type() == "double":
+                                    metrics[i] = float(node[i])
+                                elif self.cali_reader.attribute(i).attribute_type() == "int":
+                                    metrics[i] = int(node[i])
 
                     frame = Frame({"type": self.node_type, "name": node_label})
                     parent_frame = None
@@ -86,7 +89,10 @@ class CaliperDBReader:
                             elif i == "name":
                                 metrics[i] = node[i]
                             else:
-                                metrics[i] = float(node[i])
+                                if self.cali_reader.attribute(i).attribute_type() == "double":
+                                    metrics[i] = float(node[i])
+                                elif self.cali_reader.attribute(i).attribute_type() == "int":
+                                    metrics[i] = int(node[i])
 
                     frame = Frame({"type": self.node_type, "name": node_label})
 
@@ -132,6 +138,21 @@ class CaliperDBReader:
 
         dataframe.set_index(["node"], inplace=True)
         dataframe.sort_index(inplace=True)
+
+#        for i in self.cali_reader.attributes():
+#            print(i, self.cali_reader.attribute(i).attribute_type())
+            #if self.cali_reader.attribute(i).get('attribute.unit'):
+            #    print("HERE")
+            #else:
+            #    print("BAD")
+            #r.attribute('figure_of_merit').get('adiak.type'), 'double'
+            #if t:
+            #    #print(i, t)
+            #    print("HERE")
+
+        #for i in metrics:
+        #    gf.dataframe[i] = gf.dataframe[i].astype(float)
+        #r.attribute('function').attribute_type()
 
         # create list of exclusive and inclusive metric columns
         exc_metrics = []

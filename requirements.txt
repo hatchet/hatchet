@@ -9,3 +9,4 @@ numpy
 PyYAML
 cython
 multiprocess
+caliper-reader
