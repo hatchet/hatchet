@@ -119,16 +119,17 @@ class GraphFrame:
         return CaliperReader(filename_or_stream).read()
 
     @staticmethod
-    def from_caliper_db(records):
+    def from_caliper_db(filename_or_caliperreader):
         """Read in Caliper python reader JSON output.
 
         Args:
-            records (list): caliper records
+            filename_or_caliperreader (str or CaliperReader): name of a `cali` file OR
+                a CaliperReader object
         """
         # import this lazily to avoid circular dependencies
         from .readers.caliper_db_reader import CaliperDBReader
 
-        return CaliperDBReader(records).read()
+        return CaliperDBReader(filename_or_caliperreader).read()
 
     @staticmethod
     def from_gprof_dot(filename):
