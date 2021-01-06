@@ -49,15 +49,17 @@ class CaliperDBReader:
                             self.node_type = i
                         elif i != ctx:
                             self.metric_columns.add(i)
-                            if i in self.node_types:
-                                metrics[i] = node[i]
-                            elif i == "name":
-                                metrics[i] = node[i]
+                            if self.cali_reader.attribute(i).attribute_type() == "double":
+                                metrics[i] = float(node[i])
+                            elif self.cali_reader.attribute(i).attribute_type() == "int":
+                                metrics[i] = int(node[i])
+                            elif i == "function":
+                                if isinstance(node[i], list):
+                                    metrics[i] = node[i][-1]
+                                else:
+                                    metrics[i] = node[i]
                             else:
-                                if self.cali_reader.attribute(i).attribute_type() == "double":
-                                    metrics[i] = float(node[i])
-                                elif self.cali_reader.attribute(i).attribute_type() == "int":
-                                    metrics[i] = int(node[i])
+                                metrics[i] = node[i]
 
                     frame = Frame({"type": self.node_type, "name": node_label})
                     parent_frame = None
@@ -84,15 +86,14 @@ class CaliperDBReader:
                             self.node_type = i
                         else:
                             self.metric_columns.add(i)
-                            if i in self.node_types:
-                                metrics[i] = node[i]
-                            elif i == "name":
-                                metrics[i] = node[i]
+                            if self.cali_reader.attribute(i).attribute_type() == "double":
+                                metrics[i] = float(node[i])
+                            elif self.cali_reader.attribute(i).attribute_type() == "int":
+                                metrics[i] = int(node[i])
+                            elif i == "function":
+                                metrics[i] = node[i][-1]
                             else:
-                                if self.cali_reader.attribute(i).attribute_type() == "double":
-                                    metrics[i] = float(node[i])
-                                elif self.cali_reader.attribute(i).attribute_type() == "int":
-                                    metrics[i] = int(node[i])
+                                metrics[i] = node[i]
 
                     frame = Frame({"type": self.node_type, "name": node_label})
 
@@ -121,26 +122,26 @@ class CaliperDBReader:
 
         dataframe = pd.DataFrame(data=self.node_dicts)
 
+        dataframe.set_index(["node"], inplace=True)
+        dataframe.sort_index(inplace=True)
+
         # change column names
-        for item in dataframe.columns:
+        for idx, item in enumerate(dataframe.columns):
             # make other columns consistent with other readers
             if item == "mpi.rank":
-                dataframe[item] = "rank"
+                dataframe.columns.values[idx] = "rank"
             if item == "module#cali.sampler.pc":
-                dataframe[item] = "module"
+                dataframe.columns.values[idx] = "module"
             if item == "sum#time.duration" or item == "sum#avg#sum#time.duration":
-                dataframe[item] = "time"
+                dataframe.columns.values[idx] = "time"
             if (
                 item == "inclusive#sum#time.duration"
                 or item == "sum#avg#inclusive#sum#time.duration"
             ):
-                dataframe[item] = "time (inc)"
-
-        dataframe.set_index(["node"], inplace=True)
-        dataframe.sort_index(inplace=True)
+                dataframe.columns.values[idx] = "time (inc)"
 
 #        for i in self.cali_reader.attributes():
-#            print(i, self.cali_reader.attribute(i).attribute_type())
+#            print("RRR", i, self.cali_reader.attribute(i).attribute_type())
             #if self.cali_reader.attribute(i).get('attribute.unit'):
             #    print("HERE")
             #else:
@@ -149,10 +150,6 @@ class CaliperDBReader:
             #if t:
             #    #print(i, t)
             #    print("HERE")
-
-        #for i in metrics:
-        #    gf.dataframe[i] = gf.dataframe[i].astype(float)
-        #r.attribute('function').attribute_type()
 
         # create list of exclusive and inclusive metric columns
         exc_metrics = []
