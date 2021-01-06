@@ -5,6 +5,9 @@
 
 
 import pandas as pd
+import os
+
+import caliperreader as cr
 
 import hatchet.graphframe
 from hatchet.node import Node
@@ -16,20 +19,23 @@ from hatchet.util.timer import Timer
 class CaliperDBReader:
     """Read in a Caliper file using Caliper's native python reader."""
 
-    def __init__(self, cali_reader):
-        """Read from Caliper python reader (cali).
+    def __init__(self, filename_or_caliperreader):
+        """Read in a cali with native Caliper reader.
 
         Args:
-            records (CaliperReader): caliper reader object (after read() is called)
+            filename_or_caliperreader (str or CaliperReader): name of a `cali` file OR
+                a CaliperReader object
         """
-        self.cali_reader = cali_reader
+        self.filename_or_caliperreader = filename_or_caliperreader
+        self.filename_ext = ""
 
         self.metric_columns = set()
         self.node_dicts = []
 
         self.timer = Timer()
 
-        self.node_types = ["function", "mpi.function", "loop"]
+        if isinstance(self.filename_or_caliperreader, str):
+            _, self.filename_ext = os.path.splitext(filename_or_caliperreader)
 
     def create_graph(self, ctx="path"):
         list_roots = []
@@ -37,7 +43,7 @@ class CaliperDBReader:
         parent_hnode = None
 
         # find nodes in the nodes section that represent the path hierarchy
-        for node in self.cali_reader.records:
+        for node in self.filename_or_caliperreader.records:
             metrics = {}
             node_label = ""
             if ctx in node:
@@ -49,9 +55,19 @@ class CaliperDBReader:
                             self.node_type = i
                         elif i != ctx:
                             self.metric_columns.add(i)
-                            if self.cali_reader.attribute(i).attribute_type() == "double":
+                            if (
+                                self.filename_or_caliperreader.attribute(
+                                    i
+                                ).attribute_type()
+                                == "double"
+                            ):
                                 metrics[i] = float(node[i])
-                            elif self.cali_reader.attribute(i).attribute_type() == "int":
+                            elif (
+                                self.filename_or_caliperreader.attribute(
+                                    i
+                                ).attribute_type()
+                                == "int"
+                            ):
                                 metrics[i] = int(node[i])
                             elif i == "function":
                                 if isinstance(node[i], list):
@@ -71,7 +87,7 @@ class CaliperDBReader:
                     parent_hnode = visited[parent_frame]
 
                     hnode = Node(frame, parent_hnode)
-                    print("CREATING NODE", hnode)
+                    print("DEBUG CREATING NODE", hnode)
 
                     visited[frame] = hnode
 
@@ -86,9 +102,19 @@ class CaliperDBReader:
                             self.node_type = i
                         else:
                             self.metric_columns.add(i)
-                            if self.cali_reader.attribute(i).attribute_type() == "double":
+                            if (
+                                self.filename_or_caliperreader.attribute(
+                                    i
+                                ).attribute_type()
+                                == "double"
+                            ):
                                 metrics[i] = float(node[i])
-                            elif self.cali_reader.attribute(i).attribute_type() == "int":
+                            elif (
+                                self.filename_or_caliperreader.attribute(
+                                    i
+                                ).attribute_type()
+                                == "int"
+                            ):
                                 metrics[i] = int(node[i])
                             elif i == "function":
                                 metrics[i] = node[i][-1]
@@ -100,7 +126,7 @@ class CaliperDBReader:
                     # since this node does not have a parent, this is a root
                     graph_root = Node(frame, None)
                     visited[frame] = graph_root
-                    print("CREATING ROOT node=", graph_root)
+                    print("DEBUG CREATING ROOT node=", graph_root)
                     list_roots.append(graph_root)
 
                     node_dict = dict(
@@ -113,6 +139,15 @@ class CaliperDBReader:
 
     def read(self):
         """Read the caliper JSON string to extract the calling context tree."""
+        if isinstance(self.filename_or_caliperreader, str):
+            if self.filename_ext != ".cali":
+                raise ValueError("from_caliper_db() can only read .cali files")
+            else:
+                print("DEBUG Creating caliperreader()")
+                cali_file = self.filename_or_caliperreader
+                self.filename_or_caliperreader = cr.CaliperReader()
+                self.filename_or_caliperreader.read(cali_file)
+
         with self.timer.phase("graph construction"):
             list_roots = self.create_graph()
 
@@ -140,16 +175,8 @@ class CaliperDBReader:
             ):
                 dataframe.columns.values[idx] = "time (inc)"
 
-#        for i in self.cali_reader.attributes():
-#            print("RRR", i, self.cali_reader.attribute(i).attribute_type())
-            #if self.cali_reader.attribute(i).get('attribute.unit'):
-            #    print("HERE")
-            #else:
-            #    print("BAD")
-            #r.attribute('figure_of_merit').get('adiak.type'), 'double'
-            #if t:
-            #    #print(i, t)
-            #    print("HERE")
+        # for i in self.filename_or_caliperreader.attributes():
+        #     print("RRR", i, self.filename_or_caliperreader.attribute(i).attribute_type())
 
         # create list of exclusive and inclusive metric columns
         exc_metrics = []
