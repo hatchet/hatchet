@@ -182,7 +182,14 @@ class CaliperReader:
 
         # when an nid has multiple entries due to the secondary hierarchy
         # we need to aggregate them for each (nid, rank)
-        grouped = self.df_json_data.groupby([self.nid_col_name, 'rank']).aggregate(np.sum)
+        groupby_cols = [self.nid_col_name]
+        if 'rank' in self.json_cols:
+            groupby_cols.append('rank')
+        if 'sourceloc#cali.sampler.pc' in self.json_cols:
+            groupby_cols.append('sourceloc#cali.sampler.pc')
+
+        grouped = self.df_json_data.groupby(groupby_cols).aggregate(np.sum)
+
         self.df_json_data = grouped.reset_index()
 
         # map non-numeric columns to their mappings in the nodes section
