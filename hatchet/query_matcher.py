@@ -87,7 +87,19 @@ class QueryMatcher:
                             else:
                                 matches = matches and False
                         elif isinstance(df_row[k], Real):
-                            if isinstance(v, str) and v.lower().startswith(compops):
+                            if isinstance(v, list):
+                                for i in v:
+                                    if isinstance(i, str) and i.lower().startswith(compops):
+                                        matches = matches and eval("{} {}".format(df_row[k], i))
+                                    elif isinstance(i, Real):
+                                        matches = matches and (df_row[k] == i)
+                                    else:
+                                        raise InvalidQueryFilter(
+                                            "Attribute {} has a numeric type. Valid filters for this attribute are a string starting with a comparison operator or a real number.".format(
+                                                k
+                                            )
+                                        )
+                            elif isinstance(v, str) and v.lower().startswith(compops):
                                 matches = matches and eval("{} {}".format(df_row[k], v))
                             elif isinstance(v, Real):
                                 matches = matches and (df_row[k] == v)
