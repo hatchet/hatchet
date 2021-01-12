@@ -22,6 +22,7 @@ from hatchet.util.executable import which
 
 unknown_label_counter = 0
 
+
 class CaliperReader:
     """Read in a Caliper file (`cali` or split JSON) or file-like object."""
 
@@ -183,10 +184,10 @@ class CaliperReader:
         # when an nid has multiple entries due to the secondary hierarchy
         # we need to aggregate them for each (nid, rank)
         groupby_cols = [self.nid_col_name]
-        if 'rank' in self.json_cols:
-            groupby_cols.append('rank')
-        if 'sourceloc#cali.sampler.pc' in self.json_cols:
-            groupby_cols.append('sourceloc#cali.sampler.pc')
+        if "rank" in self.json_cols:
+            groupby_cols.append("rank")
+        if "sourceloc#cali.sampler.pc" in self.json_cols:
+            groupby_cols.append("sourceloc#cali.sampler.pc")
 
         grouped = self.df_json_data.groupby(groupby_cols).aggregate(np.sum)
 
@@ -216,7 +217,11 @@ class CaliperReader:
                 elif self.json_cols[idx] == "path":
                     # we will only reach here if path is the "secondary"
                     # hierarchy in the data
-                    self.df_json_data["path"] = self.df_json_data["path"].apply(lambda x: None if (math.isnan(x)) else self.json_nodes[int(x)]["label"])
+                    self.df_json_data["path"] = self.df_json_data["path"].apply(
+                        lambda x: None
+                        if (math.isnan(x))
+                        else self.json_nodes[int(x)]["label"]
+                    )
                 else:
                     self.df_json_data[self.json_cols[idx]] = self.df_json_data[
                         self.json_cols[idx]
