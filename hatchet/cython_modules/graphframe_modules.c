@@ -17197,7 +17197,7 @@ if (!__Pyx_RefNanny) {
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
   /* "hatchet/cython_modules/graphframe_modules.pyx":1
- * # Copyright 2017-2020 Lawrence Livermore National Security, LLC and other             # <<<<<<<<<<<<<<
+ * # Copyright 2017-2021 Lawrence Livermore National Security, LLC and other             # <<<<<<<<<<<<<<
  * # Hatchet Project Developers. See the top-level LICENSE file for details.
  * #
  */
