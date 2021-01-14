@@ -21,11 +21,11 @@ operations to analyze a single hierarchical data set or compare multiple data
 sets, and its API facilitates analyzing such data programmatically.
 
 You can get hatchet from its `GitHub repository
-<https://github.com/LLNL/hatchet>`_:
+<https://github.com/hatchet/hatchet>`_:
 
 .. code-block:: console
 
-  $ git clone https://github.com/LLNL/hatchet.git
+  $ git clone https://github.com/hatchet/hatchet.git
 
 or install it using pip:
 

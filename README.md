@@ -1,7 +1,7 @@
-# <img src="https://raw.githubusercontent.com/LLNL/hatchet/develop/logo-hex.png" width="64" valign="middle" alt="hatchet"/> Hatchet
+# <img src="https://raw.githubusercontent.com/hatchet/hatchet/develop/logo-hex.png" width="64" valign="middle" alt="hatchet"/> Hatchet
 
-[![Build Status](https://travis-ci.com/LLNL/hatchet.svg?branch=develop)](https://travis-ci.com/LLNL/hatchet)
-[![codecov](https://codecov.io/gh/LLNL/hatchet/branch/develop/graph/badge.svg)](https://codecov.io/gh/LLNL/hatchet)
+[![Build Status](https://travis-ci.com/hatchet/hatchet.svg?branch=develop)](https://travis-ci.com/hatchet/hatchet)
+[![codecov](https://codecov.io/gh/hatchet/hatchet/branch/develop/graph/badge.svg)](https://codecov.io/gh/hatchet/hatchet)
 [![Read the Docs](http://readthedocs.org/projects/hatchet/badge/?version=latest)](http://hatchet.readthedocs.io)
 [![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 
@@ -22,7 +22,7 @@ $ source install.sh
 ```
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/LLNL/hatchet/develop/screenshot.png" width=800>
+  <img src="https://raw.githubusercontent.com/hatchet/hatchet/develop/screenshot.png" width=800>
 </p>
 
 
