@@ -25,7 +25,7 @@ setup(
     name="hatchet",
     version=version["__version__"],
     description="A Python library for analyzing hierarchical performance data",
-    url="https://github.com/LLNL/hatchet",
+    url="https://github.com/hatchet/hatchet",
     author="Abhinav Bhatele",
     author_email="bhatele@cs.umd.edu",
     license="MIT",

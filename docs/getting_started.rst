@@ -18,18 +18,18 @@ Hatchet has the following minimum requirements, which must be installed before H
 #. numpy, and
 #. pandas
 
-Hatchet is available on `GitHub <https://github.com/LLNL/hatchet>`_.
+Hatchet is available on `GitHub <https://github.com/hatchet/hatchet>`_.
 
 
 Installation
 ============
 
 You can get hatchet from its `GitHub repository
-<https://github.com/LLNL/hatchet>`_ using this command:
+<https://github.com/hatchet/hatchet>`_ using this command:
 
 .. code-block:: console
 
-  $ git clone https://github.com/LLNL/hatchet.git
+  $ git clone https://github.com/hatchet/hatchet.git
 
 This will create a directory called ``hatchet``.
 

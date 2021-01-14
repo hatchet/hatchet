@@ -46,11 +46,11 @@ You are good to go!
 The Hatchet repository includes stand-alone Python-based Jupyter notebook examples based on this
 tutorial.
 You can find them in the hatchet `GitHub repository
-<https://github.com/LLNL/hatchet/tree/develop/docs/examples>`_. You can get a local copy of the repository using ``git``:
+<https://github.com/hatchet/hatchet/tree/develop/docs/examples>`_. You can get a local copy of the repository using ``git``:
 
 .. code-block:: console
 
-  $ git clone https://github.com/LLNL/hatchet.git
+  $ git clone https://github.com/hatchet/hatchet.git
 
 You will find the tutorial notebooks in your local hatchet repository under
 ``docs/examples/tutorial/``.
