@@ -83,9 +83,14 @@ class CaliperReader:
         if "source.function#callpath.address" in self.json_cols:
             self.path_col_name = "source.function#callpath.address"
             self.node_type = "function"
+            if "path" in self.json_cols:
+                self.both_hierarchies = True
+            else:
+                self.both_hierarchies = False
         elif "path" in self.json_cols:
             self.path_col_name = "path"
             self.node_type = "region"
+            self.both_hierarchies = False
         else:
             sys.exit("No hierarchy column in input file")
 
@@ -189,9 +194,19 @@ class CaliperReader:
         if "sourceloc#cali.sampler.pc" in self.json_cols:
             groupby_cols.append("sourceloc#cali.sampler.pc")
 
-        grouped = self.df_json_data.groupby(groupby_cols).aggregate(np.sum)
+        if(self.both_hierarchies is True):
+            # create dict that stores aggregation function for each column
+            agg_dict = {}
+            for idx, item in enumerate(self.json_cols_mdata):
+                col = self.json_cols[idx]
+                if col != "rank" and col != "nid":
+                    if item["is_value"] is True:
+                        agg_dict[col] = np.sum
+                    else:
+                        agg_dict[col] = lambda x: x.iloc[0]
 
-        self.df_json_data = grouped.reset_index()
+            grouped = self.df_json_data.groupby(groupby_cols).aggregate(agg_dict)
+            self.df_json_data = grouped.reset_index()
 
         # map non-numeric columns to their mappings in the nodes section
         for idx, item in enumerate(self.json_cols_mdata):
