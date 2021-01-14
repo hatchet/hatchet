@@ -43,64 +43,79 @@ class QueryMatcher:
                 first_no_drop_indices = {"val": True}
 
                 def filter_series(df_row):
+                    def filter_single_series(df_row, key, single_value):
+                        if key == "depth":
+                            node = df_row.name
+                            if isinstance(
+                                single_value, str
+                            ) and single_value.lower().startswith(compops):
+                                return eval("{} {}".format(node._depth, single_value))
+                            if isinstance(single_value, Real):
+                                return node._depth == single_value
+                            raise InvalidQueryFilter(
+                                "Attribute {} has a numeric type. Valid filters for this attribute are a string starting with a comparison operator or a real number.".format(
+                                    key
+                                )
+                            )
+                        if key == "node_id":
+                            node = df_row.name
+                            if isinstance(
+                                single_value, str
+                            ) and single_value.lower().startswith(compops):
+                                return eval(
+                                    "{} {}".format(node._hatchet_nid, single_value)
+                                )
+                            if isinstance(single_value, Real):
+                                return node._hatchet_nid == single_value
+                            raise InvalidQueryFilter(
+                                "Attribute {} has a numeric type. Valid filters for this attribute are a string starting with a comparison operator or a real number.".format(
+                                    key
+                                )
+                            )
+                        if key not in df_row.keys():
+                            return False
+                        if isinstance(df_row[key], str):
+                            if not isinstance(single_value, str):
+                                raise InvalidQueryFilter(
+                                    "Value for attribute {} must be a string.".format(
+                                        key
+                                    )
+                                )
+                            return (
+                                re.match(single_value + r"\Z", df_row[key]) is not None
+                            )
+                        if isinstance(df_row[key], Real):
+                            if isinstance(
+                                single_value, str
+                            ) and single_value.lower().startswith(compops):
+                                return eval("{} {}".format(df_row[key], single_value))
+                            if isinstance(single_value, Real):
+                                return df_row[key] == single_value
+                            raise InvalidQueryFilter(
+                                "Attribute {} has a numeric type. Valid filters for this attribute are a string starting with a comparison operator or a real number.".format(
+                                    key
+                                )
+                            )
+                        raise InvalidQueryFilter(
+                            "Filter must be one of the following:\n  * A regex string for a String attribute\n  * A string starting with a comparison operator for a Numeric attribute\n  * A number for a Numeric attribute\n"
+                        )
+
                     matches = True
                     for k, v in attr_filter.items():
-                        if k == "depth":
-                            node = df_row.name
-                            if isinstance(v, str) and v.lower().startswith(compops):
-                                matches = matches and eval(
-                                    "{} {}".format(node._depth, v)
-                                )
-                            elif isinstance(v, Real):
-                                matches = matches and (node._depth == v)
-                            else:
-                                raise InvalidQueryFilter(
-                                    "Attribute {} has a numeric type. Valid filters for this attribute are a string starting with a comparison operator or a real number.".format(
-                                        k
-                                    )
-                                )
-                            continue
-                        if k == "node_id":
-                            node = df_row.name
-                            if isinstance(v, str) and v.lower().startswith(compops):
-                                matches = matches and eval(
-                                    "{} {}".format(node._hatchet_nid, v)
-                                )
-                            elif isinstance(v, Real):
-                                matches = matches and (node._hatchet_nid == v)
-                            else:
-                                raise InvalidQueryFilter(
-                                    "Attribute {} has a numeric type. Valid filters for this attribute are a string starting with a comparison operator or a real number.".format(
-                                        k
-                                    )
-                                )
-                            continue
-                        if k not in df_row.keys():
-                            return False
-                        if isinstance(df_row[k], str):
-                            if not isinstance(v, str):
-                                raise InvalidQueryFilter(
-                                    "Value for attribute {} must be a string.", k
-                                )
-                            if re.match(v + r"\Z", df_row[k]) is not None:
-                                matches = matches and True
-                            else:
-                                matches = matches and False
-                        elif isinstance(df_row[k], Real):
-                            if isinstance(v, str) and v.lower().startswith(compops):
-                                matches = matches and eval("{} {}".format(df_row[k], v))
-                            elif isinstance(v, Real):
-                                matches = matches and (df_row[k] == v)
-                            else:
-                                raise InvalidQueryFilter(
-                                    "Attribute {} has a numeric type. Valid filters for this attribute are a string starting with a comparison operator or a real number.".format(
-                                        k
-                                    )
-                                )
+                        try:
+                            _ = iter(v)
+                            # Manually raise TypeError if v is a string so that
+                            # the string is processed as a non-iterable
+                            if isinstance(v, str):
+                                raise TypeError
+                        # Runs if v is not iterable (e.g., list, tuple, etc.)
+                        except TypeError:
+                            matches = matches and filter_single_series(df_row, k, v)
                         else:
-                            raise InvalidQueryFilter(
-                                "Filter must be one of the following:\n  * A regex string for a String attribute\n  * A string starting with a comparison operator for a Numeric attribute\n  * A number for a Numeric attribute\n"
-                            )
+                            for single_value in v:
+                                matches = matches and filter_single_series(
+                                    df_row, k, single_value
+                                )
                     return matches
 
                 def filter_dframe(df_row):
@@ -126,74 +141,91 @@ class QueryMatcher:
                             "===================================================================\n"
                         )
                         first_no_drop_indices["val"] = False
+
+                    def filter_single_dframe(node, df_row, key, single_value):
+                        if key == "depth":
+                            if isinstance(
+                                single_value, str
+                            ) and single_value.lower().startswith(compops):
+                                return eval("{} {}".format(node._depth, single_value))
+                            if isinstance(single_value, Real):
+                                return node._depth == single_value
+                            raise InvalidQueryFilter(
+                                "Attribute {} has a numeric type. Valid filters for this attribute are a string starting with a comparison operator or a real number.".format(
+                                    key
+                                )
+                            )
+                        if key == "node_id":
+                            if isinstance(
+                                single_value, str
+                            ) and single_value.lower().startswith(compops):
+                                return eval(
+                                    "{} {}".format(node._hatchet_nid, single_value)
+                                )
+                            if isinstance(single_value, Real):
+                                return node._hatchet_nid == single_value
+                            raise InvalidQueryFilter(
+                                "Attribute {} has a numeric type. Valid filters for this attribute are a string starting with a comparison operator or a real number.".format(
+                                    key
+                                )
+                            )
+                        if key not in df_row.columns:
+                            return False
+                        if df_row[key].apply(type).eq(str).all():
+                            if not isinstance(single_value, str):
+                                raise InvalidQueryFilter(
+                                    "Value for attribute {} must be a string.".format(
+                                        key
+                                    )
+                                )
+                            return (
+                                df_row[key]
+                                .apply(
+                                    lambda x: re.match(single_value + r"\Z", x)
+                                    is not None
+                                )
+                                .any()
+                            )
+                        if df_row[key].apply(type).eq(Real).all():
+                            if isinstance(
+                                single_value, str
+                            ) and single_value.lower().startswith(compops):
+                                return (
+                                    df_row[key]
+                                    .apply(
+                                        lambda x: eval("{} {}".format(x, single_value))
+                                    )
+                                    .any()
+                                )
+                            if isinstance(single_value, Real):
+                                return (
+                                    df_row[key].apply(lambda x: x == single_value).any()
+                                )
+                            raise InvalidQueryFilter(
+                                "Attribute {} has a numeric type. Valid filters for this attribute are a string starting with a comparison operator or a real number.".format(
+                                    key
+                                )
+                            )
+                        raise InvalidQueryFilter(
+                            "Filter must be one of the following:\n  * A regex string for a String attribute\n  * A string starting with a comparison operator for a Numeric attribute\n  * A number for a Numeric attribute\n"
+                        )
+
                     matches = True
                     node = df_row.name.to_frame().index[0][0]
                     for k, v in attr_filter.items():
-                        if k == "depth":
-                            if isinstance(v, str) and v.lower().startswith(compops):
-                                matches = matches and eval(
-                                    "{} {}".format(node._depth, v)
-                                )
-                            elif isinstance(v, Real):
-                                matches = matches and (node._depth == v)
-                            else:
-                                raise InvalidQueryFilter(
-                                    "Attribute {} has a numeric type. Valid filters for this attribute are a string starting with a comparison operator or a real number.".format(
-                                        k
-                                    )
-                                )
-                            continue
-                        if k == "node_id":
-                            if isinstance(v, str) and v.lower().startswith(compops):
-                                matches = matches and eval(
-                                    "{} {}".format(node._hatchet_nid, v)
-                                )
-                            elif isinstance(v, Real):
-                                matches = matches and (node._hatchet_nid == v)
-                            else:
-                                raise InvalidQueryFilter(
-                                    "Attribute {} has a numeric type. Valid filters for this attribute are a string starting with a comparison operator or a real number.".format(
-                                        k
-                                    )
-                                )
-                            continue
-                        if k not in df_row.columns:
-                            return False
-                        if df_row[k].apply(type).eq(str).all():
-                            if not isinstance(v, str):
-                                raise InvalidQueryFilter(
-                                    "Value for attribute {} must be a string.", k
-                                )
-                            if (
-                                df_row[k]
-                                .apply(lambda x: re.match(v + r"\Z", x) is not None)
-                                .any()
-                            ):
-                                matches = matches and True
-                            else:
-                                matches = matches and False
-                        elif df_row[k].apply(type).eq(Real).all():
-                            if isinstance(v, str) and v.lower().startswith(compops):
-                                matches = (
-                                    matches
-                                    and df_row[k]
-                                    .apply(lambda x: eval("{} {}".format(x, v)))
-                                    .any()
-                                )
-                            elif isinstance(v, Real):
-                                matches = (
-                                    matches and df_row[k].apply(lambda x: x == v).any()
-                                )
-                            else:
-                                raise InvalidQueryFilter(
-                                    "Attribute {} has a numeric type. Valid filters for this attribute are a string starting with a comparison operator or a real number.".format(
-                                        k
-                                    )
-                                )
-                        else:
-                            raise InvalidQueryFilter(
-                                "Filter must be one of the following:\n  * A regex string for a String attribute\n  * A string starting with a comparison operator for a Numeric attribute\n  * A number for a Numeric attribute\n"
+                        try:
+                            _ = iter(v)
+                            if isinstance(v, str):
+                                raise TypeError
+                        except TypeError:
+                            matches = matches and filter_single_dframe(
+                                node, df_row, k, v
                             )
+                        else:
+                            for single_value in v:
+                                matches = matches and filter_single_dframe(
+                                    node, df_row, k, single_value
+                                )
                     return matches
 
                 def filter_choice(df_row):
