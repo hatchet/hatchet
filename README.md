@@ -42,7 +42,7 @@ You can also reach the hatchet developers by email at: [hatchet-help@listserv.um
 ### Authors
 
 Many thanks go to Hatchet's
-[contributors](https://github.com/llnl/hatchet/graphs/contributors).
+[contributors](https://github.com/hatchet/hatchet/graphs/contributors).
 
 Hatchet was created by Abhinav Bhatele, bhatele@cs.umd.edu.
 
@@ -67,8 +67,8 @@ All contributions must be made under the MIT license.  Copyrights in the
 Hatchet project are retained by contributors.  No copyright assignment is
 required to contribute to Hatchet.
 
-See [LICENSE](https://github.com/llnl/hatchet/blob/develop/LICENSE) and
-[NOTICE](https://github.com/llnl/hatchet/blob/develop/NOTICE) for details.
+See [LICENSE](https://github.com/hatchet/hatchet/blob/develop/LICENSE) and
+[NOTICE](https://github.com/hatchet/hatchet/blob/develop/NOTICE) for details.
 
 SPDX-License-Identifier: MIT
 
