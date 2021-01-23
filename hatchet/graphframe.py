@@ -77,7 +77,7 @@ class GraphFrame:
         self.inc_metrics = [] if inc_metrics is None else inc_metrics
 
     @staticmethod
-    def from_path(dirname_or_data, query, profile_format=None):
+    def from_path(dirname_or_data, query="", profile_format=None):
         """Read a database directory and automatically detect the data format.
 
         Arguments:
@@ -86,6 +86,10 @@ class GraphFrame:
             profile_format (str): Override for the profile_format, if detection
             of format fails. 
         """
+        assert isinstance(dirname_or_data, str)
+        assert isinstance(query, str)
+        assert isinstance(profile_format, str or None)
+
         FROM_DATABASE_MAPPER = {
             'hpctoolkit': GraphFrame.from_hpctoolkit(dirname_or_data),
             'caliper': GraphFrame.from_caliper(dirname_or_data, query),
@@ -98,12 +102,12 @@ class GraphFrame:
             'lists': GraphFrame.from_lists(dirname_or_data),
         }
 
-        if profile_format:
+        if profile_format is not None:
             return FROM_DATABASE_MAPPER[profile_format]
 
         profile_format = GraphFrame._detect_profile_format(dirname_or_data)
 
-        if query:
+        if len(query) > 0:
             assert profile_format == "caliper"
 
         return FROM_DATABASE_MAPPER[profile_format]
@@ -154,8 +158,14 @@ class GraphFrame:
             }
         }
 
-        # Determine dirname_or_data is a str and a path exists
-        if type(dirname_or_data) == 'str' and os.path.exists(os.path.dirname(dirname_or_data)):
+        if type(dirname_or_data) == 'list':
+            return 'lists'
+
+        if type(dirname_or_data) == 'dict':
+            return 'literal'
+
+        # Determine dirname_or_data is a str
+        if type(dirname_or_data) == 'str':
             
             # check if it is a directory.
             # Formats in directory: hpctoolkit
@@ -173,13 +183,15 @@ class GraphFrame:
                 
 
             # check if it is a file
-            elif os.path.isfile(dirname_or_data):
+            if os.path.isfile(dirname_or_data):
                 _file_name, _file_ext = os.path.splitext(dirname_or_data)
 
                 if _file_ext == "cali":
                     return 'caliper'
                 elif _file_ext == "pstats":
                     return 'pstats'
+                elif _file_ext == "dot":
+                    return 'grpof'
                 elif _file_ext == 'json':
                     # TODO: Check if we can just load the key and dtype of JSON.
                     # We could also be unnecessarily read the data again.
@@ -195,13 +207,6 @@ class GraphFrame:
                         return 'pyinstrument'
                     elif jsonschema.validate(instance=_data, schema=_SCHEMA_TIMEMORY):
                         return 'timemory'
-                elif _file_ext == "dot":
-                    return 'grpof'
-        elif type(dirname_or_data) == 'list':
-            return 'lists'
-
-        elif type(dirname_or_data) == 'dict':
-            return 'literal'
             
 
     @staticmethod
