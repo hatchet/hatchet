@@ -602,3 +602,60 @@ def test_high_level_node_id_index_levels(calc_pi_hpct_db):
     with pytest.raises(InvalidQueryFilter):
         query = QueryMatcher([{"node_id": "hello"}])
         query.apply(gf)
+
+
+def test_high_level_multi_condition_one_attribute(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    query = QueryMatcher([("*", {"time (inc)": [">= 20", "<= 60"]})])
+    roots = gf.graph.roots
+    matches = [
+        [roots[0].children[0]],
+        [
+            roots[0].children[1],
+            roots[0].children[1].children[0],
+            roots[0].children[1].children[0].children[0],
+            roots[0].children[1].children[0].children[0].children[0],
+        ],
+        [
+            roots[0].children[1],
+            roots[0].children[1].children[0],
+            roots[0].children[1].children[0].children[0],
+        ],
+        [
+            roots[0].children[1].children[0],
+            roots[0].children[1].children[0].children[0],
+            roots[0].children[1].children[0].children[0].children[0],
+        ],
+        [
+            roots[0].children[1].children[0],
+            roots[0].children[1].children[0].children[0],
+        ],
+        [
+            roots[0].children[1].children[0].children[0],
+            roots[0].children[1].children[0].children[0].children[0],
+        ],
+        [roots[0].children[1].children[0].children[0]],
+        [roots[0].children[1].children[0].children[0].children[0]],
+        [
+            roots[0].children[2],
+            roots[0].children[2].children[0],
+            roots[0].children[2].children[0].children[1],
+            roots[0].children[2].children[0].children[1].children[0],
+        ],
+        [roots[0].children[2], roots[0].children[2].children[0]],
+        [roots[0].children[2]],
+        [
+            roots[0].children[2].children[0],
+            roots[0].children[2].children[0].children[1],
+            roots[0].children[2].children[0].children[1].children[0],
+        ],
+        [roots[0].children[2].children[0]],
+        [
+            roots[0].children[2].children[0].children[1],
+            roots[0].children[2].children[0].children[1].children[0],
+        ],
+        [roots[0].children[2].children[0].children[1].children[0]],
+        [roots[1], roots[1].children[0]],
+        [roots[1].children[0]],
+    ]
+    assert sorted(query.apply(gf)) == sorted(matches)
