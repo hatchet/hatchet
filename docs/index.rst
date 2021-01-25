@@ -46,7 +46,7 @@ If you are new to hatchet and want to start using it, see :doc:`Getting Started
    analysis_examples
 
 
-If you encounter bugs while using hatchet, you can report them by opening an issue on `GitHub <http://github.com/llnl/hatchet/issues>`_.
+If you encounter bugs while using hatchet, you can report them by opening an issue on `GitHub <http://github.com/hatchet/hatchet/issues>`_.
 
 If you are referencing hatchet in a publication, please cite the
 following `paper <http://www.cs.umd.edu/~bhatele/pubs/pdf/2019/sc2019.pdf>`_:
