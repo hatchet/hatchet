@@ -120,24 +120,24 @@ class QueryMatcher:
 
                 def filter_dframe(df_row):
                     if first_no_drop_indices["val"]:
-                        print (
+                        print(
                             "==================================================================="
                         )
-                        print (
+                        print(
                             "WARNING: You are performing a query without dropping index levels."
                         )
-                        print (
+                        print(
                             "         This is a valid operation, but it will significantly"
                         )
-                        print (
+                        print(
                             "         increase the time it takes for this operation to complete."
                         )
-                        print (
+                        print(
                             "         If you don't want the operation to take so long, call"
                         )
-                        print ("         GraphFrame.drop_index_levels() before calling")
-                        print ("         GraphFrame.filter()")
-                        print (
+                        print("         GraphFrame.drop_index_levels() before calling")
+                        print("         GraphFrame.filter()")
+                        print(
                             "===================================================================\n"
                         )
                         first_no_drop_indices["val"] = False
