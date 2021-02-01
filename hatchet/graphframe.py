@@ -143,7 +143,7 @@ class GraphFrame:
         return PyinstrumentReader(filename).read()
 
     @staticmethod
-    def from_timemory(input=None, select=None):
+    def from_timemory(input=None, select=None, *_args, **_kwargs):
         """Read in timemory data.
 
         Links:
@@ -195,14 +195,16 @@ class GraphFrame:
 
         if input is not None:
             try:
-                return TimemoryReader(input, select).read()
+                return TimemoryReader(input, select, *_args, **_kwargs).read()
             except IOError:
                 pass
         else:
             try:
                 import timemory
 
-                TimemoryReader(timemory.get(hierarchy=True), select).read()
+                TimemoryReader(
+                    timemory.get(hierarchy=True), select, *_args, **_kwargs
+                ).read()
             except ImportError:
                 print(
                     "Error! timemory could not be imported. Provide filename, file stream, or dict."
