@@ -149,6 +149,15 @@ class ConsoleRenderer:
         legend += render_label(4, 0.1, 0.3)
         legend += render_label(5, 0.0, 0.1)
 
+        legend += (
+            "Max: "
+            + "{:.2f}".format(self.max_metric)
+            + "\n"
+            + "Min: "
+            + "{:.2f}".format(self.min_metric)
+            + "\n"
+        )
+
         legend += "\n" + self._ansi_color_for_name("name") + "name" + self.colors.end
         legend += " User code    "
 
