@@ -63,3 +63,10 @@ def test_tree(hatchet_cycle_pstats):
     )
     assert "f pstats_reader_test.py" in output
     assert re.match("(.|\n)*recursive(.|\n)*recursive", output)
+
+
+def test_from_path_cprofile(hatchet_cycle_pstats):
+    gf = GraphFrame.from_path(str(hatchet_cycle_pstats))
+
+    assert len(gf.dataframe.groupby("file")) == 4
+    assert len(gf.dataframe.groupby("name")) == 9

@@ -88,3 +88,11 @@ def test_graphframe_to_literal(timemory_json_data):
     graph_literal = gf.to_literal()
 
     assert len(graph_literal) == len(gf.graph.roots)
+
+
+@pytest.mark.skipif(not timemory_avail, reason="timemory package not available")
+def test_from_path(timemory_json_data):
+    gf = GraphFrame.from_path(str(timemory_json_data))
+    graph_literal = gf.to_literal()
+
+    assert len(graph_literal) == len(gf.graph.roots)

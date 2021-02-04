@@ -39,3 +39,9 @@ def test_with_duplicate_in_first_node(mock_graph_literal_duplicate_first):
 
     graph_literal = gf.to_literal()
     assert mock_graph_literal_duplicate_first.sort() == graph_literal.sort()
+
+
+def test_from_path_literal(mock_graph_literal):
+    gf = GraphFrame.from_path(mock_graph_literal)
+
+    assert len(gf.dataframe) == 24

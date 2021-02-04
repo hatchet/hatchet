@@ -198,3 +198,24 @@ def test_graphframe_to_literal(lulesh_caliper_json):
     gf2 = GraphFrame.from_literal(graph_literal)
 
     assert len(gf.graph) == len(gf2.graph)
+
+
+def test_from_path_caliper_json(calc_pi_caliper_json):
+    gf = GraphFrame.from_caliper_json(str(calc_pi_caliper_json))
+
+    assert len(gf.dataframe.groupby("name")) == 100
+
+
+@pytest.mark.skipif(not which("cali-query"), reason="needs cali-query to be in path")
+def test_from_path_caliper(lulesh_caliper_cali):
+    cali_query = which("cali-query")
+    grouping_attribute = "function"
+    default_metric = "sum(sum#time.duration),inclusive_sum(sum#time.duration)"
+    query = "select function,%s group by %s format json-split" % (
+        default_metric,
+        grouping_attribute,
+    )
+
+    gf = GraphFrame.from_caliper(lulesh_caliper_cali, query)
+
+    assert len(gf.dataframe.groupby("name")) == 18

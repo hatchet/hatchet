@@ -81,22 +81,22 @@ class GraphFrame:
         """Read a database directory and automatically detect the data format.
 
         Arguments:
-            dirname_or_data (str): path to the database directory  
+            dirname_or_data (str): path to the database directory
             args (str): args need to be provided based on the respective function signature of GraphFrame.from_*profile_format*.
         """
         import os
+
         assert isinstance(dirname_or_data, (str, list, dict))
 
         FROM_DATABASE_MAPPER = {
-            'hpctoolkit': GraphFrame.from_hpctoolkit,
-            'caliper': GraphFrame.from_caliper,
-            'caliper_json': GraphFrame.from_caliper_json,
-            'gprof_dot': GraphFrame.from_gprof_dot,
-            'cprofile': GraphFrame.from_cprofile,
-            'pyinstrument': GraphFrame.from_pyinstrument,
-            'timemory': GraphFrame.from_timemory,
-            'literal': GraphFrame.from_literal,
-            'lists': GraphFrame.from_lists,
+            "hpctoolkit": GraphFrame.from_hpctoolkit,
+            "caliper": GraphFrame.from_caliper,
+            "caliper_json": GraphFrame.from_caliper_json,
+            "gprof_dot": GraphFrame.from_gprof_dot,
+            "cprofile": GraphFrame.from_cprofile,
+            "pyinstrument": GraphFrame.from_pyinstrument,
+            "timemory": GraphFrame.from_timemory,
+            "literal": GraphFrame.from_literal,
         }
 
         profile_format = GraphFrame._detect_profile_format(dirname_or_data)
@@ -115,7 +115,7 @@ class GraphFrame:
             "caliper": if file extension is .cali
             "caliper_json": if file extension is .json and matches schema
         """
-        import os 
+        import os
         import json
         import jsonschema
 
@@ -126,78 +126,83 @@ class GraphFrame:
                 "columns": {"type": "array"},
                 "column_metadata": {"type": "array"},
                 "nodes": {"type": "array"},
-            }
+            },
         }
 
         _SCHEMA_PYINSTRUMENT = {
             "type": "object",
-             "properties": {
+            "properties": {
                 "start_time": {"type": "number"},
                 "duration": {"type": "number"},
                 "sample_count": {"type": " number"},
                 "program": {"type": "string"},
                 "cpu_time": {"type": "number"},
-                "root_frame": {"type": "object"}
-            }
+                "root_frame": {"type": "object"},
+            },
         }
 
         _SCHEMA_TIMEMORY = {
             "type": "object",
-             "properties": {
-                "timemory": {"type": "object"}
-            }
+            "properties": {"timemory": {"type": "object"}},
         }
 
         if isinstance(dirname_or_data, list):
-            return 'lists'
-
-        if isinstance(dirname_or_data, dict):
-            return 'literal'
+            return "literal"
 
         # Determine dirname_or_data is a str
         if isinstance(dirname_or_data, str):
-            
+
             # check if it is a directory.
             # Formats in directory: hpctoolkit
             if os.path.isdir(dirname_or_data):
-                _metric_db_files = [f for f in os.listdir(dirname_or_data) if f.endswith('.metric-db')] 
-                _experiment_xml_files = [f for f in os.listdir(dirname_or_data) if f.endswith('experiment.xml')]
+                _metric_db_files = [
+                    f for f in os.listdir(dirname_or_data) if f.endswith(".metric-db")
+                ]
+                _experiment_xml_files = [
+                    f
+                    for f in os.listdir(dirname_or_data)
+                    if f.endswith("experiment.xml")
+                ]
 
                 if len(_metric_db_files) == 0:
-                    raise ValueError("No metric-db files detected inside the provided path.")
+                    raise ValueError(
+                        "No metric-db files detected inside the provided path."
+                    )
 
                 if len(_experiment_xml_files) == 0:
-                    raise ValueError("No experiment.xml file detected inside the provided path.")
-                
-                return 'hpctoolkit'
-                
+                    raise ValueError(
+                        "No experiment.xml file detected inside the provided path."
+                    )
+
+                return "hpctoolkit"
 
             # check if it is a file
             if os.path.isfile(dirname_or_data):
                 _file_name, _file_ext = os.path.splitext(dirname_or_data)
 
-                if _file_ext == "cali":
-                    return 'caliper'
-                elif _file_ext == "pstats":
-                    return 'pstats'
-                elif _file_ext == "dot":
-                    return 'grpof'
-                elif _file_ext == 'json':
+                if _file_ext == ".cali":
+                    return "caliper"
+                elif _file_ext == ".pstats":
+                    return "cprofile"
+                elif _file_ext == ".dot" or "dot" in _file_name.split("."):
+                    return "gprof_dot"
+                elif _file_ext == ".json":
                     # TODO: Check if we can just load the key and dtype of JSON.
                     # We could also be unnecessarily read the data again.
                     try:
-                        _data=json.loads(dirname_or_data)
+                        _data = json.loads(dirname_or_data)
                     except ValueError as err:
                         print(err)
                         return False
 
                     if jsonschema.validate(instance=_data, schema=_SCHEMA_CALIPER_JSON):
-                        return 'caliper_json'
-                    elif jsonschema.validate(instance=_data, schema=_SCHEMA_PYINSTRUMENT):
-                        return 'pyinstrument'
+                        return "caliper_json"
+                    elif jsonschema.validate(
+                        instance=_data, schema=_SCHEMA_PYINSTRUMENT
+                    ):
+                        return "pyinstrument"
                     elif jsonschema.validate(instance=_data, schema=_SCHEMA_TIMEMORY):
-                        return 'timemory'
-
+                        return "timemory"
 
     @staticmethod
     def from_hpctoolkit(dirname):
