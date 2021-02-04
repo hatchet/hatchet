@@ -77,40 +77,30 @@ class GraphFrame:
         self.inc_metrics = [] if inc_metrics is None else inc_metrics
 
     @staticmethod
-    def from_path(dirname_or_data, query="", profile_format=None):
+    def from_path(dirname_or_data, *args):
         """Read a database directory and automatically detect the data format.
 
         Arguments:
             dirname_or_data (str): path to the database directory  
-            query (str): 
-            profile_format (str): Override for the profile_format, if detection
-            of format fails. 
+            args (str): args need to be provided based on the respective function signature of GraphFrame.from_*profile_format*.
         """
-        assert isinstance(dirname_or_data, str)
-        assert isinstance(query, str)
-        assert isinstance(profile_format, str or None)
+        import os
+        assert isinstance(dirname_or_data, (str, list, dict))
 
         FROM_DATABASE_MAPPER = {
-            'hpctoolkit': GraphFrame.from_hpctoolkit(dirname_or_data),
-            'caliper': GraphFrame.from_caliper(dirname_or_data, query),
-            'caliper_json': GraphFrame.from_caliper_json(dirname_or_data),
-            'gprof_dot': GraphFrame.from_gprof_dot(dirname_or_data),
-            'cprofile': GraphFrame.from_cprofile(dirname_or_data),
-            'pyinstrument': GraphFrame.from_pyinstrument(dirname_or_data),
-            'timemory': GraphFrame.from_timemory(dirname_or_data),
-            'literal': GraphFrame.from_literal(dirname_or_data),
-            'lists': GraphFrame.from_lists(dirname_or_data),
+            'hpctoolkit': GraphFrame.from_hpctoolkit,
+            'caliper': GraphFrame.from_caliper,
+            'caliper_json': GraphFrame.from_caliper_json,
+            'gprof_dot': GraphFrame.from_gprof_dot,
+            'cprofile': GraphFrame.from_cprofile,
+            'pyinstrument': GraphFrame.from_pyinstrument,
+            'timemory': GraphFrame.from_timemory,
+            'literal': GraphFrame.from_literal,
+            'lists': GraphFrame.from_lists,
         }
 
-        if profile_format is not None:
-            return FROM_DATABASE_MAPPER[profile_format]
-
         profile_format = GraphFrame._detect_profile_format(dirname_or_data)
-
-        if len(query) > 0:
-            assert profile_format == "caliper"
-
-        return FROM_DATABASE_MAPPER[profile_format]
+        return FROM_DATABASE_MAPPER[profile_format](dirname_or_data, *args)
 
     @staticmethod
     def _detect_profile_format(dirname_or_data):
@@ -158,14 +148,14 @@ class GraphFrame:
             }
         }
 
-        if type(dirname_or_data) == 'list':
+        if isinstance(dirname_or_data, list):
             return 'lists'
 
-        if type(dirname_or_data) == 'dict':
+        if isinstance(dirname_or_data, dict):
             return 'literal'
 
         # Determine dirname_or_data is a str
-        if type(dirname_or_data) == 'str':
+        if isinstance(dirname_or_data, str):
             
             # check if it is a directory.
             # Formats in directory: hpctoolkit
@@ -207,7 +197,7 @@ class GraphFrame:
                         return 'pyinstrument'
                     elif jsonschema.validate(instance=_data, schema=_SCHEMA_TIMEMORY):
                         return 'timemory'
-            
+
 
     @staticmethod
     def from_hpctoolkit(dirname):
