@@ -10,7 +10,7 @@ if __name__ == "__main__":
 
     # Printout the DataFrame component of the GraphFrame.
     #print(gf.dataframe.to_string())
+    print(gf.dataframe)
 
     # Printout the graph component of the GraphFrame.
-    # Because no metric parameter is specified, ``time`` is used by default.
-    #print(gf.tree(metric_column="region_count", rank=0, thread=0))
+    print(gf.tree(metric_column="perf::TASK-CLOCK", rank=0, thread=0))
