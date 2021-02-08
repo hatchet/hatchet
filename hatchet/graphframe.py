@@ -325,7 +325,8 @@ class GraphFrame:
                 # logical cpus available
                 for pid in range(num_procs):
                     process = mp.Process(
-                        target=parallel_apply, args=(filter_obj, subframes[pid], queue),
+                        target=parallel_apply,
+                        args=(filter_obj, subframes[pid], queue),
                     )
                     process.start()
                     processes.append(process)
