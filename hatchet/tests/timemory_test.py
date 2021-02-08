@@ -88,3 +88,15 @@ def test_graphframe_to_literal(timemory_json_data):
     graph_literal = gf.to_literal()
 
     assert len(graph_literal) == len(gf.graph.roots)
+
+
+@pytest.mark.skipif(not timemory_avail, reason="timemory package not available")
+def test_default_metric(timemory_json_data):
+    """Validation test for GraphFrame object using default metric field"""
+
+    gf = GraphFrame.from_timemory(timemory_json_data)
+
+    for func in ["tree", "to_dot", "to_flamegraph"]:
+        lhs = "{}".format(getattr(gf, func)(gf.default_metric))
+        rhs = "{}".format(getattr(gf, func)())
+        assert lhs == rhs
