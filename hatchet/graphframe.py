@@ -84,8 +84,6 @@ class GraphFrame:
             dirname_or_data (str): path to the database directory
             args (str): args need to be provided based on the respective function signature of GraphFrame.from_*profile_format*.
         """
-        import os
-
         assert isinstance(dirname_or_data, (str, list, dict))
 
         FROM_DATABASE_MAPPER = {

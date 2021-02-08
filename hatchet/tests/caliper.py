@@ -208,7 +208,6 @@ def test_from_path_caliper_json(calc_pi_caliper_json):
 
 @pytest.mark.skipif(not which("cali-query"), reason="needs cali-query to be in path")
 def test_from_path_caliper(lulesh_caliper_cali):
-    cali_query = which("cali-query")
     grouping_attribute = "function"
     default_metric = "sum(sum#time.duration),inclusive_sum(sum#time.duration)"
     query = "select function,%s group by %s format json-split" % (
