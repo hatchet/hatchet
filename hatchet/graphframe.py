@@ -775,6 +775,7 @@ class GraphFrame:
             node_dict["name"] = node_name
             node_dict["frame"] = hnode.frame.attrs
             node_dict["metrics"] = metrics_to_dict(hnode)
+            node_dict["metrics"]["_hatchet_nid"] = hnode._hatchet_nid
 
             if hnode.children and hnode not in visited:
                 visited.append(hnode)
