@@ -98,7 +98,21 @@ class GraphFrame:
         }
 
         profile_format = GraphFrame._detect_profile_format(dirname_or_data)
-        return FROM_DATABASE_MAPPER[profile_format](dirname_or_data, *args)
+
+        if not profile_format:
+            return FROM_DATABASE_MAPPER[profile_format](dirname_or_data, *args)
+        else:
+            raise ValueError("`GraphFrame.from_path` failed to recognize the data format. Please fallback to respective `GraphFrame.from_*`, where * is the data format.")
+
+    @staticmethod
+    def _json_schema_validate(_data, _schema):
+        import jsonschema
+
+        try:
+            return jsonschema.validate(instance=_data, schema=_schema)
+        except jsonschema.ValidationError as e:
+            return e.schema["error_msg"] 
+
 
     @staticmethod
     def _detect_profile_format(dirname_or_data):
@@ -115,8 +129,10 @@ class GraphFrame:
         """
         import os
         import json
-        import jsonschema
 
+        # Find identifiers 
+        # Caliper has meta-data section (cali version is available)
+        # Add feedback if the format matching fails.
         _SCHEMA_CALIPER_JSON = {
             "type": "object",
             "properties": {
@@ -125,6 +141,7 @@ class GraphFrame:
                 "column_metadata": {"type": "array"},
                 "nodes": {"type": "array"},
             },
+            "required": ["data", "columns", "column_metadata", "nodes"]
         }
 
         _SCHEMA_PYINSTRUMENT = {
@@ -132,16 +149,18 @@ class GraphFrame:
             "properties": {
                 "start_time": {"type": "number"},
                 "duration": {"type": "number"},
-                "sample_count": {"type": " number"},
+                "sample_count": {"type": "number"},
                 "program": {"type": "string"},
                 "cpu_time": {"type": "number"},
-                "root_frame": {"type": "object"},
+                "root_frame": {},
             },
+            "required": ["start_time", "duration", "sample_count", "program", "cpu_time"]
         }
 
         _SCHEMA_TIMEMORY = {
             "type": "object",
             "properties": {"timemory": {"type": "object"}},
+            "required": ["timemory"]
         }
 
         if isinstance(dirname_or_data, list):
@@ -188,19 +207,24 @@ class GraphFrame:
                     # TODO: Check if we can just load the key and dtype of JSON.
                     # We could also be unnecessarily read the data again.
                     try:
-                        _data = json.loads(dirname_or_data)
+                        with open(dirname_or_data, 'r') as f:
+                            _data = json.loads(f.read())
                     except ValueError as err:
                         print(err)
                         return False
 
-                    if jsonschema.validate(instance=_data, schema=_SCHEMA_CALIPER_JSON):
+                    if GraphFrame._json_schema_validate(_data, _SCHEMA_CALIPER_JSON):
                         return "caliper_json"
-                    elif jsonschema.validate(
-                        instance=_data, schema=_SCHEMA_PYINSTRUMENT
-                    ):
+                    elif GraphFrame._json_schema_validate(_data, _SCHEMA_PYINSTRUMENT):
                         return "pyinstrument"
-                    elif jsonschema.validate(instance=_data, schema=_SCHEMA_TIMEMORY):
+                    elif GraphFrame._json_schema_validate(_data, _SCHEMA_TIMEMORY):
                         return "timemory"
+                    else:
+                        return None
+            else: 
+                return None
+        else:
+            return None
 
     @staticmethod
     def from_hpctoolkit(dirname):
