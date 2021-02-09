@@ -66,7 +66,9 @@ class LiteralReader:
         """
         self.graph_dict = graph_dict
 
-    def parse_node_literal(self, frame_to_node_dict, node_dicts, child_dict, hparent, seen_nids):
+    def parse_node_literal(
+        self, frame_to_node_dict, node_dicts, child_dict, hparent, seen_nids
+    ):
         """Create node_dict for one node and then call the function
         recursively on all children.
         """
@@ -74,8 +76,8 @@ class LiteralReader:
         # pull out _hatchet_nid if it exists
         # it wont interfere with current operations yet this way
         hnid = -1
-        if "_hatchet_nid" in child_dict['metrics']:
-            hnid = child_dict['metrics']["_hatchet_nid"]
+        if "_hatchet_nid" in child_dict["metrics"]:
+            hnid = child_dict["metrics"]["_hatchet_nid"]
 
         frame = Frame(child_dict["frame"])
         if hnid not in seen_nids:
@@ -103,7 +105,9 @@ class LiteralReader:
 
         if "children" in child_dict:
             for child in child_dict["children"]:
-                self.parse_node_literal(frame_to_node_dict, node_dicts, child, hnode, seen_nids)
+                self.parse_node_literal(
+                    frame_to_node_dict, node_dicts, child, hnode, seen_nids
+                )
 
     def read(self):
         list_roots = []
@@ -116,7 +120,7 @@ class LiteralReader:
         # start with creating a node_dict for each root
         for i in range(len(self.graph_dict)):
             if "_hatchet_nid" in self.graph_dict[i]["metrics"]:
-                hnid =  self.graph_dict[i]["metrics"]["_hatchet_nid"]
+                hnid = self.graph_dict[i]["metrics"]["_hatchet_nid"]
                 seen_nids.append(hnid)
             frame = Frame(self.graph_dict[i]["frame"])
             graph_root = Node(frame, None, hnid=hnid)
