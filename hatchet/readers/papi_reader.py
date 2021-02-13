@@ -30,20 +30,21 @@ class PAPIReader:
         #   #pragma omp parallel
         #     begin do_work
         #         read do_work
+        #         read do_work
         #     end do_work
         #
         # Output:
         # Rank=0, Thread=0 do_work
         # Rank=0, Thread=0   do_work(r1)
+        # Rank=0, Thread=0   do_work(r2)
         # Rank=0, Thread=1 do_work
         # Rank=0, Thread=1   do_work(r1)
+        # Rank=0, Thread=1   do_work(r2)
 
 
-        #                do_work (0,0)
-        #               /          \
-        #   do_work(r) (0,0)     do_work (0,1)
-        #                            \
-        #                         do_work(r) (0,1)
+        #              do_work
+        #              /     \
+        #      do_work(r1)  do_work(r2)
 
 
         metrics= {
@@ -56,12 +57,13 @@ class PAPIReader:
           "PAPI_FP_OPS": 54
         }
 
-        node_name = ["do_work","do_work"]
-        node_name_r = ["do_work(r1)","do_work(r1)"]
+        node_name = ["do_work"]
+        node_name_read = ["do_work(r1)", "do_work(r2)"]
 
-
+        # root node
         frame = Frame({"type": "region", "name": node_name[0]})
         graph_root = Node(frame, None)
+
         node_dict = dict(
           { "name": node_name[0],"node": graph_root,
             "rank": 0,
@@ -70,22 +72,8 @@ class PAPIReader:
           }
         )
         node_dicts.append(node_dict)
-
-        frame = Frame({"type": "region", "name": node_name_r[0]})
-        node1 = Node(frame, graph_root)
         node_dict = dict(
-          { "name": node_name_r[0],"node": node1,
-            "rank": 0,
-            "thread": 0,
-            **metrics,
-          }
-        )
-        node_dicts.append(node_dict)
-
-        frame = Frame({"type": "region", "name": node_name[1]})
-        node2 = Node(frame, graph_root)
-        node_dict = dict(
-          { "name": node_name[1],"node": node2,
+          { "name": node_name[0],"node": graph_root,
             "rank": 0,
             "thread": 1,
             **metrics,
@@ -93,21 +81,31 @@ class PAPIReader:
         )
         node_dicts.append(node_dict)
 
-        frame = Frame({"type": "region", "name": node_name_r[1]})
-        node3 = Node(frame, graph_root)
-        node_dict = dict(
-          { "name": node_name_r[1],"node": node3,
-            "rank": 0,
-            "thread": 1,
-            **metrics,
-          }
-        )
-        node_dicts.append(node_dict)
+        counter = 0
+        for name in node_name_read:
+          frame = Frame({"type": "region", "name": name})
+          node = Node(frame, None)
+          
+          node_dict = dict(
+            { "name": name,"node": node,
+              "rank": 0,
+              "thread": 0,
+              **metrics,
+            }
+          )
+          node_dicts.append(node_dict)
+          if counter < 1:
+            node_dict = dict(
+              { "name": name,"node": node,
+                "rank": 0,
+                "thread": 1,
+                **metrics,
+              }
+            )
+            node_dicts.append(node_dict)
+          graph_root.add_child(node)
+          counter = counter + 1
 
-        #create whole graph
-        node2.add_child(node3)
-        graph_root.add_child(node1)
-        graph_root.add_child(node2)
 
 
         list_roots.append(graph_root)
