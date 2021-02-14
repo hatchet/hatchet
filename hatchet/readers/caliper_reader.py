@@ -194,7 +194,7 @@ class CaliperReader:
         if "sourceloc#cali.sampler.pc" in self.json_cols:
             groupby_cols.append("sourceloc#cali.sampler.pc")
 
-        if(self.both_hierarchies is True):
+        if self.both_hierarchies is True:
             # create dict that stores aggregation function for each column
             agg_dict = {}
             for idx, item in enumerate(self.json_cols_mdata):
