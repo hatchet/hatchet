@@ -43,12 +43,37 @@ class NameData:
     FNCNAME = 2
 
 
-class CProfileReader:
-    def __init__(self, filename):
-        self.pstats_file = filename
-
+class CProfileReaderBase(object):
+    def __init__(self):
         self.name_to_hnode = {}
         self.name_to_dict = {}
+
+    def _create_node_and_row(self, fn_data, fn_name, stats_dict):
+        """
+        Description: Takes a profiled function as specified in a pstats file
+        and creates a node for it and adds a new line of metadata to our
+        dataframe if it does not exist.
+        """
+        raise NotImplementedError("_create_node_and_row")
+
+    def _get_src(self, stat):
+        """Gets the source/parent of our current desitnation node"""
+        return stat[StatData.SRCNODE]
+
+    def _add_node_metadata(self, stat_name, stat_module_data, stats, hnode):
+        """Puts all the metadata associated with a node in a dictionary to insert into pandas."""
+        raise NotImplementedError("_add_node_metadata")
+
+    def create_graph(self):
+        """Performs the creation of our node graph"""
+        raise NotImplementedError("create_graph")
+
+
+class CProfileReader(CProfileReaderBase):
+    def __init__(self, filename):
+        super().__init__()
+        self.pstats_file = filename
+
 
     def _create_node_and_row(self, fn_data, fn_name, stats_dict):
         """
@@ -73,10 +98,6 @@ class CProfileReader:
             self._add_node_metadata(u_fn_name, fn_data, fn_stats, fn_hnode)
 
         return fn_hnode
-
-    def _get_src(self, stat):
-        """Gets the source/parent of our current desitnation node"""
-        return stat[StatData.SRCNODE]
 
     def _add_node_metadata(self, stat_name, stat_module_data, stats, hnode):
         """Puts all the metadata associated with a node in a dictionary to insert into pandas."""
