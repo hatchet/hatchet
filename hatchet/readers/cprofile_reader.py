@@ -61,19 +61,37 @@ class CProfileReaderBase(object):
         return stat[StatData.SRCNODE]
 
     def _add_node_metadata(self, stat_name, stat_module_data, stats, hnode):
-        """Puts all the metadata associated with a node in a dictionary to insert into pandas."""
+        """
+        Puts all the metadata associated with a node in a dictionary to insert
+        into pandas.
+        """
         raise NotImplementedError("_add_node_metadata")
 
     def create_graph(self):
         """Performs the creation of our node graph"""
         raise NotImplementedError("create_graph")
 
+    def read(self):
+        roots = self.create_graph()
+        graph = Graph(roots)
+        graph.enumerate_traverse()
+
+        dataframe = pd.DataFrame.from_dict(
+            data=list(self.name_to_dict.values())
+        )
+        index = ["node"]
+        dataframe.set_index(index, inplace=True)
+        dataframe.sort_index(inplace=True)
+
+        return hatchet.graphframe.GraphFrame(
+            graph, dataframe, ["time"], ["time (inc)"]
+        )
+
 
 class CProfileReader(CProfileReaderBase):
     def __init__(self, filename):
         super().__init__()
         self.pstats_file = filename
-
 
     def _create_node_and_row(self, fn_data, fn_name, stats_dict):
         """
@@ -100,7 +118,10 @@ class CProfileReader(CProfileReaderBase):
         return fn_hnode
 
     def _add_node_metadata(self, stat_name, stat_module_data, stats, hnode):
-        """Puts all the metadata associated with a node in a dictionary to insert into pandas."""
+        """
+        Puts all the metadata associated with a node in a dictionary to insert
+        into pandas.
+        """
         node_dict = {
             "file": stat_module_data[NameData.FILE],
             "line": stat_module_data[NameData.LINE],
@@ -125,7 +146,9 @@ class CProfileReader(CProfileReaderBase):
         # We iterate through each function/node in our stats dict
         for dst_module_data, dst_stats in stats_dict.items():
             dst_name = dst_module_data[NameData.FNCNAME]
-            dst_hnode = self._create_node_and_row(dst_module_data, dst_name, stats_dict)
+            dst_hnode = self._create_node_and_row(
+                dst_module_data, dst_name, stats_dict
+            )
 
             # get all parents of our current destination node
             # create source nodes and link with destination node
@@ -145,14 +168,93 @@ class CProfileReader(CProfileReaderBase):
 
         return list_roots
 
-    def read(self):
-        roots = self.create_graph()
-        graph = Graph(roots)
-        graph.enumerate_traverse()
 
-        dataframe = pd.DataFrame.from_dict(data=list(self.name_to_dict.values()))
-        index = ["node"]
-        dataframe.set_index(index, inplace=True)
-        dataframe.sort_index(inplace=True)
+class MPICProfileReader(CProfileReaderBase):
+    def __init__(self, files):
+        """
+        Variant of the CProfileReader which ingests a list of cProfile files,
+        each from a different MPI rank. Note: the list needs to be sorted by MPI
+        rank -- so rank 0 has to be element 0, rank 1 element 1, and so on.
+        """
+        super().__init__()
+        self.pstats_files = files
 
-        return hatchet.graphframe.GraphFrame(graph, dataframe, ["time"], ["time (inc)"])
+    def _create_node_and_row(self, fn_data, fn_name, rank, stats_dict):
+        """
+        Description: Takes a profiled function as specified in a pstats file
+        and creates a node for it and adds a new line of metadata to our
+        dataframe if it does not exist.
+        """
+        u_fn_name = "{}:{}:{}:{}".format(
+            fn_name,
+            fn_data[NameData.FILE].split("/")[-1],
+            fn_data[NameData.LINE],
+            rank,
+        )
+        fn_hnode = self.name_to_hnode.get(u_fn_name)
+
+        if not fn_hnode:
+            # create a node if it doesn't exist yet
+            fn_hnode = Node(
+                Frame({"type": "function", "name": fn_name, "rank": rank}), None
+            )
+            self.name_to_hnode[u_fn_name] = fn_hnode
+
+            # lookup stat data for source here
+            fn_stats = stats_dict[fn_data]
+            self._add_node_metadata(u_fn_name, fn_data, rank, fn_stats, fn_hnode)
+
+        return fn_hnode
+
+    def _add_node_metadata(self, stat_name, stat_module_data, rank, stats, hnode):
+        """
+        Puts all the metadata associated with a node in a dictionary to insert 
+        into pandas.
+        """
+        node_dict = {
+            "file": stat_module_data[NameData.FILE],
+            "line": stat_module_data[NameData.LINE],
+            "name": stat_module_data[NameData.FNCNAME],
+            "numcalls": stats[StatData.NUMCALLS],
+            "nativecalls": stats[StatData.NATIVECALLS],
+            "time (inc)": stats[StatData.INCTIME],
+            "time": stats[StatData.EXCTIME],
+            "node": hnode,
+            "rank": rank,
+        }
+        self.name_to_dict[stat_name] = node_dict
+
+    def create_graph(self):
+        """Performs the creation of our node graph"""
+        for rank, pstats_file in enumerate(self.pstats_files):
+            try:
+                stats_dict = pstats.Stats(pstats_file).__dict__["stats"]
+            except ValueError:
+                print_incomptable_msg(pstats_file)
+                raise
+            list_roots = []
+
+            # We iterate through each function/node in our stats dict
+            for dst_module_data, dst_stats in stats_dict.items():
+                dst_name = dst_module_data[NameData.FNCNAME]
+                dst_hnode = self._create_node_and_row(
+                    dst_module_data, dst_name, rank, stats_dict
+                )
+
+                # get all parents of our current destination node
+                # create source nodes and link with destination node
+                srcs = self._get_src(dst_stats)
+                if srcs == {}:
+                    list_roots.append(dst_hnode)
+                else:
+                    for src_module_data in srcs.keys():
+                        src_name = src_module_data[NameData.FNCNAME]
+
+                        if src_name is not None:
+                            src_hnode = self._create_node_and_row(
+                                src_module_data, src_name, rank, stats_dict
+                            )
+                            dst_hnode.add_parent(src_hnode)
+                            src_hnode.add_child(dst_hnode)
+
+        return list_roots
