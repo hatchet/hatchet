@@ -76,16 +76,12 @@ class CProfileReaderBase(object):
         graph = Graph(roots)
         graph.enumerate_traverse()
 
-        dataframe = pd.DataFrame.from_dict(
-            data=list(self.name_to_dict.values())
-        )
+        dataframe = pd.DataFrame.from_dict(data=list(self.name_to_dict.values()))
         index = ["node"]
         dataframe.set_index(index, inplace=True)
         dataframe.sort_index(inplace=True)
 
-        return hatchet.graphframe.GraphFrame(
-            graph, dataframe, ["time"], ["time (inc)"]
-        )
+        return hatchet.graphframe.GraphFrame(graph, dataframe, ["time"], ["time (inc)"])
 
 
 class CProfileReader(CProfileReaderBase):
@@ -146,9 +142,7 @@ class CProfileReader(CProfileReaderBase):
         # We iterate through each function/node in our stats dict
         for dst_module_data, dst_stats in stats_dict.items():
             dst_name = dst_module_data[NameData.FNCNAME]
-            dst_hnode = self._create_node_and_row(
-                dst_module_data, dst_name, stats_dict
-            )
+            dst_hnode = self._create_node_and_row(dst_module_data, dst_name, stats_dict)
 
             # get all parents of our current destination node
             # create source nodes and link with destination node
@@ -208,7 +202,7 @@ class MPICProfileReader(CProfileReaderBase):
 
     def _add_node_metadata(self, stat_name, stat_module_data, rank, stats, hnode):
         """
-        Puts all the metadata associated with a node in a dictionary to insert 
+        Puts all the metadata associated with a node in a dictionary to insert
         into pandas.
         """
         node_dict = {
