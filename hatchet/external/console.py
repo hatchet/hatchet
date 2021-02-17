@@ -31,7 +31,7 @@
 
 from ..version import __version__
 
-import numpy as np
+import pandas as pd
 
 
 class ConsoleRenderer:
@@ -71,19 +71,24 @@ class ConsoleRenderer:
 
         # grab the min and max metric value, ignoring inf and nan values
         if "rank" in dataframe.index.names:
-            self.max_metric = (
-                dataframe.replace([np.inf, -np.inf], np.nan).xs(self.rank, level=1)
-            )[self.metric].max()
-            self.min_metric = (
-                dataframe.replace([np.inf, -np.inf], np.nan).xs(self.rank, level=1)
-            )[self.metric].min()
+            metric_series = (dataframe.xs(self.rank, level=1))[self.metric]
+            inf_mask = (metric_series.values > float("-inf")) & (
+                metric_series.values < float("inf")
+            )
+            filtered_series = pd.Series(
+                metric_series.values[inf_mask], metric_series.index[inf_mask]
+            )
         else:
-            self.max_metric = dataframe.replace([np.inf, -np.inf], np.nan)[
-                self.metric
-            ].max()
-            self.min_metric = dataframe.replace([np.inf, -np.inf], np.nan)[
-                self.metric
-            ].min()
+            metric_series = dataframe[self.metric]
+            inf_mask = (metric_series.values > float("-inf")) & (
+                metric_series.values < float("inf")
+            )
+            filtered_series = pd.Series(
+                metric_series.values[inf_mask], metric_series.index[inf_mask]
+            )
+
+        self.max_metric = filtered_series.max()
+        self.min_metric = filtered_series.min()
 
         if self.unicode:
             self.lr_arrows = {"◀": u"◀ ", "▶": u"▶ "}
