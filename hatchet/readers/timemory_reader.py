@@ -15,9 +15,10 @@ from ..util.timer import Timer
 
 
 class TimemoryReader:
-    """Read in timemory JSON output
+    """Read in timemory JSON output"""
 
-    Arguments:
+    def __init__(self, input, select=None, **_kwargs):
+        """Arguments:
         input (str or file-stream or dict or None):
             Valid argument types are:
 
@@ -37,9 +38,8 @@ class TimemoryReader:
             Ensures that when applying filters to the graphframe, frames with
             identical name/file/line/etc. info but from different ranks are not
             combined
-    """
+        """
 
-    def __init__(self, input, select=None, **_kwargs):
         if isinstance(input, dict):
             self.graph_dict = input
         elif isinstance(input, str) and input.endswith("json"):
