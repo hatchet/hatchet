@@ -15,9 +15,31 @@ from ..util.timer import Timer
 
 
 class TimemoryReader:
-    """Read in timemory JSON output"""
+    """Read in timemory JSON output
 
-    def __init__(self, input, select=None, per_thread=False, per_rank=False):
+    Arguments:
+        input (str or file-stream or dict or None):
+            Valid argument types are:
+
+            1. Filename for a timemory JSON tree file
+            2. Open file stream to one of these files
+            3. Dictionary from timemory JSON tree
+
+        select (list of str):
+            A list of strings which match the component enumeration names, e.g. ["cpu_clock"].
+
+        per_thread (boolean):
+            Ensures that when applying filters to the graphframe, frames with
+            identical name/file/line/etc. info but from different threads are not
+            combined
+
+        per_rank (boolean):
+            Ensures that when applying filters to the graphframe, frames with
+            identical name/file/line/etc. info but from different ranks are not
+            combined
+    """
+
+    def __init__(self, input, select=None, **_kwargs):
         if isinstance(input, dict):
             self.graph_dict = input
         elif isinstance(input, str) and input.endswith("json"):
@@ -36,8 +58,8 @@ class TimemoryReader:
         self.include_nid = True
         # the per_thread and per_rank settings make sure that
         # squashing doesn't collapse the threads/ranks
-        self.per_thread = per_thread
-        self.per_rank = per_rank
+        self.per_thread = _kwargs["per_thread"] if "per_thread" in _kwargs else False
+        self.per_rank = _kwargs["per_rank"] if "per_rank" in _kwargs else False
         if select is None:
             self.select = select
         elif isinstance(select, list):
@@ -206,6 +228,9 @@ class TimemoryReader:
             _prop = self.properties[_key]
             _keys, _extra = get_keys(_dict["node"]["prefix"])
 
+            # by placing the thread-id or rank-id in _keys, the hash
+            # for the Frame(_keys) effectively circumvent Hatchet's
+            # default behavior of combining similar thread/rank entries
             _tid_dict = _keys if self.per_thread else _extra
             _rank_dict = _keys if self.per_rank else _extra
 

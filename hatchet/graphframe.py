@@ -143,7 +143,7 @@ class GraphFrame:
         return PyinstrumentReader(filename).read()
 
     @staticmethod
-    def from_timemory(input=None, select=None, *_args, **_kwargs):
+    def from_timemory(input=None, select=None, **_kwargs):
         """Read in timemory data.
 
         Links:
@@ -189,22 +189,31 @@ class GraphFrame:
                 available upon request via a GitHub Issue.
 
             select (list of str):
-                A list of strings which match the component enumeration names
+                A list of strings which match the component enumeration names, e.g. ["cpu_clock"].
+
+            per_thread (boolean):
+                Ensures that when applying filters to the graphframe, frames with
+                identical name/file/line/etc. info but from different threads are not
+                combined
+
+            per_rank (boolean):
+                Ensures that when applying filters to the graphframe, frames with
+                identical name/file/line/etc. info but from different ranks are not
+                combined
+
         """
         from .readers.timemory_reader import TimemoryReader
 
         if input is not None:
             try:
-                return TimemoryReader(input, select, *_args, **_kwargs).read()
+                return TimemoryReader(input, select, **_kwargs).read()
             except IOError:
                 pass
         else:
             try:
                 import timemory
 
-                TimemoryReader(
-                    timemory.get(hierarchy=True), select, *_args, **_kwargs
-                ).read()
+                TimemoryReader(timemory.get(hierarchy=True), select, **_kwargs).read()
             except ImportError:
                 print(
                     "Error! timemory could not be imported. Provide filename, file stream, or dict."
