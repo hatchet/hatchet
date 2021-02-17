@@ -1058,7 +1058,7 @@ class GraphFrame:
         # unify copies of graphframes
         self_copy.unify(other_copy)
 
-        return self_copy._operator( other_copy, self_copy.dataframe.divide)
+        return self_copy._operator(other_copy, self_copy.dataframe.divide)
 
     def mul(self, other):
         """Returns the column-wise float multiplication of two graphframes as a new graphframe.
@@ -1076,7 +1076,7 @@ class GraphFrame:
         # unify copies of graphframes
         self_copy.unify(other_copy)
 
-        return self_copy._operator( other_copy, self_copy.dataframe.multiply)
+        return self_copy._operator(other_copy, self_copy.dataframe.multiply)
 
     def __iadd__(self, other):
         """Computes column-wise sum of two graphframes and stores the result in
