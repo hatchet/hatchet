@@ -5,6 +5,7 @@
 
 import sys
 import traceback
+import warnings
 
 from collections import defaultdict
 
@@ -1062,36 +1063,47 @@ class GraphFrame:
         new_gf.drop_index_levels()
         return new_gf
 
-    def offset(self, metric_column, offset, result_col_name):
+    def offset(self, metric_column, offset, result_column, overwrite=False):
         """Offset metric_column by a value.
 
         Arguments:
             self (graphframe): self's graphframe
             metric_column (str): dataframe column to offset
             offset (int or float, +/-): offset value
-            result_col_name (str): name of column for result
+            result_column (str): name of column for result (if different than metric_column)
+            overwrite (boolean, optional): if True, overwrite metric_column
 
         Return:
             self's graphframe
         """
+        warnings.filterwarnings("error")
+
         # validate metric_column
         if metric_column not in self.dataframe.columns:
             raise ValueError("Invalid column specified.")
 
-        self.dataframe[result_col_name] = self.dataframe[metric_column].apply(
+        # warn if trying to overwrite metric_column
+        if metric_column == result_column and not overwrite:
+            warnings.warn(
+                'metric_column= and result_column= have the same value. The result of the offset will replace the column values in "{}". If you want to do this, please add "overwrite=True" to the parameter list and re-run this function. Otherwise, change the value of "result_column=" and re-run.'.format(
+                    metric_column
+                ),
+                SyntaxWarning,
+            )
+
+        self.dataframe[result_column] = self.dataframe[metric_column].apply(
             lambda x: x + offset
         )
 
-        return self
-
-    def scale(self, metric_column, scalar, result_col_name):
+    def scale(self, metric_column, scalar, result_column, overwrite=False):
         """Scale metric_column by a value.
 
         Arguments:
             self (graphframe): self's graphframe
             metric_column (str): dataframe column to offset
             scalar (int or float, +/-): scalar value
-            result_col_name (str): name of column for result
+            result_column (str): name of column for result
+            overwrite (boolean, optional): if True, overwrite metric_column
 
         Return:
             self's graphframe
@@ -1100,7 +1112,16 @@ class GraphFrame:
         if metric_column not in self.dataframe.columns:
             raise ValueError("Invalid column specified.")
 
-        self.dataframe[result_col_name] = self.dataframe[metric_column].apply(
+        # warn if trying to overwrite metric_column
+        if metric_column == result_column and not overwrite:
+            warnings.warn(
+                'metric_column= and result_column= have the same value. The result of scaling will replace the column values in "{}". If you want to do this, please add "overwrite=True" to the parameter list and re-run this function. Otherwise, change the value of "result_column=" and re-run.'.format(
+                    metric_column
+                ),
+                SyntaxWarning,
+            )
+
+        self.dataframe[result_column] = self.dataframe[metric_column].apply(
             lambda x: x * scalar
         )
 
