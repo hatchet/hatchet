@@ -114,7 +114,7 @@ class TauReader:
                     dst_name = call_path[-1]
                     parent_callpath = "".join(call_path[:-1])
                     call_path = "".join(call_path)
-                    call_values = list(map(int, call_line_regex.group(2).split(" ")))
+                    call_values = list(map(float, call_line_regex.group(2).split(" ")))
 
                     dst_node = self.callpath_to_node.get(call_path)
                     if dst_node is None:
