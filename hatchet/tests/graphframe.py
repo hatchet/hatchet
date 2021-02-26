@@ -1029,4 +1029,4 @@ def test_output_with_cycle_graphs():
 def test_show_metric_columns(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
 
-    assert sorted(gf.show_metric_columns()) == sorted(["name", "time", "time (inc)"])
+    assert sorted(gf.show_metric_columns()) == sorted(["time", "time (inc)"])
