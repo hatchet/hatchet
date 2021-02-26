@@ -1024,3 +1024,9 @@ def test_output_with_cycle_graphs():
     assert treeout.count("d") == 2
     assert treeout.count("e") == 1
     assert treeout.count("f") == 1
+
+
+def test_show_metric_columns(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+
+    assert sorted(gf.show_metric_columns()) == sorted(["time", "time (inc)"])

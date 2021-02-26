@@ -569,6 +569,10 @@ class GraphFrame:
         self.inc_metrics = ["%s (inc)" % s for s in self.exc_metrics]
         self.subgraph_sum(self.exc_metrics, self.inc_metrics)
 
+    def show_metric_columns(self):
+        """Returns a list of dataframe column labels."""
+        return list(self.exc_metrics + self.inc_metrics)
+
     def unify(self, other):
         """Returns a unified graphframe.
 

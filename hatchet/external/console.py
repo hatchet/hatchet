@@ -61,7 +61,7 @@ class ConsoleRenderer:
 
         if self.metric not in dataframe.columns:
             raise KeyError(
-                "metric_column={} does not exist in the dataframe, please select a valid column.".format(
+                "metric_column={} does not exist in the dataframe, please select a valid column. See a list of the available metrics with GraphFrame.show_metric_columns().".format(
                     self.metric
                 )
             )
