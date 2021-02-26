@@ -42,7 +42,7 @@ associated with each node.
 
 **Graph**: The graph can be connected or disconnected (multiple roots) and each
 node in the graph can have one or more parents and children. The node stores
-its frame, which can be defined by the reader. The callpath is derived by
+its frame, which can be defined by the reader. The call path is derived by
 appending the frames from the root to a given node.
 
 **Dataframe**: The dataframe holds all the numerical and categorical data
@@ -146,35 +146,51 @@ a cross section of the dataframe, say the values for rank 0, like this:
 One can also view the graph in Hatchet's interactive visualization for Jupyter.
 In the Jupyter visualization shown below, users can explore their data by using
 their mouse to select and hide nodes. For those nodes selected, a table in the
-the upper right will display the metadata for the node(s) selected.
+the upper right will display the metadata for the node(s) selected. The
+interactive visualization capability is still in the research stage, and is
+under development to improve and extend its capabilities. Currently, this
+feature is available for the literal graph/tree format, which is specified as a
+list of dictionaries. More on the literal format can be seen `here
+<https://hatchet.readthedocs.io/en/latest/analysis_examples.html>`_.
 
 .. code-block:: python
 
   roundtrip_path = "hatchet/external/roundtrip/"
   %load_ext roundtrip
+  literal_graph = [ ... ]
   %loadVisualization roundtrip_path literal_graph
 
 .. image:: images/jupyter-tree-overview.png
    :scale: 70 %
    :align: center
 
-Once the user has explored their data, the interactive visualization can output
-the corresponding callpath query of the selected nodes. This query can then be
-integrated into future workflows to automate the filtering of the data by the
-query. For the selection above, we can save the resulting query and use it in
-Hatchet's ``filter()`` function to filter the input graph in a Python script. A
-code snippet is shown below, with the resulting filtered graph shown on the
-right. An example notebook of the interactive visualization can be found in the
-`docs/examples/tutorials` directory.
+Once the user has explored their data, the interactive visualization outputs
+the corresponding call path query of the selected nodes.
+
+.. code-block:: python
+
+  %fetchData myQuery
+  print(myQuery)  # displays [{"name": "corge"}, "*"] for the selection above
 
 .. image:: images/jupyter-query-filter.png
    :scale: 12 %
    :align: right
 
+This query can then be integrated into future workflows to automate the
+filtering of the data by the desired query in a Python script. For the
+selection above, we save the resulting query as a string and pass it to
+Hatchet's ``filter()`` function to filter the input literal graph. An example
+code snippet is shown below, with the resulting filtered graph shown on the
+right.
+
 .. code-block:: python
 
-  %fetchData myQuery
+  myQuery = [{"name": "corge"}, "*"]
+  gf = ht.GraphFrame.from_literal(literal_graph)
   filter_gf = gf.filter(myQuery)
+
+An example notebook of the interactive visualization can be found in the
+`docs/examples/tutorials` directory.
 
 Dataframe operations
 ====================
