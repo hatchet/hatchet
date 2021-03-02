@@ -3,6 +3,13 @@
 #
 # SPDX-License-Identifier: MIT
 
+from abc import abstractmethod
+try:
+    from abc import ABC
+except ImportError:
+    from abc import ABCMeta
+    ABC = ABCMeta("ABC", (object,), {'__slots__': ()})
+
 from itertools import groupby
 from numbers import Real
 import re
@@ -17,7 +24,38 @@ import numpy as np  # noqa: F401
 from .node import Node, traversal_order
 
 
-class QueryMatcher:
+class AbstractQuery(ABC):
+
+    @abstractmethod
+    def apply(self, gf):
+        pass
+
+
+class NaryQuery(AbstractQuery):
+
+    def __init__(self, *args):
+        self.subqueries = []
+        for query in args:
+            if isinstance(query, list):
+                self.subqueries.append(QueryMatcher(query))
+            elif issubclass(type(query), AbstractQuery):
+                self.subqueries.append(query)
+            else:
+                raise TypeError("Subqueries for NaryQuery must be either a \
+                                high-level query or a subclass of AbstractQuery")
+
+    @abstractmethod
+    def _perform_nary_op(self, query_results):
+        pass
+
+    def apply(self, gf):
+        results = []
+        for query in self.subqueries:
+            results.append(query.apply(gf))
+        return self._perform_nary_op(results)
+
+
+class QueryMatcher(AbstractQuery):
     """Process and apply queries to GraphFrames."""
 
     def __init__(self, query=None):
@@ -579,9 +617,74 @@ class QueryMatcher:
             self._apply_impl(gf, child, visited, matches)
 
 
+class AndQuery(NaryQuery):
+
+    def __init__(self, *args):
+        # TODO Remove Arguments when Python 2.7 support is dropped
+        super(AndQuery, self).__init__(args)
+        if len(self.subqueries) < 2:
+            raise BadNumberNaryQueryArgs("AndQuery requires 2 or more subqueries")
+
+    def _perform_nary_op(self, query_results):
+        tuple_paths = []
+        for res in query_results:
+            tuple_paths.append([tuple(p) for p in res])
+        set_paths = [set(tp) for tp in tuple_paths]
+        starting_set = set_paths.pop(0)
+        intersection_set = starting_set.intersection(*set_paths)
+        return [list(path) for path in intersection_set]
+
+# Alias of AndQuery to signify the relationship to set Intersection
+IntersectionQuery = AndQuery
+
+class OrQuery(NaryQuery):
+
+    def __init__(self, *args):
+        # TODO Remove Arguments when Python 2.7 support is dropped
+        super(OrQuery, self).__init__(args)
+        if len(self.subqueries) < 2:
+            raise BadNumberNaryQueryArgs("OrQuery requires 2 or more subqueries")
+
+    def _perform_nary_op(self, query_results):
+        tuple_paths = []
+        for res in query_results:
+            tuple_paths.append([tuple(p) for p in res])
+        set_paths = [set(tp) for tp in tuple_paths]
+        starting_set = set_paths.pop(0)
+        union_set = starting_set.union(*set_paths)
+        return [list(path) for path in union_set]
+
+# Alias of OrQuery to signify the relationship to set Union
+UnionQuery = OrQuery
+
+class XorQuery(NaryQuery):
+
+    def __init__(self, *args):
+        # TODO Remove Arguments when Python 2.7 support is dropped
+        super(XorQuery, self).__init__(args)
+        if len(self.subqueries) < 2:
+            raise BadNumberNaryQueryArgs("XorQuery requires 2 or more subqueries")
+
+    def _perform_nary_op(self, query_results):
+        tuple_paths = []
+        for res in query_results:
+            tuple_paths.append([tuple(p) for p in res])
+        set_paths = [set(tp) for tp in tuple_paths]
+        xor_set = set_paths.pop(0)
+        for path in set_paths:
+            xor_set = xor_set.symmetric_difference(path)
+        return [list(path) for path in xor_set]
+
+# Alias of XorQuery to signify the relationship to set Symmetric Difference
+SymDifferenceQuery = XorQuery
+
 class InvalidQueryPath(Exception):
     """Raised when a query does not have the correct syntax"""
 
 
 class InvalidQueryFilter(Exception):
+    """Raised when a query filter does not have a valid syntax"""
+
+
+class BadNumberNaryQueryArgs(Exception):
     """Raised when a query filter does not have a valid syntax"""
