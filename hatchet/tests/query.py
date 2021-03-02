@@ -9,7 +9,7 @@ import re
 
 from hatchet import GraphFrame
 from hatchet.node import traversal_order
-from hatchet.query_matcher import QueryMatcher, InvalidQueryFilter, InvalidQueryPath
+from hatchet.query import QueryMatcher, InvalidQueryFilter, InvalidQueryPath
 
 
 def test_construct_high_level_api():

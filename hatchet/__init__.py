@@ -7,4 +7,4 @@
 # flake8: noqa: F401
 
 from .graphframe import GraphFrame
-from .query_matcher import QueryMatcher
+from .query import QueryMatcher
