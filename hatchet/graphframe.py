@@ -211,11 +211,11 @@ class GraphFrame:
 
     @staticmethod
     def from_tau(dir_name):
-        """Read in a TAU profiling file generated using TAU tool."""
+        """Read in a profile generated using TAU."""
         # import this lazily to avoid circular dependencies
-        from .readers.tau_reader import TauReader
+        from .readers.tau_reader import TAUReader
 
-        return TauReader(dir_name).read()
+        return TAUReader(dir_name).read()
 
     @staticmethod
     def from_literal(graph_dict):

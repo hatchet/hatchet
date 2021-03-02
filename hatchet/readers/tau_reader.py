@@ -17,8 +17,8 @@ from hatchet.frame import Frame
 # from ..util.timer import Timer
 
 
-class TauReader:
-    """Read in TAU profiling output."""
+class TAUReader:
+    """Read in a profile generated using TAU."""
 
     def __init__(self, dir_name):
         self.dir_name = dir_name
@@ -30,11 +30,11 @@ class TauReader:
         self.include_ranks = False
         self.include_threads = False
 
-    def create_node_dict(self, node, metric_names, metric_values, name, file_info):
+    def create_node_dict(self, node, metric_names, metric_values, name, rank, thread):
         node_dict = {
             "node": node,
-            "rank": int(file_info[-3]),
-            "thread": int(file_info[-1]),
+            "rank": rank,
+            "thread": thread,
             metric_names[0]: name,
         }
         for i in range(len(metric_values)):
@@ -80,6 +80,8 @@ class TauReader:
 
         for file_name, file_data in self.file_name_to_data.items():
             file_info = file_name.split(".")
+            rank = int(file_info[-3])
+            thread = int(file_info[-1])
 
             # ".TAU application" 1 1 272 15755429 0 GROUP="TAU_DEFAULT"
             root_line = re.match(r"\"(.*)\"\s(.*)\sG", file_data[2])
@@ -92,7 +94,7 @@ class TauReader:
                 self.callpath_to_node[root_name] = root_node
 
                 node_dict = self.create_node_dict(
-                    root_node, metrics, root_values, root_name, file_info
+                    root_node, metrics, root_values, root_name, rank, thread
                 )
 
                 self.node_dicts.append(node_dict)
@@ -100,7 +102,7 @@ class TauReader:
             else:
                 root_node = self.callpath_to_node.get(root_name)
                 node_dict = self.create_node_dict(
-                    root_node, metrics, root_values, root_name, file_info
+                    root_node, metrics, root_values, root_name, rank, thread
                 )
                 self.node_dicts.append(node_dict)
 
@@ -129,7 +131,7 @@ class TauReader:
                         dst_node.add_parent(parent_node)
 
                     node_dict = self.create_node_dict(
-                        dst_node, metrics, call_values, dst_name, file_info
+                        dst_node, metrics, call_values, dst_name, rank, thread
                     )
 
                     self.node_dicts.append(node_dict)
@@ -157,6 +159,9 @@ class TauReader:
         dataframe.set_index(indices, inplace=True)
         dataframe.sort_index(inplace=True)
 
+        dataframe = dataframe.unstack().fillna(0).stack()
+        dataframe["name"] = dataframe.apply(lambda x: x.name[0].frame["name"], axis=1)
+        
         return hatchet.graphframe.GraphFrame(
             graph, dataframe, self.exc_metrics, self.inc_metrics
         )
