@@ -151,7 +151,7 @@ class GraphFrame:
         return PyinstrumentReader(filename).read()
 
     @staticmethod
-    def from_timemory(input=None, select=None):
+    def from_timemory(input=None, select=None, **_kwargs):
         """Read in timemory data.
 
         Links:
@@ -197,20 +197,31 @@ class GraphFrame:
                 available upon request via a GitHub Issue.
 
             select (list of str):
-                A list of strings which match the component enumeration names
+                A list of strings which match the component enumeration names, e.g. ["cpu_clock"].
+
+            per_thread (boolean):
+                Ensures that when applying filters to the graphframe, frames with
+                identical name/file/line/etc. info but from different threads are not
+                combined
+
+            per_rank (boolean):
+                Ensures that when applying filters to the graphframe, frames with
+                identical name/file/line/etc. info but from different ranks are not
+                combined
+
         """
         from .readers.timemory_reader import TimemoryReader
 
         if input is not None:
             try:
-                return TimemoryReader(input, select).read()
+                return TimemoryReader(input, select, **_kwargs).read()
             except IOError:
                 pass
         else:
             try:
                 import timemory
 
-                TimemoryReader(timemory.get(hierarchy=True), select).read()
+                TimemoryReader(timemory.get(hierarchy=True), select, **_kwargs).read()
             except ImportError:
                 print(
                     "Error! timemory could not be imported. Provide filename, file stream, or dict."
@@ -577,6 +588,10 @@ class GraphFrame:
         self.inc_metrics = ["%s (inc)" % s for s in self.exc_metrics]
         self.subgraph_sum(self.exc_metrics, self.inc_metrics)
 
+    def show_metric_columns(self):
+        """Returns a list of dataframe column labels."""
+        return list(self.exc_metrics + self.inc_metrics)
+
     def unify(self, other):
         """Returns a unified graphframe.
 
@@ -775,7 +790,7 @@ class GraphFrame:
 
         return graph_literal
 
-    def _operator(self, other, op, *args, **kwargs):
+    def _operator(self, other, op):
         """Generic function to apply operator to two dataframes and store
         result in self.
 
@@ -794,7 +809,7 @@ class GraphFrame:
             )
         )
 
-        self.dataframe.update(op(other.dataframe[all_metrics], *args, **kwargs))
+        self.dataframe.update(op(other.dataframe[all_metrics]))
 
         return self
 
@@ -1017,7 +1032,7 @@ class GraphFrame:
         new_gf.drop_index_levels()
         return new_gf
 
-    def add(self, other, *args, **kwargs):
+    def add(self, other):
         """Returns the column-wise sum of two graphframes as a new graphframe.
 
         This graphframe is the union of self's and other's graphs, and does not
@@ -1033,9 +1048,9 @@ class GraphFrame:
         # unify copies of graphframes
         self_copy.unify(other_copy)
 
-        return self_copy._operator(other_copy, self_copy.dataframe.add, *args, **kwargs)
+        return self_copy._operator(other_copy, self_copy.dataframe.add)
 
-    def sub(self, other, *args, **kwargs):
+    def sub(self, other):
         """Returns the column-wise difference of two graphframes as a new
         graphframe.
 
@@ -1052,9 +1067,9 @@ class GraphFrame:
         # unify copies of graphframes
         self_copy.unify(other_copy)
 
-        return self_copy._operator(other_copy, self_copy.dataframe.sub, *args, **kwargs)
+        return self_copy._operator(other_copy, self_copy.dataframe.sub)
 
-    def div(self, other, *args, **kwargs):
+    def div(self, other):
         """Returns the column-wise float division of two graphframes as a new graphframe.
 
         This graphframe is the union of self's and other's graphs, and does not
@@ -1070,11 +1085,9 @@ class GraphFrame:
         # unify copies of graphframes
         self_copy.unify(other_copy)
 
-        return self_copy._operator(
-            other_copy, self_copy.dataframe.divide, *args, **kwargs
-        )
+        return self_copy._operator(other_copy, self_copy.dataframe.divide)
 
-    def mul(self, other, *args, **kwargs):
+    def mul(self, other):
         """Returns the column-wise float multiplication of two graphframes as a new graphframe.
 
         This graphframe is the union of self's and other's graphs, and does not
@@ -1090,9 +1103,7 @@ class GraphFrame:
         # unify copies of graphframes
         self_copy.unify(other_copy)
 
-        return self_copy._operator(
-            other_copy, self_copy.dataframe.multiply, *args, **kwargs
-        )
+        return self_copy._operator(other_copy, self_copy.dataframe.multiply)
 
     def __iadd__(self, other):
         """Computes column-wise sum of two graphframes and stores the result in

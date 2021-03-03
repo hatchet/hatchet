@@ -70,7 +70,7 @@ class CProfileReader:
 
             # lookup stat data for source here
             fn_stats = stats_dict[fn_data]
-            self._add_node_metadata(fn_name, fn_data, fn_stats, fn_hnode)
+            self._add_node_metadata(u_fn_name, fn_data, fn_stats, fn_hnode)
 
         return fn_hnode
 
