@@ -28,6 +28,7 @@ def test_tree(tau_profile_dir):
     """Sanity test a GraphFrame object with known data."""
     gf = GraphFrame.from_tau(str(tau_profile_dir))
 
+    # check the tree for rank 0
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
@@ -42,4 +43,56 @@ def test_tree(tau_profile_dir):
         highlight_name=False,
         invert_colormap=False,
     )
-    assert ".TAU application" in output
+    assert "449.000 .TAU application" in output
+    assert "4458.000 MPI_Finalize()" in output
+    assert "218.000 MPI_Bcast()" in output
+
+    # check the tree for rank 1
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf.graph.roots,
+        gf.dataframe,
+        metric_column="time",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="",
+        rank=1,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        invert_colormap=False,
+    )
+    assert "419.000 .TAU application" in output
+    assert "4894.000 MPI_Finalize()" in output
+    assert "333.000 MPI_Bcast()" in output
+
+
+def test_children(tau_profile_dir):
+    gf = GraphFrame.from_tau(str(tau_profile_dir))
+    root = gf.graph.roots
+    root_children = [
+        "MPI_Init()",
+        "MPI_Comm_size()",
+        "MPI_Comm_rank()",
+        "MPI_Get_processor_name()",
+        "MPI_Bcast()",
+        "MPI_Reduce()",
+        "MPI_Finalize()",
+    ]
+
+    # check if only one root node is created
+    assert len(root) == 1
+
+    # check if root has right children #TODO: can be improved
+    for child in root[0].children:
+        assert child.frame["name"] in root_children
+
+
+def test_graphframe_to_literal(tau_profile_dir):
+    """Sanity test a GraphFrame object with known data."""
+    gf = GraphFrame.from_tau(str(tau_profile_dir))
+    graph_literal = gf.to_literal()
+
+    gf_literal = GraphFrame.from_literal(graph_literal)
+
+    assert len(gf.graph) == len(gf_literal.graph)
