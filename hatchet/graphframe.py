@@ -361,14 +361,17 @@ class GraphFrame:
                 filtered_df = dataframe_copy[filtered_rows]
 
         # elif isinstance(filter_obj, list) or isinstance(filter_obj, QueryMatcher):
-        elif isinstance(filter_obj, list) or issubclass(type(filter_obj), AbstractQuery):
+        elif isinstance(filter_obj, list) or issubclass(
+            type(filter_obj), AbstractQuery
+        ):
             # use a callpath query to apply the filter
             query = filter_obj
             if isinstance(filter_obj, list):
                 query = QueryMatcher(filter_obj)
             query_matches = query.apply(self)
-            match_set = list(set().union(*query_matches))
-            filtered_df = dataframe_copy.loc[dataframe_copy["node"].isin(match_set)]
+            # match_set = list(set().union(*query_matches))
+            # filtered_df = dataframe_copy.loc[dataframe_copy["node"].isin(match_set)]
+            filtered_df = dataframe_copy.loc[dataframe_copy["node"].isin(query_matches)]
         else:
             raise InvalidFilter(
                 "The argument passed to filter must be a callable, a query path list, or a QueryMatcher object."

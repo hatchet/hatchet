@@ -4,11 +4,13 @@
 # SPDX-License-Identifier: MIT
 
 from abc import abstractmethod
+
 try:
     from abc import ABC
 except ImportError:
     from abc import ABCMeta
-    ABC = ABCMeta("ABC", (object,), {'__slots__': ()})
+
+    ABC = ABCMeta("ABC", (object,), {"__slots__": ()})
 
 from itertools import groupby
 from numbers import Real
@@ -25,6 +27,7 @@ from .node import Node, traversal_order
 
 
 class AbstractQuery(ABC):
+    """Interface defining a Hatchet Query"""
 
     @abstractmethod
     def apply(self, gf):
@@ -32,17 +35,23 @@ class AbstractQuery(ABC):
 
 
 class NaryQuery(AbstractQuery):
+    """Abstract Base Class defining a compound query
+    that acts on and merges N separate subqueries"""
 
     def __init__(self, *args):
         self.subqueries = []
+        if isinstance(args[0], tuple) and len(args) == 1:
+            args = args[0]
         for query in args:
             if isinstance(query, list):
                 self.subqueries.append(QueryMatcher(query))
             elif issubclass(type(query), AbstractQuery):
                 self.subqueries.append(query)
             else:
-                raise TypeError("Subqueries for NaryQuery must be either a \
-                                high-level query or a subclass of AbstractQuery")
+                raise TypeError(
+                    "Subqueries for NaryQuery must be either a \
+                                high-level query or a subclass of AbstractQuery"
+                )
 
     @abstractmethod
     def _perform_nary_op(self, query_results):
@@ -362,7 +371,9 @@ class QueryMatcher(AbstractQuery):
         for root in sorted(gf.graph.roots, key=traversal_order):
             self._apply_impl(gf, root, visited, matches)
         assert len(visited) == len(gf.graph)
-        return matches
+        matched_node_set = list(set().union(*matches))
+        # return matches
+        return matched_node_set
 
     def _add_node(self, wildcard_spec=".", filter_func=lambda row: True):
         """Add a node to the query.
@@ -618,6 +629,8 @@ class QueryMatcher(AbstractQuery):
 
 
 class AndQuery(NaryQuery):
+    """Compound Query that returns the intersection of the results
+    of the subqueries"""
 
     def __init__(self, *args):
         # TODO Remove Arguments when Python 2.7 support is dropped
@@ -626,18 +639,17 @@ class AndQuery(NaryQuery):
             raise BadNumberNaryQueryArgs("AndQuery requires 2 or more subqueries")
 
     def _perform_nary_op(self, query_results):
-        tuple_paths = []
-        for res in query_results:
-            tuple_paths.append([tuple(p) for p in res])
-        set_paths = [set(tp) for tp in tuple_paths]
-        starting_set = set_paths.pop(0)
-        intersection_set = starting_set.intersection(*set_paths)
-        return [list(path) for path in intersection_set]
+        intersection_set = set(query_results[0]).intersection(*query_results[1:])
+        return list(intersection_set)
+
 
 # Alias of AndQuery to signify the relationship to set Intersection
 IntersectionQuery = AndQuery
 
+
 class OrQuery(NaryQuery):
+    """Compound Query that returns the union of the results
+    of the subqueries"""
 
     def __init__(self, *args):
         # TODO Remove Arguments when Python 2.7 support is dropped
@@ -646,18 +658,17 @@ class OrQuery(NaryQuery):
             raise BadNumberNaryQueryArgs("OrQuery requires 2 or more subqueries")
 
     def _perform_nary_op(self, query_results):
-        tuple_paths = []
-        for res in query_results:
-            tuple_paths.append([tuple(p) for p in res])
-        set_paths = [set(tp) for tp in tuple_paths]
-        starting_set = set_paths.pop(0)
-        union_set = starting_set.union(*set_paths)
-        return [list(path) for path in union_set]
+        union_set = set().union(*query_results)
+        return list(union_set)
+
 
 # Alias of OrQuery to signify the relationship to set Union
 UnionQuery = OrQuery
 
+
 class XorQuery(NaryQuery):
+    """Compound Query that returns the symmetric difference
+    (i.e., set-based XOR) of the results of the subqueries"""
 
     def __init__(self, *args):
         # TODO Remove Arguments when Python 2.7 support is dropped
@@ -666,17 +677,15 @@ class XorQuery(NaryQuery):
             raise BadNumberNaryQueryArgs("XorQuery requires 2 or more subqueries")
 
     def _perform_nary_op(self, query_results):
-        tuple_paths = []
+        xor_set = set()
         for res in query_results:
-            tuple_paths.append([tuple(p) for p in res])
-        set_paths = [set(tp) for tp in tuple_paths]
-        xor_set = set_paths.pop(0)
-        for path in set_paths:
-            xor_set = xor_set.symmetric_difference(path)
-        return [list(path) for path in xor_set]
+            xor_set = xor_set.symmetric_difference(set(res))
+        return list(xor_set)
+
 
 # Alias of XorQuery to signify the relationship to set Symmetric Difference
 SymDifferenceQuery = XorQuery
+
 
 class InvalidQueryPath(Exception):
     """Raised when a query does not have the correct syntax"""
