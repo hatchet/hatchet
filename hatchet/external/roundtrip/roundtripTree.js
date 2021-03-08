@@ -1,8 +1,6 @@
 //d3.v4
 (function (element) {
     require(['https://d3js.org/d3.v4.min.js'], function (d3) {
-        console.log("hiii");
-        
         var cleanTree = argList[0].replace(/'/g, '"');
 
         var forestData = JSON.parse(cleanTree);
@@ -499,8 +497,6 @@
                 d.treeIndex = treeIndex;
             });
 
-            console.log(nodes);
-
             // Update the nodes…
             var node = g.selectAll("g.node")
                     .data(nodes, function (d) {
@@ -698,7 +694,8 @@
                 }
             }
 
-            console.log("Building query.", selectionIsAChain, nodeList)
+            //do some evaluation for other subtrees
+            // we could generate python code that does this
             var queryStr = "['<no query generated>']";
             if ((nodeList.length > 1) && (selectionIsAChain)) {
                 // This query is for chains
@@ -812,8 +809,6 @@
             brushedNodes.each(d => brushedData.push(d));
 
             updateTooltip(brushedData);
-
-            console.log(brushedData);
 
             jsNodeSelected = printQuery(brushedData);
        }
