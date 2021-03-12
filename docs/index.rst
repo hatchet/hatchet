@@ -43,6 +43,7 @@ If you are new to hatchet and want to start using it, see :doc:`Getting Started
 
    getting_started
    user_guide
+   query_lang
    analysis_examples
 
 
