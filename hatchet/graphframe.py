@@ -151,6 +151,14 @@ class GraphFrame:
         return PyinstrumentReader(filename).read()
 
     @staticmethod
+    def from_tau(dir_name):
+        """Read in a profile generated using TAU."""
+        # import this lazily to avoid circular dependencies
+        from .readers.tau_reader import TAUReader
+
+        return TAUReader(dir_name).read()
+
+    @staticmethod
     def from_timemory(input=None, select=None, **_kwargs):
         """Read in timemory data.
 
