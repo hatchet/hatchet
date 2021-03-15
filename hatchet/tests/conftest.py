@@ -166,6 +166,17 @@ def hatchet_pyinstrument_json(data_dir, tmpdir):
 
 
 @pytest.fixture
+def tau_profile_dir(data_dir, tmpdir):
+    """Builds a temporary directory containing the pyinstrument Hatchet json file."""
+    tau_dir = os.path.join(data_dir, "tau-cpi-mpi")
+
+    for f in glob(tau_dir + "/*"):
+        shutil.copy(f, str(tmpdir))
+
+    return tau_dir
+
+
+@pytest.fixture
 def mock_graph_literal():
     """Creates a mock tree
 
