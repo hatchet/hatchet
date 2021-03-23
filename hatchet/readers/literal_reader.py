@@ -74,7 +74,8 @@ class LiteralReader:
         """
 
         # pull out _hatchet_nid if it exists
-        # it wont interfere with current operations yet this way
+        # so it will not be inserted into dataframe like 
+        # a normal metric
         hnid = -1
         if "_hatchet_nid" in child_dict["metrics"]:
             hnid = child_dict["metrics"]["_hatchet_nid"]
