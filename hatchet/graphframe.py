@@ -45,7 +45,14 @@ class GraphFrame:
     and a dataframe.
     """
 
-    def __init__(self, graph, dataframe, exc_metrics=None, inc_metrics=None):
+    def __init__(
+        self,
+        graph,
+        dataframe,
+        exc_metrics=None,
+        inc_metrics=None,
+        default_metric="time",
+    ):
         """Create a new GraphFrame from a graph and a dataframe.
 
         Likely, you do not want to use this function.
@@ -75,6 +82,7 @@ class GraphFrame:
         self.dataframe = dataframe
         self.exc_metrics = [] if exc_metrics is None else exc_metrics
         self.inc_metrics = [] if inc_metrics is None else inc_metrics
+        self.default_metric = default_metric
 
     @staticmethod
     def from_hpctoolkit(dirname):
@@ -628,7 +636,7 @@ class GraphFrame:
     )
     def tree(
         self,
-        metric_column="time",
+        metric_column=None,
         precision=3,
         name_column="name",
         expand_name=False,
@@ -642,6 +650,8 @@ class GraphFrame:
         """Format this graphframe as a tree and return the resulting string."""
         color = sys.stdout.isatty()
         shell = None
+        if metric_column is None:
+            metric_column = self.default_metric
 
         if color is False:
             try:
@@ -674,21 +684,23 @@ class GraphFrame:
             invert_colormap=invert_colormap,
         )
 
-    def to_dot(self, metric="time", name="name", rank=0, thread=0, threshold=0.0):
+    def to_dot(self, metric=None, name="name", rank=0, thread=0, threshold=0.0):
         """Write the graph in the graphviz dot format:
         https://www.graphviz.org/doc/info/lang.html
         """
+        if metric is None:
+            metric = self.default_metric
         return trees_to_dot(
             self.graph.roots, self.dataframe, metric, name, rank, thread, threshold
         )
 
-    def to_flamegraph(
-        self, metric="time", name="name", rank=0, thread=0, threshold=0.0
-    ):
+    def to_flamegraph(self, metric=None, name="name", rank=0, thread=0, threshold=0.0):
         """Write the graph in the folded stack output required by FlameGraph
         http://www.brendangregg.com/flamegraphs.html
         """
         folded_stack = ""
+        if metric is None:
+            metric = self.default_metric
 
         for root in self.graph.roots:
             for hnode in root.traverse():

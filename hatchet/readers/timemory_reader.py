@@ -49,6 +49,7 @@ class TimemoryReader:
             self.graph_dict = json.loads(input.read())
         else:
             raise TypeError("input must be dict, json file, or string")
+        self.default_metric = None
         self.name_to_hnode = {}
         self.name_to_dict = {}
         self.timer = Timer()
@@ -419,6 +420,15 @@ class TimemoryReader:
             else:
                 exc_metrics.append(column)
 
+        # set the default metric
+        if self.default_metric is None:
+            if len(exc_metrics) > 0:
+                self.default_metric = exc_metrics[0]
+            elif len(inc_metrics) > 0:
+                self.default_metric = inc_metrics[0]
+            else:
+                self.default_metric = "sum"
+
         indices = ["node"]
         # this attempt at MultiIndex does not work
         # if self.include_nid:
@@ -429,7 +439,9 @@ class TimemoryReader:
         dataframe.set_index(indices, inplace=True)
         dataframe.sort_index(inplace=True)
 
-        return GraphFrame(graph, dataframe, exc_metrics, inc_metrics)
+        return GraphFrame(
+            graph, dataframe, exc_metrics, inc_metrics, self.default_metric
+        )
 
     def read(self):
         """Read timemory json."""
