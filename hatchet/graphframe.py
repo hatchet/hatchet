@@ -165,7 +165,7 @@ class GraphFrame:
         """Read in a PAPI high-level performance report.
 
         Args:
-            PAPI measurement directory.
+            PAPI measurement directory or one single json file.
         """
         # import this lazily to avoid circular dependencies
         from .readers.papi_reader import PAPIReader
