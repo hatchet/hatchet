@@ -1,0 +1,8261 @@
+
+{
+  "cycle_10": 
+  {
+    "cycle": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 1.38599
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.276112
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "time": 0.0152258,
+        "can_strip": 
+        {
+          "time": 0.0151836
+        }
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.0733277
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.14789,
+      "variance": 0.549896,
+      "skewness": 5.24161,
+      "kurtosis": 26.5618,
+      "time": 0.0288969
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.00732016
+      },
+      "field_min": 1,
+      "field_max": 5.5,
+      "entropy": 0.303049,
+      "time": 0.0397518
+    },
+    "GetGlobalRange": 
+    {
+      "time": 0.00393608
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.408512
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.832775
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.131533
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.279067
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 1.24369
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0186408
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.000282248
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 0.00371762
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.00033253
+      },
+      "Composite": 
+      {
+        "time": 0.182281
+      },
+      "time": 0.186569
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.000262311
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0202971
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.316743
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0165126
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0232313
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0280657
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0335972
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.381164
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0173688
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.000151924
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 0.000142925
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000109107
+      },
+      "Composite": 
+      {
+        "time": 0.0286948
+      },
+      "time": 0.0523455
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 5.0197e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.00820011
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 86649,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 86647,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0468896
+      },
+      "output_cells": 86647,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0704204
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 86647,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 86647,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0207092
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.000451561
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 86647,
+      "GetGlobalRange": 
+      {
+        "time": 0.00175051
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.00195662
+      },
+      "Composite": 
+      {
+        "time": 0.295181
+      },
+      "time": 0.450363
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 86647,
+      "GetGlobalBounds": 
+      {
+        "time": 0.0019489
+      },
+      "Composite": 
+      {
+        "time": 0.267069
+      },
+      "time": 0.414599
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 86647,
+      "GetGlobalBounds": 
+      {
+        "time": 0.00253409
+      },
+      "Composite": 
+      {
+        "time": 0.22097
+      },
+      "time": 0.401602
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 86647,
+      "GetGlobalBounds": 
+      {
+        "time": 0.00146129
+      },
+      "Composite": 
+      {
+        "time": 0.231971
+      },
+      "time": 0.377678
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 86647,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000316521
+      },
+      "Composite": 
+      {
+        "time": 0.228145
+      },
+      "time": 0.375196
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 86647,
+      "GetGlobalBounds": 
+      {
+        "time": 0.00232854
+      },
+      "Composite": 
+      {
+        "time": 0.251615
+      },
+      "time": 0.405444
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 86647,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000330145
+      },
+      "Composite": 
+      {
+        "time": 0.124817
+      },
+      "time": 0.197894
+    },
+    "time": 9.06478
+  },
+  "cycle_20": 
+  {
+    "cycle": 20,
+    "sim_time": 1.43484,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 1.1994
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.361642
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.00942281
+        },
+        "time": 0.00943403
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.0135035
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.16538,
+      "variance": 0.549774,
+      "skewness": 4.80992,
+      "kurtosis": 22.79,
+      "time": 0.0150478
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.000625031
+      },
+      "field_min": 1,
+      "field_max": 5.5,
+      "entropy": 0.451493,
+      "time": 0.0185951
+    },
+    "GetGlobalRange": 
+    {
+      "time": 3.8731e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.0110653
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.175208
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.142894
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.027732
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.346004
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0207394
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.000178536
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 7.8991e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000116119
+      },
+      "Composite": 
+      {
+        "time": 0.063622
+      },
+      "time": 0.0638749
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.000218806
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.029877
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0370234
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0166387
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0232798
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0229375
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0284458
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0960866
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.01751
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.00013223
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 8.161e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000215469
+      },
+      "Composite": 
+      {
+        "time": 0.030351
+      },
+      "time": 0.0441424
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 4.6572e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.00737906
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 92829,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 92829,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0628143
+      },
+      "output_cells": 92829,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0877359
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 92829,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 92829,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0245601
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.00020536
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 92829,
+      "GetGlobalRange": 
+      {
+        "time": 0.000219119
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000136902
+      },
+      "Composite": 
+      {
+        "time": 0.311197
+      },
+      "time": 0.448803
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 92829,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000746099
+      },
+      "Composite": 
+      {
+        "time": 0.290051
+      },
+      "time": 0.446029
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 92829,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000335823
+      },
+      "Composite": 
+      {
+        "time": 0.28157
+      },
+      "time": 0.419904
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 92829,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000533614
+      },
+      "Composite": 
+      {
+        "time": 0.268965
+      },
+      "time": 0.410765
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 92829,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000639149
+      },
+      "Composite": 
+      {
+        "time": 0.284393
+      },
+      "time": 0.42178
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 92829,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000343498
+      },
+      "Composite": 
+      {
+        "time": 0.279792
+      },
+      "time": 0.420534
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 92829,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000319963
+      },
+      "Composite": 
+      {
+        "time": 0.140583
+      },
+      "time": 0.209475
+    },
+    "time": 6.48696
+  },
+  "cycle_30": 
+  {
+    "cycle": 30,
+    "sim_time": 1.32664,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 1.14487
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.276761
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.01327
+        },
+        "time": 0.0132859
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.0134452
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.18436,
+      "variance": 0.546817,
+      "skewness": 4.38298,
+      "kurtosis": 19.2049,
+      "time": 0.0180702
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.000571233
+      },
+      "field_min": 1,
+      "field_max": 5.5,
+      "entropy": 0.607024,
+      "time": 0.0193455
+    },
+    "GetGlobalRange": 
+    {
+      "time": 5.062e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.00760002
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.141518
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.12072
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0229761
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.285388
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0181343
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.000178638
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 8.87e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000130895
+      },
+      "Composite": 
+      {
+        "time": 0.0556078
+      },
+      "time": 0.0559829
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.00018019
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0181784
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0260675
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0167354
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0238297
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0277452
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0339052
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0911937
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0173891
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.000129757
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 7.8792e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000126602
+      },
+      "Composite": 
+      {
+        "time": 0.0272247
+      },
+      "time": 0.0409133
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 4.7264e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.00736166
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 101001,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 101001,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0461014
+      },
+      "output_cells": 101001,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0694844
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 101001,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 101001,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0257592
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.000220612
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 101001,
+      "GetGlobalRange": 
+      {
+        "time": 0.000208825
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.0001366
+      },
+      "Composite": 
+      {
+        "time": 0.273208
+      },
+      "time": 0.426934
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 101001,
+      "GetGlobalBounds": 
+      {
+        "time": 0.00055274
+      },
+      "Composite": 
+      {
+        "time": 0.29822
+      },
+      "time": 0.445916
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 101001,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000353538
+      },
+      "Composite": 
+      {
+        "time": 0.272331
+      },
+      "time": 0.422474
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 101001,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000346916
+      },
+      "Composite": 
+      {
+        "time": 0.268468
+      },
+      "time": 0.420128
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 101001,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000344936
+      },
+      "Composite": 
+      {
+        "time": 0.280307
+      },
+      "time": 0.433192
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 101001,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000361669
+      },
+      "Composite": 
+      {
+        "time": 0.278153
+      },
+      "time": 0.447239
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 101001,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000391132
+      },
+      "Composite": 
+      {
+        "time": 0.143813
+      },
+      "time": 0.217928
+    },
+    "time": 6.25416
+  },
+  "cycle_40": 
+  {
+    "cycle": 40,
+    "sim_time": 1.21608,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 1.1914
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.265471
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.00917469
+        },
+        "time": 0.00919398
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.0097638
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.20351,
+      "variance": 0.542134,
+      "skewness": 3.99069,
+      "kurtosis": 16.05,
+      "time": 0.0169218
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.000740728
+      },
+      "field_min": 1,
+      "field_max": 5.5,
+      "entropy": 0.747451,
+      "time": 0.0235482
+    },
+    "GetGlobalRange": 
+    {
+      "time": 3.849e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.00710095
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.136727
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.114605
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0250502
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.276544
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0198494
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.000165668
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 9.6539e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000116378
+      },
+      "Composite": 
+      {
+        "time": 0.0553776
+      },
+      "time": 0.0556347
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.000311518
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0171539
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.024938
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0163431
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0230256
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0218665
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0276197
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0829582
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0181662
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.0001317
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 8.4646e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000102844
+      },
+      "Composite": 
+      {
+        "time": 0.029702
+      },
+      "time": 0.0431321
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 4.3127e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.00734827
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 111673,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 111671,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0505686
+      },
+      "output_cells": 111671,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0742558
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 111671,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 111671,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.024614
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.000193719
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 111671,
+      "GetGlobalRange": 
+      {
+        "time": 0.00022955
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000185198
+      },
+      "Composite": 
+      {
+        "time": 0.262359
+      },
+      "time": 0.428915
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 111671,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000369194
+      },
+      "Composite": 
+      {
+        "time": 0.272056
+      },
+      "time": 0.428241
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 111671,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000389342
+      },
+      "Composite": 
+      {
+        "time": 0.268693
+      },
+      "time": 0.42937
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 111671,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000590473
+      },
+      "Composite": 
+      {
+        "time": 0.270999
+      },
+      "time": 0.434023
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 111671,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000570218
+      },
+      "Composite": 
+      {
+        "time": 0.271036
+      },
+      "time": 0.432231
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 111671,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000395777
+      },
+      "Composite": 
+      {
+        "time": 0.280486
+      },
+      "time": 0.441936
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 111671,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000419425
+      },
+      "Composite": 
+      {
+        "time": 0.132728
+      },
+      "time": 0.216453
+    },
+    "time": 9.01221
+  },
+  "cycle_50": 
+  {
+    "cycle": 50,
+    "sim_time": 1.23796,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 1.26621
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.256267
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.00953631
+        },
+        "time": 0.00955605
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.0132742
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.22301,
+      "variance": 0.535906,
+      "skewness": 3.62191,
+      "kurtosis": 13.2617,
+      "time": 0.0171681
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.00232668
+      },
+      "field_min": 0.99528,
+      "field_max": 5.5,
+      "entropy": 0.903969,
+      "time": 0.0211405
+    },
+    "GetGlobalRange": 
+    {
+      "time": 5.5663e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.00710612
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.137229
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.116433
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0269723
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.280795
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0233351
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.000147705
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 8.1239e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000101042
+      },
+      "Composite": 
+      {
+        "time": 0.0579879
+      },
+      "time": 0.0582271
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.000197291
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.021867
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0291852
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0177651
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0242977
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0226708
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0283244
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0890654
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0174132
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.000124143
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 8.7279e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000111772
+      },
+      "Composite": 
+      {
+        "time": 0.0279491
+      },
+      "time": 0.0423291
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 4.2943e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.00717208
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 156677,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 156630,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0584934
+      },
+      "output_cells": 156630,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0831319
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 156630,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 156630,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0318902
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.000220182
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 156630,
+      "GetGlobalRange": 
+      {
+        "time": 0.000223311
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000168217
+      },
+      "Composite": 
+      {
+        "time": 0.258714
+      },
+      "time": 0.436038
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 156630,
+      "GetGlobalBounds": 
+      {
+        "time": 0.00036739
+      },
+      "Composite": 
+      {
+        "time": 0.252116
+      },
+      "time": 0.438879
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 156630,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000388648
+      },
+      "Composite": 
+      {
+        "time": 0.277183
+      },
+      "time": 0.455385
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 156630,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000374439
+      },
+      "Composite": 
+      {
+        "time": 0.279137
+      },
+      "time": 0.453515
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 156630,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000353473
+      },
+      "Composite": 
+      {
+        "time": 0.252248
+      },
+      "time": 0.440967
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 156630,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000385242
+      },
+      "Composite": 
+      {
+        "time": 0.293045
+      },
+      "time": 0.471979
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 156630,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000360451
+      },
+      "Composite": 
+      {
+        "time": 0.137466
+      },
+      "time": 0.22702
+    },
+    "time": 6.55098
+  },
+  "cycle_60": 
+  {
+    "cycle": 60,
+    "sim_time": 1.21627,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 1.34164
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.280935
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.00880023
+        },
+        "time": 0.00883872
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.0129527
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.24255,
+      "variance": 0.527968,
+      "skewness": 3.27997,
+      "kurtosis": 10.8161,
+      "time": 0.0189163
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.000746871
+      },
+      "field_min": 0.979777,
+      "field_max": 5.5,
+      "entropy": 1.04742,
+      "time": 0.0182889
+    },
+    "GetGlobalRange": 
+    {
+      "time": 4.917e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.0072312
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.136348
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.119945
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0314974
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.288002
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0244112
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.000198302
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 9.1872e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000120176
+      },
+      "Composite": 
+      {
+        "time": 0.0518969
+      },
+      "time": 0.0521524
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.000177354
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0178936
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0248578
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0198431
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0260204
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0223082
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0278707
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0860282
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0173517
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.000141819
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 8.9757e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000119772
+      },
+      "Composite": 
+      {
+        "time": 0.0284333
+      },
+      "time": 0.0420368
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 4.5144e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.00731384
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 145529,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 145528,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0608807
+      },
+      "output_cells": 145528,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0853295
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 145528,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 145528,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0333044
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.000194834
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 145528,
+      "GetGlobalRange": 
+      {
+        "time": 0.000203103
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.0001879
+      },
+      "Composite": 
+      {
+        "time": 0.291172
+      },
+      "time": 0.463231
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 145528,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000369727
+      },
+      "Composite": 
+      {
+        "time": 0.288987
+      },
+      "time": 0.459509
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 145528,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000564697
+      },
+      "Composite": 
+      {
+        "time": 0.2897
+      },
+      "time": 0.460726
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 145528,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000427343
+      },
+      "Composite": 
+      {
+        "time": 0.294744
+      },
+      "time": 0.463621
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 145528,
+      "GetGlobalBounds": 
+      {
+        "time": 0.00039142
+      },
+      "Composite": 
+      {
+        "time": 0.292903
+      },
+      "time": 0.461624
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 145528,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000382217
+      },
+      "Composite": 
+      {
+        "time": 0.27888
+      },
+      "time": 0.457318
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 145528,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000401051
+      },
+      "Composite": 
+      {
+        "time": 0.151185
+      },
+      "time": 0.235326
+    },
+    "time": 6.64796
+  },
+  "cycle_70": 
+  {
+    "cycle": 70,
+    "sim_time": 1.25468,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 1.44626
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.286343
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.00937541
+        },
+        "time": 0.00938666
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.00975561
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.26221,
+      "variance": 0.518081,
+      "skewness": 2.95948,
+      "kurtosis": 8.67033,
+      "time": 0.0200069
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.000819125
+      },
+      "field_min": 0.969952,
+      "field_max": 5.5,
+      "entropy": 1.19417,
+      "time": 0.0195344
+    },
+    "GetGlobalRange": 
+    {
+      "time": 5.2245e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.00717548
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.129836
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.11261
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0274899
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.2701
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0264838
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.000287642
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 7.8449e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000111286
+      },
+      "Composite": 
+      {
+        "time": 0.0487669
+      },
+      "time": 0.0490181
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.00021022
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0253263
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0324486
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.017998
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0249682
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0221782
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.028309
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0931273
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0178724
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.000123591
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 9.4081e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000114491
+      },
+      "Composite": 
+      {
+        "time": 0.0287476
+      },
+      "time": 0.0422815
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 4.1877e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.00732437
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 155493,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 155491,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.066244
+      },
+      "output_cells": 155491,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0913157
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 155491,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 155491,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0331977
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.00020046
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 155491,
+      "GetGlobalRange": 
+      {
+        "time": 0.000221864
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000182376
+      },
+      "Composite": 
+      {
+        "time": 0.296895
+      },
+      "time": 0.474546
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 155491,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000389423
+      },
+      "Composite": 
+      {
+        "time": 0.293914
+      },
+      "time": 0.475268
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 155491,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000390042
+      },
+      "Composite": 
+      {
+        "time": 0.307676
+      },
+      "time": 0.483374
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 155491,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000408507
+      },
+      "Composite": 
+      {
+        "time": 0.306114
+      },
+      "time": 0.483743
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 155491,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000384098
+      },
+      "Composite": 
+      {
+        "time": 0.30711
+      },
+      "time": 0.481636
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 155491,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000392776
+      },
+      "Composite": 
+      {
+        "time": 0.297323
+      },
+      "time": 0.478426
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 155491,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000407146
+      },
+      "Composite": 
+      {
+        "time": 0.1609
+      },
+      "time": 0.249386
+    },
+    "time": 6.9003
+  },
+  "cycle_80": 
+  {
+    "cycle": 80,
+    "sim_time": 1.25618,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 1.5213
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.284122
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.00964209
+        },
+        "time": 0.00965393
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.0129016
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.28184,
+      "variance": 0.504804,
+      "skewness": 2.64973,
+      "kurtosis": 6.75206,
+      "time": 0.0177655
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.000612936
+      },
+      "field_min": 0.960358,
+      "field_max": 5.5,
+      "entropy": 1.32001,
+      "time": 0.0213551
+    },
+    "GetGlobalRange": 
+    {
+      "time": 3.9201e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.00721236
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.145721
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.108243
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0273684
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.281492
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.022094
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.000130931
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 0.000103079
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 9.3542e-05
+      },
+      "Composite": 
+      {
+        "time": 0.0552509
+      },
+      "time": 0.055493
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.000355601
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0271626
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0366155
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0186993
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0255599
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0219642
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0278205
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0973837
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.017779
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.00014211
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 7.88e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000126296
+      },
+      "Composite": 
+      {
+        "time": 0.0289967
+      },
+      "time": 0.0426607
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 4.3702e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.00734307
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 175423,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 175417,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0693012
+      },
+      "output_cells": 175417,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0954202
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 175417,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 175417,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0343045
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.000231579
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 175417,
+      "GetGlobalRange": 
+      {
+        "time": 0.000247853
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000203838
+      },
+      "Composite": 
+      {
+        "time": 0.295546
+      },
+      "time": 0.480886
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 175417,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000390523
+      },
+      "Composite": 
+      {
+        "time": 0.29009
+      },
+      "time": 0.481579
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 175417,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000445301
+      },
+      "Composite": 
+      {
+        "time": 0.301874
+      },
+      "time": 0.491768
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 175417,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000710542
+      },
+      "Composite": 
+      {
+        "time": 0.288928
+      },
+      "time": 0.477567
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 175417,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000404667
+      },
+      "Composite": 
+      {
+        "time": 0.293081
+      },
+      "time": 0.48151
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 175417,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000483705
+      },
+      "Composite": 
+      {
+        "time": 0.295181
+      },
+      "time": 0.480643
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 175417,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000431764
+      },
+      "Composite": 
+      {
+        "time": 0.152504
+      },
+      "time": 0.246939
+    },
+    "time": 6.86199
+  },
+  "cycle_90": 
+  {
+    "cycle": 90,
+    "sim_time": 1.21831,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 1.60829
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.28563
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.00928266
+        },
+        "time": 0.00929362
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.0113483
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.30103,
+      "variance": 0.488017,
+      "skewness": 2.37307,
+      "kurtosis": 5.27271,
+      "time": 0.0169758
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.000770201
+      },
+      "field_min": 0.951844,
+      "field_max": 5.5,
+      "entropy": 1.46396,
+      "time": 0.0186938
+    },
+    "GetGlobalRange": 
+    {
+      "time": 3.55e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.00909105
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.16176
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.131056
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0277952
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.320797
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0226576
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.000139976
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 9.7052e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 9.9919e-05
+      },
+      "Composite": 
+      {
+        "time": 0.0485299
+      },
+      "time": 0.0487785
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.000203441
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0177663
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.024854
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.019272
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0255485
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0241375
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0301027
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0879986
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0178354
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.000158052
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 8.5267e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000141371
+      },
+      "Composite": 
+      {
+        "time": 0.0284251
+      },
+      "time": 0.0426222
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 4.4299e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.00738687
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 196331,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 196321,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0727368
+      },
+      "output_cells": 196321,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0982617
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 196321,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 196321,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0356976
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.000257207
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 196321,
+      "GetGlobalRange": 
+      {
+        "time": 0.00025799
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000240642
+      },
+      "Composite": 
+      {
+        "time": 0.290553
+      },
+      "time": 0.482501
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 196321,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000421879
+      },
+      "Composite": 
+      {
+        "time": 0.288042
+      },
+      "time": 0.488263
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 196321,
+      "GetGlobalBounds": 
+      {
+        "time": 0.00046856
+      },
+      "Composite": 
+      {
+        "time": 0.298774
+      },
+      "time": 0.495216
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 196321,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000482321
+      },
+      "Composite": 
+      {
+        "time": 0.287636
+      },
+      "time": 0.486091
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 196321,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000434367
+      },
+      "Composite": 
+      {
+        "time": 0.289685
+      },
+      "time": 0.490066
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 196321,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000446781
+      },
+      "Composite": 
+      {
+        "time": 0.297224
+      },
+      "time": 0.490526
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 196321,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000607844
+      },
+      "Composite": 
+      {
+        "time": 0.148067
+      },
+      "time": 0.248082
+    },
+    "time": 7.07693
+  },
+  "cycle_100": 
+  {
+    "cycle": 100,
+    "sim_time": 1.20046,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 1.72296
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.296536
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.00907846
+        },
+        "time": 0.00909002
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.00976998
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.31962,
+      "variance": 0.470071,
+      "skewness": 2.14017,
+      "kurtosis": 4.25652,
+      "time": 0.0171874
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.000805167
+      },
+      "field_min": 0.945727,
+      "field_max": 5.5,
+      "entropy": 1.57281,
+      "time": 0.0176568
+    },
+    "GetGlobalRange": 
+    {
+      "time": 5.2091e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.00721984
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.136144
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.119781
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0290229
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.285135
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0258741
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.000135117
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 9.0757e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000121496
+      },
+      "Composite": 
+      {
+        "time": 0.0473243
+      },
+      "time": 0.0475898
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.000212916
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0217432
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0292176
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0165318
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0229268
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0225161
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0283748
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0877351
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0173346
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.000134479
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 9.4139e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000111456
+      },
+      "Composite": 
+      {
+        "time": 0.0288269
+      },
+      "time": 0.0426616
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 5.7573e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.00732479
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 216303,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 216299,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0743805
+      },
+      "output_cells": 216299,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.101406
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 216299,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 216299,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0363917
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.000257759
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 216299,
+      "GetGlobalRange": 
+      {
+        "time": 0.000247702
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000381834
+      },
+      "Composite": 
+      {
+        "time": 0.284704
+      },
+      "time": 0.488454
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 216299,
+      "GetGlobalBounds": 
+      {
+        "time": 0.00045496
+      },
+      "Composite": 
+      {
+        "time": 0.2769
+      },
+      "time": 0.482921
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 216299,
+      "GetGlobalBounds": 
+      {
+        "time": 0.00043524
+      },
+      "Composite": 
+      {
+        "time": 0.295181
+      },
+      "time": 0.498551
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 216299,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000409171
+      },
+      "Composite": 
+      {
+        "time": 0.286756
+      },
+      "time": 0.493667
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 216299,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000525556
+      },
+      "Composite": 
+      {
+        "time": 0.279116
+      },
+      "time": 0.489971
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 216299,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000428218
+      },
+      "Composite": 
+      {
+        "time": 0.306105
+      },
+      "time": 0.508618
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 216299,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000482066
+      },
+      "Composite": 
+      {
+        "time": 0.150216
+      },
+      "time": 0.253379
+    },
+    "time": 7.17536
+  },
+  "cycle_110": 
+  {
+    "cycle": 110,
+    "sim_time": 1.22213,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 1.85391
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.30625
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.00911142
+        },
+        "time": 0.00912428
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.00973584
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.33768,
+      "variance": 0.451827,
+      "skewness": 1.95015,
+      "kurtosis": 3.61535,
+      "time": 0.0148417
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.000845973
+      },
+      "field_min": 0.939116,
+      "field_max": 5.5,
+      "entropy": 1.69961,
+      "time": 0.0175142
+    },
+    "GetGlobalRange": 
+    {
+      "time": 3.7039e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.00718254
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.138709
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.119011
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0284674
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.286348
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0228473
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.000140026
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 8.4027e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000105459
+      },
+      "Composite": 
+      {
+        "time": 0.0503
+      },
+      "time": 0.0505389
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.000186204
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.028579
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0359377
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0230687
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0322801
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0247515
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0304391
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.106209
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0170727
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.000123419
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 9.202e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000125531
+      },
+      "Composite": 
+      {
+        "time": 0.0383373
+      },
+      "time": 0.0525252
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 3.8504e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.0074031
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 236879,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 236868,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0738106
+      },
+      "output_cells": 236868,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.101324
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 236868,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 236868,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0376331
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.000232035
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 236868,
+      "GetGlobalRange": 
+      {
+        "time": 0.000257746
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000236106
+      },
+      "Composite": 
+      {
+        "time": 0.299207
+      },
+      "time": 0.514481
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 236868,
+      "GetGlobalBounds": 
+      {
+        "time": 0.00163375
+      },
+      "Composite": 
+      {
+        "time": 0.292594
+      },
+      "time": 0.512342
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 236868,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000538225
+      },
+      "Composite": 
+      {
+        "time": 0.300127
+      },
+      "time": 0.512598
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 236868,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000425446
+      },
+      "Composite": 
+      {
+        "time": 0.318056
+      },
+      "time": 0.529872
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 236868,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000904029
+      },
+      "Composite": 
+      {
+        "time": 0.281873
+      },
+      "time": 0.507042
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 236868,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000469507
+      },
+      "Composite": 
+      {
+        "time": 0.305604
+      },
+      "time": 0.516479
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 236868,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000476643
+      },
+      "Composite": 
+      {
+        "time": 0.154223
+      },
+      "time": 0.260183
+    },
+    "time": 7.50055
+  },
+  "cycle_120": 
+  {
+    "cycle": 120,
+    "sim_time": 1.20432,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 1.96622
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.342044
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.00939271
+        },
+        "time": 0.009404
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.0113952
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.35527,
+      "variance": 0.433337,
+      "skewness": 1.79934,
+      "kurtosis": 3.26684,
+      "time": 0.0177489
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.000813273
+      },
+      "field_min": 0.933553,
+      "field_max": 5.5,
+      "entropy": 1.83159,
+      "time": 0.0174726
+    },
+    "GetGlobalRange": 
+    {
+      "time": 5.6861e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.00712948
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.144905
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.112292
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0318005
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.289169
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0229336
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.000153918
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 0.000108585
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000108486
+      },
+      "Composite": 
+      {
+        "time": 0.0462118
+      },
+      "time": 0.0464793
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.000217285
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0178413
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0249848
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0204086
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0268021
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0227656
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0283166
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0873811
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0174765
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.000134489
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 7.3812e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000100073
+      },
+      "Composite": 
+      {
+        "time": 0.0313923
+      },
+      "time": 0.045041
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 4.012e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.00736931
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 255723,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 255701,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.081697
+      },
+      "output_cells": 255701,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.109819
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 255701,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 255701,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0373698
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.000274411
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 255701,
+      "GetGlobalRange": 
+      {
+        "time": 0.000246448
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000250062
+      },
+      "Composite": 
+      {
+        "time": 0.282056
+      },
+      "time": 0.502052
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 255701,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000453152
+      },
+      "Composite": 
+      {
+        "time": 0.287379
+      },
+      "time": 0.51609
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 255701,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000476916
+      },
+      "Composite": 
+      {
+        "time": 0.291615
+      },
+      "time": 0.51188
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 255701,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000475058
+      },
+      "Composite": 
+      {
+        "time": 0.282321
+      },
+      "time": 0.508196
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 255701,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000466084
+      },
+      "Composite": 
+      {
+        "time": 0.282919
+      },
+      "time": 0.512529
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 255701,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000515428
+      },
+      "Composite": 
+      {
+        "time": 0.289323
+      },
+      "time": 0.508832
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 255701,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000444861
+      },
+      "Composite": 
+      {
+        "time": 0.150611
+      },
+      "time": 0.263838
+    },
+    "time": 7.62651
+  },
+  "cycle_130": 
+  {
+    "cycle": 130,
+    "sim_time": 1.19322,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 2.0833
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.348185
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.00952234
+        },
+        "time": 0.00953453
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.0121698
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.37223,
+      "variance": 0.415017,
+      "skewness": 1.68452,
+      "kurtosis": 3.14691,
+      "time": 0.0142432
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.000629607
+      },
+      "field_min": 0.929589,
+      "field_max": 5.5,
+      "entropy": 2.00377,
+      "time": 0.0165224
+    },
+    "GetGlobalRange": 
+    {
+      "time": 4.6447e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.0072294
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.134712
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.118405
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0284284
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.281721
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0238545
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.000233075
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 8.4121e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 9.2925e-05
+      },
+      "Composite": 
+      {
+        "time": 0.0442664
+      },
+      "time": 0.0445227
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.000199949
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0213331
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0294967
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0170745
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0234258
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0219982
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0276868
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0877804
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0176031
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.000125197
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 8.5662e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000131178
+      },
+      "Composite": 
+      {
+        "time": 0.0274633
+      },
+      "time": 0.0413856
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 4.4017e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.00732137
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 276607,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 276587,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.075314
+      },
+      "output_cells": 276587,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.104075
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 276587,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 276587,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.041112
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.000284753
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 276587,
+      "GetGlobalRange": 
+      {
+        "time": 0.000253953
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000224058
+      },
+      "Composite": 
+      {
+        "time": 0.27919
+      },
+      "time": 0.510071
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 276587,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000497457
+      },
+      "Composite": 
+      {
+        "time": 0.283001
+      },
+      "time": 0.517166
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 276587,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000455741
+      },
+      "Composite": 
+      {
+        "time": 0.2785
+      },
+      "time": 0.505328
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 276587,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000475485
+      },
+      "Composite": 
+      {
+        "time": 0.27724
+      },
+      "time": 0.506212
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 276587,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000529936
+      },
+      "Composite": 
+      {
+        "time": 0.282591
+      },
+      "time": 0.519725
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 276587,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000477921
+      },
+      "Composite": 
+      {
+        "time": 0.290086
+      },
+      "time": 0.514655
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 276587,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000514103
+      },
+      "Composite": 
+      {
+        "time": 0.153067
+      },
+      "time": 0.268524
+    },
+    "time": 7.77412
+  },
+  "cycle_140": 
+  {
+    "cycle": 140,
+    "sim_time": 1.20796,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 2.278
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.366419
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.00882774
+        },
+        "time": 0.00884775
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.00973071
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.3883,
+      "variance": 0.397166,
+      "skewness": 1.60266,
+      "kurtosis": 3.20007,
+      "time": 0.0177005
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.0044195
+      },
+      "field_min": 0.925807,
+      "field_max": 5.5,
+      "entropy": 2.12442,
+      "time": 0.0215068
+    },
+    "GetGlobalRange": 
+    {
+      "time": 6.2462e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.00980873
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.13826
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.11172
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0294456
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.279598
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0236759
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.000133191
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 8.0374e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000103303
+      },
+      "Composite": 
+      {
+        "time": 0.04324
+      },
+      "time": 0.0434958
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.000184585
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0276837
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0349661
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.01766
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0246427
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0226205
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0284642
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.095397
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0183602
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.000167693
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 9.4663e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000129744
+      },
+      "Composite": 
+      {
+        "time": 0.0290002
+      },
+      "time": 0.0423998
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 3.9143e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.00824924
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 294887,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 294875,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0978927
+      },
+      "output_cells": 294875,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.127993
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 294875,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 294875,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0399833
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.000307121
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 294875,
+      "GetGlobalRange": 
+      {
+        "time": 0.000273146
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000234882
+      },
+      "Composite": 
+      {
+        "time": 0.296458
+      },
+      "time": 0.529161
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 294875,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000471106
+      },
+      "Composite": 
+      {
+        "time": 0.294152
+      },
+      "time": 0.536438
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 294875,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000478273
+      },
+      "Composite": 
+      {
+        "time": 0.298497
+      },
+      "time": 0.532806
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 294875,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000492333
+      },
+      "Composite": 
+      {
+        "time": 0.298617
+      },
+      "time": 0.530524
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 294875,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000479376
+      },
+      "Composite": 
+      {
+        "time": 0.284906
+      },
+      "time": 0.528611
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 294875,
+      "GetGlobalBounds": 
+      {
+        "time": 0.00048708
+      },
+      "Composite": 
+      {
+        "time": 0.303469
+      },
+      "time": 0.534965
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 294875,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000492147
+      },
+      "Composite": 
+      {
+        "time": 0.154027
+      },
+      "time": 0.272437
+    },
+    "time": 8.1424
+  },
+  "cycle_150": 
+  {
+    "cycle": 150,
+    "sim_time": 1.1943,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 2.36767
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.409821
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.00896587
+        },
+        "time": 0.00898644
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.0129152
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.40354,
+      "variance": 0.380172,
+      "skewness": 1.54498,
+      "kurtosis": 3.36305,
+      "time": 0.0153352
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.000635572
+      },
+      "field_min": 0.923099,
+      "field_max": 5.5,
+      "entropy": 2.30883,
+      "time": 0.0192281
+    },
+    "GetGlobalRange": 
+    {
+      "time": 4.5575e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.00725796
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.134573
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.119545
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0315852
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.285869
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0282388
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.00013631
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 9.8606e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 9.863e-05
+      },
+      "Composite": 
+      {
+        "time": 0.0565915
+      },
+      "time": 0.0568239
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.000184159
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0251849
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0324415
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0173666
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.023732
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.022623
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0283651
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0918845
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0182392
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.000136009
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 8.6473e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000106527
+      },
+      "Composite": 
+      {
+        "time": 0.0286324
+      },
+      "time": 0.0426281
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 5.3371e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.00731267
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 311695,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 311654,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0925229
+      },
+      "output_cells": 311654,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.122327
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 311654,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 311654,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0432757
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.000297885
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 311654,
+      "GetGlobalRange": 
+      {
+        "time": 0.000265755
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000238571
+      },
+      "Composite": 
+      {
+        "time": 0.315329
+      },
+      "time": 0.555463
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 311654,
+      "GetGlobalBounds": 
+      {
+        "time": 0.00046373
+      },
+      "Composite": 
+      {
+        "time": 0.309105
+      },
+      "time": 0.555136
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 311654,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000527797
+      },
+      "Composite": 
+      {
+        "time": 0.316736
+      },
+      "time": 0.552409
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 311654,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000449586
+      },
+      "Composite": 
+      {
+        "time": 0.322892
+      },
+      "time": 0.559275
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 311654,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000480667
+      },
+      "Composite": 
+      {
+        "time": 0.302151
+      },
+      "time": 0.554743
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 311654,
+      "GetGlobalBounds": 
+      {
+        "time": 0.00069396
+      },
+      "Composite": 
+      {
+        "time": 0.312173
+      },
+      "time": 0.558907
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 311654,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000514221
+      },
+      "Composite": 
+      {
+        "time": 0.161397
+      },
+      "time": 0.282291
+    },
+    "time": 8.44903
+  },
+  "cycle_160": 
+  {
+    "cycle": 160,
+    "sim_time": 1.17605,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 2.54376
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.409366
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.00955248
+        },
+        "time": 0.00957184
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.0101657
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.41832,
+      "variance": 0.363368,
+      "skewness": 1.50472,
+      "kurtosis": 3.60533,
+      "time": 0.0142834
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.000766025
+      },
+      "field_min": 0.920271,
+      "field_max": 5.5,
+      "entropy": 2.49862,
+      "time": 0.0173318
+    },
+    "GetGlobalRange": 
+    {
+      "time": 4.6446e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.00733238
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.133272
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.10663
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0280003
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.268067
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0230735
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.000132032
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 7.7822e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000251007
+      },
+      "Composite": 
+      {
+        "time": 0.0489968
+      },
+      "time": 0.0493927
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.000193611
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.020982
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0282243
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0166402
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0231974
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0226638
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.027977
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0865073
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0207045
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.000197366
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 9.6464e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.00011584
+      },
+      "Composite": 
+      {
+        "time": 0.0295073
+      },
+      "time": 0.0433996
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 3.7216e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.00733469
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 332311,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 332299,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.092265
+      },
+      "output_cells": 332299,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.122182
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 332299,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 332299,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0436514
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.000328075
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 332299,
+      "GetGlobalRange": 
+      {
+        "time": 0.000253325
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000266257
+      },
+      "Composite": 
+      {
+        "time": 0.302232
+      },
+      "time": 0.558983
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 332299,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000505103
+      },
+      "Composite": 
+      {
+        "time": 0.299413
+      },
+      "time": 0.564893
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 332299,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000553407
+      },
+      "Composite": 
+      {
+        "time": 0.312986
+      },
+      "time": 0.568078
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 332299,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000506466
+      },
+      "Composite": 
+      {
+        "time": 0.308247
+      },
+      "time": 0.561802
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 332299,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000535537
+      },
+      "Composite": 
+      {
+        "time": 0.297706
+      },
+      "time": 0.561777
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 332299,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000521805
+      },
+      "Composite": 
+      {
+        "time": 0.318138
+      },
+      "time": 0.570708
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 332299,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000560544
+      },
+      "Composite": 
+      {
+        "time": 0.157473
+      },
+      "time": 0.286994
+    },
+    "time": 8.59802
+  },
+  "cycle_170": 
+  {
+    "cycle": 170,
+    "sim_time": 1.22043,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 2.64382
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.440205
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.00902294
+        },
+        "time": 0.00904756
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.00985572
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.43291,
+      "variance": 0.346803,
+      "skewness": 1.47255,
+      "kurtosis": 3.89426,
+      "time": 0.0144371
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.000742796
+      },
+      "field_min": 0.917018,
+      "field_max": 5.5,
+      "entropy": 2.68409,
+      "time": 0.0183582
+    },
+    "GetGlobalRange": 
+    {
+      "time": 4.344e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.0071509
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.145212
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.116829
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0282199
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.290426
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0235547
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.00012245
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 8.9542e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000108942
+      },
+      "Composite": 
+      {
+        "time": 0.042401
+      },
+      "time": 0.0426633
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.00021354
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0184364
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0263808
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0167946
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0241913
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0225616
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0288796
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0867663
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0178755
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.000140089
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 7.8084e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000117379
+      },
+      "Composite": 
+      {
+        "time": 0.0285982
+      },
+      "time": 0.0422936
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 3.8887e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.00735791
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 351559,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 351539,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0880122
+      },
+      "output_cells": 351539,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.119149
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 351539,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 351539,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.043417
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.000332759
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 351539,
+      "GetGlobalRange": 
+      {
+        "time": 0.00028638
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000255408
+      },
+      "Composite": 
+      {
+        "time": 0.293504
+      },
+      "time": 0.550209
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 351539,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000531518
+      },
+      "Composite": 
+      {
+        "time": 0.300449
+      },
+      "time": 0.562529
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 351539,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000515788
+      },
+      "Composite": 
+      {
+        "time": 0.3085
+      },
+      "time": 0.562167
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 351539,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000498967
+      },
+      "Composite": 
+      {
+        "time": 0.300875
+      },
+      "time": 0.556966
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 351539,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000530545
+      },
+      "Composite": 
+      {
+        "time": 0.291911
+      },
+      "time": 0.557846
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 351539,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000508798
+      },
+      "Composite": 
+      {
+        "time": 0.305626
+      },
+      "time": 0.560089
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 351539,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000516453
+      },
+      "Composite": 
+      {
+        "time": 0.156089
+      },
+      "time": 0.28432
+    },
+    "time": 8.78197
+  },
+  "cycle_180": 
+  {
+    "cycle": 180,
+    "sim_time": 1.18726,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 2.82942
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.460522
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.00906595
+        },
+        "time": 0.00908525
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.00963896
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.44742,
+      "variance": 0.330148,
+      "skewness": 1.4453,
+      "kurtosis": 4.23597,
+      "time": 0.0143007
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.000761299
+      },
+      "field_min": 0.914011,
+      "field_max": 5.5,
+      "entropy": 2.88519,
+      "time": 0.0178713
+    },
+    "GetGlobalRange": 
+    {
+      "time": 4.6561e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.00936876
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.131553
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.11281
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0290982
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.273638
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0235093
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.000127841
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 8.5453e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 9.7977e-05
+      },
+      "Composite": 
+      {
+        "time": 0.048388
+      },
+      "time": 0.0486157
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.000198789
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0246008
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0322875
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0211016
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0278961
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0217145
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0278131
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0953682
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0179665
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.000121832
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 8.7263e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000117711
+      },
+      "Composite": 
+      {
+        "time": 0.0297377
+      },
+      "time": 0.0434609
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 4.2873e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.00736942
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 370653,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 370621,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0897795
+      },
+      "output_cells": 370621,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.12132
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 370621,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 370621,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0434045
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.000514209
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 370621,
+      "GetGlobalRange": 
+      {
+        "time": 0.000270637
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000279725
+      },
+      "Composite": 
+      {
+        "time": 0.29825
+      },
+      "time": 0.56872
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 370621,
+      "GetGlobalBounds": 
+      {
+        "time": 0.00048558
+      },
+      "Composite": 
+      {
+        "time": 0.301052
+      },
+      "time": 0.572327
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 370621,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000568174
+      },
+      "Composite": 
+      {
+        "time": 0.299357
+      },
+      "time": 0.566404
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 370621,
+      "GetGlobalBounds": 
+      {
+        "time": 0.00048155
+      },
+      "Composite": 
+      {
+        "time": 0.330883
+      },
+      "time": 0.597236
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 370621,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000497317
+      },
+      "Composite": 
+      {
+        "time": 0.307957
+      },
+      "time": 0.585682
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 370621,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000499143
+      },
+      "Composite": 
+      {
+        "time": 0.314829
+      },
+      "time": 0.582381
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 370621,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000520511
+      },
+      "Composite": 
+      {
+        "time": 0.158814
+      },
+      "time": 0.294595
+    },
+    "time": 9.09478
+  },
+  "cycle_190": 
+  {
+    "cycle": 190,
+    "sim_time": 1.20701,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 2.96651
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.503041
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.00916827
+        },
+        "time": 0.00918651
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.00988088
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.46216,
+      "variance": 0.31315,
+      "skewness": 1.41973,
+      "kurtosis": 4.63737,
+      "time": 0.0145868
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.000698323
+      },
+      "field_min": 0.911336,
+      "field_max": 5.5,
+      "entropy": 3.08632,
+      "time": 0.0184469
+    },
+    "GetGlobalRange": 
+    {
+      "time": 4.0583e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.00728668
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.138557
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.116818
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0276659
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.28321
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0230307
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.000143446
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 7.7888e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000100884
+      },
+      "Composite": 
+      {
+        "time": 0.0479286
+      },
+      "time": 0.0481589
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.000190307
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0171415
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0246613
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0223854
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0287031
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0246155
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0305957
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0912896
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0180177
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.000147746
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 8.3369e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000127323
+      },
+      "Composite": 
+      {
+        "time": 0.0336426
+      },
+      "time": 0.0479968
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 3.9032e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.0073227
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 389941,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 389923,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0891765
+      },
+      "output_cells": 389923,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.1216
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 389923,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 389923,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0430662
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.000342869
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 389923,
+      "GetGlobalRange": 
+      {
+        "time": 0.000295278
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.00024748
+      },
+      "Composite": 
+      {
+        "time": 0.317585
+      },
+      "time": 0.58885
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 389923,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000498511
+      },
+      "Composite": 
+      {
+        "time": 0.315438
+      },
+      "time": 0.594824
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 389923,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000675606
+      },
+      "Composite": 
+      {
+        "time": 0.31867
+      },
+      "time": 0.589536
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 389923,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000534087
+      },
+      "Composite": 
+      {
+        "time": 0.310989
+      },
+      "time": 0.580903
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 389923,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000497194
+      },
+      "Composite": 
+      {
+        "time": 0.30556
+      },
+      "time": 0.587464
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 389923,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000501708
+      },
+      "Composite": 
+      {
+        "time": 0.302766
+      },
+      "time": 0.582296
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 389923,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000537265
+      },
+      "Composite": 
+      {
+        "time": 0.1568
+      },
+      "time": 0.295346
+    },
+    "time": 9.35323
+  },
+  "cycle_200": 
+  {
+    "cycle": 200,
+    "sim_time": 1.20878,
+    "cycle_count": 10,
+    "relay": 
+    {
+      "path": "full",
+      "time": 3.05654
+    },
+    "relay_1": 
+    {
+      "path": "subset",
+      "time": 0.503312
+    },
+    "vtkh::GhostStripper": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "structured_strip": 
+      {
+        "can_strip": 
+        {
+          "time": 0.00960722
+        },
+        "time": 0.0096269
+      },
+      "output_cells": 2314125,
+      "output_domains": 1,
+      "output_topology": "structured",
+      "time": 0.00989749
+    },
+    "statistics": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "mean": 1.4774,
+      "variance": 0.295478,
+      "skewness": 1.39531,
+      "kurtosis": 5.14074,
+      "time": 0.0156784
+    },
+    "histogram": 
+    {
+      "device": "openmp",
+      "bins": 256,
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "GetGlobalRange": 
+      {
+        "time": 0.000734979
+      },
+      "field_min": 0.909096,
+      "field_max": 5.5,
+      "entropy": 3.21687,
+      "time": 0.016932
+    },
+    "GetGlobalRange": 
+    {
+      "time": 4.2511e-05
+    },
+    "vtkh::IsoVolume": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::ClipField": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::Recenter": 
+        {
+          "device": "openmp",
+          "input_cells": 2314125,
+          "input_domains": 1,
+          "in_topology": "structured",
+          "output_cells": 2314125,
+          "output_domains": 1,
+          "output_topology": "structured",
+          "time": 0.00722161
+        },
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.135776
+      },
+      "vtkh::ClipField_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.10741
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 0,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0273596
+      },
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.270751
+    },
+    "vtkh::GhostStripper_1": 
+    {
+      "device": "openmp",
+      "input_cells": 0,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 0,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0237546
+    },
+    "GetGlobalBounds": 
+    {
+      "time": 0.000107736
+    },
+    "vtkh::RayTracer": 
+    {
+      "input_cells": 0,
+      "GetGlobalRange": 
+      {
+        "time": 9.7131e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000238523
+      },
+      "Composite": 
+      {
+        "time": 0.0517207
+      },
+      "time": 0.0521125
+    },
+    "GetGlobalBounds_1": 
+    {
+      "time": 0.000201065
+    },
+    "vtkh::Slice": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "vtkh::MarchingCubes": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0238265
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0311362
+      },
+      "vtkh::MarchingCubes_1": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 28050,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 28050,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0169044
+        },
+        "output_cells": 28050,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0232091
+      },
+      "vtkh::MarchingCubes_2": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "vtkh::CleanGrid": 
+        {
+          "device": "openmp",
+          "input_cells": 0,
+          "input_domains": 1,
+          "in_topology": "unstructured",
+          "output_cells": 0,
+          "output_domains": 1,
+          "output_topology": "unstructured",
+          "time": 0.0216481
+        },
+        "output_cells": 0,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.027848
+      },
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.0893633
+    },
+    "vtkh::GhostStripper_2": 
+    {
+      "device": "openmp",
+      "input_cells": 56100,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 56100,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.01802
+    },
+    "GetGlobalBounds_2": 
+    {
+      "time": 0.000132573
+    },
+    "vtkh::RayTracer_1": 
+    {
+      "input_cells": 56100,
+      "GetGlobalRange": 
+      {
+        "time": 8.9856e-05
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000104756
+      },
+      "Composite": 
+      {
+        "time": 0.028785
+      },
+      "time": 0.0424406
+    },
+    "vtkh::MarchingCubes": 
+    {
+      "device": "openmp",
+      "input_cells": 2314125,
+      "input_domains": 1,
+      "in_topology": "structured",
+      "GetGlobalRange": 
+      {
+        "time": 4.277e-05
+      },
+      "vtkh::Recenter": 
+      {
+        "device": "openmp",
+        "input_cells": 2314125,
+        "input_domains": 1,
+        "in_topology": "structured",
+        "output_cells": 2314125,
+        "output_domains": 1,
+        "output_topology": "structured",
+        "time": 0.00736495
+      },
+      "vtkh::CleanGrid": 
+      {
+        "device": "openmp",
+        "input_cells": 404965,
+        "input_domains": 1,
+        "in_topology": "unstructured",
+        "output_cells": 404911,
+        "output_domains": 1,
+        "output_topology": "unstructured",
+        "time": 0.0923531
+      },
+      "output_cells": 404911,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.124882
+    },
+    "vtkh::GhostStripper_3": 
+    {
+      "device": "openmp",
+      "input_cells": 404911,
+      "input_domains": 1,
+      "in_topology": "unstructured",
+      "output_cells": 404911,
+      "output_domains": 1,
+      "output_topology": "unstructured",
+      "time": 0.042724
+    },
+    "GetGlobalBounds_3": 
+    {
+      "time": 0.000356159
+    },
+    "vtkh::RayTracer_2": 
+    {
+      "input_cells": 404911,
+      "GetGlobalRange": 
+      {
+        "time": 0.000269001
+      },
+      "GetGlobalBounds": 
+      {
+        "time": 0.000261583
+      },
+      "Composite": 
+      {
+        "time": 0.300917
+      },
+      "time": 0.578336
+    },
+    "vtkh::RayTracer_3": 
+    {
+      "input_cells": 404911,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000532776
+      },
+      "Composite": 
+      {
+        "time": 0.303689
+      },
+      "time": 0.58924
+    },
+    "vtkh::RayTracer_4": 
+    {
+      "input_cells": 404911,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000847359
+      },
+      "Composite": 
+      {
+        "time": 0.308204
+      },
+      "time": 0.58627
+    },
+    "vtkh::RayTracer_5": 
+    {
+      "input_cells": 404911,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000653334
+      },
+      "Composite": 
+      {
+        "time": 0.303916
+      },
+      "time": 0.579344
+    },
+    "vtkh::RayTracer_6": 
+    {
+      "input_cells": 404911,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000543233
+      },
+      "Composite": 
+      {
+        "time": 0.296493
+      },
+      "time": 0.583496
+    },
+    "vtkh::RayTracer_7": 
+    {
+      "input_cells": 404911,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000508822
+      },
+      "Composite": 
+      {
+        "time": 0.301381
+      },
+      "time": 0.581754
+    },
+    "vtkh::RayTracer_8": 
+    {
+      "input_cells": 404911,
+      "GetGlobalBounds": 
+      {
+        "time": 0.000522526
+      },
+      "Composite": 
+      {
+        "time": 0.154873
+      },
+      "time": 0.297135
+    },
+    "time": 9.56827
+  }
+}
