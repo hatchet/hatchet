@@ -1054,4 +1054,3 @@ def test_to_literal_node_ids():
     lit_list2 = gf2.to_literal()
 
     assert lit_list == lit_list2
->>>>>>> Fixed literal_reader to optionally support node_ids in literal
