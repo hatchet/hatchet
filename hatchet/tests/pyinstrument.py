@@ -109,7 +109,7 @@ def test_tree(hatchet_pyinstrument_json):
         invert_colormap=False,
     )
     assert "0.478 <module> examples.py" in output
-    assert "0.063 from_caliper_json hatchet/graphframe.py" in output
+    assert "0.063 from_caliper hatchet/graphframe.py" in output
 
 
 def test_graphframe_to_literal(hatchet_pyinstrument_json):

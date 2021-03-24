@@ -66,7 +66,7 @@ follows:
 
   >>> import hatchet as ht
   >>> caliper_file = 'lulesh-annotation-profile-1core.json'
-  >>> gf = ht.GraphFrame.from_caliper_json(caliper_file)
+  >>> gf = ht.GraphFrame.from_caliper(caliper_file)
   >>>
 
 At this point, your input file (profile) has been loaded into Hatchet's data
@@ -322,8 +322,8 @@ two trees are initialized with a value of nan, and are colored in blue.
 
   >>> caliper_file_1core = 'lulesh-annotation-profile-1core.json'
   >>> caliper_file_64cores = 'lulesh-annotation-profile-64cores.json'
-  >>> gf = ht.GraphFrame.from_caliper_json(caliper_file_1core)
-  >>> gf2 = ht.GraphFrame.from_caliper_json(caliper_file_64cores)
+  >>> gf = ht.GraphFrame.from_caliper(caliper_file_1core)
+  >>> gf2 = ht.GraphFrame.from_caliper(caliper_file_64cores)
   >>> gf.drop_index_levels()
   >>> gf2.drop_index_levels()
   >>> gf3 = gf/gf2
