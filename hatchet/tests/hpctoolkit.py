@@ -203,10 +203,18 @@ def test_graphframe_to_literal(data_dir, calc_pi_hpct_db):
     assert len(gf.graph) == len(gf2.graph)
 
 
-def test_graphframe_to_literal_with_threads(data_dir, osu_allgather_hpct_db):
+def test_graphframe_to_literal_with_threads(osu_allgather_hpct_db):
     gf = GraphFrame.from_hpctoolkit(str(osu_allgather_hpct_db))
     graph_literal = gf.to_literal()
 
     gf2 = GraphFrame.from_literal(graph_literal)
 
     assert len(gf.graph) == len(gf2.graph)
+
+
+def test_from_path(calc_pi_hpct_db):
+    gf = GraphFrame.from_path(str(calc_pi_hpct_db))
+
+    assert len(gf.dataframe.groupby("module")) == 5
+    assert len(gf.dataframe.groupby("file")) == 11
+    assert len(gf.dataframe.groupby("name")) == 20

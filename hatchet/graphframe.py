@@ -85,6 +85,156 @@ class GraphFrame:
         self.default_metric = default_metric
 
     @staticmethod
+    def from_path(dirname_or_data, *args):
+        """Read a database directory and automatically detect the data format.
+
+        Arguments:
+            dirname_or_data (str): path to the database directory
+            args (str): args need to be provided based on the respective function signature of GraphFrame.from_*profile_format*.
+        """
+        assert isinstance(dirname_or_data, (str, list, dict))
+
+        FROM_DATABASE_MAPPER = {
+            "hpctoolkit": GraphFrame.from_hpctoolkit,
+            "caliper": GraphFrame.from_caliper,
+            "caliper_json": GraphFrame.from_caliper_json,
+            "gprof_dot": GraphFrame.from_gprof_dot,
+            "cprofile": GraphFrame.from_cprofile,
+            "pyinstrument": GraphFrame.from_pyinstrument,
+            "timemory": GraphFrame.from_timemory,
+            "literal": GraphFrame.from_literal,
+        }
+
+        profile_format = GraphFrame._detect_profile_format(dirname_or_data)
+
+        if not profile_format:
+            return FROM_DATABASE_MAPPER[profile_format](dirname_or_data, *args)
+        else:
+            raise ValueError("`GraphFrame.from_path` failed to recognize the data format. Please fallback to respective `GraphFrame.from_*`, where * is the data format.")
+
+    @staticmethod
+    def _json_schema_validate(_data, _schema):
+        import jsonschema
+
+        try:
+            return jsonschema.validate(instance=_data, schema=_schema)
+        except jsonschema.ValidationError as e:
+            return e.schema["error_msg"] 
+
+
+    @staticmethod
+    def _detect_profile_format(dirname_or_data):
+        """Detect the profile format for the given data.
+
+        Arguments:
+            dirname_or_data (str): Data directory or data (lists or dicts)
+
+        Returns:
+            "hpctoolkit": if .metric-db and experiment.xml is found inside
+            directory.
+            "caliper": if file extension is .cali
+            "caliper_json": if file extension is .json and matches schema
+        """
+        import os
+        import json
+
+        # Find identifiers 
+        # Caliper has meta-data section (cali version is available)
+        # Add feedback if the format matching fails.
+        _SCHEMA_CALIPER_JSON = {
+            "type": "object",
+            "properties": {
+                "data": {"type": "array"},
+                "columns": {"type": "array"},
+                "column_metadata": {"type": "array"},
+                "nodes": {"type": "array"},
+            },
+            "required": ["data", "columns", "column_metadata", "nodes"]
+        }
+
+        _SCHEMA_PYINSTRUMENT = {
+            "type": "object",
+            "properties": {
+                "start_time": {"type": "number"},
+                "duration": {"type": "number"},
+                "sample_count": {"type": "number"},
+                "program": {"type": "string"},
+                "cpu_time": {"type": "number"},
+                "root_frame": {},
+            },
+            "required": ["start_time", "duration", "sample_count", "program", "cpu_time"]
+        }
+
+        _SCHEMA_TIMEMORY = {
+            "type": "object",
+            "properties": {"timemory": {"type": "object"}},
+            "required": ["timemory"]
+        }
+
+        if isinstance(dirname_or_data, list):
+            return "literal"
+
+        # Determine dirname_or_data is a str
+        if isinstance(dirname_or_data, str):
+
+            # check if it is a directory.
+            # Formats in directory: hpctoolkit
+            if os.path.isdir(dirname_or_data):
+                _metric_db_files = [
+                    f for f in os.listdir(dirname_or_data) if f.endswith(".metric-db")
+                ]
+                _experiment_xml_files = [
+                    f
+                    for f in os.listdir(dirname_or_data)
+                    if f.endswith("experiment.xml")
+                ]
+
+                if len(_metric_db_files) == 0:
+                    raise ValueError(
+                        "No metric-db files detected inside the provided path."
+                    )
+
+                if len(_experiment_xml_files) == 0:
+                    raise ValueError(
+                        "No experiment.xml file detected inside the provided path."
+                    )
+
+                return "hpctoolkit"
+
+            # check if it is a file
+            if os.path.isfile(dirname_or_data):
+                _file_name, _file_ext = os.path.splitext(dirname_or_data)
+
+                if _file_ext == ".cali":
+                    return "caliper"
+                elif _file_ext == ".pstats":
+                    return "cprofile"
+                elif _file_ext == ".dot" or "dot" in _file_name.split("."):
+                    return "gprof_dot"
+                elif _file_ext == ".json":
+                    # TODO: Check if we can just load the key and dtype of JSON.
+                    # We could also be unnecessarily read the data again.
+                    try:
+                        with open(dirname_or_data, 'r') as f:
+                            _data = json.loads(f.read())
+                    except ValueError as err:
+                        print(err)
+                        return False
+
+                    if GraphFrame._json_schema_validate(_data, _SCHEMA_CALIPER_JSON):
+                        return "caliper_json"
+                    elif GraphFrame._json_schema_validate(_data, _SCHEMA_PYINSTRUMENT):
+                        return "pyinstrument"
+                    elif GraphFrame._json_schema_validate(_data, _SCHEMA_TIMEMORY):
+                        return "timemory"
+                    else:
+                        return None
+            else: 
+                return None
+        else:
+            return None
+
+    @staticmethod
     def from_hpctoolkit(dirname):
         """Read an HPCToolkit database directory into a new GraphFrame.
 

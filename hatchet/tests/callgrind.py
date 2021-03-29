@@ -44,3 +44,15 @@ def test_read_calc_pi_database(calc_pi_callgrind_dot):
         root_names.append(root.frame.attrs["name"])
 
     assert all(rt in root_names for rt in roots)
+
+
+def test_from_path_gprof_dot(calc_pi_callgrind_dot):
+    gf = GraphFrame.from_path(str(calc_pi_callgrind_dot))
+
+    assert len(gf.dataframe.groupby("name")) == 105
+
+    for col in gf.dataframe.columns:
+        if col in ("time (inc)", "time"):
+            assert gf.dataframe[col].dtype == np.float64
+        elif col in ("name", "module", "node"):
+            assert gf.dataframe[col].dtype == np.object

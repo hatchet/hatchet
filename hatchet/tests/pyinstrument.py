@@ -120,3 +120,41 @@ def test_graphframe_to_literal(hatchet_pyinstrument_json):
     gf2 = GraphFrame.from_literal(graph_literal)
 
     assert len(gf.graph) == len(gf2.graph)
+
+
+def test_from_path(hatchet_pyinstrument_json):
+    gf = GraphFrame.from_path(str(hatchet_pyinstrument_json))
+
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf.graph.roots,
+        gf.dataframe,
+        metric_column="time",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
+        rank=0,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        invert_colormap=False,
+    )
+    assert "0.000 <module> examples.py" in output
+    assert "0.025 read hatchet/readers/caliper_reader.py" in output
+
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf.graph.roots,
+        gf.dataframe,
+        metric_column="time (inc)",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
+        rank=0,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        invert_colormap=False,
+    )
+    assert "0.478 <module> examples.py" in output
+    assert "0.063 from_caliper_json hatchet/graphframe.py" in output
