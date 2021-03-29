@@ -154,38 +154,42 @@ def test_tree(lulesh_caliper_json):
     """Sanity test a GraphFrame object with known data."""
     gf = GraphFrame.from_caliper_json(str(lulesh_caliper_json))
 
-    output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
-        metric_column="time",
-        precision=3,
-        name_column="name",
-        expand_name=False,
-        context_column="file",
-        rank=0,
-        thread=0,
-        depth=10000,
-        highlight_name=False,
-        invert_colormap=False,
-    )
+    with pytest.warns(None) as num_warnings:
+        output = ConsoleRenderer(unicode=True, color=False).render(
+            gf.graph.roots,
+            gf.dataframe,
+            metric_column="time",
+            precision=3,
+            name_column="name",
+            expand_name=False,
+            context_column="file",
+            rank=0,
+            thread=0,
+            depth=10000,
+            highlight_name=False,
+            invert_colormap=False,
+        )
+    assert len(num_warnings) == 0
     assert "121489.000 main" in output
     assert "663.000 LagrangeElements" in output
     assert "21493.000 CalcTimeConstraintsForElems" in output
 
-    output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
-        metric_column="time (inc)",
-        precision=3,
-        name_column="name",
-        expand_name=False,
-        context_column="file",
-        rank=0,
-        thread=0,
-        depth=10000,
-        highlight_name=False,
-        invert_colormap=False,
-    )
+    with pytest.warns(None) as num_warnings:
+        output = ConsoleRenderer(unicode=True, color=False).render(
+            gf.graph.roots,
+            gf.dataframe,
+            metric_column="time (inc)",
+            precision=3,
+            name_column="name",
+            expand_name=False,
+            context_column="file",
+            rank=0,
+            thread=0,
+            depth=10000,
+            highlight_name=False,
+            invert_colormap=False,
+        )
+    assert len(num_warnings) == 0
     assert "662712.000 EvalEOSForElems" in output
     assert "2895319.000 LagrangeNodal" in output
 

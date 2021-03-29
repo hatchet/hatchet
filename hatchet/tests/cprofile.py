@@ -5,6 +5,7 @@
 
 import numpy as np
 import re
+import pytest
 
 from hatchet import GraphFrame
 from hatchet.external.console import ConsoleRenderer
@@ -30,36 +31,40 @@ def test_graphframe(hatchet_cycle_pstats):
 def test_tree(hatchet_cycle_pstats):
     gf = GraphFrame.from_cprofile(str(hatchet_cycle_pstats))
 
-    output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
-        metric_column="time",
-        precision=3,
-        name_column="name",
-        expand_name=False,
-        context_column="file",
-        rank=0,
-        thread=0,
-        depth=10000,
-        highlight_name=False,
-        invert_colormap=False,
-    )
+    with pytest.warns(None) as num_warnings:
+        output = ConsoleRenderer(unicode=True, color=False).render(
+            gf.graph.roots,
+            gf.dataframe,
+            metric_column="time",
+            precision=3,
+            name_column="name",
+            expand_name=False,
+            context_column="file",
+            rank=0,
+            thread=0,
+            depth=10000,
+            highlight_name=False,
+            invert_colormap=False,
+        )
+    assert len(num_warnings) == 0
     assert "g pstats_reader_test.py" in output
     assert "<method 'disable' ...Profiler' objects> ~" in output
 
-    output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
-        metric_column="time (inc)",
-        precision=3,
-        name_column="name",
-        expand_name=False,
-        context_column="file",
-        rank=0,
-        thread=0,
-        depth=10000,
-        highlight_name=False,
-        invert_colormap=False,
-    )
+    with pytest.warns(None) as num_warnings:
+        output = ConsoleRenderer(unicode=True, color=False).render(
+            gf.graph.roots,
+            gf.dataframe,
+            metric_column="time (inc)",
+            precision=3,
+            name_column="name",
+            expand_name=False,
+            context_column="file",
+            rank=0,
+            thread=0,
+            depth=10000,
+            highlight_name=False,
+            invert_colormap=False,
+        )
+    assert len(num_warnings) == 0
     assert "f pstats_reader_test.py" in output
     assert re.match("(.|\n)*recursive(.|\n)*recursive", output)

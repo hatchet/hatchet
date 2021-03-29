@@ -6,6 +6,7 @@
 import json
 
 import numpy as np
+import pytest
 
 from hatchet import GraphFrame
 from hatchet.external.console import ConsoleRenderer
@@ -77,37 +78,41 @@ def test_tree(hatchet_pyinstrument_json):
     """Sanity test a GraphFrame object with known data."""
     gf = GraphFrame.from_pyinstrument(str(hatchet_pyinstrument_json))
 
-    output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
-        metric_column="time",
-        precision=3,
-        name_column="name",
-        expand_name=False,
-        context_column="file",
-        rank=0,
-        thread=0,
-        depth=10000,
-        highlight_name=False,
-        invert_colormap=False,
-    )
+    with pytest.warns(None) as num_warnings:
+        output = ConsoleRenderer(unicode=True, color=False).render(
+            gf.graph.roots,
+            gf.dataframe,
+            metric_column="time",
+            precision=3,
+            name_column="name",
+            expand_name=False,
+            context_column="file",
+            rank=0,
+            thread=0,
+            depth=10000,
+            highlight_name=False,
+            invert_colormap=False,
+        )
+    assert len(num_warnings) == 0
     assert "0.000 <module> examples.py" in output
     assert "0.025 read hatchet/readers/caliper_reader.py" in output
 
-    output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
-        metric_column="time (inc)",
-        precision=3,
-        name_column="name",
-        expand_name=False,
-        context_column="file",
-        rank=0,
-        thread=0,
-        depth=10000,
-        highlight_name=False,
-        invert_colormap=False,
-    )
+    with pytest.warns(None) as num_warnings:
+        output = ConsoleRenderer(unicode=True, color=False).render(
+            gf.graph.roots,
+            gf.dataframe,
+            metric_column="time (inc)",
+            precision=3,
+            name_column="name",
+            expand_name=False,
+            context_column="file",
+            rank=0,
+            thread=0,
+            depth=10000,
+            highlight_name=False,
+            invert_colormap=False,
+        )
+    assert len(num_warnings) == 0
     assert "0.478 <module> examples.py" in output
     assert "0.063 from_caliper_json hatchet/graphframe.py" in output
 

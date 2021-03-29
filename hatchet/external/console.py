@@ -32,6 +32,7 @@
 from ..version import __version__
 
 import pandas as pd
+import numpy as np
 
 
 class ConsoleRenderer:
@@ -72,17 +73,23 @@ class ConsoleRenderer:
         # grab the min and max metric value, ignoring inf and nan values
         if "rank" in dataframe.index.names:
             metric_series = (dataframe.xs(self.rank, level=1))[self.metric]
-            inf_mask = (metric_series.values > float("-inf")) & (
-                metric_series.values < float("inf")
-            )
+            inf_mask = [
+                (x > float("-inf")) & (x < float("inf"))
+                if x is not np.isnan(x)
+                else False
+                for x in metric_series.values
+            ]
             filtered_series = pd.Series(
                 metric_series.values[inf_mask], metric_series.index[inf_mask]
             )
         else:
             metric_series = dataframe[self.metric]
-            inf_mask = (metric_series.values > float("-inf")) & (
-                metric_series.values < float("inf")
-            )
+            inf_mask = [
+                (x > float("-inf")) & (x < float("inf"))
+                if x is not np.isnan(x)
+                else False
+                for x in metric_series.values
+            ]
             filtered_series = pd.Series(
                 metric_series.values[inf_mask], metric_series.index[inf_mask]
             )

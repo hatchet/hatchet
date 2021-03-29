@@ -5,11 +5,10 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
+import pytest
 
 from hatchet import GraphFrame
 from hatchet.external.console import ConsoleRenderer
-
-import pytest
 
 timemory_avail = True
 try:
@@ -45,37 +44,41 @@ def test_tree(timemory_json_data):
 
     print(gf.tree("sum"))
 
-    output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
-        metric_column="sum",
-        precision=3,
-        name_column="name",
-        expand_name=False,
-        context_column="file",
-        rank=0,
-        thread=0,
-        depth=10000,
-        highlight_name=False,
-        invert_colormap=False,
-    )
+    with pytest.warns(None) as num_warnings:
+        output = ConsoleRenderer(unicode=True, color=False).render(
+            gf.graph.roots,
+            gf.dataframe,
+            metric_column="sum",
+            precision=3,
+            name_column="name",
+            expand_name=False,
+            context_column="file",
+            rank=0,
+            thread=0,
+            depth=10000,
+            highlight_name=False,
+            invert_colormap=False,
+        )
+    assert len(num_warnings) == 0
 
     print(output)
 
-    output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
-        metric_column="sum.inc",
-        precision=3,
-        name_column="name",
-        expand_name=False,
-        context_column="file",
-        rank=0,
-        thread=0,
-        depth=10000,
-        highlight_name=False,
-        invert_colormap=False,
-    )
+    with pytest.warns(None) as num_warnings:
+        output = ConsoleRenderer(unicode=True, color=False).render(
+            gf.graph.roots,
+            gf.dataframe,
+            metric_column="sum.inc",
+            precision=3,
+            name_column="name",
+            expand_name=False,
+            context_column="file",
+            rank=0,
+            thread=0,
+            depth=10000,
+            highlight_name=False,
+            invert_colormap=False,
+        )
+    assert len(num_warnings) == 0
 
     print(output)
 
