@@ -1,7 +1,12 @@
 #!/bin/sh
 
-if [ "$PYTHONPATH" != *"$PWD"* ]; then
-	PYTHONPATH=$PWD:$PYTHONPATH
-fi
+case "$PYTHONPATH" in
+    *"$PWD"*)
+        ;;
+
+    *)
+        PYTHONPATH=$PWD:$PYTHONPATH
+        ;;
+esac
 
 python setup.py build_ext --inplace
