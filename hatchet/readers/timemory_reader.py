@@ -17,7 +17,29 @@ from ..util.timer import Timer
 class TimemoryReader:
     """Read in timemory JSON output"""
 
-    def __init__(self, input, select=None):
+    def __init__(self, input, select=None, **_kwargs):
+        """Arguments:
+        input (str or file-stream or dict or None):
+            Valid argument types are:
+
+            1. Filename for a timemory JSON tree file
+            2. Open file stream to one of these files
+            3. Dictionary from timemory JSON tree
+
+        select (list of str):
+            A list of strings which match the component enumeration names, e.g. ["cpu_clock"].
+
+        per_thread (boolean):
+            Ensures that when applying filters to the graphframe, frames with
+            identical name/file/line/etc. info but from different threads are not
+            combined
+
+        per_rank (boolean):
+            Ensures that when applying filters to the graphframe, frames with
+            identical name/file/line/etc. info but from different ranks are not
+            combined
+        """
+
         if isinstance(input, dict):
             self.graph_dict = input
         elif isinstance(input, str) and input.endswith("json"):
@@ -27,13 +49,18 @@ class TimemoryReader:
             self.graph_dict = json.loads(input.read())
         else:
             raise TypeError("input must be dict, json file, or string")
+        self.default_metric = None
         self.name_to_hnode = {}
         self.name_to_dict = {}
         self.timer = Timer()
         self.metric_cols = []
         self.properties = {}
-        self.include_tid = False
-        self.include_nid = False
+        self.include_tid = True
+        self.include_nid = True
+        # the per_thread and per_rank settings make sure that
+        # squashing doesn't collapse the threads/ranks
+        self.per_thread = _kwargs["per_thread"] if "per_thread" in _kwargs else False
+        self.per_rank = _kwargs["per_rank"] if "per_rank" in _kwargs else False
         if select is None:
             self.select = select
         elif isinstance(select, list):
@@ -104,9 +131,17 @@ class TimemoryReader:
 
             _tmp = None
             for _pattern in [
+                # [func][file]
+                r"(^\[)(?P<func>.*)(\]\[)(?P<file>.*)(\]$)",
+                # label  [func/file:line]
                 r"(?P<head>.+)([ \t]+)\[(?P<func>\S+)([/])(?P<file>\S+):(?P<line>[0-9]+)\]$",
+                # func@file:line/tail
+                # func/file:line/tail
                 r"(?P<func>\S+)([@/])(?P<file>\S+):(?P<line>[0-9]+)[/]*(?P<tail>.*)",
+                # func@file/tail
+                # func/file/tail
                 r"(?P<func>\S+)([@/])(?P<file>\S+)([/])(?P<tail>.*)",
+                # func:line/tail
                 r"(?P<func>\S+):(?P<line>[0-9]+)([/]*)(?P<tail>.*)",
             ]:
                 _tmp = process_regex(re.search(_pattern, _itr))
@@ -165,6 +200,18 @@ class TimemoryReader:
                     _ret["{}.{}".format(_key, _suffix[i])] = v
             return _ret
 
+        def collapse_ids(_obj):
+            """node/rank/thread id may be int, array of ints, or None.
+            This function generates a consistent form which is not numerical to
+            avoid groupby(...).sum() from producing something nonsensical but
+            the entry is still hashable
+            """
+            if isinstance(_obj, list):
+                return ",".join([f"{x}" for x in _obj]).strip(",")
+            elif _obj is not None:
+                return f"{_obj}"
+            return None
+
         def parse_node(_key, _dict, _hparent, _rank):
             """Create node_dict for one node and then call the function
             recursively on all children.
@@ -181,50 +228,63 @@ class TimemoryReader:
 
             _prop = self.properties[_key]
             _keys, _extra = get_keys(_dict["node"]["prefix"])
-            if _rank is not None:
-                _keys["nid"] = _rank
-                self.include_nid = True
+
+            # by placing the thread-id or rank-id in _keys, the hash
+            # for the Frame(_keys) effectively circumvent Hatchet's
+            # default behavior of combining similar thread/rank entries
+            _tid_dict = _keys if self.per_thread else _extra
+            _rank_dict = _keys if self.per_rank else _extra
+
+            # handle the rank
+            _rank_dict["rank"] = collapse_ids(_rank)
+            if _rank_dict["rank"] is None:
+                del _rank_dict["rank"]
+                self.include_nid = False
+
+            # extract some relevant data
+            _tid_dict["tid"] = collapse_ids(_dict["node"]["tid"])
+            _extra["pid"] = collapse_ids(_dict["node"]["pid"])
             _extra["count"] = _dict["node"]["inclusive"]["entry"]["laps"]
-            _extra["tid"] = _dict["node"]["tid"]
-            _extra["pid"] = _dict["node"]["pid"]
-            # aggregated results have a list of threads and processes
-            if len(_extra["tid"]) == 1:
-                _keys["tid"] = _extra["tid"][0]
-                del _extra["tid"]
-                self.include_tid = True
-            if len(_extra["pid"]) == 1:
-                _extra["pid"] = _extra["pid"][0]
+
+            # this is the name for the metrics
             _labels = None if "type" not in _prop else _prop["type"]
-            # if the data is multi-dimensional
+            # if the labels are not a single string, they are multi-dimensional
             _md = True if not isinstance(_labels, str) else False
 
+            # create the node
             _hnode = Node(Frame(_keys), _hparent)
 
+            # remove some spurious data from inclusive/exclusive stats
             _remove = ["cereal_class_version", "count"]
             _inc_stats = remove_keys(_dict["node"]["inclusive"]["stats"], _remove)
             _exc_stats = remove_keys(_dict["node"]["exclusive"]["stats"], _remove)
 
+            # if multi-dimensions, create alternative "sum.<...>", etc. labels + data
             if _md:
                 _suffix = get_md_suffix(_labels)
                 _exc_stats = get_md_entries(_exc_stats, _suffix)
                 _inc_stats = get_md_entries(_inc_stats, _suffix)
 
+            # add ".inc" to the end of every column that represents an inclusive stat
             _inc_stats = patch_keys(_inc_stats, ".inc")
             _exc_stats = patch_keys(_exc_stats, "")
 
-            add_metrics(_extra)
+            # add the inclusive and exclusive columns to the list of relevant column names
             add_metrics(_exc_stats)
             add_metrics(_inc_stats)
 
+            # add an entry for the node
             node_dicts.append(
                 dict({"node": _hnode, **_keys}, **_extra, **_exc_stats, **_inc_stats)
             )
 
+            # set the node as the root or as a child
             if _hparent is None:
                 list_roots.append(_hnode)
             else:
                 _hparent.add_child(_hnode)
 
+            # recursion
             if "children" in _dict:
                 for _child in _dict["children"]:
                     parse_node(_key, _child, _hnode, _rank)
@@ -239,10 +299,10 @@ class TimemoryReader:
             if _nchild == 0:
                 print("Skipping {}...".format(_key))
                 return
-            if _rank is not None:
-                print("Adding {} for rank {}...".format(_key, _rank))
-            else:
-                print("Adding {}...".format(_key))
+            # if _rank is not None:
+            #    print("Adding {} for rank {}...".format(_key, _rank))
+            # else:
+            #    print("Adding {}...".format(_key))
 
             if _dict["node"]["hash"] > 0:
                 parse_node(_key, _dict, None, _rank)
@@ -316,7 +376,7 @@ class TimemoryReader:
             else:
                 # read in MPI results
                 if "mpi" in itr:
-                    print("Reading MPI...")
+                    # print("Reading MPI...")
                     read_graph(key, itr["mpi"], 0)
                 # if MPI and UPC++, report ranks
                 # offset by MPI_Comm_size
@@ -360,6 +420,15 @@ class TimemoryReader:
             else:
                 exc_metrics.append(column)
 
+        # set the default metric
+        if self.default_metric is None:
+            if len(exc_metrics) > 0:
+                self.default_metric = exc_metrics[0]
+            elif len(inc_metrics) > 0:
+                self.default_metric = inc_metrics[0]
+            else:
+                self.default_metric = "sum"
+
         indices = ["node"]
         # this attempt at MultiIndex does not work
         # if self.include_nid:
@@ -370,7 +439,9 @@ class TimemoryReader:
         dataframe.set_index(indices, inplace=True)
         dataframe.sort_index(inplace=True)
 
-        return GraphFrame(graph, dataframe, exc_metrics, inc_metrics)
+        return GraphFrame(
+            graph, dataframe, exc_metrics, inc_metrics, self.default_metric
+        )
 
     def read(self):
         """Read timemory json."""
