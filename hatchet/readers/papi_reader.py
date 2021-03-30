@@ -111,6 +111,16 @@ class PAPIReader:
           print("Error: {} does not exist.".format(file_path))
           sys.exit()
 
+    def __find_node(self, list_roots, id, name):
+        for root in list_roots:
+          node_list = list(root.traverse())
+          for node in node_list:
+              #print("Node: ", node)
+              if node.frame.values('id') == id and node.frame.values('name') == name:
+                return node
+                break
+        return None
+
     def __add_child_node(self, list_roots, id, child_node):
 
         for root in list_roots:
@@ -139,6 +149,12 @@ class PAPIReader:
             metrics[metric] = int(data[metric][read_id])
         return metrics
 
+    def __get_zero_metrics(self):
+        metrics = OrderedDict()
+        for metric in self.inc_metrics:
+            metrics[metric] = 0
+        return metrics
+
     def read(self):
         #print(self.dict)
         list_roots = []
@@ -152,11 +168,17 @@ class PAPIReader:
           #print("rank: ", int(rank))
           for thread, thread_value in rank_value['threads'].items():
             #print("thread: ", int(thread))
-            for region, region_value in thread_value['regions'].items():
 
+            if int(rank) != 0 or int(thread) != 0:
+              #set iterator of dictionary that was created by rank=0 and thread=0
+              node_dicts_iterator = iter(node_dicts)
+              region_offset = 0
+
+            for region in thread_value['regions']:
+
+              data = self.dict['ranks'][rank]['threads'][thread]['regions'][region]
               #create graph for rank=0 and thread=0
               if int(rank) == 0 and int(thread) == 0:
-                data = self.dict['ranks'][rank]['threads'][thread]['regions'][region]
                 frame = Frame({"type": "region", "name": data['name'], "id": int(region)})
                 node = Node(frame, None)
 
@@ -199,12 +221,71 @@ class PAPIReader:
                     )
                     node_dicts.append(node_dict)
                     node.add_child(read_node)
-
-
               else:
                 #fill up node dictionaries for all remaining ranks and threads
-                print("soon")
 
+                #find matching node names
+                try:
+                  node_dicts_item = (next(node_dicts_iterator))['node'].frame
+                except:
+                  continue
+
+                while node_dicts_item.values('name') != data['name']:
+                  try:
+                    if not "read_" in node_dicts_item.values('name'):
+                      region_offset += 1
+
+                      #create a tuple of zero values
+                      zero_metrics = self.__get_zero_metrics()
+                      node_dict = dict(
+                        { "name": node_dicts_item.values('name'), "node": self.__find_node(list_roots, node_dicts_item.values('id'), node_dicts_item.values('name')),
+                          "rank": int(rank),
+                          "thread": int(thread),
+                          "id": int(node_dicts_item.values('id')),
+                          **zero_metrics,
+                        }
+                      )
+                      node_dicts.append(node_dict)
+
+                    node_dicts_item = (next(node_dicts_iterator))['node'].frame
+                  except:
+                    continue
+                
+                #print("region name: ", int(region) + region_offset, data['name'])
+                #print("node_item: ", node_dicts_item.values('id'), node_dicts_item.values('name'))
+                
+                #we found a match
+                contain_read_events = [0]
+                metrics = self.__get_metrics(data, contain_read_events)
+
+                node_dict = dict(
+                  { "name": node_dicts_item.values('name'), "node": self.__find_node(list_roots, node_dicts_item.values('id'), node_dicts_item.values('name')),
+                    "rank": int(rank),
+                    "thread": int(thread),
+                    "id": int(node_dicts_item.values('id')),
+                    **metrics,
+                  }
+                )
+                node_dicts.append(node_dict)
+                #check if we have to add read events
+                if contain_read_events[0] == 1:
+
+                  #check how many read calls are used
+                  read_num = len(data['cycles'])
+
+                  for i in range (1, read_num):
+                    node_name_read = "read_" + str(i)
+
+                    read_metrics = self.__get_read_metrics(data, node_name_read)
+                    node_dict = dict(
+                      { "name": node_name_read, "node": self.__find_node(list_roots, node_dicts_item.values('id'), node_name_read),
+                        "rank": int(rank),
+                        "thread": int(thread),
+                        "id": int(node_dicts_item.values('id')),
+                        **read_metrics,
+                      }
+                    )
+                    node_dicts.append(node_dict)
 
         graph = Graph(list_roots)
         graph.enumerate_traverse()
