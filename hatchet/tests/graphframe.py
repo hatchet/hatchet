@@ -1137,3 +1137,18 @@ def test_filter_with_nan_and_inf(small_mock1, small_mock2):
     assert filter_gf3.dataframe["time (inc)"].sum() == np.inf
     assert filter_gf3.dataframe.shape[0] == 2
     assert sorted(filter_gf3.dataframe["name"].values) == ["B", "H"]
+
+
+def test_inc_metric_only(mock_graph_inc_metric_only):
+    """Test graph with only an inclusive metric and no associated exclusive
+    metric. A filter-squash should not change the inclusive metric values, and
+    the list of exclusive metrics and inclusive metrics should stay the same.
+    """
+    gf = GraphFrame.from_literal(mock_graph_inc_metric_only)
+    filt_gf = gf.filter(lambda x: x["time (inc)"] > 50, squash=True, num_procs=1)
+
+    assert len(filt_gf.graph) == 3
+    assert all(filt_gf.dataframe["name"].values == ["A", "E", "H"])
+    assert all(filt_gf.dataframe["time (inc)"].values == [130, 55, 55])
+    assert gf.inc_metrics == filt_gf.inc_metrics
+    assert gf.exc_metrics == filt_gf.exc_metrics
