@@ -200,7 +200,7 @@
         for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
             currentTreeData = forestData[treeIndex];
             currentRoot = d3.hierarchy(currentTreeData, d => d.children);
-            
+
             currentRoot.x0 = height;
             currentRoot.y0 = margin.left;
 
@@ -209,7 +209,7 @@
                 maxHeight = currentTreeMap.height;
             }
         }
-        
+
         // Add a group and tree for each forestData[i]
         for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
             currentTreeData = forestData[treeIndex];
@@ -377,7 +377,7 @@
 
         function setColorLegend(treeIndex) {
             var curMetric = d3.select(element).select('#metricSelect').property('value');
-            if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') { 
+            if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
                 treeIndex = -1;
             }
             if (treeIndex == -1) { //unified color legend
@@ -487,7 +487,7 @@
             // Compute the new tree layout
             var nodes = treeData.descendants();
             var links = treeData.descendants().slice(1);
-            
+
             spreadFactor = width / (maxHeight + 1);
             legendOffset = 30;
             // Normalize for fixed-depth.
@@ -496,7 +496,7 @@
                 d.y = d.depth * spreadFactor;
                 d.treeIndex = treeIndex;
             });
-            
+
             // Update the nodes…
             var node = g.selectAll("g.node")
                     .data(nodes, function (d) {
@@ -678,7 +678,7 @@
             var rightMostNode = {depth: 0, data: {name: 'default'}};
             var lastNode = "";
             var selectionIsAChain = false;
-            
+
             for (var i = 0; i < nodeList.length; i++) {
                 if (nodeList[i].depth < leftMostNode.depth) {
                     leftMostNode = nodeList[i];
@@ -689,19 +689,22 @@
                 if ((i > 1) && (nodeList[i].x == nodeList[i-1].x)) {
                     selectionIsAChain = true;
                 }
-                else { 
+                else {
                     selectionIsAChain = false;
                 }
             }
+
+            //do some evaluation for other subtrees
+            // we could generate python code that does this
             var queryStr = "['<no query generated>']";
             if ((nodeList.length > 1) && (selectionIsAChain)) {
                 // This query is for chains
                 queryStr = "[{'name': '" + leftMostNode.data.frame.name + "'}, '*', {'name': '" + rightMostNode.data.frame.name + "'}]";
-            } 
+            }
             else if (nodeList.length > 1) {
                 // This query is for subtrees
-                queryStr = "[{'name': '" + leftMostNode.data.frame.name + "'}, '*']";
-            } 
+                queryStr = "[{'name': '" + leftMostNode.data.frame.name + "'}, '*', {'depth': '<= " + rightMostNode.depth + "' }]";
+            }
             else {
                 //Single node query
                 queryStr = "[{'name': '" + leftMostNode.data.frame.name + "'}]";
@@ -806,6 +809,7 @@
             brushedNodes.each(d => brushedData.push(d));
 
             updateTooltip(brushedData);
+
             jsNodeSelected = printQuery(brushedData);
        }
     });

@@ -671,23 +671,35 @@ def mock_graph_literal_duplicates():
     graph_dict = [
         {
             "frame": {"name": "a", "type": "function"},
-            "metrics": {"time (inc)": 130.0, "time": 0.0},
+            "metrics": {"time (inc)": 130.0, "time": 0.0, "_hatchet_nid": 0},
             "children": [
                 {
                     "frame": {"name": "b", "type": "function"},
-                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "metrics": {"time (inc)": 20.0, "time": 5.0, "_hatchet_nid": 1},
                     "children": [
                         {
                             "frame": {"name": "d", "type": "function"},
-                            "metrics": {"time (inc)": 20.0, "time": 5.0},
+                            "metrics": {
+                                "time (inc)": 20.0,
+                                "time": 5.0,
+                                "_hatchet_nid": 2,
+                            },
                             "children": [
                                 {
                                     "frame": {"name": "e", "type": "function"},
-                                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                                    "metrics": {
+                                        "time (inc)": 20.0,
+                                        "time": 5.0,
+                                        "_hatchet_nid": 3,
+                                    },
                                 },
                                 {
                                     "frame": {"name": "f", "type": "function"},
-                                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                                    "metrics": {
+                                        "time (inc)": 20.0,
+                                        "time": 5.0,
+                                        "_hatchet_nid": 4,
+                                    },
                                 },
                             ],
                         }
@@ -695,17 +707,23 @@ def mock_graph_literal_duplicates():
                 },
                 {
                     "frame": {"name": "c", "type": "function"},
-                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "metrics": {"time (inc)": 20.0, "time": 5.0, "_hatchet_nid": 5},
                     "children": [
                         {
                             "frame": {"name": "a", "type": "function"},
-                            "duplicate": "True",
-                            "metrics": {"time (inc)": 20.0, "time": 5.0},
+                            "metrics": {
+                                "time (inc)": 130.0,
+                                "time": 5.0,
+                                "_hatchet_nid": 0,
+                            },
                         },
                         {
                             "frame": {"name": "d", "type": "function"},
-                            "duplicate": "True",
-                            "metrics": {"time (inc)": 20.0, "time": 5.0},
+                            "metrics": {
+                                "time (inc)": 20.0,
+                                "time": 5.0,
+                                "_hatchet_nid": 2,
+                            },
                         },
                     ],
                 },
@@ -719,29 +737,39 @@ def mock_graph_literal_duplicates():
 @pytest.fixture
 def mock_graph_literal_duplicate_first():
     """Creates a mock tree with node with duplicate first."""
+    """Creates a mock tree with duplicate nodes."""
     graph_dict = [
         {
             "frame": {"name": "a", "type": "function"},
-            "duplicate": True,
-            "metrics": {"time (inc)": 130.0, "time": 0.0},
+            "metrics": {"time (inc)": 130.0, "time": 0.0, "_hatchet_nid": 0},
             "children": [
                 {
                     "frame": {"name": "b", "type": "function"},
-                    "duplicate": True,
-                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "metrics": {"time (inc)": 20.0, "time": 5.0, "_hatchet_nid": 1},
                     "children": [
                         {
                             "frame": {"name": "d", "type": "function"},
-                            "duplicate": True,
-                            "metrics": {"time (inc)": 20.0, "time": 5.0},
+                            "metrics": {
+                                "time (inc)": 20.0,
+                                "time": 5.0,
+                                "_hatchet_nid": 2,
+                            },
                             "children": [
                                 {
                                     "frame": {"name": "e", "type": "function"},
-                                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                                    "metrics": {
+                                        "time (inc)": 20.0,
+                                        "time": 5.0,
+                                        "_hatchet_nid": 3,
+                                    },
                                 },
                                 {
                                     "frame": {"name": "f", "type": "function"},
-                                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                                    "metrics": {
+                                        "time (inc)": 20.0,
+                                        "time": 5.0,
+                                        "_hatchet_nid": 4,
+                                    },
                                 },
                             ],
                         }
@@ -749,17 +777,23 @@ def mock_graph_literal_duplicate_first():
                 },
                 {
                     "frame": {"name": "c", "type": "function"},
-                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "metrics": {"time (inc)": 20.0, "time": 5.0, "_hatchet_nid": 5},
                     "children": [
                         {
                             "frame": {"name": "a", "type": "function"},
-                            "duplicate": "True",
-                            "metrics": {"time (inc)": 20.0, "time": 5.0},
+                            "metrics": {
+                                "time (inc)": 130.0,
+                                "time": 5.0,
+                                "_hatchet_nid": 0,
+                            },
                         },
                         {
                             "frame": {"name": "d", "type": "function"},
-                            "duplicate": "True",
-                            "metrics": {"time (inc)": 20.0, "time": 5.0},
+                            "metrics": {
+                                "time (inc)": 20.0,
+                                "time": 5.0,
+                                "_hatchet_nid": 2,
+                            },
                         },
                     ],
                 },

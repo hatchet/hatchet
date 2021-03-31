@@ -1030,3 +1030,27 @@ def test_show_metric_columns(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
 
     assert sorted(gf.show_metric_columns()) == sorted(["time", "time (inc)"])
+
+
+def test_to_literal_node_ids():
+    r"""Test to_literal and from_literal with ids on a graph with cycles,
+        multiple parents and children.
+
+        a --
+       / \ /
+      b   c
+       \ /
+        d
+       / \
+      e   f
+    """
+
+    a = Node(Frame(name="a"))
+    d = Node(Frame(name="d"))
+    gf = GraphFrame.from_lists([a, ["b", [d]], ["c", [d, ["e"], ["f"]], [a]]])
+    lit_list = gf.to_literal()
+
+    gf2 = gf.from_literal(lit_list)
+    lit_list2 = gf2.to_literal()
+
+    assert lit_list == lit_list2
