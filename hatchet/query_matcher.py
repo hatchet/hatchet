@@ -10,6 +10,10 @@ import pandas as pd
 from pandas import DataFrame
 from pandas.core.indexes.multi import MultiIndex
 
+# Flake8 to ignore this import, it does not recognize that eval("np.nan") needs
+# numpy package
+import numpy as np  # noqa: F401
+
 from .node import Node, traversal_order
 
 
@@ -88,7 +92,31 @@ class QueryMatcher:
                             if isinstance(
                                 single_value, str
                             ) and single_value.lower().startswith(compops):
-                                return eval("{} {}".format(df_row[key], single_value))
+                                # compare nan metric value to numeric query
+                                # (e.g. np.nan > 5)
+                                if pd.isnull(df_row[k]):
+                                    nan_str = "np.nan"
+                                    # compare nan metric value to nan query
+                                    # (e.g., np.nan == np.nan)
+                                    if nan_str in single_value:
+                                        return eval(
+                                            "pd.isnull({}) == True".format(nan_str)
+                                        )
+                                    return eval("{} {}".format(nan_str, single_value))
+                                elif np.isinf(df_row[k]):
+                                    inf_str = "np.inf"
+                                    # compare inf metric value to inf query
+                                    # (e.g., np.inf == np.inf)
+                                    if inf_str in single_value:
+                                        return eval(
+                                            "np.isinf({}) == True".format(inf_str)
+                                        )
+                                    return eval("{} {}".format(inf_str, single_value))
+                                else:
+                                    return eval(
+                                        "{} {}".format(df_row[key], single_value)
+                                    )
+
                             if isinstance(single_value, Real):
                                 return df_row[key] == single_value
                             raise InvalidQueryFilter(
