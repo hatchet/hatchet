@@ -40,6 +40,7 @@ class ConsoleRenderer:
         self.unicode = unicode
         self.color = color
         self.colors = self.colors_enabled if color else self.colors_disabled
+        self.secondary_colors = self.colors_disabled
         self.visited = []
 
     def render(self, roots, dataframe, **kwargs):
@@ -60,31 +61,71 @@ class ConsoleRenderer:
         self.highlight = kwargs["highlight_name"]
         self.invert_colormap = kwargs["invert_colormap"]
 
-        if self.metric not in dataframe.columns:
+        if isinstance(self.metric, str) and self.metric not in dataframe.columns:
             raise KeyError(
                 "metric_column={} does not exist in the dataframe, please select a valid column. See a list of the available metrics with GraphFrame.show_metric_columns().".format(
                     self.metric
                 )
             )
+        elif (
+            isinstance(self.metric, list)
+            and len(self.metric) == 1
+            and self.metric[0] not in dataframe.columns
+        ):
+            raise KeyError(
+                "metric_column={} does not exist in the dataframe, please select a valid column.".format(
+                    self.metric[0]
+                )
+            )
+        elif isinstance(self.metric, list) and len(self.metric) > 1:
+            for metric in self.metric[0:2]:
+                if metric not in dataframe.columns:
+                    raise KeyError(
+                        "metric_column={} does not exist in the dataframe, please select a valid column.".format(
+                            metric
+                        )
+                    )
 
         if self.invert_colormap:
             self.colors.colormap.reverse()
 
-        # grab the min and max metric value, ignoring inf and nan values
-        if "rank" in dataframe.index.names:
-            metric_series = (dataframe.xs(self.rank, level=1))[self.metric]
-            isfinite_mask = np.isfinite(metric_series.values)
+        # if metric is specified as a str or list (len == 1), grab the min and max value, ignoring
+        # inf and nan values
+        if isinstance(self.metric, str):
+            if "rank" in dataframe.index.names:
+                metric_series = (dataframe.xs(self.rank, level=1))[self.metric]
+            else:
+                metric_series = dataframe[self.metric]
+        elif isinstance(self.metric, list) and len(self.metric) == 1:
+            if "rank" in dataframe.index.names:
+                metric_series = (dataframe.xs(self.rank, level=1))[self.metric[0]]
+            else:
+                metric_series = dataframe[self.metric[0]]
+        # if a list of metrics is specified (len > 1), grab the min and max value for
+        # both, ignoring inf and nan values
+        elif isinstance(self.metric, list) and len(self.metric) > 1:
+            if "rank" in dataframe.index.names:
+                metric_series = (dataframe.xs(self.rank, level=1))[self.metric[0]]
+                second_metric_series = (dataframe.xs(self.rank, level=1))[
+                    self.metric[1]
+                ]
+            else:
+                metric_series = dataframe[self.metric[0]]
+                second_metric_series = dataframe[self.metric[1]]
 
-            filtered_series = pd.Series(
-                metric_series.values[isfinite_mask], metric_series.index[isfinite_mask]
+            second_isfinite_mask = np.isfinite(second_metric_series.values)
+            second_filtered_series = pd.Series(
+                second_metric_series.values[second_isfinite_mask],
+                second_metric_series.index[second_isfinite_mask],
             )
 
-        else:
-            metric_series = dataframe[self.metric]
-            isfinite_mask = np.isfinite(metric_series.values)
-            filtered_series = pd.Series(
-                metric_series.values[isfinite_mask], metric_series.index[isfinite_mask]
-            )
+            self.second_max_metric = second_filtered_series.max()
+            self.second_min_metric = second_filtered_series.min()
+
+        isfinite_mask = np.isfinite(metric_series.values)
+        filtered_series = pd.Series(
+            metric_series.values[isfinite_mask], metric_series.index[isfinite_mask]
+        )
 
         self.max_metric = filtered_series.max()
         self.min_metric = filtered_series.min()
@@ -96,6 +137,23 @@ class ConsoleRenderer:
 
         for root in sorted(roots, key=lambda n: n.frame):
             result += self.render_frame(root, dataframe)
+
+        if isinstance(self.metric, list) and len(self.metric) > 1:
+            result += (
+                "\n"
+                + "\033[4m"
+                + "Metric Format"
+                + self.colors.end
+                + "\n"
+                + self.metric[0]
+                + " (Min: {:.2f}".format(self.min_metric)
+                + ", Max: {:.2f})".format(self.max_metric)
+                + ", "
+                + self.metric[1]
+                + " (Min: {:.2f}".format(self.second_min_metric)
+                + ", Max: {:.2f})".format(self.second_max_metric)
+                + "\n"
+            )
 
         if self.color is True:
             result += self.render_legend()
@@ -136,13 +194,18 @@ class ConsoleRenderer:
                 + "\n"
             )
 
+        if isinstance(self.metric, list):
+            metric = self.metric[0]
+        else:
+            metric = self.metric
+
         legend = (
             "\n"
             + "\033[4m"
             + "Legend"
             + self.colors.end
             + " (Metric: "
-            + self.metric
+            + metric
             + ")\n"
         )
 
@@ -177,14 +240,37 @@ class ConsoleRenderer:
             else:
                 df_index = node
 
-            node_metric = dataframe.loc[df_index, self.metric]
+            if isinstance(self.metric, list) and len(self.metric) > 1:
+                node_metric = dataframe.loc[df_index, self.metric[0]]
+                other_node_metric = dataframe.loc[df_index, self.metric[1]]
+            elif isinstance(self.metric, list) and len(self.metric) == 1:
+                node_metric = dataframe.loc[df_index, self.metric[0]]
+            else:
+                node_metric = dataframe.loc[df_index, self.metric]
 
             metric_precision = "{:." + str(self.precision) + "f}"
-            metric_str = (
-                self._ansi_color_for_metric(node_metric)
-                + metric_precision.format(node_metric)
-                + self.colors.end
-            )
+            if isinstance(self.metric, str):
+                metric_str = (
+                    self._ansi_color_for_metric(node_metric)
+                    + metric_precision.format(node_metric)
+                    + self.secondary_colors.end
+                )
+            elif isinstance(self.metric, list) and len(self.metric) == 1:
+                metric_str = (
+                    self._ansi_color_for_metric(node_metric)
+                    + metric_precision.format(node_metric)
+                    + self.colors.end
+                )
+            elif isinstance(self.metric, list) and len(self.metric) > 1:
+                metric_str = (
+                    self._ansi_color_for_metric(node_metric)
+                    + metric_precision.format(node_metric)
+                    + self.colors.end
+                    + ", "
+                    + self._ansi_color_for_second_metric(other_node_metric)
+                    + metric_precision.format(other_node_metric)
+                    + self.secondary_colors.end
+                )
 
             node_name = dataframe.loc[df_index, self.name]
             if self.expand is False:
@@ -273,6 +359,31 @@ class ConsoleRenderer:
             return self.colors.colormap[5]
         else:
             return self.colors.blue
+
+    def _ansi_color_for_second_metric(self, metric):
+        second_metric_range = self.second_max_metric - self.second_min_metric
+
+        if second_metric_range != 0:
+            proportion_of_total = (
+                metric - self.second_min_metric
+            ) / second_metric_range
+        else:
+            proportion_of_total = metric / 1
+
+        if proportion_of_total > 0.9:
+            return self.secondary_colors.colormap[0]
+        elif proportion_of_total > 0.7:
+            return self.secondary_colors.colormap[1]
+        elif proportion_of_total > 0.5:
+            return self.secondary_colors.colormap[2]
+        elif proportion_of_total > 0.3:
+            return self.secondary_colors.colormap[3]
+        elif proportion_of_total > 0.1:
+            return self.secondary_colors.colormap[4]
+        elif proportion_of_total >= 0:
+            return self.secondary_colors.colormap[5]
+        else:
+            return self.secondary_colors.blue
 
     def _ansi_color_for_name(self, node_name):
         if self.highlight is False:
