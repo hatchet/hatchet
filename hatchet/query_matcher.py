@@ -10,6 +10,10 @@ import pandas as pd
 from pandas import DataFrame
 from pandas.core.indexes.multi import MultiIndex
 
+# Flake8 to ignore this import, it does not recognize that eval("np.nan") needs
+# numpy package
+import numpy as np  # noqa: F401
+
 from .node import Node, traversal_order
 
 
@@ -88,7 +92,36 @@ class QueryMatcher:
                                 matches = matches and False
                         elif isinstance(df_row[k], Real):
                             if isinstance(v, str) and v.lower().startswith(compops):
-                                matches = matches and eval("{} {}".format(df_row[k], v))
+                                # compare nan metric value to numeric query
+                                # (e.g. np.nan > 5)
+                                if pd.isnull(df_row[k]):
+                                    nan_str = "np.nan"
+                                    # compare nan metric value to nan query
+                                    # (e.g., np.nan == np.nan)
+                                    if nan_str in v:
+                                        matches = matches and eval(
+                                            "pd.isnull({}) == True".format(nan_str)
+                                        )
+                                    else:
+                                        matches = matches and eval(
+                                            "{} {}".format(nan_str, v)
+                                        )
+                                elif np.isinf(df_row[k]):
+                                    inf_str = "np.inf"
+                                    # compare inf metric value to inf query
+                                    # (e.g., np.inf == np.inf)
+                                    if inf_str in v:
+                                        matches = matches and eval(
+                                            "np.isinf({}) == True".format(inf_str)
+                                        )
+                                    else:
+                                        matches = matches and eval(
+                                            "{} {}".format(inf_str, v)
+                                        )
+                                else:
+                                    matches = matches and eval(
+                                        "{} {}".format(df_row[k], v)
+                                    )
                             elif isinstance(v, Real):
                                 matches = matches and (df_row[k] == v)
                             else:
