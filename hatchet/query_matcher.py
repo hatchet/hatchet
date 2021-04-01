@@ -94,7 +94,7 @@ class QueryMatcher:
                             ) and single_value.lower().startswith(compops):
                                 # compare nan metric value to numeric query
                                 # (e.g. np.nan > 5)
-                                if pd.isnull(df_row[k]):
+                                if pd.isnull(df_row[key]):
                                     nan_str = "np.nan"
                                     # compare nan metric value to nan query
                                     # (e.g., np.nan == np.nan)
@@ -103,7 +103,7 @@ class QueryMatcher:
                                             "pd.isnull({}) == True".format(nan_str)
                                         )
                                     return eval("{} {}".format(nan_str, single_value))
-                                elif np.isinf(df_row[k]):
+                                elif np.isinf(df_row[key]):
                                     inf_str = "np.inf"
                                     # compare inf metric value to inf query
                                     # (e.g., np.inf == np.inf)
