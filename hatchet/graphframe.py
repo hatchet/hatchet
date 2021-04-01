@@ -593,6 +593,10 @@ class GraphFrame:
         """Update inclusive columns (typically after operations that rewire the
         graph.
         """
+        # we should update inc metric only if exc metric exist
+        if not self.exc_metrics:
+            return
+
         self.inc_metrics = ["%s (inc)" % s for s in self.exc_metrics]
         self.subgraph_sum(self.exc_metrics, self.inc_metrics)
 

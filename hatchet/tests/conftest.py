@@ -836,3 +836,41 @@ def timemory_json_data():
         trace_func(trace_arr, tol)
 
     return timemory.get(hierarchy=True)
+
+
+@pytest.fixture
+def mock_graph_inc_metric_only():
+    ldict = [
+        {
+            "frame": {"name": "A", "type": "function"},
+            "metrics": {"time (inc)": 130.0},
+            "children": [
+                {
+                    "frame": {"name": "B", "type": "function"},
+                    "metrics": {"time (inc)": 20.0},
+                    "children": [
+                        {
+                            "frame": {"name": "C", "type": "function"},
+                            "metrics": {"time (inc)": 5.0},
+                        }
+                    ],
+                },
+                {
+                    "frame": {"name": "E", "type": "function"},
+                    "metrics": {"time (inc)": 55.0},
+                    "children": [
+                        {
+                            "frame": {"name": "F", "type": "function"},
+                            "metrics": {"time (inc)": 1.0},
+                        }
+                    ],
+                },
+                {
+                    "frame": {"name": "H", "type": "function"},
+                    "metrics": {"time (inc)": 55.0},
+                },
+            ],
+        }
+    ]
+
+    return ldict
