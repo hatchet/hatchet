@@ -253,7 +253,7 @@ class ConsoleRenderer:
                 metric_str = (
                     self._ansi_color_for_metric(node_metric)
                     + metric_precision.format(node_metric)
-                    + self.secondary_colors.end
+                    + self.colors.end
                 )
             elif isinstance(self.metric, list) and len(self.metric) == 1:
                 metric_str = (
