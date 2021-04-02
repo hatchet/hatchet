@@ -1,6 +1,6 @@
-# v1.3.1-alpha (2021-03-31)
+# v1.3.1a0 (2021-04-02)
 
-This alpha patch extends the query language to support querying nodes that
+This release extends the query language to support querying nodes that
 fall within a range and includes a critical fix for using the query language on
 a dataframe that may contain nan and infs values.
 
