@@ -71,8 +71,8 @@ def read_metricdb_file(args):
 
     arr[rank_offset : rank_offset + num_nodes, :num_metrics].flat = arr1d.flat
     arr[rank_offset : rank_offset + num_nodes, num_metrics] = range(1, num_nodes + 1)
-    arr[rank_offset : rank_offset + num_nodes, num_metrics+1] = rank
-    arr[rank_offset : rank_offset + num_nodes, num_metrics+2] = thread
+    arr[rank_offset : rank_offset + num_nodes, num_metrics + 1] = rank
+    arr[rank_offset : rank_offset + num_nodes, num_metrics + 2] = thread
 
 
 class HPCToolkitReader:
