@@ -5,7 +5,6 @@
 
 import sys
 import traceback
-import warnings
 
 from collections import defaultdict
 
@@ -680,12 +679,6 @@ class GraphFrame:
             unicode = False
         elif sys.version_info.major == 3:
             unicode = True
-
-        if isinstance(metric_column, list) and len(metric_column) > 2:
-            warnings.warn(
-                "More than 2 metrics specified in metric_column=. Tree() will only show 2 metrics at a time. The remaining metrics will not be shown.",
-                SyntaxWarning,
-            )
 
         return ConsoleRenderer(unicode=unicode, color=color).render(
             self.graph.roots,
