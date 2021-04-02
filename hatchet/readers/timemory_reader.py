@@ -43,7 +43,7 @@ class TimemoryReader:
         if isinstance(input, dict):
             self.graph_dict = input
         elif isinstance(input, str) and input.endswith("json"):
-            with open(input) as f:
+            with open(input, "r") as f:
                 self.graph_dict = json.load(f)
         elif not isinstance(input, str):
             self.graph_dict = json.loads(input.read())
@@ -88,6 +88,7 @@ class TimemoryReader:
         list_roots = []
         node_dicts = []
         graph_dict = self.graph_dict
+        callpath_to_node = {}
 
         def remove_keys(_dict, _keys):
             """Remove keys from dictionary"""
@@ -212,7 +213,7 @@ class TimemoryReader:
                 return f"{_obj}"
             return None
 
-        def parse_node(_key, _dict, _hparent, _rank):
+        def parse_node(_key, _dict, _hparent, _rank, _callpath):
             """Create node_dict for one node and then call the function
             recursively on all children.
             """
@@ -223,7 +224,7 @@ class TimemoryReader:
             if _dict["node"]["hash"] == 0:
                 if "children" in _dict:
                     for _child in _dict["children"]:
-                        parse_node(_key, _child, _hparent, _rank)
+                        parse_node(_key, _child, _hparent, _rank, _callpath)
                 return
 
             _prop = self.properties[_key]
@@ -236,13 +237,14 @@ class TimemoryReader:
             _rank_dict = _keys if self.per_rank else _extra
 
             # handle the rank
-            _rank_dict["rank"] = collapse_ids(_rank)
+            _rank_dict["rank"] = int(collapse_ids(_rank))
             if _rank_dict["rank"] is None:
                 del _rank_dict["rank"]
                 self.include_nid = False
 
             # extract some relevant data
-            _tid_dict["tid"] = collapse_ids(_dict["node"]["tid"])
+            # TODO: Error when there are more than 1 tids
+            _tid_dict["thread"] = collapse_ids(_dict["node"]["tid"])
             _extra["pid"] = collapse_ids(_dict["node"]["pid"])
             _extra["count"] = _dict["node"]["inclusive"]["entry"]["laps"]
 
@@ -251,9 +253,23 @@ class TimemoryReader:
             # if the labels are not a single string, they are multi-dimensional
             _md = True if not isinstance(_labels, str) else False
 
-            # create the node
-            _hnode = Node(Frame(_keys), _hparent)
+            # Parent callpath = _callpath
+            callpath = _callpath + (_keys["name"],)
+            _hnode = callpath_to_node.get(callpath)
+            is_root = False
+            is_found = True
 
+            # check if node already exits
+            if _hnode is None:
+                is_found = False
+                _hnode = Node(Frame(_keys), _hparent)
+                callpath_to_node[callpath] = _hnode
+                if _hparent is None:
+                    is_root = True
+
+            # create the node
+            # _hnode = Node(Frame(_keys), _hparent)
+            # print(_keys["name"])
             # remove some spurious data from inclusive/exclusive stats
             _remove = ["cereal_class_version", "count"]
             _inc_stats = remove_keys(_dict["node"]["inclusive"]["stats"], _remove)
@@ -279,15 +295,15 @@ class TimemoryReader:
             )
 
             # set the node as the root or as a child
-            if _hparent is None:
+            if is_root:
                 list_roots.append(_hnode)
-            else:
+            if _hparent is not None and not is_found:
                 _hparent.add_child(_hnode)
 
             # recursion
             if "children" in _dict:
                 for _child in _dict["children"]:
-                    parse_node(_key, _child, _hnode, _rank)
+                    parse_node(_key, _child, _hnode, _rank, callpath)
 
         def eval_graph(_key, _dict, _rank):
             """Evaluate the entry and determine if it has relevant data.
@@ -305,11 +321,13 @@ class TimemoryReader:
             #    print("Adding {}...".format(_key))
 
             if _dict["node"]["hash"] > 0:
-                parse_node(_key, _dict, None, _rank)
+                # empty tuple represents the parent callpath for the root node
+                parse_node(_key, _dict, None, _rank, tuple())
             elif "children" in _dict:
                 # call for all children
                 for child in _dict["children"]:
-                    parse_node(_key, child, None, _rank)
+                    # empty tuple represents the parent callpath for the root node
+                    parse_node(_key, child, None, _rank, tuple())
 
         def read_graph(_key, _itr, _offset):
             """The layout of the graph at this stage
@@ -429,15 +447,46 @@ class TimemoryReader:
             else:
                 self.default_metric = "sum"
 
-        indices = ["node"]
         # this attempt at MultiIndex does not work
         # if self.include_nid:
         #    indices.append("nid")
         # if self.include_tid:
         #    indices.append("tid")
         dataframe = pd.DataFrame(data=node_dicts)
+
+        multiple_ranks = (
+            True if list(self.properties.values())[0]["mpi_size"] > 1 else False
+        )
+        # TODO: Fix tid list
+        """multiple_threads = (
+            True if list(self.properties.values())[0]["thread_count"] > 1 else False
+        )"""
+
+        indices = []
+        # set indices according to rank/thread numbers
+        # TODO: Fix tid list
+        """if multiple_ranks and multiple_threads:
+            indices = ["node", "rank", "thread"]"""
+        """elif multiple_threads:
+            dataframe.drop(columns=["rank"], inplace=True)
+            indices = ["node", "thread"]"""
+        if multiple_ranks:
+            dataframe.drop(columns=["thread"], inplace=True)
+            indices = ["node", "rank"]
+        else:
+            indices = ["node"]
+
         dataframe.set_index(indices, inplace=True)
         dataframe.sort_index(inplace=True)
+
+        # add rows with 0 values for the missing rows
+        # no need to handle if there is only one rank and thread
+        # name is taken from the corresponding node for that row
+        if (multiple_ranks or multiple_threads) is not False:
+            dataframe = dataframe.unstack().fillna(0).stack()
+            dataframe["name"] = dataframe.apply(
+                lambda x: x.name[0].frame["name"], axis=1
+            )
 
         return GraphFrame(
             graph, dataframe, exc_metrics, inc_metrics, self.default_metric
