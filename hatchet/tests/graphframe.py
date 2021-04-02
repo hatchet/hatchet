@@ -1020,7 +1020,7 @@ def test_output_with_cycle_graphs():
     # check that a certain number of occurences
     # of same node are in tree indicating multiple
     # edges
-    assert treeout.count("a") == 2
+    assert treeout.count("a") == 4
     assert treeout.count("d") == 2
     assert treeout.count("e") == 1
     assert treeout.count("f") == 1
