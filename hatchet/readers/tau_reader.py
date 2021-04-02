@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 import re
+import os
 import glob
 import pandas as pd
 import hatchet.graphframe
@@ -20,6 +21,7 @@ class TAUReader:
         self.node_dicts = []
         self.callpath_to_node = {}
         self.rank_thread_to_data = {}
+        self.filepath_to_data = {}
         self.inc_metrics = []
         self.exc_metrics = []
         self.multiple_ranks = False
@@ -38,53 +40,82 @@ class TAUReader:
         return node_dict
 
     def create_graph(self):
-        filenames = glob.glob(self.dirname + "/profile.*")
+
+        all_files = []
+        profile_files = glob.glob(self.dirname + "/profile.*")
+
+        # check if there are profile files in given directory
+        # if not, check subdirectories
+        if not profile_files:
+            for dirpath, dirnames, files in os.walk(self.dirname):
+                profile_files = glob.glob(dirpath + "/profile.*")
+                if profile_files:
+                    all_files.append(profile_files)
+        else:
+            all_files.append(profile_files)
+
+        # store all files in a list of tuples
+        # Example: [(event1/0.0.0, event2/0.0.0), (event1/1.0.0, event2/1.0.0), ...]
+        all_files = list(zip(*all_files))
+
         list_roots = []
-        first_file_info = filenames[0].split(".")
-        prev_rank, prev_thread = int(first_file_info[-3]), int(first_file_info[-1])
+        metrics = []
+        prev_rank, prev_thread = 0, 0
 
-        # read all files at once
-        for filename in filenames:
-            # create a dict to store files. "file name" -> "file data"
-            file_info = filename.split(".")
-            current_rank, current_thread = int(file_info[-3]), int(file_info[-1])
-            self.rank_thread_to_data[(current_rank, current_thread)] = open(
-                filename, "r"
-            ).readlines()
-            # check if there are more than one ranks or threads
-            if self.multiple_ranks and self.multiple_threads:
-                continue
-            if prev_rank != current_rank:
-                self.multiple_ranks = True
-            if prev_thread != current_thread:
-                self.multiple_threads = True
+        # example files_tuple: (event1/0.0.0, event2/0.0.0)
+        for files_tuple in all_files:
+            file_data_list = []
+            file_info = files_tuple[0].split(".")
+            rank, thread = int(file_info[-3]), int(file_info[-1])
 
-        # get metrics from this line: # Name Calls Subrs Excl Incl ProfileCalls #
-        metrics = (
-            re.match(r"\#\s(.*)\s\#", self.rank_thread_to_data[(0, 0)][1])
-            .group(1)
-            .split(" ")
-        )
+            self.multiple_ranks = True if rank != prev_rank else False
+            self.multiple_threads = True if thread != prev_thread else False
 
-        # change the time columns and store inc and exc metrics
-        for i in range(len(metrics)):
-            metrics[i] = metrics[i].lower()
-            if metrics[i] == "excl":
-                metrics[i] = "time"
-                self.exc_metrics.append(metrics[i])
-            elif metrics[i] == "incl":
-                metrics[i] = "time (inc)"
-                self.inc_metrics.append(metrics[i])
+            # read all files for a rank or thread
+            # if there are 4 events, there will be 4 profile.0.0.0
+            for f_index in range(len(files_tuple)):
+                file_data = open(files_tuple[f_index], "r").readlines()
+                file_data_list.append(file_data)
 
-        for rank_thread_tuple, file_data in self.rank_thread_to_data.items():
-            rank = rank_thread_tuple[0]
-            thread = rank_thread_tuple[1]
+            second_line = file_data_list[0][1]
+            # get metrics from this line: # Name Calls Subrs Excl Incl ProfileCalls #
+            # ProfileCalls is removed since it is is typically set to 0 and not used.
+            metrics.extend(
+                re.match(r"\#\s(.*)\s\#", second_line).group(1).split(" ")[:-1]
+            )
+            # Example metric_type: "CPU_TIME"
+            metric_type = re.search(r"<value>(.*?)<\/value>", second_line).group(1)
+
+            # TODO: decide if calls and subrs are excl or incl
+            for i in range(len(metrics)):
+                metrics[i] = metrics[i]
+                if metrics[i] == "Excl":
+                    metrics[i] = metric_type
+                    self.exc_metrics.append(metrics[i])
+                elif metrics[i] == "Incl":
+                    metrics[i] = metric_type + " (inc)"
+                    self.inc_metrics.append(metrics[i])
+
+            # After first profile.0.0.0, only get Excl and Incl metrics
+            for f_index in range(1, len(file_data_list)):
+                second_line = file_data_list[f_index][1]
+
+                # Example metric_type: "PAPI_L2_TCM"
+                metric_type = re.search(r"<value>(.*?)<\/value>", second_line).group(1)
+                self.exc_metrics.append(metric_type)
+                self.inc_metrics.append(metric_type + " (inc)")
+                metrics.extend([metric_type, metric_type + " (inc)"])
 
             # Example: ".TAU application" 1 1 272 15755429 0 GROUP="TAU_DEFAULT"
-            root_line = re.match(r"\"(.*)\"\s(.*)\sG", file_data[2])
-            root_name_tuple = tuple([root_line.group(1).strip(" ")])
+            root_line = re.match(r"\"(.*)\"\s(.*)\sG", file_data_list[0][2])
             root_name = root_line.group(1).strip(" ")
-            root_values = list(map(int, root_line.group(2).split(" ")))
+            root_name_tuple = tuple([root_name])
+            root_values = list(map(int, root_line.group(2).split(" ")[:-1]))
+
+            # After first profile.0.0.0, only get Excl and Incl metric values
+            for f_index in range(1, len(file_data_list)):
+                root_line = re.match(r"\"(.*)\"\s(.*)\sG", file_data_list[f_index][2])
+                root_values.extend(list(map(int, root_line.group(2).split(" ")[2:4])))
 
             # if root doesn't exist
             if root_name_tuple not in self.callpath_to_node:
@@ -104,7 +135,9 @@ class TAUReader:
             self.node_dicts.append(node_dict)
 
             # start from the line after metadata
-            for line in file_data[3:]:
+            for line_index in range(3, len(file_data_list[0])):
+                line = file_data_list[0][line_index]
+                metric_values = []
                 if "=>" in line:
                     # Example: ".TAU application  => foo()  => bar()" 31 0 155019 155019 0 GROUP="TAU_SAMPLE|TAU_CALLPATH"
                     call_line_regex = re.match(r"\"(.*)\"\s(.*)\sG", line)
@@ -115,8 +148,17 @@ class TAUReader:
                     callpath = tuple(callpath)
                     parent_callpath = callpath[:-1]
                     metric_values = list(
-                        map(float, call_line_regex.group(2).split(" "))
+                        map(float, call_line_regex.group(2).split(" ")[:-1])
                     )
+
+                    # After first profile.0.0.0, only get Excl and Incl metric values
+                    for f_index in range(1, len(file_data_list)):
+                        call_line_regex = re.match(
+                            r"\"(.*)\"\s(.*)\sG", file_data_list[f_index][line_index]
+                        )
+                        metric_values.extend(
+                            map(float, call_line_regex.group(2).split(" ")[2:4])
+                        )
 
                     # dst_node is bar() in the example in line 116
                     dst_node = self.callpath_to_node.get(callpath)
@@ -178,6 +220,12 @@ class TAUReader:
                 lambda x: x.name[0].frame["name"], axis=1
             )
 
+        default_metric = ""
+        if "TIME" in self.exc_metrics:
+            default_metric = "TIME"
+        else:
+            default_metric = "CPU_TIME"
+
         return hatchet.graphframe.GraphFrame(
-            graph, dataframe, self.exc_metrics, self.inc_metrics
+            graph, dataframe, self.exc_metrics, self.inc_metrics, default_metric
         )
