@@ -482,7 +482,7 @@ class TimemoryReader:
         # add rows with 0 values for the missing rows
         # no need to handle if there is only one rank and thread
         # name is taken from the corresponding node for that row
-        if (multiple_ranks or multiple_threads) is not False:
+        if multiple_ranks is not False:
             dataframe = dataframe.unstack().fillna(0).stack()
             dataframe["name"] = dataframe.apply(
                 lambda x: x.name[0].frame["name"], axis=1
