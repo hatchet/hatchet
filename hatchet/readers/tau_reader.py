@@ -27,12 +27,28 @@ class TAUReader:
         self.multiple_ranks = False
         self.multiple_threads = False
 
-    def create_node_dict(self, node, metric_names, metric_values, name, rank, thread):
+    def create_node_dict(
+        self,
+        node,
+        metric_names,
+        metric_values,
+        name,
+        # filename,
+        # module,
+        # start_line,
+        # end_line,
+        rank,
+        thread,
+    ):
         node_dict = {
             "node": node,
             "rank": rank,
             "thread": thread,
             "name": name,
+            # "file": filename,
+            # "module": module,
+            # "start line": start_line,
+            # "end_line": end_line,
         }
         for i in range(len(metric_values)):
             node_dict[metric_names[i + 1]] = metric_values[i]
@@ -40,6 +56,46 @@ class TAUReader:
         return node_dict
 
     def create_graph(self):
+        def create_parent(child_node, callpath, metrics):
+            parent_node = self.callpath_to_node.get(callpath)
+            if parent_node is not None:
+                parent_node.add_child(child_node)
+                child_node.add_parent(parent_node)
+                return
+            else:
+                grand_parent_callpath = callpath[:-1]
+                parent_name = callpath[-1]
+                """if "[{" in parent_name:
+                    if " [@] " in parent_name:
+                        parent_name = re.search(
+                            r"\[@\](.*?(?=\s\[{))", parent_name
+                        ).group(1)
+                    elif " C " in parent_name:
+                        parent_name = re.search(r".*?(?=\sC)", parent_name).group(0)
+                    else:
+                        parent_name = re.search(r".*?(?=\s\[{)", parent_name).group(0)
+                else:
+                    if " [@] " in parent_name:
+                        parent_name = (
+                            re.search(r"\[@\]\s(.*)", parent_name)
+                            .group(1)
+                            .split(" ")[0]
+                        )
+                    else:
+                        parent_name = parent_name.strip(" ")"""
+
+                parent_node = Node(
+                    Frame({"type": "function", "name": parent_name}), None
+                )
+                self.callpath_to_node[callpath] = parent_node
+                # create a node with dummy values
+                # it will be deleted later from the dataframe
+                # TODO: might be optimized
+
+                parent_node.add_child(child_node)
+                child_node.add_parent(parent_node)
+
+                create_parent(parent_node, grand_parent_callpath, metrics)
 
         all_files = []
         profile_files = glob.glob(self.dirname + "/profile.*")
@@ -130,7 +186,16 @@ class TAUReader:
                 root_node = self.callpath_to_node.get(root_name_tuple)
 
             node_dict = self.create_node_dict(
-                root_node, metrics, root_values, root_name, rank, thread
+                root_node,
+                metrics,
+                root_values,
+                root_name,
+                # None,
+                # None,
+                # 0,
+                # 0,
+                rank,
+                thread,
             )
             self.node_dicts.append(node_dict)
 
@@ -145,6 +210,59 @@ class TAUReader:
                         name.strip(" ") for name in call_line_regex.group(1).split("=>")
                     ]
                     dst_name = callpath[-1]
+                    """
+                    dst_file = None
+                    dst_module = None
+                    dst_start_line = 0
+                    dst_end_line = 0
+                    if "[{" in dst_name:
+                        tmp_module_or_file_line = (
+                            re.search(r"\{.*\}\]", dst_name).group(0).split()
+                        )
+                        dst_line = (
+                            tmp_module_or_file_line[1].strip("}]").replace("{", "")
+                        )
+                        if "-" in dst_line:
+                            dst_line_list = dst_line.split("-")
+                            dst_start_line = dst_line_list[0].split(",")[0]
+                            dst_end_line = dst_line_list[1].split(",")[0]
+                        else:
+                            if "," in dst_line:
+                                dst_start_line = dst_line.split(",")[0]
+                                dst_end_line = dst_line.split(",")[1]
+                        if " [@] " in dst_name:
+                            dst_file = (
+                                re.search(r".*?(?=\s\[@\])", dst_name)
+                                .group(0)
+                                .split()[1]
+                            )
+                            dst_module = tmp_module_or_file_line[0].strip("}{")
+                            dst_name = re.search(
+                                r"\[@\](.*?(?=\s\[{))", dst_name
+                            ).group(1)
+                        elif " C " in dst_name:  # .*?(?=\sC) # \[\{.*\}\]
+                            # print(re.search(r".*?(?=\sC)", path).group(0))
+                            dst_file = tmp_module_or_file_line[0].strip("}{")
+                            dst_name = re.search(r".*?(?=\sC)", dst_name).group(0)
+                        else:
+                            dst_file = tmp_module_or_file_line[0].strip("}{")
+                            dst_name = re.search(r".*?(?=\s\[{)", dst_name).group(0)
+                            dst_start_line = dst_line
+                    else:
+                        if " [@] " in dst_name:
+                            dst_file = (
+                                re.search(r".*?(?=\s\[@\])", dst_name)
+                                .group(0)
+                                .split()[1]
+                            )
+                            tmp_name_module = (
+                                re.search(r"\[@\]\s(.*)", dst_name).group(1).split(" ")
+                            )
+                            dst_module = tmp_name_module[1]
+                            dst_name = tmp_name_module[0]
+                        else:
+                            dst_name = dst_name.strip(" ")"""
+
                     callpath = tuple(callpath)
                     parent_callpath = callpath[:-1]
                     metric_values = list(
@@ -170,15 +288,25 @@ class TAUReader:
                         )
                         self.callpath_to_node[callpath] = dst_node
 
-                        # this assumes parent will appear before the child
                         # get its parent from its callpath. foo() is the parent in line 116
                         parent_node = self.callpath_to_node.get(parent_callpath)
-
-                        parent_node.add_child(dst_node)
-                        dst_node.add_parent(parent_node)
+                        if parent_node is None:
+                            create_parent(dst_node, parent_callpath, metrics)
+                        else:
+                            parent_node.add_child(dst_node)
+                            dst_node.add_parent(parent_node)
 
                     node_dict = self.create_node_dict(
-                        dst_node, metrics, metric_values, dst_name, rank, thread
+                        dst_node,
+                        metrics,
+                        metric_values,
+                        dst_name,
+                        # dst_file,
+                        # dst_module,
+                        # dst_start_line,
+                        # dst_end_line,
+                        rank,
+                        thread,
                     )
 
                     self.node_dicts.append(node_dict)
@@ -186,6 +314,9 @@ class TAUReader:
         return list_roots
 
     def read(self):
+        pd.set_option("display.max_rows", 1000)
+        pd.set_option("display.max_columns", 500)
+        pd.set_option("display.width", 5000)
         """Read the TAU profile file to extract the calling context tree."""
         # add all nodes and roots
         roots = self.create_graph()
@@ -214,11 +345,11 @@ class TAUReader:
         # add rows with 0 values for the missing rows
         # no need to handle if there is only one rank and thread
         # name is taken from the corresponding node for that row
-        if (self.multiple_ranks or self.multiple_threads) is not False:
-            dataframe = dataframe.unstack().fillna(0).stack()
-            dataframe["name"] = dataframe.apply(
-                lambda x: x.name[0].frame["name"], axis=1
-            )
+        # if (self.multiple_ranks or self.multiple_threads) is not False:
+        # dataframe = dataframe.unstack().fillna(0).stack()
+        # dataframe["name"] = dataframe.apply(
+        #    lambda x: x.name[0].frame["name"], axis=1
+        # )
 
         default_metric = ""
         if "TIME" in self.exc_metrics:
