@@ -14,9 +14,9 @@ def test_graphframe(tau_profile_dir):
     gf = GraphFrame.from_tau(str(tau_profile_dir))
 
     for col in gf.dataframe.columns:
-        if col in ("time (inc)", "time"):
+        if col in ("TIME (inc)", "TIME"):
             assert gf.dataframe[col].dtype == np.float64
-        elif col in ("thread"):
+        elif col in ("start_line"):
             assert gf.dataframe[col].dtype == np.int64
         elif col in ("name", "node"):
             assert gf.dataframe[col].dtype == np.object
@@ -36,7 +36,7 @@ def test_tree(tau_profile_dir):
         precision=3,
         name_column="name",
         expand_name=False,
-        context_column="",
+        context_column="file",
         rank=0,
         thread=0,
         depth=10000,

@@ -47,7 +47,7 @@ class TAUReader:
             "name": name,
             "file": filename,
             "module": module,
-            "start line": start_line,
+            "start_line": start_line,
             "end_line": end_line,
         }
         for i in range(len(metric_values)):
@@ -236,7 +236,28 @@ class TAUReader:
                         map(float, call_line_regex.group(2).split(" ")[:-1])
                     )
 
+                    if (
+                        "void Domain::Domain(Int_t, Index_t, Index_t, Index_t, Index_t, Int_t, Int_t, Int_t, Int_t) [{lulesh-init.cc} {16,1}-{194,1}]"
+                        in dst_name
+                    ):
+                        print()
+
                     if "[{" in dst_name:
+                        # [{<file_or_module>} {<line>}]
+                        tmp_module_or_file_line = (
+                            re.search(r"\{.*\}\]", dst_name).group(0).split()
+                        )
+                        dst_line = (
+                            tmp_module_or_file_line[1].strip("}]").replace("{", "")
+                        )
+                        if "-" in dst_line:
+                            dst_line_list = dst_line.split("-")
+                            dst_start_line = int(dst_line_list[0].split(",")[0])
+                            dst_end_line = int(dst_line_list[1].split(",")[0])
+                        else:
+                            if "," in dst_line:
+                                dst_start_line = int(dst_line.split(",")[0])
+                                dst_end_line = int(dst_line.split(",")[1])
                         if " C " in dst_name:
                             # <name> C [{<file>} {<line>}]
                             dst_name = dst_name.split(" C ")[0]
