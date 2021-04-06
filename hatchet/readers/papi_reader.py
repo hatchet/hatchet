@@ -28,6 +28,8 @@ class PAPIReader:
         # this is the name of the PAPI performance report directory. The directory
         # contains json files per MPI rank.
 
+        #default indices
+        self.indices = ["node", "rank", "thread"]
         self.inc_metrics = []
         self.dict = {}
 
@@ -221,13 +223,21 @@ class PAPIReader:
         graph_rank = 0
         graph_thread = 0
 
+        rank_cnt = 0
+        thread_cnt = 0
         for rank, rank_value in iter(self.dict['ranks'].items()):
+          rank_cnt += 1
           for thread, thread_value in iter(rank_value['threads'].items()):
+            thread_cnt += 1
             if len(thread_value['regions']) > max_regions:
               max_regions = len(thread_value['regions'])
               graph_rank = int(rank)
               graph_thread = int(thread)
         
+        #check graph indices
+        if rank_cnt == 1 and thread_cnt == 1:
+          self.indices = ["node"]
+
         #create graph
         list_roots = []
         node_dicts = []
@@ -308,7 +318,7 @@ class PAPIReader:
         graph.enumerate_traverse()
 
         dataframe = pd.DataFrame(data=node_dicts)
-        dataframe.set_index(["node", "rank", "thread"], inplace=True)
+        dataframe.set_index(self.indices, inplace=True)
         dataframe.sort_index(inplace=True)
 
         return hatchet.graphframe.GraphFrame(graph, dataframe, [], self.inc_metrics)
