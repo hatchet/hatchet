@@ -51,10 +51,9 @@ class PAPIReader:
               #skip file
               print("Warning: {} has the wrong format. It will be skipped.".format(item))
               continue
-            try:
-              rank = int(rank)
-            except:
-              rank = rank_cnt
+            
+            #we use the rank counter starting from 0
+            rank = rank_cnt
 
             #open measurement file
             file_name = str(file_path) + "/" + str(item)
