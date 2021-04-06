@@ -962,7 +962,7 @@ def test_tree_deprecated_parameters(mock_graph_literal):
         gf.tree(metric="time", metric_column="time")
 
 
-@pytest.mark.xfail(reason="Temporarily allow this to fail.")
+# @pytest.mark.xfail(reason="Temporarily allow this to fail.")
 def test_output_with_cycle_graphs():
     r"""Test three output modes on a graph with cycles,
         multiple parents and children.
@@ -1018,10 +1018,13 @@ def test_output_with_cycle_graphs():
     for edge in dot_edges:
         assert edge in dotout
 
+    # removing header to prevent it being counted
+    treeout = "\n".join(treeout.split("\n")[6:])
+
     # check that a certain number of occurences
     # of same node are in tree indicating multiple
     # edges
-    assert treeout.count("a") == 4
+    assert treeout.count("a") == 2
     assert treeout.count("d") == 2
     assert treeout.count("e") == 1
     assert treeout.count("f") == 1
