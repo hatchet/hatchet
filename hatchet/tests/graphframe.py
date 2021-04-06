@@ -962,7 +962,6 @@ def test_tree_deprecated_parameters(mock_graph_literal):
         gf.tree(metric="time", metric_column="time")
 
 
-# @pytest.mark.xfail(reason="Temporarily allow this to fail.")
 def test_output_with_cycle_graphs():
     r"""Test three output modes on a graph with cycles,
         multiple parents and children.
