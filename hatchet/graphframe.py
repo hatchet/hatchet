@@ -161,7 +161,7 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_papi(measurement_directory):
+    def from_papi(measurement_directory, filter = []):
         """Read in a PAPI high-level performance report.
 
         Args:
@@ -170,7 +170,7 @@ class GraphFrame:
         # import this lazily to avoid circular dependencies
         from .readers.papi_reader import PAPIReader
 
-        return PAPIReader(measurement_directory).read()
+        return PAPIReader(measurement_directory, filter).read()
 
     @staticmethod
     @Logger.loggable

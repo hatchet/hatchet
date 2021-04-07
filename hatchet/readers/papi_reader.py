@@ -24,7 +24,7 @@ from hatchet.frame import Frame
 
 
 class PAPIReader:
-    def __init__(self, file_path):
+    def __init__(self, file_path, filter):
         # this is the name of the PAPI performance report directory. The directory
         # contains json files per MPI rank.
 
@@ -32,6 +32,7 @@ class PAPIReader:
         self.indices = ["node", "rank", "thread"]
         self.inc_metrics = []
         self.dict = {}
+        self.filter = filter
 
         json_dict = {}
         json_rank = OrderedDict()
@@ -213,7 +214,15 @@ class PAPIReader:
 
     def read(self):
         #print(self.dict)
-        
+
+        #filter regions
+        if len(self.filter) > 0:
+          for rank, rank_value in list(self.dict['ranks'].items()):
+            for thread, thread_value in list(rank_value['threads'].items()):
+              for region, data in list(thread_value['regions'].items()):
+                if any(map(data['name'].__contains__, self.filter)) == True:
+                  del self.dict['ranks'][str(rank)]['threads'][str(thread)]['regions'][str(region)]
+
         #add default metrics 'cycles' and 'real_time_nsec' to inc_metrics
         self.inc_metrics.append('cycles')
         self.inc_metrics.append('real_time_nsec')
