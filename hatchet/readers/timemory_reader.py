@@ -455,7 +455,7 @@ class TimemoryReader:
         dataframe = pd.DataFrame(data=node_dicts)
 
         multiple_ranks = (
-            True if list(self.properties.values())[0]["mpi_size"] > 1 else False
+            True if list(self.properties.values())[0]["process_count"] > 1 else False
         )
         # TODO: Fix tid list
         """multiple_threads = (
