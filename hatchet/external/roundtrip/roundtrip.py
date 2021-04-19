@@ -64,6 +64,24 @@ class Roundtrip(Magics):
         args[1] = self.shell.user_ns[args[1]]
         displayObj.update(Javascript('argList.push("' + str(args[1]) + '")'))
 
+        # Check that users provided a tree literal
+        if not isinstance(args[1], list):
+            print(
+                """The argument is not a tree literal or it is not a valid Python list. Please check that you have provided a list of nodes and nested children of the following form to loadVisualization:
+                    literal_tree = [{
+                        "frame": {"name": "foo", "type": "function"},
+                        "metrics": {"time (inc)": 130.0, "time": 0.0},
+                        "children":[ . . . ]
+                    },
+                    {
+                        "frame": {"name": "bar", "type": "function"},
+                        "metrics": {"time (inc)": 30.0, "time": 0.0},
+                        "children":[ . . . ]
+                    }]
+            """
+            )
+            raise Exception("Bad argument")
+
         # Get curent cell id
         self.codeMap[name] = javascriptFile
 
