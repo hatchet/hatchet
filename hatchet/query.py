@@ -881,24 +881,52 @@ class CypherQuery(AbstractQuery):
         raise RuntimeError("Bad Number Op Class")
 
     def _parse_num_eq(self, obj):
+        if obj.prop == "depth":
+            return [None, obj.name, "df_row.name._depth == {}".format(obj.val), "isinstance(df_row.name._depth, Real)"]
+        if obj.prop == "node_id":
+            return [None, obj.name, "df_row.name._hatchet_nid == {}".format(obj.val), "isinstance(df_row.name._hatchet_nid, Real)"]
         return [None, obj.name, "df_row[\"{}\"] == {}".format(obj.prop, obj.val), "isinstance(df_row[\'{}\'], Real)".format(obj.prop)]
 
     def _parse_num_lt(self, obj):
+        if obj.prop == "depth":
+            return [None, obj.name, "df_row.name._depth < {}".format(obj.val), "isinstance(df_row.name._depth, Real)"]
+        if obj.prop == "node_id":
+            return [None, obj.name, "df_row.name._hatchet_nid < {}".format(obj.val), "isinstance(df_row.name._hatchet_nid, Real)"]
         return [None, obj.name, "df_row[\"{}\"] < {}".format(obj.prop, obj.val), "isinstance(df_row[\'{}\'], Real)".format(obj.prop)]
 
     def _parse_num_gt(self, obj):
+        if obj.prop == "depth":
+            return [None, obj.name, "df_row.name._depth > {}".format(obj.val), "isinstance(df_row.name._depth, Real)"]
+        if obj.prop == "node_id":
+            return [None, obj.name, "df_row.name._hatchet_nid > {}".format(obj.val), "isinstance(df_row.name._hatchet_nid, Real)"]
         return [None, obj.name, "df_row[\"{}\"] > {}".format(obj.prop, obj.val), "isinstance(df_row[\'{}\'], Real)".format(obj.prop)]
 
     def _parse_num_lte(self, obj):
+        if obj.prop == "depth":
+            return [None, obj.name, "df_row.name._depth <= {}".format(obj.val), "isinstance(df_row.name._depth, Real)"]
+        if obj.prop == "node_id":
+            return [None, obj.name, "df_row.name._hatchet_nid <= {}".format(obj.val), "isinstance(df_row.name._hatchet_nid, Real)"]
         return [None, obj.name, "df_row[\"{}\"] <= {}".format(obj.prop, obj.val), "isinstance(df_row[\'{}\'], Real)".format(obj.prop)]
 
     def _parse_num_gte(self, obj):
+        if obj.prop == "depth":
+            return [None, obj.name, "df_row.name._depth >= {}".format(obj.val), "isinstance(df_row.name._depth, Real)"]
+        if obj.prop == "node_id":
+            return [None, obj.name, "df_row.name._hatchet_nid >= {}".format(obj.val), "isinstance(df_row.name._hatchet_nid, Real)"]
         return [None, obj.name, "df_row[\"{}\"] >= {}".format(obj.prop, obj.val), "isinstance(df_row[\'{}\'], Real)".format(obj.prop)]
 
     def _parse_num_nan(self, obj):
+        if obj.prop == "depth":
+            return [None, obj.name, "pd.isna(df_row.name._depth)", "isinstance(df_row.name._depth, Real)"]
+        if obj.prop == "node_id":
+            return [None, obj.name, "pd.isna(df_row.name._hatchet_nid)", "isinstance(df_row.name._hatchet_nid, Real)"]
         return [None, obj.name, "pd.isna(df_row[\"{}\"])".format(obj.prop), "isinstance(df_row[\'{}\'], Real)".format(obj.prop)]
 
     def _parse_num_not_nan(self, obj):
+        if obj.prop == "depth":
+            return [None, obj.name, "not pd.isna(df_row.name._depth)", "isinstance(df_row.name._depth, Real)"]
+        if obj.prop == "node_id":
+            return [None, obj.name, "not pd.isna(df_row.name._hatchet_nid)", "isinstance(df_row.name._hatchet_nid, Real)"]
         return [None, obj.name, "not pd.isna(df_row[\"{}\"])".format(obj.prop), "isinstance(df_row[\'{}\'], Real)".format(obj.prop)]
 
 
