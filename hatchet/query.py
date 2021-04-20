@@ -12,6 +12,7 @@ except ImportError:
 
     ABC = ABCMeta("ABC", (object,), {"__slots__": ()})
 
+import sys
 from itertools import groupby
 from numbers import Real
 import re
@@ -645,7 +646,7 @@ class QueryMatcher(AbstractQuery):
             self._apply_impl(gf, child, visited, matches)
 
 
-GRAMMAR = """
+GRAMMAR = u"""
 FullQuery: path_expr=MatchExpr(cond_expr=WhereExpr)?;
 MatchExpr: 'MATCH' path=PathQuery;
 PathQuery: '(' nodes=NodeExpr ')'('-['(nodes=NodeExpr)?']->' '(' nodes=NodeExpr ')')*;
@@ -720,6 +721,9 @@ class CypherQuery(AbstractQuery):
         query = QueryMatcher()
         for i in range(0, len(self.wcards)):
             wcard = self.wcards[i][0]
+            # TODO Remove this when Python 2.7 support is dropped.
+            if sys.version_info[0] == 2 and not isinstance(wcard, Real):
+                wcard = wcard.encode("ascii", "ignore")
             filt_str = self.lambda_filters[i]
             if filt_str is None:
                 if i == 0:
