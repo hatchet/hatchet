@@ -1,3 +1,28 @@
+# v1.3.1a0 (2021-04-02)
+
+This release extends the query language to support querying nodes that
+fall within a range and includes a critical fix for using the query language on
+a dataframe that may contain nan and infs values.
+
+### New features
+* Timemory reader
+* Query dataframe columns with GraphFrame.show_metric_columns()
+* Query nodes within a range using the call path query language
+* Extend readers to define their own default metric
+
+### Changes to existing APIs
+* Tree visualization displays 2 metrics
+* Literal output format: add hatchet node IDs
+* Parallel implementationo of filter function
+* Caliper reader: support multiple hierarchies in JSON format
+* Adds multiprocessing dependency
+
+### Bugfixes
+* Improve querying of subtrees in interactive visualization
+* Tree visualization: check for both nan and inf
+* Query language: match nodes with nan and inf values
+* Check for exclusive metrics before updating inclusive columns
+
 # v1.3.0 (2020-11-12)
 
 This release introduces a new tree visualization for Jupyter to interact with

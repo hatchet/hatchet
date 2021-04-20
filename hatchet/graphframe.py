@@ -467,7 +467,11 @@ class GraphFrame:
         agg_dict = {}
         for col in df.columns.tolist():
             if col in self.exc_metrics + self.inc_metrics:
-                agg_dict[col] = np.sum
+                # use min_count=1 (default is 0) here, so sum of an all-NA
+                # series is NaN, not 0
+                # when min_count=1, sum([NaN, NaN)] = NaN
+                # when min_count=0, sum([NaN, NaN)] = 0
+                agg_dict[col] = lambda x: x.sum(min_count=1)
             else:
                 agg_dict[col] = lambda x: x.iloc[0]
 
@@ -494,7 +498,9 @@ class GraphFrame:
 
         return out_columns
 
-    def subtree_sum(self, columns, out_columns=None, function=np.sum):
+    def subtree_sum(
+        self, columns, out_columns=None, function=lambda x: x.sum(min_count=1)
+    ):
         """Compute sum of elements in subtrees.  Valid only for trees.
 
         For each row in the graph, ``out_columns`` will contain the
@@ -511,8 +517,7 @@ class GraphFrame:
             out_columns (list of str): names of columns to store results
                 (default: in place)
             function (callable): associative operator used to sum
-                elements (default: sum)
-
+                elements, sum of an all-NA series is NaN (default: sum(min_count=1))
         """
         out_columns = self._init_sum_columns(columns, out_columns)
 
@@ -524,7 +529,9 @@ class GraphFrame:
                         self.dataframe.loc[[node] + node.children, col]
                     )
 
-    def subgraph_sum(self, columns, out_columns=None, function=np.sum):
+    def subgraph_sum(
+        self, columns, out_columns=None, function=lambda x: x.sum(min_count=1)
+    ):
         """Compute sum of elements in subgraphs.
 
         For each row in the graph, ``out_columns`` will contain the
@@ -541,7 +548,7 @@ class GraphFrame:
             out_columns (list of str): names of columns to store results
                 (default: in place)
             function (callable): associative operator used to sum
-                elements (default: sum)
+                elements, sum of an all-NA series is NaN (default: sum(min_count=1))
         """
         if self.graph.is_tree():
             self.subtree_sum(columns, out_columns, function)
@@ -589,6 +596,10 @@ class GraphFrame:
         """Update inclusive columns (typically after operations that rewire the
         graph.
         """
+        # we should update inc metric only if exc metric exist
+        if not self.exc_metrics:
+            return
+
         self.inc_metrics = ["%s (inc)" % s for s in self.exc_metrics]
         self.subgraph_sum(self.exc_metrics, self.inc_metrics)
 

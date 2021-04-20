@@ -69,10 +69,10 @@ def read_metricdb_file(args):
     # copy the data in the right place in the larger 2D array of metrics
     rank_offset = (rank * num_threads_per_rank + thread) * num_nodes
 
-    arr[rank_offset : rank_offset + num_nodes, :2].flat = arr1d.flat
-    arr[rank_offset : rank_offset + num_nodes, 2] = range(1, num_nodes + 1)
-    arr[rank_offset : rank_offset + num_nodes, 3] = rank
-    arr[rank_offset : rank_offset + num_nodes, 4] = thread
+    arr[rank_offset : rank_offset + num_nodes, :num_metrics].flat = arr1d.flat
+    arr[rank_offset : rank_offset + num_nodes, num_metrics] = range(1, num_nodes + 1)
+    arr[rank_offset : rank_offset + num_nodes, num_metrics + 1] = rank
+    arr[rank_offset : rank_offset + num_nodes, num_metrics + 2] = thread
 
 
 class HPCToolkitReader:
@@ -267,7 +267,7 @@ class HPCToolkitReader:
 
             # put updated metrics back in dataframe
             for i, column in enumerate(self.metric_columns):
-                if "(inc)" not in column:
+                if "(inc)" not in column and "(I)" not in column:
                     self.df_metrics[column] = self.np_metrics.T[i]
 
         with self.timer.phase("graph construction"):
@@ -294,7 +294,7 @@ class HPCToolkitReader:
         exc_metrics = []
         inc_metrics = []
         for column in self.metric_columns:
-            if "(inc)" in column:
+            if "(inc)" in column or "(I)" in column:
                 inc_metrics.append(column)
             else:
                 exc_metrics.append(column)
@@ -374,7 +374,7 @@ class HPCToolkitReader:
             # when we reach statement nodes, we subtract their exclusive
             # metric values from the parent's values
             for i, column in enumerate(self.metric_columns):
-                if "(inc)" not in column:
+                if "(inc)" not in column and "(I)" not in column:
                     _crm.subtract_exclusive_metric_vals(
                         nid,
                         parent_nid,

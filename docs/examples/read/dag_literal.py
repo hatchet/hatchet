@@ -164,4 +164,4 @@ if __name__ == "__main__":
 
     # Printout the graph component of the GraphFrame.
     # Because no metric parameter is specified, ``time`` is used by default.
-    print(gf.tree())
+    print(gf.tree(metric_column=["time (inc)", "time"]))

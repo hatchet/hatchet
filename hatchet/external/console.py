@@ -32,6 +32,8 @@
 from ..version import __version__
 
 import pandas as pd
+import numpy as np
+import warnings
 
 
 class ConsoleRenderer:
@@ -48,7 +50,7 @@ class ConsoleRenderer:
             result += "The graph is empty.\n\n"
             return result
 
-        self.metric = kwargs["metric_column"]
+        self.metric_columns = kwargs["metric_column"]
         self.precision = kwargs["precision"]
         self.name = kwargs["name_column"]
         self.expand = kwargs["expand_name"]
@@ -59,33 +61,54 @@ class ConsoleRenderer:
         self.highlight = kwargs["highlight_name"]
         self.invert_colormap = kwargs["invert_colormap"]
 
-        if self.metric not in dataframe.columns:
+        if isinstance(self.metric_columns, str):
+            self.primary_metric = self.metric_columns
+            self.second_metric = None
+        elif isinstance(self.metric_columns, list):
+            if len(self.metric_columns) > 2:
+                warnings.warn(
+                    "More than 2 metrics specified in metric_column=. Tree() will only show 2 metrics at a time. The remaining metrics will not be shown.",
+                    SyntaxWarning,
+                )
+                self.primary_metric = self.metric_columns[0]
+                self.second_metric = self.metric_columns[1]
+            elif len(self.metric_columns) == 2:
+                self.primary_metric = self.metric_columns[0]
+                self.second_metric = self.metric_columns[1]
+            elif len(self.metric_columns) == 1:
+                self.primary_metric = self.metric_columns[0]
+                self.second_metric = None
+
+        if self.primary_metric not in dataframe.columns:
             raise KeyError(
                 "metric_column={} does not exist in the dataframe, please select a valid column. See a list of the available metrics with GraphFrame.show_metric_columns().".format(
-                    self.metric
+                    self.primary_metric
+                )
+            )
+        if (
+            self.second_metric is not None
+            and self.second_metric not in dataframe.columns
+        ):
+            raise KeyError(
+                "metric_column={} does not exist in the dataframe, please select a valid column. See a list of the available metrics with GraphFrame.show_metric_columns().".format(
+                    self.second_metric
                 )
             )
 
         if self.invert_colormap:
             self.colors.colormap.reverse()
 
-        # grab the min and max metric value, ignoring inf and nan values
+        # grab the min and max value for the primary metric, ignoring inf and
+        # nan values
+
         if "rank" in dataframe.index.names:
-            metric_series = (dataframe.xs(self.rank, level=1))[self.metric]
-            inf_mask = (metric_series.values > float("-inf")) & (
-                metric_series.values < float("inf")
-            )
-            filtered_series = pd.Series(
-                metric_series.values[inf_mask], metric_series.index[inf_mask]
-            )
+            metric_series = (dataframe.xs(self.rank, level=1))[self.primary_metric]
         else:
-            metric_series = dataframe[self.metric]
-            inf_mask = (metric_series.values > float("-inf")) & (
-                metric_series.values < float("inf")
-            )
-            filtered_series = pd.Series(
-                metric_series.values[inf_mask], metric_series.index[inf_mask]
-            )
+            metric_series = dataframe[self.primary_metric]
+        isfinite_mask = np.isfinite(metric_series.values)
+        filtered_series = pd.Series(
+            metric_series.values[isfinite_mask], metric_series.index[isfinite_mask]
+        )
 
         self.max_metric = filtered_series.max()
         self.min_metric = filtered_series.min()
@@ -143,7 +166,9 @@ class ConsoleRenderer:
             + "Legend"
             + self.colors.end
             + " (Metric: "
-            + self.metric
+            + self.primary_metric
+            + " Min: {:.2f}".format(self.min_metric)
+            + " Max: {:.2f}".format(self.max_metric)
             + ")\n"
         )
 
@@ -178,7 +203,7 @@ class ConsoleRenderer:
             else:
                 df_index = node
 
-            node_metric = dataframe.loc[df_index, self.metric]
+            node_metric = dataframe.loc[df_index, self.primary_metric]
 
             metric_precision = "{:." + str(self.precision) + "f}"
             metric_str = (
@@ -186,6 +211,12 @@ class ConsoleRenderer:
                 + metric_precision.format(node_metric)
                 + self.colors.end
             )
+
+            if self.second_metric is not None:
+                metric_str += u" {c.faint}{second_metric}{c.end}".format(
+                    second_metric=dataframe.loc[df_index, self.second_metric],
+                    c=self.colors,
+                )
 
             node_name = dataframe.loc[df_index, self.name]
             if self.expand is False:

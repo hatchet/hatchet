@@ -1017,6 +1017,9 @@ def test_output_with_cycle_graphs():
     for edge in dot_edges:
         assert edge in dotout
 
+    # removing header to prevent it being counted
+    treeout = "\n".join(treeout.split("\n")[6:])
+
     # check that a certain number of occurences
     # of same node are in tree indicating multiple
     # edges
@@ -1054,3 +1057,101 @@ def test_to_literal_node_ids():
     lit_list2 = gf2.to_literal()
 
     assert lit_list == lit_list2
+
+
+def test_filter_squash_query_nan_and_inf_metric(small_mock1, small_mock2):
+    """Use call path query language on a metric column containing both
+    int/float, NaN and inf."""
+    gf1 = GraphFrame.from_literal(small_mock1)
+    gf2 = GraphFrame.from_literal(small_mock2)
+
+    gf3 = gf1 / gf2
+
+    query_nan = [{"time": "== np.nan"}]
+    filt_nan_gf3 = gf3.filter(query_nan, squash=True)
+
+    assert len(filt_nan_gf3.graph.roots) == 2
+    assert all(pd.isnull(time) for time in filt_nan_gf3.dataframe["time (inc)"])
+    assert all(pd.isnull(time) for time in filt_nan_gf3.dataframe["time"])
+    assert filt_nan_gf3.dataframe.shape[0] == 2
+    assert sorted(filt_nan_gf3.dataframe["name"].values) == ["D", "G"]
+
+    query_inf = [{"time": "== np.inf"}]
+    filt_inf_gf3 = gf3.filter(query_inf, squash=True)
+
+    assert len(filt_inf_gf3.graph.roots) == 1
+    assert all(np.isinf(inc_time) for inc_time in filt_inf_gf3.dataframe["time (inc)"])
+    assert all(np.isinf(exc_time) for exc_time in filt_inf_gf3.dataframe["time"])
+    assert filt_inf_gf3.dataframe.shape[0] == 1
+    assert filt_inf_gf3.dataframe["name"].values[0] == "B"
+
+
+def test_filter_squash_query_metric_with_nan_and_inf(small_mock1, small_mock2):
+    """Use call path query language to match nodes with NaN and inf metric values."""
+    gf1 = GraphFrame.from_literal(small_mock1)
+    gf2 = GraphFrame.from_literal(small_mock2)
+
+    gf3 = gf1 / gf2
+
+    query = [{"time": ">= 1"}]
+    filter_gf3 = gf3.filter(query, squash=True)
+
+    assert len(filter_gf3.graph.roots) == 3
+    assert filter_gf3.dataframe["time"].sum() == np.inf
+    assert filter_gf3.dataframe["time (inc)"].sum() == np.inf
+    assert filter_gf3.dataframe.shape[0] == 5
+
+
+def test_filter_nan_and_inf(small_mock1, small_mock2):
+    """Use lambda to filter for nodes with NaN and inf values."""
+    gf1 = GraphFrame.from_literal(small_mock1)
+    gf2 = GraphFrame.from_literal(small_mock2)
+
+    gf3 = gf1 / gf2
+
+    filt_nan_gf3 = gf3.filter(lambda x: pd.isnull(x["time"]), squash=True)
+
+    assert len(filt_nan_gf3.graph.roots) == 2
+    assert all(pd.isnull(inc_time) for inc_time in filt_nan_gf3.dataframe["time (inc)"])
+    assert all(pd.isnull(exc_time) for exc_time in filt_nan_gf3.dataframe["time"])
+    assert filt_nan_gf3.dataframe.shape[0] == 2
+    assert sorted(filt_nan_gf3.dataframe["name"].values) == ["D", "G"]
+
+    filt_inf_gf3 = gf3.filter(lambda x: np.isinf(x["time"]), squash=True)
+
+    assert len(filt_inf_gf3.graph.roots) == 1
+    assert all(np.isinf(inc_time) for inc_time in filt_inf_gf3.dataframe["time (inc)"])
+    assert all(np.isinf(exc_time) for exc_time in filt_inf_gf3.dataframe["time"])
+    assert filt_inf_gf3.dataframe.shape[0] == 1
+    assert filt_inf_gf3.dataframe["name"].values == "B"
+
+
+def test_filter_with_nan_and_inf(small_mock1, small_mock2):
+    """Use lambda to filter for metric containing int/float, NaN, and inf values."""
+    gf1 = GraphFrame.from_literal(small_mock1)
+    gf2 = GraphFrame.from_literal(small_mock2)
+
+    gf3 = gf1 / gf2
+
+    filter_gf3 = gf3.filter(lambda x: x["time"] > 5, squash=True)
+
+    assert len(filter_gf3.graph.roots) == 2
+    assert filter_gf3.dataframe["time"].sum() == np.inf
+    assert filter_gf3.dataframe["time (inc)"].sum() == np.inf
+    assert filter_gf3.dataframe.shape[0] == 2
+    assert sorted(filter_gf3.dataframe["name"].values) == ["B", "H"]
+
+
+def test_inc_metric_only(mock_graph_inc_metric_only):
+    """Test graph with only an inclusive metric and no associated exclusive
+    metric. A filter-squash should not change the inclusive metric values, and
+    the list of exclusive metrics and inclusive metrics should stay the same.
+    """
+    gf = GraphFrame.from_literal(mock_graph_inc_metric_only)
+    filt_gf = gf.filter(lambda x: x["time (inc)"] > 50, squash=True, num_procs=1)
+
+    assert len(filt_gf.graph) == 3
+    assert all(filt_gf.dataframe["name"].values == ["A", "E", "H"])
+    assert all(filt_gf.dataframe["time (inc)"].values == [130, 55, 55])
+    assert gf.inc_metrics == filt_gf.inc_metrics
+    assert gf.exc_metrics == filt_gf.exc_metrics
