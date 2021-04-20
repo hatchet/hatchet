@@ -161,7 +161,7 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_papi(measurement_directory, filter = []):
+    def from_papi(measurement_directory, filter=[]):
         """Read in a PAPI high-level performance report.
 
         Args:

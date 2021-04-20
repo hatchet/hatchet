@@ -14,3 +14,4 @@ if __name__ == "__main__":
     # Printout the graph component of the GraphFrame.
     # Use "PAPI_FP_OPS" as the metric column to be displayed
     print(gf.tree(metric_column="PAPI_FP_OPS"))
+
