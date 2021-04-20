@@ -1171,3 +1171,120 @@ def test_hdf_load_store(mock_graph_literal):
 
     if os.path.exists("test_gframe.hdf"):
         os.remove("test_gframe.hdf")
+
+
+def test_pickle_load_store(mock_graph_literal):
+    if os.path.exists("test_gframe.pkl"):
+        os.remove("test_gframe.pkl")
+    gf_orig = GraphFrame.from_literal(mock_graph_literal)
+    gf_orig.to_pickle("test_gframe.pkl")
+    gf_loaded = GraphFrame.from_pickle("test_gframe.pkl")
+
+    assert gf_orig.dataframe.equals(gf_loaded.dataframe)
+    assert gf_orig.graph == gf_loaded.graph
+
+    if os.path.exists("test_gframe.pkl"):
+        os.remove("test_gframe.pkl")
+
+
+def test_csv_load_store(mock_graph_literal):
+    if os.path.exists("test_gframe.csv"):
+        os.remove("test_gframe.csv")
+    gf_orig = GraphFrame.from_literal(mock_graph_literal)
+    gf_orig.to_csv("test_gframe.csv")
+    gf_loaded = GraphFrame.from_csv("test_gframe.csv")
+
+    assert gf_orig.dataframe.equals(gf_loaded.dataframe)
+    assert gf_orig.graph == gf_loaded.graph
+
+    if os.path.exists("test_gframe.csv"):
+        os.remove("test_gframe.csv")
+
+
+def test_excel_load_store(mock_graph_literal):
+    if os.path.exists("test_gframe.xlsx"):
+        os.remove("test_gframe.xlsx")
+    gf_orig = GraphFrame.from_literal(mock_graph_literal)
+    gf_orig.to_excel("test_gframe.xlsx")
+    gf_loaded = GraphFrame.from_excel("test_gframe.xlsx")
+
+    assert gf_orig.dataframe.equals(gf_loaded.dataframe)
+    assert gf_orig.graph == gf_loaded.graph
+
+    if os.path.exists("test_gframe.xlsx"):
+        os.remove("test_gframe.xlsx")
+
+
+def test_save_func_w_extension(mock_graph_literal):
+    fname = "test_gframe.hdf"
+    if os.path.exists(fname):
+        os.remove(fname)
+    gf_orig = GraphFrame.from_literal(mock_graph_literal)
+    gf_orig.save(fname)
+    gf_loaded = GraphFrame.from_hdf(fname)
+
+    assert gf_orig.dataframe.equals(gf_loaded.dataframe)
+    assert gf_orig.graph == gf_loaded.graph
+
+    if os.path.exists(fname):
+        os.remove(fname)
+
+
+def test_save_func_w_manual_format(mock_graph_literal):
+    fname = "test_gframe"
+    if os.path.exists(fname):
+        os.remove(fname)
+    gf_orig = GraphFrame.from_literal(mock_graph_literal)
+    gf_orig.save(fname, fileformat="hdf")
+    gf_loaded = GraphFrame.from_hdf(fname)
+
+    assert gf_orig.dataframe.equals(gf_loaded.dataframe)
+    assert gf_orig.graph == gf_loaded.graph
+
+    if os.path.exists(fname):
+        os.remove(fname)
+
+
+def test_load_func_w_extension(mock_graph_literal):
+    fname = "test_gframe.pkl"
+    if os.path.exists(fname):
+        os.remove(fname)
+    gf_orig = GraphFrame.from_literal(mock_graph_literal)
+    gf_orig.to_pickle(fname)
+    gf_loaded = GraphFrame.load(fname)
+
+    assert gf_orig.dataframe.equals(gf_loaded.dataframe)
+    assert gf_orig.graph == gf_loaded.graph
+
+    if os.path.exists(fname):
+        os.remove(fname)
+
+
+def test_load_func_w_manual_format(mock_graph_literal):
+    fname = "test_gframe"
+    if os.path.exists(fname):
+        os.remove(fname)
+    gf_orig = GraphFrame.from_literal(mock_graph_literal)
+    gf_orig.to_hdf(fname)
+    gf_loaded = GraphFrame.load(fname, fileformat="hdf")
+
+    assert gf_orig.dataframe.equals(gf_loaded.dataframe)
+    assert gf_orig.graph == gf_loaded.graph
+
+    if os.path.exists(fname):
+        os.remove(fname)
+
+
+def test_save_load_func_w_guessing_format(mock_graph_literal):
+    fname = "test_gframe"
+    if os.path.exists(fname):
+        os.remove(fname)
+    gf_orig = GraphFrame.from_literal(mock_graph_literal)
+    gf_orig.save(fname)
+    gf_loaded = GraphFrame.load(fname)
+
+    assert gf_orig.dataframe.equals(gf_loaded.dataframe)
+    assert gf_orig.graph == gf_loaded.graph
+
+    if os.path.exists(fname):
+        os.remove(fname)
