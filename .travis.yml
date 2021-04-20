@@ -39,6 +39,7 @@ jobs:
       language: python
 
 install:
+  - pip install --upgrade cmake
   - pip install --upgrade -r requirements.txt
   - if [[ "$TRAVIS_PYTHON_VERSION" == "3.7" ]]; then
         pip install --upgrade black;
