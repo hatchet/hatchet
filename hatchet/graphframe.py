@@ -280,6 +280,17 @@ class GraphFrame:
             self, key=key, complevel=complevel, complib=complib, nan_rep=nan_rep
         )
 
+    @staticmethod
+    def from_pickle(filename, **kwargs):
+        from .readers.pickle_reader import PickleReader
+
+        return PickleReader(filename).read(**kwargs)
+
+    def to_pickle(filename, **kwargs):
+        from .writers.pickle_writer import PickleWriter
+
+        PickleWriter(filename).write(**kwargs)
+
     def copy(self):
         """Return a shallow copy of the graphframe.
 
