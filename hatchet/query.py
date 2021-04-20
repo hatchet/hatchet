@@ -43,7 +43,7 @@ class AbstractQuery(ABC):
     def __or__(self, other):
         return OrQuery(self, other)
 
-    def __xor__(self, others):
+    def __xor__(self, other):
         return XorQuery(self, other)
 
     def __invert__(self):
