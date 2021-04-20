@@ -373,14 +373,9 @@ class GraphFrame:
                 filtered_rows = dataframe_copy.apply(filter_obj, axis=1)
                 filtered_df = dataframe_copy[filtered_rows]
 
-<<<<<<< HEAD
-        # elif isinstance(filter_obj, list) or isinstance(filter_obj, QueryMatcher):
-        elif isinstance(filter_obj, list) or issubclass(
+        elif isinstance(filter_obj, (list, str)) or issubclass(
             type(filter_obj), AbstractQuery
         ):
-=======
-        elif isinstance(filter_obj, (list, QueryMatcher, str)):
->>>>>>> 6249ad8... Adds the CypherQuery class to convert Cypher queries to Hatchet query language
             # use a callpath query to apply the filter
             query = filter_obj
             if isinstance(filter_obj, list):

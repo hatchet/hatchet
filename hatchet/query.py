@@ -60,6 +60,8 @@ class NaryQuery(AbstractQuery):
         for query in args:
             if isinstance(query, list):
                 self.subqueries.append(QueryMatcher(query))
+            elif isinstance(query, str):
+                self.subqueries.append(CypherQuery(query))
             elif issubclass(type(query), AbstractQuery):
                 self.subqueries.append(query)
             else:
@@ -642,6 +644,7 @@ class QueryMatcher(AbstractQuery):
         for child in sorted(node.children, key=traversal_order):
             self._apply_impl(gf, child, visited, matches)
 
+
 GRAMMAR = """
 FullQuery: path_expr=MatchExpr(cond_expr=WhereExpr)?;
 MatchExpr: 'MATCH' path=PathQuery;
@@ -674,8 +677,10 @@ NumNotNan: name=ID '.' prop=STRING 'IS NOT NULL';
 
 mm = metamodel_from_str(GRAMMAR)
 
+
 def cname(obj):
     return obj.__class__.__name__
+
 
 def filter_check_types(type_check, df_row, filt_lambda):
     try:
@@ -686,8 +691,8 @@ def filter_check_types(type_check, df_row, filt_lambda):
     except KeyError:
         return False
 
-class CypherQuery(AbstractQuery):
 
+class CypherQuery(AbstractQuery):
     def __init__(self, cypher_query):
         model = None
         try:
@@ -695,7 +700,9 @@ class CypherQuery(AbstractQuery):
         except TextXError as e:
             # TODO Change to a "raise-from" expression when Python 2.7 support is dropped
             raise InvalidQueryPath(
-                "Invalid \"Cypher\" Query Detected. Parser Error Message: {}".format(e.message)
+                'Invalid "Cypher" Query Detected. Parser Error Message: {}'.format(
+                    e.message
+                )
             )
         self.wcards = []
         self.wcard_pos = {}
@@ -741,7 +748,11 @@ class CypherQuery(AbstractQuery):
                     else:
                         type_check += " and {}".format(cond[2])
                 bool_expr = "lambda df_row: {}".format(bool_expr)
-                bool_expr = "lambda df_row: filter_check_types(\"{}\", df_row, {})".format(type_check, bool_expr)
+                bool_expr = (
+                    'lambda df_row: filter_check_types("{}", df_row, {})'.format(
+                        type_check, bool_expr
+                    )
+                )
                 self.lambda_filters[i] = bool_expr
 
     def _parse_path(self, path_obj):
@@ -766,9 +777,9 @@ class CypherQuery(AbstractQuery):
                 converted_condition = self._parse_binary_cond(cond)
             else:
                 raise RuntimeError("Bad Condition")
-            self.filters[self.wcard_pos[converted_condition[1]]].append([
-                converted_condition[0], converted_condition[2], converted_condition[3]
-            ])
+            self.filters[self.wcard_pos[converted_condition[1]]].append(
+                [converted_condition[0], converted_condition[2], converted_condition[3]]
+            )
         for i in range(0, len(self.filters)):
             if len(self.filters[i]) > 0:
                 if self.filters[i][0][0] != "not":
@@ -819,14 +830,26 @@ class CypherQuery(AbstractQuery):
         raise RuntimeError("Bad Single Condition")
 
     def _is_str_cond(self, obj):
-        if cname(obj) in ["StringEq", "StringStartsWith",
-                          "StringEndsWith", "StringContains", "StringMatch"]:
+        if cname(obj) in [
+            "StringEq",
+            "StringStartsWith",
+            "StringEndsWith",
+            "StringContains",
+            "StringMatch",
+        ]:
             return True
         return False
 
     def _is_num_cond(self, obj):
-        if cname(obj) in ["NumEq", "NumLt", "NumGt", "NumLte",
-                          "NumGte", "NumNan", "NumNotNan"]:
+        if cname(obj) in [
+            "NumEq",
+            "NumLt",
+            "NumGt",
+            "NumLte",
+            "NumGte",
+            "NumNan",
+            "NumNotNan",
+        ]:
             return True
         return False
 
@@ -844,23 +867,43 @@ class CypherQuery(AbstractQuery):
         raise RuntimeError("Bad String Op Class")
 
     def _parse_str_eq(self, obj):
-        return [None, obj.name, "df_row[\"{}\"] == \"{}\"".format(obj.prop, obj.val), "isinstance(df_row[\'{}\'], str)".format(obj.prop)]
+        return [
+            None,
+            obj.name,
+            'df_row["{}"] == "{}"'.format(obj.prop, obj.val),
+            "isinstance(df_row['{}'], str)".format(obj.prop),
+        ]
 
     def _parse_str_starts_with(self, obj):
-        return [None, obj.name, "df_row[\"{}\"].startswith(\"{}\")".format(obj.prop, obj.val), "isinstance(df_row[\'{}\'], str)".format(obj.prop)]
+        return [
+            None,
+            obj.name,
+            'df_row["{}"].startswith("{}")'.format(obj.prop, obj.val),
+            "isinstance(df_row['{}'], str)".format(obj.prop),
+        ]
 
     def _parse_str_ends_with(self, obj):
-        return [None, obj.name, "df_row[\"{}\"].endswith(\"{}\")".format(obj.prop, obj.val), "isinstance(df_row[\'{}\'], str)".format(obj.prop)]
+        return [
+            None,
+            obj.name,
+            'df_row["{}"].endswith("{}")'.format(obj.prop, obj.val),
+            "isinstance(df_row['{}'], str)".format(obj.prop),
+        ]
 
     def _parse_str_contains(self, obj):
-        return [None, obj.name, "\"{}\" in df_row[\"{}\"]".format(obj.val, obj.prop), "isinstance(df_row[\'{}\'], str)".format(obj.prop)]
+        return [
+            None,
+            obj.name,
+            '"{}" in df_row["{}"]'.format(obj.val, obj.prop),
+            "isinstance(df_row['{}'], str)".format(obj.prop),
+        ]
 
     def _parse_str_match(self, obj):
         return [
             None,
             obj.name,
-            "re.match(\"{}\", df_row[\"{}\"]) is not None".format(obj.val, obj.prop),
-            "isinstance(df_row[\'{}\'], str)".format(obj.prop)
+            're.match("{}", df_row["{}"]) is not None'.format(obj.val, obj.prop),
+            "isinstance(df_row['{}'], str)".format(obj.prop),
         ]
 
     def _parse_num(self, obj):
@@ -882,52 +925,157 @@ class CypherQuery(AbstractQuery):
 
     def _parse_num_eq(self, obj):
         if obj.prop == "depth":
-            return [None, obj.name, "df_row.name._depth == {}".format(obj.val), "isinstance(df_row.name._depth, Real)"]
+            return [
+                None,
+                obj.name,
+                "df_row.name._depth == {}".format(obj.val),
+                "isinstance(df_row.name._depth, Real)",
+            ]
         if obj.prop == "node_id":
-            return [None, obj.name, "df_row.name._hatchet_nid == {}".format(obj.val), "isinstance(df_row.name._hatchet_nid, Real)"]
-        return [None, obj.name, "df_row[\"{}\"] == {}".format(obj.prop, obj.val), "isinstance(df_row[\'{}\'], Real)".format(obj.prop)]
+            return [
+                None,
+                obj.name,
+                "df_row.name._hatchet_nid == {}".format(obj.val),
+                "isinstance(df_row.name._hatchet_nid, Real)",
+            ]
+        return [
+            None,
+            obj.name,
+            'df_row["{}"] == {}'.format(obj.prop, obj.val),
+            "isinstance(df_row['{}'], Real)".format(obj.prop),
+        ]
 
     def _parse_num_lt(self, obj):
         if obj.prop == "depth":
-            return [None, obj.name, "df_row.name._depth < {}".format(obj.val), "isinstance(df_row.name._depth, Real)"]
+            return [
+                None,
+                obj.name,
+                "df_row.name._depth < {}".format(obj.val),
+                "isinstance(df_row.name._depth, Real)",
+            ]
         if obj.prop == "node_id":
-            return [None, obj.name, "df_row.name._hatchet_nid < {}".format(obj.val), "isinstance(df_row.name._hatchet_nid, Real)"]
-        return [None, obj.name, "df_row[\"{}\"] < {}".format(obj.prop, obj.val), "isinstance(df_row[\'{}\'], Real)".format(obj.prop)]
+            return [
+                None,
+                obj.name,
+                "df_row.name._hatchet_nid < {}".format(obj.val),
+                "isinstance(df_row.name._hatchet_nid, Real)",
+            ]
+        return [
+            None,
+            obj.name,
+            'df_row["{}"] < {}'.format(obj.prop, obj.val),
+            "isinstance(df_row['{}'], Real)".format(obj.prop),
+        ]
 
     def _parse_num_gt(self, obj):
         if obj.prop == "depth":
-            return [None, obj.name, "df_row.name._depth > {}".format(obj.val), "isinstance(df_row.name._depth, Real)"]
+            return [
+                None,
+                obj.name,
+                "df_row.name._depth > {}".format(obj.val),
+                "isinstance(df_row.name._depth, Real)",
+            ]
         if obj.prop == "node_id":
-            return [None, obj.name, "df_row.name._hatchet_nid > {}".format(obj.val), "isinstance(df_row.name._hatchet_nid, Real)"]
-        return [None, obj.name, "df_row[\"{}\"] > {}".format(obj.prop, obj.val), "isinstance(df_row[\'{}\'], Real)".format(obj.prop)]
+            return [
+                None,
+                obj.name,
+                "df_row.name._hatchet_nid > {}".format(obj.val),
+                "isinstance(df_row.name._hatchet_nid, Real)",
+            ]
+        return [
+            None,
+            obj.name,
+            'df_row["{}"] > {}'.format(obj.prop, obj.val),
+            "isinstance(df_row['{}'], Real)".format(obj.prop),
+        ]
 
     def _parse_num_lte(self, obj):
         if obj.prop == "depth":
-            return [None, obj.name, "df_row.name._depth <= {}".format(obj.val), "isinstance(df_row.name._depth, Real)"]
+            return [
+                None,
+                obj.name,
+                "df_row.name._depth <= {}".format(obj.val),
+                "isinstance(df_row.name._depth, Real)",
+            ]
         if obj.prop == "node_id":
-            return [None, obj.name, "df_row.name._hatchet_nid <= {}".format(obj.val), "isinstance(df_row.name._hatchet_nid, Real)"]
-        return [None, obj.name, "df_row[\"{}\"] <= {}".format(obj.prop, obj.val), "isinstance(df_row[\'{}\'], Real)".format(obj.prop)]
+            return [
+                None,
+                obj.name,
+                "df_row.name._hatchet_nid <= {}".format(obj.val),
+                "isinstance(df_row.name._hatchet_nid, Real)",
+            ]
+        return [
+            None,
+            obj.name,
+            'df_row["{}"] <= {}'.format(obj.prop, obj.val),
+            "isinstance(df_row['{}'], Real)".format(obj.prop),
+        ]
 
     def _parse_num_gte(self, obj):
         if obj.prop == "depth":
-            return [None, obj.name, "df_row.name._depth >= {}".format(obj.val), "isinstance(df_row.name._depth, Real)"]
+            return [
+                None,
+                obj.name,
+                "df_row.name._depth >= {}".format(obj.val),
+                "isinstance(df_row.name._depth, Real)",
+            ]
         if obj.prop == "node_id":
-            return [None, obj.name, "df_row.name._hatchet_nid >= {}".format(obj.val), "isinstance(df_row.name._hatchet_nid, Real)"]
-        return [None, obj.name, "df_row[\"{}\"] >= {}".format(obj.prop, obj.val), "isinstance(df_row[\'{}\'], Real)".format(obj.prop)]
+            return [
+                None,
+                obj.name,
+                "df_row.name._hatchet_nid >= {}".format(obj.val),
+                "isinstance(df_row.name._hatchet_nid, Real)",
+            ]
+        return [
+            None,
+            obj.name,
+            'df_row["{}"] >= {}'.format(obj.prop, obj.val),
+            "isinstance(df_row['{}'], Real)".format(obj.prop),
+        ]
 
     def _parse_num_nan(self, obj):
         if obj.prop == "depth":
-            return [None, obj.name, "pd.isna(df_row.name._depth)", "isinstance(df_row.name._depth, Real)"]
+            return [
+                None,
+                obj.name,
+                "pd.isna(df_row.name._depth)",
+                "isinstance(df_row.name._depth, Real)",
+            ]
         if obj.prop == "node_id":
-            return [None, obj.name, "pd.isna(df_row.name._hatchet_nid)", "isinstance(df_row.name._hatchet_nid, Real)"]
-        return [None, obj.name, "pd.isna(df_row[\"{}\"])".format(obj.prop), "isinstance(df_row[\'{}\'], Real)".format(obj.prop)]
+            return [
+                None,
+                obj.name,
+                "pd.isna(df_row.name._hatchet_nid)",
+                "isinstance(df_row.name._hatchet_nid, Real)",
+            ]
+        return [
+            None,
+            obj.name,
+            'pd.isna(df_row["{}"])'.format(obj.prop),
+            "isinstance(df_row['{}'], Real)".format(obj.prop),
+        ]
 
     def _parse_num_not_nan(self, obj):
         if obj.prop == "depth":
-            return [None, obj.name, "not pd.isna(df_row.name._depth)", "isinstance(df_row.name._depth, Real)"]
+            return [
+                None,
+                obj.name,
+                "not pd.isna(df_row.name._depth)",
+                "isinstance(df_row.name._depth, Real)",
+            ]
         if obj.prop == "node_id":
-            return [None, obj.name, "not pd.isna(df_row.name._hatchet_nid)", "isinstance(df_row.name._hatchet_nid, Real)"]
-        return [None, obj.name, "not pd.isna(df_row[\"{}\"])".format(obj.prop), "isinstance(df_row[\'{}\'], Real)".format(obj.prop)]
+            return [
+                None,
+                obj.name,
+                "not pd.isna(df_row.name._hatchet_nid)",
+                "isinstance(df_row.name._hatchet_nid, Real)",
+            ]
+        return [
+            None,
+            obj.name,
+            'not pd.isna(df_row["{}"])'.format(obj.prop),
+            "isinstance(df_row['{}'], Real)".format(obj.prop),
+        ]
 
 
 class AndQuery(NaryQuery):
