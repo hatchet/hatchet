@@ -3,6 +3,11 @@ branches:
     - develop
     - /^releases\/.*$/
 
+addons:
+  apt:
+    packages:
+      - libhdf5-serial-dev
+
 jobs:
   fast_finish: true
   include:
@@ -34,10 +39,12 @@ jobs:
       language: python
 
 install:
+  - pip install --upgrade cmake
   - pip install --upgrade -r requirements.txt
   - if [[ "$TRAVIS_PYTHON_VERSION" == "3.7" ]]; then
         pip install --upgrade black;
     fi
+  - pip install --upgrade tables
   - python setup.py install
   - python setup.py build_ext --inplace
   - pip list
