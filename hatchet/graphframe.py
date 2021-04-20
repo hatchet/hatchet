@@ -44,6 +44,26 @@ class GraphFrame:
     """An input dataset is read into an object of this type, which includes a graph
     and a dataframe.
     """
+    self._load_func_dict = {
+        "hdf": GraphFrame.from_hdf,
+        "parquet": GraphFrame.from_parquet,
+        "feather": GraphFrame.from_feather,
+        "pickle": GraphFrame.from_pickle,
+    }
+    self._save_func_dict = {
+        "hdf": GraphFrame.to_hdf,
+        "parquet": GraphFrame.to_parquet,
+        "feather": GraphFrame.to_feather,
+        "pickle": GraphFrame.to_pickle,
+    }
+    self._format_extensions = {
+        ".hdf5": "hdf",
+        ".hdf": "hdf",
+        ".h5": "hdf",
+        ".parquet": "parquet",
+        ".pkl": "pickle",
+        ".pickle": "pickle",
+    }
 
     def __init__(
         self,
@@ -259,6 +279,55 @@ class GraphFrame:
         return gf
 
     @staticmethod
+    def load(filename, fileformat=None, **kwargs):
+        format_priority = ["hdf", "parquet", "feather", "pickle"]
+        fformat = fileformat
+        if fformat is None:
+            for ext in self._format_extensions.keys():
+                if filename.endswith(ext):
+                    fformat = self._format_extensions[ext]
+                    break
+        if fformat is not None and fformat in format_priority:
+            format_priority.remove(fformat)
+            try:
+                gf = self._load_func_dict[fformat](filename, **kwargs)
+                return gf
+            except ImportError:
+                print("Could not load from {} format. Trying alternatives.".format(fformat))
+        for form in format_priority:
+            print("Trying {}".format(form))
+            try:
+                gf = self._load_func_dict[form](filename, **kwargs)
+                return gf
+            except ImportError:
+                print("Could not load from {} format.".format(form))
+        raise IOError("Could not parse {} with the available formats. Make sure you have the necessary dependencies installed.".format(filename))
+
+    def save(self, filename, fileformat=None, **kwargs):
+        format_priority = ["hdf", "parquet", "feather", "pickle"]
+        fformat = fileformat
+        if fformat is None:
+            for ext in self._format_extensions.keys():
+                if filename.endswith(ext):
+                    fformat = self._format_extensions[ext]
+                    break
+        if fformat is not None and fformat in format_priority:
+            format_priority.remove(fformat)
+            try:
+                self._save_func_dict[fformat](self, filename, **kwargs)
+                return
+            except ImportError:
+                print("Could not save to {} format. Trying alternatives.".format(fformat))
+        for form in format_priority:
+            print("Trying {}".format(form))
+            try:
+                self._load_func_dict[form](self, filename, **kwargs)
+                return
+            except ImportError:
+                print("Could not save to {} format.".format(form))
+        raise IOError("Could not save {} with the available formats. Make sure you have the necessary dependencies installed.".format(filename))
+
+    @staticmethod
     def from_hdf(filename, key=None):
         # import this lazily to avoid circular dependencies
         from .readers.hdf5_reader import HDF5Reader
@@ -290,6 +359,28 @@ class GraphFrame:
         from .writers.pickle_writer import PickleWriter
 
         PickleWriter(filename).write(**kwargs)
+
+    @staticmethod
+    def from_feather(filename, **kwargs):
+        from .readers.feather_reader import FeatherReader
+
+        return FeatherReader(filename).read(**kwargs)
+
+    def to_feather(filename, **kwargs):
+        from .writers.feather_writer import FeatherWriter
+
+        FeatherWriter(filename).write(**kwargs)
+
+    @staticmethod
+    def from_parquet(filename, **kwargs):
+        from .readers.parquet_reader import ParquetReader
+
+        return ParquetReader(filename).read(**kwargs)
+
+    def to_parquet(filename, **kwargs):
+        from .writers.parquet_writer import ParquetWriter
+
+        ParquetWriter(filename).write(**kwargs)
 
     def copy(self):
         """Return a shallow copy of the graphframe.
