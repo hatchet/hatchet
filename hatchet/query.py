@@ -33,14 +33,14 @@ class AbstractQuery(ABC):
     def apply(self, gf):
         pass
 
-    def __and__(self, *others):
-        return AndQuery(self, *others)
+    def __and__(self, other):
+        return AndQuery(self, other)
 
-    def __or__(self, *others):
-        return OrQuery(self, *others)
+    def __or__(self, other):
+        return OrQuery(self, other)
 
-    def __xor__(self, *others):
-        return XorQuery(self, *others)
+    def __xor__(self, other):
+        return XorQuery(self, other)
 
     def __invert__(self):
         return NotQuery(self)
