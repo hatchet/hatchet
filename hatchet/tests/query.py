@@ -21,7 +21,7 @@ from hatchet.query import (
     IntersectionQuery,
     UnionQuery,
     SymDifferenceQuery,
-    CypherQuery
+    CypherQuery,
 )
 
 
@@ -888,6 +888,7 @@ def test_sym_diff_query(mock_graph_literal):
     ]
     assert sorted(compound_query.apply(gf)) == sorted(matches)
 
+
 def test_construct_cypher_api():
     mock_node_mpi = {"name": "MPI_Bcast"}
     mock_node_ibv = {"name": "ibv_reg_mr"}
@@ -983,6 +984,7 @@ def test_construct_cypher_api():
     """
     with pytest.raises(InvalidQueryPath):
         _ = CypherQuery(invalid_path)
+
 
 def test_apply_cypher(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
