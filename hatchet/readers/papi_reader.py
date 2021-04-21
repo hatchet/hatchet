@@ -11,9 +11,9 @@ import sys
 import json
 # Make it work for Python 2+3 and with Unicode
 try:
-  to_unicode = unicode
+    to_unicode = unicode
 except NameError:
-  to_unicode = str
+    to_unicode = str
 
 import hatchet.graphframe
 from hatchet.node import Node
@@ -39,20 +39,20 @@ class PAPIReader:
         if os.path.isdir(file_path):
 
             # get measurement files
-            file_list = os.listdir(file_path)
-            file_list.sort()
+            file_list = sorted(os.listdir(file_path))
             rank_cnt = 0
-            
+
             for item in file_list:
                 # determine mpi rank based on file name (rank_#)
                 try:
                     rank = item.split('_', 1)[1]
                     rank = rank.rsplit('.', 1)[0]
-                except:
+                except BaseException:
                     # skip file
-                    print("Warning: {} has the wrong format. It will be skipped.".format(item))
+                    print(
+                        "Warning: {} has the wrong format. It will be skipped.".format(item))
                     continue
-                
+
                 # we use the rank counter starting from 0
                 rank = rank_cnt
 
@@ -64,11 +64,13 @@ class PAPIReader:
                         # keep order of all objects
                         try:
                             data = json.load(json_file, object_pairs_hook=OrderedDict)
-                        except:
+                        except BaseException:
                             print("Error: {} is not json.".format(file_path))
                             sys.exit()
                 except IOError as ioe:
-                    print("Error: Cannot open file {} ({})".format(file_name, repr(ioe)))
+                    print(
+                        "Error: Cannot open file {} ({})".format(
+                            file_name, repr(ioe)))
                     sys.exit()
 
                 # get all events
@@ -80,7 +82,7 @@ class PAPIReader:
                 json_rank[str(rank)]['threads'] = data['threads']
 
                 rank_cnt = rank_cnt + 1
-            
+
             json_dict['ranks'] = json_rank
             self.dict = json_dict
 
@@ -91,7 +93,7 @@ class PAPIReader:
                     # keep order of all objects
                     try:
                         data = json.load(json_file, object_pairs_hook=OrderedDict)
-                    except:
+                    except BaseException:
                         print("Error: {} is not json.".format(file_path))
                         sys.exit()
             except IOError as ioe:
@@ -135,7 +137,7 @@ class PAPIReader:
     def __get_metrics(self, data, contain_read_events):
         metrics = OrderedDict()
         for metric in self.inc_metrics:
-            if isinstance(data[metric],dict):
+            if isinstance(data[metric], dict):
                 contain_read_events[0] = 1
                 metrics[metric] = int(data[metric]['region_value'])
             else:
@@ -145,7 +147,7 @@ class PAPIReader:
     def __get_read_metrics(self, data, read_id):
         metrics = OrderedDict()
         for metric in self.inc_metrics:
-            if isinstance(data[metric],dict):
+            if isinstance(data[metric], dict):
                 metrics[metric] = int(data[metric][read_id])
         return metrics
 
@@ -166,36 +168,37 @@ class PAPIReader:
             metrics = self.__get_metrics(data, contain_read_events)
 
             node_dict = dict(
-                { "name": data['name'], "node": node,
-                "rank": int(rank),
-                "thread": int(thread),
-                **metrics,
-                }
+                {"name": data['name'], "node": node,
+                 "rank": int(rank),
+                 "thread": int(thread),
+                 **metrics,
+                 }
             )
             node_dicts.append(node_dict)
             if int(data['parent_region_id']) == -1:
                 list_roots.append(node)
             else:
                 self.__add_child_node(list_roots, int(data['parent_region_id']), node)
-            
+
             # check if we have to create child nodes for read events
             if contain_read_events[0] == 1:
 
                 # check how many read calls are used
                 read_num = len(data['cycles'])
 
-                for i in range (1, read_num):
+                for i in range(1, read_num):
                     node_name_read = "read_" + str(i)
 
-                    read_frame = Frame({"type": "region", "name": node_name_read, "id": int(region)})
+                    read_frame = Frame(
+                        {"type": "region", "name": node_name_read, "id": int(region)})
                     read_node = Node(read_frame, node)
                     read_metrics = self.__get_read_metrics(data, node_name_read)
                     node_dict = dict(
-                        { "name": node_name_read, "node": read_node,
-                        "rank": int(rank),
-                        "thread": int(thread),
-                        **read_metrics,
-                        }
+                        {"name": node_name_read, "node": read_node,
+                         "rank": int(rank),
+                         "thread": int(thread),
+                         **read_metrics,
+                         }
                     )
                     node_dicts.append(node_dict)
                     node.add_child(read_node)
@@ -203,7 +206,7 @@ class PAPIReader:
         # set array of graph nodes
         for attributes in iter(node_dicts):
             g_node = attributes['node'].frame
-            if not "read_" in g_node['name']:
+            if "read_" not in g_node['name']:
                 node_graph_arr.append([g_node['id'], g_node['name']])
 
     def __print_error_and_exit(self, region_name, rank, thread):
@@ -219,7 +222,8 @@ class PAPIReader:
                 for thread, thread_value in list(rank_value['threads'].items()):
                     for region, data in list(thread_value['regions'].items()):
                         if any(map(data['name'].__contains__, self.filter)) is True:
-                            del self.dict['ranks'][str(rank)]['threads'][str(thread)]['regions'][str(region)]
+                            del self.dict['ranks'][str(rank)]['threads'][str(
+                                thread)]['regions'][str(region)]
 
         # add default metrics 'cycles' and 'real_time_nsec' to inc_metrics
         self.inc_metrics.append('cycles')
@@ -240,7 +244,7 @@ class PAPIReader:
                     max_regions = len(thread_value['regions'])
                     graph_rank = int(rank)
                     graph_thread = int(thread)
-        
+
         # check graph indices
         if rank_cnt == 1 and thread_cnt == 1:
             self.indices = ["node"]
@@ -249,7 +253,12 @@ class PAPIReader:
         list_roots = []
         node_dicts = []
         node_graph_arr = []
-        self.__create_graph(graph_rank, graph_thread, list_roots, node_dicts, node_graph_arr)
+        self.__create_graph(
+            graph_rank,
+            graph_thread,
+            list_roots,
+            node_dicts,
+            node_graph_arr)
 
         # fill up node dictionaries for all remaining ranks and threads
         for rank, rank_value in iter(self.dict['ranks'].items()):
@@ -274,30 +283,31 @@ class PAPIReader:
                                 # create a tuple of zero values
                                 zero_metrics = self.__get_zero_metrics()
                                 node_dict = dict(
-                                { "name": graph_region[1], "node": self.__find_node(list_roots, graph_region[0], graph_region[1]),
-                                    "rank": int(rank),
-                                    "thread": int(thread),
-                                    **zero_metrics,
-                                }
+                                    {"name": graph_region[1], "node": self.__find_node(list_roots, graph_region[0], graph_region[1]),
+                                     "rank": int(rank),
+                                     "thread": int(thread),
+                                     **zero_metrics,
+                                     }
                                 )
                                 node_dicts.append(node_dict)
 
                                 # set iterator to the next region
                                 graph_region = next(node_graph_arr_iterator, None)
                                 if graph_region is None:
-                                    self.__print_error_and_exit(data['name'], rank, thread)
-                        
+                                    self.__print_error_and_exit(
+                                        data['name'], rank, thread)
+
                         if found_match is True:
                             # we found a match
                             contain_read_events = [0]
                             metrics = self.__get_metrics(data, contain_read_events)
 
                             node_dict = dict(
-                                { "name": graph_region[1], "node": self.__find_node(list_roots, graph_region[0], graph_region[1]),
-                                "rank": int(rank),
-                                "thread": int(thread),
-                                **metrics,
-                                }
+                                {"name": graph_region[1], "node": self.__find_node(list_roots, graph_region[0], graph_region[1]),
+                                 "rank": int(rank),
+                                 "thread": int(thread),
+                                 **metrics,
+                                 }
                             )
                             node_dicts.append(node_dict)
                             # check if we have to add read events
@@ -306,19 +316,19 @@ class PAPIReader:
                                 # check how many read calls are used
                                 read_num = len(data['cycles'])
 
-                                for i in range (1, read_num):
+                                for i in range(1, read_num):
                                     node_name_read = "read_" + str(i)
 
-                                    read_metrics = self.__get_read_metrics(data, node_name_read)
+                                    read_metrics = self.__get_read_metrics(
+                                        data, node_name_read)
                                     node_dict = dict(
-                                        { "name": node_name_read, "node": self.__find_node(list_roots, graph_region[0], node_name_read),
-                                        "rank": int(rank),
-                                        "thread": int(thread),
-                                        **read_metrics,
-                                        }
+                                        {"name": node_name_read, "node": self.__find_node(list_roots, graph_region[0], node_name_read),
+                                         "rank": int(rank),
+                                         "thread": int(thread),
+                                         **read_metrics,
+                                         }
                                     )
                                     node_dicts.append(node_dict)
-
 
         # setup data for hatchet graphframe
         graph = Graph(list_roots)
