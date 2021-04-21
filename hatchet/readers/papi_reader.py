@@ -218,7 +218,7 @@ class PAPIReader:
             for rank, rank_value in list(self.dict['ranks'].items()):
                 for thread, thread_value in list(rank_value['threads'].items()):
                     for region, data in list(thread_value['regions'].items()):
-                        if any(map(data['name'].__contains__, self.filter)) == True:
+                        if any(map(data['name'].__contains__, self.filter)) is True:
                             del self.dict['ranks'][str(rank)]['threads'][str(thread)]['regions'][str(region)]
 
         # add default metrics 'cycles' and 'real_time_nsec' to inc_metrics
@@ -287,7 +287,7 @@ class PAPIReader:
                                 if graph_region is None:
                                     self.__print_error_and_exit(data['name'], rank, thread)
                         
-                        if found_match == True:
+                        if found_match is True:
                             # we found a match
                             contain_read_events = [0]
                             metrics = self.__get_metrics(data, contain_read_events)
