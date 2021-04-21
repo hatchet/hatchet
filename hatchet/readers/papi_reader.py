@@ -276,7 +276,7 @@ class PAPIReader:
 
                         # find matching regions
                         found_match = False
-                        while found_match == False:
+                        while found_match is False:
                             if graph_region[1] == data['name']:
                                 found_match = True
                             else:
