@@ -511,7 +511,6 @@ class GraphFrame:
 
         return out_columns
 
-    @Logger.loggable
     def subtree_sum(
         self, columns, out_columns=None, function=lambda x: x.sum(min_count=1)
     ):
@@ -543,7 +542,6 @@ class GraphFrame:
                         self.dataframe.loc[[node] + node.children, col]
                     )
 
-    @Logger.loggable
     def subgraph_sum(
         self, columns, out_columns=None, function=lambda x: x.sum(min_count=1)
     ):
@@ -607,7 +605,6 @@ class GraphFrame:
                     function(self.dataframe.loc[(subgraph_nodes), columns])
                 )
 
-    @Logger.loggable
     def update_inclusive_columns(self):
         """Update inclusive columns (typically after operations that rewire the
         graph.
@@ -619,12 +616,11 @@ class GraphFrame:
         self.inc_metrics = ["%s (inc)" % s for s in self.exc_metrics]
         self.subgraph_sum(self.exc_metrics, self.inc_metrics)
 
-    @Logger.loggable
     def show_metric_columns(self):
         """Returns a list of dataframe column labels."""
         return list(self.exc_metrics + self.inc_metrics)
 
-    @Logger.loggable
+
     def unify(self, other):
         """Returns a unified graphframe.
 
