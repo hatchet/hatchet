@@ -1,0 +1,100 @@
+# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: Hatchet Unit Test CI
+
+on:
+  pull_request:
+    branches: [ develop, releases/** ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up GCC
+      run: |
+        sudo apt update
+        #sudo apt install -y build-essential software-properties-common
+        sudo apt install -y build-essential
+        sudo apt install -y zstd
+    - name: Setup CMake
+      uses: jwlawson/actions-setup-cmake@v1.8
+      with:
+        cmake-version: 3.16.x
+        github-api-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v2
+      with:
+        python-version: ${{ matrix.python-version }}
+    # Caches all versions of Python used and installed dependencies.
+    # Done to try to minimize build time and potential GitHub API usage limits
+    # Code from: https://medium.com/ai2-blog/python-caching-in-github-actions-e9452698e98d
+    - uses: actions/cache@v2
+      with:
+        path: ${{ env.pythonLocation }}
+        key: ${{ env.pythonLocation }}-${{ hashFiles("setup.py") }}-${{ hashFiles("requirements.txt") }}
+        restore-keys: |
+          ${{ env.pythonLocation }}-
+    - name: Install dependencies
+      # if: steps.cache.outputs.cache-hit != "true"
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade flake8 pytest
+        # python -m pip install --upgrade cmake
+        pip install -r requirements.txt
+        python setup.py install
+        python setup.py build_ext --inplace
+        python -m pip list
+    - name: Update Black
+      if: ${{ matrix.python-version == 3.7 }}
+      run: |
+        pip install --upgrade black
+    - name: Lint and Format Check with Flake8 and Black
+      if: ${{ matrix.python-version == 3.7 }}
+      run: |
+        black --diff --check .
+        flake8
+    - name: Basic Test with pytest
+      run: |
+        PYTHONPATH=. coverage run $(which pytest)
+    - name: "Clone Caliper"
+      uses: actions/checkout@v2
+      with:
+        repository: LLNL/Caliper
+        path: Caliper
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Build Caliper
+      working-directory: Caliper
+      run: |
+        echo -e "PWD: $(pwd)"
+        mkdir build && mkdir install
+        cd build
+        cmake -DCMAKE_INSTALL_PREFIX=../install ../
+        make VERBOSE=1
+        make install
+        export PATH=$(pwd)/../install/bin:${PATH}
+        echo -e "PATH=${PATH}"
+        cd $GITHUB_WORKSPACE
+        echo -e "PWD:${PWD}"
+        which cali-query
+    - name: Build Timemory
+      if: ${{ matrix.python-version >= 3.6 }}
+      run: |
+        python -m pip install --upgrade scikit-build
+        # python -m pip install --upgrade --no-cache-dir --no-deps -v --pre timemory --install-option=--disable-{c,gotcha,tools}
+        python -m pip install --upgrade --no-cache-dir --no-deps -v timemory==3.2.0.dev4 --install-option=--disable-{c,gotcha,tools}
+    - name: Test Caliper and Timemory Support with pytest
+      run: |
+        PYTHONPATH=. coverage run $(which pytest)
+        # - name: "Convert coverage"
+        #   run: "python -m coverage xml"
+    - name: "Upload coverage to Codecov"
+      uses: "codecov/codecov-action@v1"
+      with:
+        fail_ci_if_error: true
