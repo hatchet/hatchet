@@ -41,7 +41,7 @@ class Log(object):
             elif "logging" in kwargs and kwargs["logging"] is False:
                 self._active = False
 
-            # if logger is on
+            # if logger is on and user called function
             if self._active and self._nested is False:
                 log_dict = {}
                 arg_list = []
@@ -58,6 +58,7 @@ class Log(object):
                         # log a graphframe as a dictionary of metadata
                         graphframe_metadata = {}
 
+                        graphframe_metadata["object"] = arg.__name__
                         graphframe_metadata["id"] = id(arg)
                         graphframe_metadata["rows"] = arg.dataframe.shape[0]
                         graphframe_metadata["nodes"] = len(arg.graph)
