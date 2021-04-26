@@ -34,7 +34,7 @@ def f():
 
 
 def test_profiler():
-    """ Test the profiler start/stop, ensure that f() has been profiled """
+    """Test the profiler start/stop, ensure that f() has been profiled"""
     prf = Profiler()
 
     prf.start()
