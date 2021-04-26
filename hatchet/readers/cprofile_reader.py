@@ -26,7 +26,7 @@ def print_incomptable_msg(stats_file):
 
 
 class StatData:
-    """ Faux Enum for python """
+    """Faux Enum for python"""
 
     NUMCALLS = 0
     NATIVECALLS = 1
@@ -36,7 +36,7 @@ class StatData:
 
 
 class NameData:
-    """ Faux Enum for python """
+    """Faux Enum for python"""
 
     FILE = 0
     LINE = 1
