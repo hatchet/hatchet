@@ -61,9 +61,9 @@ script:
   - which cali-query
   - if [[ "$(echo ${TRAVIS_PYTHON_VERSION} | sed 's/\.//g')" -ge "36" ]]; then
       pip install --upgrade scikit-build;
-      # pip install --upgrade --no-cache-dir --no-deps -v --pre timemory --install-option=--disable-{c,gotcha,tools};
       pip install --upgrade --no-cache-dir --no-deps -v timemory==3.2.0.dev4 --install-option=--disable-{c,gotcha,tools};
     fi
+    # pip install --upgrade --no-cache-dir --no-deps -v --pre timemory --install-option=--disable-{c,gotcha,tools};
   - PYTHONPATH=. coverage run $(which pytest)
 
 after_success:
