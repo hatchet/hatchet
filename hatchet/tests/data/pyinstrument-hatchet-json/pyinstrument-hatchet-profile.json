@@ -693,7 +693,7 @@
         ]
       },
       {
-        "function": "from_caliper_json",
+        "function": "from_caliper",
         "file_path_short": "hatchet/graphframe.py",
         "file_path": "/home/onurcankur/software/hatchet/hatchet/graphframe.py",
         "line_no": 98,
