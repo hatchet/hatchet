@@ -19,9 +19,8 @@ Posters
 
 - Ian Lumsden. `Graph-Based Profiling Analysis using Hatchet <https://globalcomputing.group/assets/img/sc20/posters/ian.pdf>`_. Presented at SC '20. `Slides <https://globalcomputing.group/assets/img/sc20/bestposters/ian.pdf>`_ | `Video Presentation <https://www.youtube.com/watch?v=j-FRGnLBo4U&feature=youtu.be>`_
 
-- Suraj P. Kesavan, Harsh Bhatia, Abhinav Bhatele, Stephanie Brink, Olga Pearce, Todd Gamblin, Peer-Timo Bremer, and Kwan-Liu Ma. `Scalable Comparative Visualization of Ensembles of Call Graphs Using CallFlow`. Presented at SC '20.
-
 Tutorials
 =========
 
 - Performance Analysis using Hatchet, LLNL, July 29/31, 2020.
+- Automated Performance Analysis with Caliper, SPOT, and Hatchet, ECP Annual Meeting, April 12, 2021. :download:`pdf <slides/2021-ECPAM-hatchet-tutorial.pdf>`
