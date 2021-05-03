@@ -236,12 +236,6 @@ class TAUReader:
                         map(float, call_line_regex.group(2).split(" ")[:-1])
                     )
 
-                    if (
-                        "void Domain::Domain(Int_t, Index_t, Index_t, Index_t, Index_t, Int_t, Int_t, Int_t, Int_t) [{lulesh-init.cc} {16,1}-{194,1}]"
-                        in dst_name
-                    ):
-                        print()
-
                     if "[{" in dst_name:
                         # [{<file_or_module>} {<line>}]
                         tmp_module_or_file_line = (
@@ -265,12 +259,18 @@ class TAUReader:
                             # [UNWIND] <file> [@] <name> [{} {}]
                             dst_info = dst_name.split(" [@] ")
                             dst_file = dst_info[0].split()[1]
-                            dst_name_module = dst_info[1].split()
-                            dst_module = dst_name_module[1].split()[0].strip("}{[")
+                            dst_name_module = dst_info[1].split(" [{")
+                            dst_module = dst_name_module[1].split()[0].strip("}")
+                            # remove file or module if they are the same
+                            if dst_module in dst_file:
+                                if ".so" in dst_file:
+                                    dst_file = None
+                                if ".c" in dst_module:
+                                    dst_module = None
                             dst_name = "[UNWIND] " + dst_name_module[0]
                         else:
                             # [<type>] <name> [{} {}]
-                            dst_info = dst_name.split(" [")
+                            dst_info = dst_name.split(" [{")
                             dst_file = dst_info[1].split()[0].strip("}{")
                             dst_name = dst_info[0]
                     else:
@@ -280,6 +280,12 @@ class TAUReader:
                             dst_file = dst_info[0].split()[1]
                             dst_name_module = dst_info[1].split()
                             dst_module = dst_name_module[1]
+                            # remove file or module if they are the same
+                            if dst_module in dst_file:
+                                if ".so" in dst_file:
+                                    dst_file = None
+                                if ".c" in dst_module:
+                                    dst_module = None
                             dst_name = "[UNWIND] " + dst_name_module[0]
                         else:
                             # [<type>] <name> <file>
