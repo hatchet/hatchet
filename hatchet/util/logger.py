@@ -9,7 +9,7 @@ class Log(object):
     def __init__(self, filename="hatchet_log.json", active=False):
         self._log_file = filename
         self._active = active
-        self._nested = False  # ensures we only log user called commands
+        self._nested = False  # ensures we only log user-called commands
 
     def set_output_file(self, filename=""):
         self._log_file = filename
@@ -35,12 +35,6 @@ class Log(object):
         """A decrator which logs calls to hatchet functions"""
 
         def inner(*args, **kwargs):
-            # turn on logger
-            if "logging" in kwargs and kwargs["logging"] is True:
-                self._active = True
-            elif "logging" in kwargs and kwargs["logging"] is False:
-                self._active = False
-
             # if logger is on and user called function
             if self._active and self._nested is False:
                 log_dict = {}
