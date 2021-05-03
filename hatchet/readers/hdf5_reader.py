@@ -17,8 +17,5 @@ class HDF5Reader(PandasReader):
         df = None
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=Warning)
-            key = None
-            if "key" in kwargs:
-                key = kwargs["key"]
-            df = pd.read_hdf(self.fname, key=key)
+            df = pd.read_hdf(self.fname, **kwargs)
         return df

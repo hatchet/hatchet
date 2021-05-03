@@ -1164,7 +1164,7 @@ def test_hdf_load_store(mock_graph_literal):
         os.remove("test_gframe.hdf")
     gf_orig = GraphFrame.from_literal(mock_graph_literal)
     gf_orig.to_hdf("test_gframe.hdf", "test_key")
-    gf_loaded = GraphFrame.from_hdf("test_gframe.hdf", "test_key")
+    gf_loaded = GraphFrame.from_hdf("test_gframe.hdf", key="test_key")
 
     assert gf_orig.dataframe.equals(gf_loaded.dataframe)
     assert gf_orig.graph == gf_loaded.graph
