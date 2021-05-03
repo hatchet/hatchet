@@ -3,6 +3,15 @@
 #
 # SPDX-License-Identifier: MIT
 
+from abc import abstractmethod
+
+try:
+    from abc import ABC
+except ImportError:
+    from abc import ABCMeta
+
+    ABC = ABCMeta("ABC", (object,), {"__slots__": ()})
+
 from itertools import groupby
 from numbers import Real
 import re
@@ -17,7 +26,45 @@ import numpy as np  # noqa: F401
 from .node import Node, traversal_order
 
 
-class QueryMatcher:
+class AbstractQuery(ABC):
+    """Interface defining a Hatchet Query"""
+
+    @abstractmethod
+    def apply(self, gf):
+        pass
+
+
+class NaryQuery(AbstractQuery):
+    """Abstract Base Class defining a compound query
+    that acts on and merges N separate subqueries"""
+
+    def __init__(self, *args):
+        self.subqueries = []
+        if isinstance(args[0], tuple) and len(args) == 1:
+            args = args[0]
+        for query in args:
+            if isinstance(query, list):
+                self.subqueries.append(QueryMatcher(query))
+            elif issubclass(type(query), AbstractQuery):
+                self.subqueries.append(query)
+            else:
+                raise TypeError(
+                    "Subqueries for NaryQuery must be either a \
+                                high-level query or a subclass of AbstractQuery"
+                )
+
+    @abstractmethod
+    def _perform_nary_op(self, query_results):
+        pass
+
+    def apply(self, gf):
+        results = []
+        for query in self.subqueries:
+            results.append(query.apply(gf))
+        return self._perform_nary_op(results)
+
+
+class QueryMatcher(AbstractQuery):
     """Process and apply queries to GraphFrames."""
 
     def __init__(self, query=None):
@@ -324,7 +371,9 @@ class QueryMatcher:
         for root in sorted(gf.graph.roots, key=traversal_order):
             self._apply_impl(gf, root, visited, matches)
         assert len(visited) == len(gf.graph)
-        return matches
+        matched_node_set = list(set().union(*matches))
+        # return matches
+        return matched_node_set
 
     def _add_node(self, wildcard_spec=".", filter_func=lambda row: True):
         """Add a node to the query.
@@ -579,9 +628,72 @@ class QueryMatcher:
             self._apply_impl(gf, child, visited, matches)
 
 
+class AndQuery(NaryQuery):
+    """Compound Query that returns the intersection of the results
+    of the subqueries"""
+
+    def __init__(self, *args):
+        # TODO Remove Arguments when Python 2.7 support is dropped
+        super(AndQuery, self).__init__(args)
+        if len(self.subqueries) < 2:
+            raise BadNumberNaryQueryArgs("AndQuery requires 2 or more subqueries")
+
+    def _perform_nary_op(self, query_results):
+        intersection_set = set(query_results[0]).intersection(*query_results[1:])
+        return list(intersection_set)
+
+
+# Alias of AndQuery to signify the relationship to set Intersection
+IntersectionQuery = AndQuery
+
+
+class OrQuery(NaryQuery):
+    """Compound Query that returns the union of the results
+    of the subqueries"""
+
+    def __init__(self, *args):
+        # TODO Remove Arguments when Python 2.7 support is dropped
+        super(OrQuery, self).__init__(args)
+        if len(self.subqueries) < 2:
+            raise BadNumberNaryQueryArgs("OrQuery requires 2 or more subqueries")
+
+    def _perform_nary_op(self, query_results):
+        union_set = set().union(*query_results)
+        return list(union_set)
+
+
+# Alias of OrQuery to signify the relationship to set Union
+UnionQuery = OrQuery
+
+
+class XorQuery(NaryQuery):
+    """Compound Query that returns the symmetric difference
+    (i.e., set-based XOR) of the results of the subqueries"""
+
+    def __init__(self, *args):
+        # TODO Remove Arguments when Python 2.7 support is dropped
+        super(XorQuery, self).__init__(args)
+        if len(self.subqueries) < 2:
+            raise BadNumberNaryQueryArgs("XorQuery requires 2 or more subqueries")
+
+    def _perform_nary_op(self, query_results):
+        xor_set = set()
+        for res in query_results:
+            xor_set = xor_set.symmetric_difference(set(res))
+        return list(xor_set)
+
+
+# Alias of XorQuery to signify the relationship to set Symmetric Difference
+SymDifferenceQuery = XorQuery
+
+
 class InvalidQueryPath(Exception):
     """Raised when a query does not have the correct syntax"""
 
 
 class InvalidQueryFilter(Exception):
+    """Raised when a query filter does not have a valid syntax"""
+
+
+class BadNumberNaryQueryArgs(Exception):
     """Raised when a query filter does not have a valid syntax"""

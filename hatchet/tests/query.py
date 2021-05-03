@@ -9,7 +9,19 @@ import re
 
 from hatchet import GraphFrame
 from hatchet.node import traversal_order
-from hatchet.query_matcher import QueryMatcher, InvalidQueryFilter, InvalidQueryPath
+from hatchet.query import (
+    QueryMatcher,
+    InvalidQueryFilter,
+    InvalidQueryPath,
+    AbstractQuery,
+    NaryQuery,
+    AndQuery,
+    OrQuery,
+    XorQuery,
+    IntersectionQuery,
+    UnionQuery,
+    SymDifferenceQuery,
+)
 
 
 def test_construct_high_level_api():
@@ -329,65 +341,84 @@ def test_apply(mock_graph_literal):
     ]
     root = gf.graph.roots[0]
     match = [
-        [
-            root,
-            root.children[1],
-            root.children[1].children[0],
-            root.children[1].children[0].children[0],
-            root.children[1].children[0].children[0].children[1],
-        ],
-        [
-            root.children[1],
-            root.children[1].children[0],
-            root.children[1].children[0].children[0],
-            root.children[1].children[0].children[0].children[1],
-        ],
+        root,
+        root.children[1],
+        root.children[1].children[0],
+        root.children[1].children[0].children[0],
+        root.children[1].children[0].children[0].children[1],
+        # Old-style return value of apply
+        # [
+        #     root,
+        #     root.children[1],
+        #     root.children[1].children[0],
+        #     root.children[1].children[0].children[0],
+        #     root.children[1].children[0].children[0].children[1],
+        # ],
+        # [
+        #     root.children[1],
+        #     root.children[1].children[0],
+        #     root.children[1].children[0].children[0],
+        #     root.children[1].children[0].children[0].children[1],
+        # ],
     ]
     query = QueryMatcher(path)
 
-    assert query.apply(gf) == match
+    assert sorted(query.apply(gf)) == sorted(match)
 
     path = [{"time (inc)": ">= 30.0"}, ".", {"name": "bar"}, "*"]
     match = [
-        [
-            root.children[1].children[0],
-            root.children[1].children[0].children[0],
-            root.children[1].children[0].children[0].children[0],
-            root.children[1].children[0].children[0].children[0].children[0],
-        ],
-        [
-            root.children[1].children[0],
-            root.children[1].children[0].children[0],
-            root.children[1].children[0].children[0].children[0],
-            root.children[1].children[0].children[0].children[0].children[1],
-        ],
+        root.children[1].children[0],
+        root.children[1].children[0].children[0],
+        root.children[1].children[0].children[0].children[0],
+        root.children[1].children[0].children[0].children[0].children[0],
+        root.children[1].children[0].children[0].children[0].children[1],
+        # Old-style return value of apply
+        # [
+        #     root.children[1].children[0],
+        #     root.children[1].children[0].children[0],
+        #     root.children[1].children[0].children[0].children[0],
+        #     root.children[1].children[0].children[0].children[0].children[0],
+        # ],
+        # [
+        #     root.children[1].children[0],
+        #     root.children[1].children[0].children[0],
+        #     root.children[1].children[0].children[0].children[0],
+        #     root.children[1].children[0].children[0].children[0].children[1],
+        # ],
     ]
     query = QueryMatcher(path)
-    assert query.apply(gf) == match
+    assert sorted(query.apply(gf)) == sorted(match)
 
     path = [{"name": "foo"}, {"name": "bar"}, {"time": 5.0}]
-    match = [[root, root.children[0], root.children[0].children[0]]]
+    # match = [[root, root.children[0], root.children[0].children[0]]]
+    match = [root, root.children[0], root.children[0].children[0]]
     query = QueryMatcher(path)
-    assert query.apply(gf) == match
+    assert sorted(query.apply(gf)) == sorted(match)
 
     path = [{"name": "foo"}, {"name": "qux"}, ("+", {"time (inc)": "> 15.0"})]
     match = [
-        [
-            root,
-            root.children[1],
-            root.children[1].children[0],
-            root.children[1].children[0].children[0],
-            root.children[1].children[0].children[0].children[0],
-        ],
-        [
-            root,
-            root.children[1],
-            root.children[1].children[0],
-            root.children[1].children[0].children[0],
-        ],
+        root,
+        root.children[1],
+        root.children[1].children[0],
+        root.children[1].children[0].children[0],
+        root.children[1].children[0].children[0].children[0],
+        # Old-style return value of apply
+        # [
+        #     root,
+        #     root.children[1],
+        #     root.children[1].children[0],
+        #     root.children[1].children[0].children[0],
+        #     root.children[1].children[0].children[0].children[0],
+        # ],
+        # [
+        #     root,
+        #     root.children[1],
+        #     root.children[1].children[0],
+        #     root.children[1].children[0].children[0],
+        # ],
     ]
     query = QueryMatcher(path)
-    assert query.apply(gf) == match
+    assert sorted(query.apply(gf)) == sorted(match)
 
     path = [{"name": "this"}, ("*", {"name": "is"}), {"name": "nonsense"}]
 
@@ -461,6 +492,7 @@ def test_apply(mock_graph_literal):
         ],
         [gf.graph.roots[1].children[0], gf.graph.roots[1].children[0].children[1]],
     ]
+    match = list(set().union(*match))
     query = QueryMatcher(path)
     assert sorted(query.apply(gf)) == sorted(match)
 
@@ -490,8 +522,9 @@ def test_apply_indices(calc_pi_hpct_db):
             main.children[1].children[0].children[0],
         ],
     ]
+    matches = list(set().union(*matches))
     query = QueryMatcher(path)
-    assert query.apply(gf) == matches
+    assert sorted(query.apply(gf)) == sorted(matches)
 
     gf.drop_index_levels()
     assert query.apply(gf) == matches
@@ -501,8 +534,9 @@ def test_high_level_depth(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
     query = QueryMatcher([("*", {"depth": 1})])
     roots = gf.graph.roots
-    matches = [[c] for r in roots for c in r.children]
-    assert query.apply(gf) == matches
+    # matches = [[c] for r in roots for c in r.children]
+    matches = [c for r in roots for c in r.children]
+    assert sorted(query.apply(gf)) == sorted(matches)
 
     query = QueryMatcher([("*", {"depth": "<= 2"})])
     matches = [
@@ -528,6 +562,7 @@ def test_high_level_depth(mock_graph_literal):
         [roots[1].children[0], roots[1].children[0].children[1]],
         [roots[1].children[0].children[1]],
     ]
+    matches = list(set().union(*matches))
     assert sorted(query.apply(gf)) == sorted(matches)
 
     with pytest.raises(InvalidQueryFilter):
@@ -547,10 +582,12 @@ def test_high_level_hatchet_nid(mock_graph_literal):
         [root.children[0], root.children[0].children[1]],
         [root.children[0].children[1]],
     ]
+    matches = list(set().union(*matches))
     assert sorted(query.apply(gf)) == sorted(matches)
 
     query = QueryMatcher([{"node_id": 0}])
-    assert query.apply(gf) == [[gf.graph.roots[0]]]
+    # assert query.apply(gf) == [[gf.graph.roots[0]]]
+    assert query.apply(gf) == [gf.graph.roots[0]]
 
     with pytest.raises(InvalidQueryFilter):
         query = QueryMatcher([{"node_id": "hello"}])
@@ -570,10 +607,12 @@ def test_high_level_depth_index_levels(calc_pi_hpct_db):
         [root.children[0], root.children[0].children[1]],
         [root.children[0].children[1]],
     ]
+    matches = list(set().union(*matches))
     assert sorted(query.apply(gf)) == sorted(matches)
 
     query = QueryMatcher([("*", {"depth": 0})])
-    matches = [[root]]
+    # matches = [[root]]
+    matches = [root]
     assert query.apply(gf) == matches
 
     with pytest.raises(InvalidQueryFilter):
@@ -593,10 +632,12 @@ def test_high_level_node_id_index_levels(calc_pi_hpct_db):
         [root.children[0], root.children[0].children[0]],
         [root.children[0].children[0]],
     ]
+    matches = list(set().union(*matches))
     assert sorted(query.apply(gf)) == sorted(matches)
 
     query = QueryMatcher([("*", {"node_id": 0})])
-    matches = [[root]]
+    # matches = [[root]]
+    matches = [root]
     assert query.apply(gf) == matches
 
     with pytest.raises(InvalidQueryFilter):
@@ -658,4 +699,190 @@ def test_high_level_multi_condition_one_attribute(mock_graph_literal):
         [roots[1], roots[1].children[0]],
         [roots[1].children[0]],
     ]
+    matches = list(set().union(*matches))
     assert sorted(query.apply(gf)) == sorted(matches)
+
+
+def test_query_matcher_is_abstract_query():
+    assert issubclass(QueryMatcher, AbstractQuery)
+
+
+def test_nary_query_is_abstract_query():
+    assert issubclass(NaryQuery, AbstractQuery)
+
+
+def test_and_query_is_nary_query():
+    assert issubclass(AndQuery, NaryQuery)
+
+
+def test_or_query_is_nary_query():
+    assert issubclass(OrQuery, NaryQuery)
+
+
+def test_xor_query_is_nary_query():
+    assert issubclass(XorQuery, NaryQuery)
+
+
+def test_nary_query_high_level_construction(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    query1 = [("*", {"time (inc)": [">= 20", "<= 60"]})]
+    query2 = [("*", {"time (inc)": ">= 60"})]
+    q1_node = gf.graph.roots[0].children[1].children[0].children[0]
+    q2_node = gf.graph.roots[0]
+    compound_query = AndQuery(query1, query2)
+    assert compound_query.subqueries[0].query_pattern[0][0] == "*"
+    assert compound_query.subqueries[0].query_pattern[0][1](gf.dataframe.loc[q1_node])
+    assert not compound_query.subqueries[0].query_pattern[0][1](
+        gf.dataframe.loc[q2_node]
+    )
+    assert compound_query.subqueries[1].query_pattern[0][0] == "*"
+    assert compound_query.subqueries[1].query_pattern[0][1](gf.dataframe.loc[q2_node])
+    assert not compound_query.subqueries[1].query_pattern[0][1](
+        gf.dataframe.loc[q1_node]
+    )
+
+
+def test_nary_query_low_level_construction(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    query1 = QueryMatcher().match(
+        "*", lambda x: x["time (inc)"] >= 20 and x["time (inc)"] <= 60
+    )
+    query2 = QueryMatcher().match("*", lambda x: x["time (inc)"] >= 60)
+    q1_node = gf.graph.roots[0].children[1].children[0].children[0]
+    q2_node = gf.graph.roots[0]
+    compound_query = AndQuery(query1, query2)
+    assert compound_query.subqueries[0].query_pattern[0][0] == "*"
+    assert compound_query.subqueries[0].query_pattern[0][1](gf.dataframe.loc[q1_node])
+    assert not compound_query.subqueries[0].query_pattern[0][1](
+        gf.dataframe.loc[q2_node]
+    )
+    assert compound_query.subqueries[1].query_pattern[0][0] == "*"
+    assert compound_query.subqueries[1].query_pattern[0][1](gf.dataframe.loc[q2_node])
+    assert not compound_query.subqueries[1].query_pattern[0][1](
+        gf.dataframe.loc[q1_node]
+    )
+
+
+def test_nary_query_mixed_level_construction(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    query1 = [("*", {"time (inc)": [">= 20", "<= 60"]})]
+    query2 = QueryMatcher().match("*", lambda x: x["time (inc)"] >= 60)
+    q1_node = gf.graph.roots[0].children[1].children[0].children[0]
+    q2_node = gf.graph.roots[0]
+    compound_query = AndQuery(query1, query2)
+    assert compound_query.subqueries[0].query_pattern[0][0] == "*"
+    assert compound_query.subqueries[0].query_pattern[0][1](gf.dataframe.loc[q1_node])
+    assert not compound_query.subqueries[0].query_pattern[0][1](
+        gf.dataframe.loc[q2_node]
+    )
+    assert compound_query.subqueries[1].query_pattern[0][0] == "*"
+    assert compound_query.subqueries[1].query_pattern[0][1](gf.dataframe.loc[q2_node])
+    assert not compound_query.subqueries[1].query_pattern[0][1](
+        gf.dataframe.loc[q1_node]
+    )
+
+
+def test_and_query(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    query1 = [("*", {"time (inc)": [">= 20", "<= 60"]})]
+    query2 = [("*", {"time (inc)": ">= 60"})]
+    compound_query = AndQuery(query1, query2)
+    roots = gf.graph.roots
+    matches = [
+        roots[0].children[1],
+        roots[0].children[1].children[0],
+    ]
+    assert sorted(compound_query.apply(gf)) == sorted(matches)
+
+
+def test_intersection_query(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    query1 = [("*", {"time (inc)": [">= 20", "<= 60"]})]
+    query2 = [("*", {"time (inc)": ">= 60"})]
+    compound_query = IntersectionQuery(query1, query2)
+    roots = gf.graph.roots
+    matches = [
+        roots[0].children[1],
+        roots[0].children[1].children[0],
+    ]
+    assert sorted(compound_query.apply(gf)) == sorted(matches)
+
+
+def test_or_query(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    query1 = [("*", {"time (inc)": 5.0})]
+    query2 = [("*", {"time (inc)": 10.0})]
+    compound_query = OrQuery(query1, query2)
+    roots = gf.graph.roots
+    matches = [
+        roots[0].children[0].children[0],
+        roots[0].children[0].children[1],
+        roots[0].children[1].children[0].children[0].children[0].children[0],
+        roots[0].children[1].children[0].children[0].children[0].children[1],
+        roots[0].children[1].children[0].children[0].children[1],
+        roots[0].children[2].children[0].children[0],
+        roots[0].children[2].children[0].children[1].children[0].children[0],
+        roots[1].children[0].children[0],
+        roots[1].children[0].children[1],
+    ]
+    assert sorted(compound_query.apply(gf)) == sorted(matches)
+
+
+def test_union_query(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    query1 = [("*", {"time (inc)": 5.0})]
+    query2 = [("*", {"time (inc)": 10.0})]
+    compound_query = UnionQuery(query1, query2)
+    roots = gf.graph.roots
+    matches = [
+        roots[0].children[0].children[0],
+        roots[0].children[0].children[1],
+        roots[0].children[1].children[0].children[0].children[0].children[0],
+        roots[0].children[1].children[0].children[0].children[0].children[1],
+        roots[0].children[1].children[0].children[0].children[1],
+        roots[0].children[2].children[0].children[0],
+        roots[0].children[2].children[0].children[1].children[0].children[0],
+        roots[1].children[0].children[0],
+        roots[1].children[0].children[1],
+    ]
+    assert sorted(compound_query.apply(gf)) == sorted(matches)
+
+
+def test_xor_query(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    query1 = [("*", {"time (inc)": [">= 5.0", "<= 10.0"]})]
+    query2 = [("*", {"time (inc)": 10.0})]
+    compound_query = XorQuery(query1, query2)
+    roots = gf.graph.roots
+    matches = [
+        roots[0].children[0].children[0],
+        # roots[0].children[0].children[1],
+        roots[0].children[1].children[0].children[0].children[0].children[0],
+        # roots[0].children[1].children[0].children[0].children[0].children[1],
+        # roots[0].children[1].children[0].children[0].children[1],
+        roots[0].children[2].children[0].children[0],
+        roots[0].children[2].children[0].children[1].children[0].children[0],
+        roots[1].children[0].children[0],
+        # roots[1].children[0].children[1],
+    ]
+    assert sorted(compound_query.apply(gf)) == sorted(matches)
+
+
+def test_sym_diff_query(mock_graph_literal):
+    gf = GraphFrame.from_literal(mock_graph_literal)
+    query1 = [("*", {"time (inc)": [">= 5.0", "<= 10.0"]})]
+    query2 = [("*", {"time (inc)": 10.0})]
+    compound_query = SymDifferenceQuery(query1, query2)
+    roots = gf.graph.roots
+    matches = [
+        roots[0].children[0].children[0],
+        # roots[0].children[0].children[1],
+        roots[0].children[1].children[0].children[0].children[0].children[0],
+        # roots[0].children[1].children[0].children[0].children[0].children[1],
+        # roots[0].children[1].children[0].children[0].children[1],
+        roots[0].children[2].children[0].children[0],
+        roots[0].children[2].children[0].children[1].children[0].children[0],
+        roots[1].children[0].children[0],
+        # roots[1].children[0].children[1],
+    ]
+    assert sorted(compound_query.apply(gf)) == sorted(matches)
