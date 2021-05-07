@@ -1,0 +1,12 @@
+##############################################
+##                                          ##
+##  Global configuration file for hatchet.  ##
+##                                          ##
+##############################################
+
+##
+## Logging configuration
+## 
+
+logging: True
+log-directory: "."
