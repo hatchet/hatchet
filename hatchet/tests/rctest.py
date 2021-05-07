@@ -17,19 +17,14 @@ def test_global_binding():
 
 def test_change_value():
     import hatchet as ht
+    from hatchet.util.rcmanager import RcParams
 
     assert "logging" in ht.RcParams
 
     ht.RcParams["logging"] = True
     assert ht.RcParams["logging"] is True
-
-    from hatchet.util.rcmanager import RcParams
-
     assert RcParams["logging"] is True
 
     ht.RcParams["logging"] = False
     assert ht.RcParams["logging"] is False
-
-    from hatchet.util.rcmanager import RcParams
-
     assert RcParams["logging"] is False
