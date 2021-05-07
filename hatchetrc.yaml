@@ -8,5 +8,12 @@
 ## Logging configuration
 ## 
 
-logging: True
-log-directory: "."
+logging: False
+log-directory: "/usr/WS2/asde/hatchet-logs/"
+
+##
+## Tree Output Configuration
+##
+
+highlight_name: False
+invert_colormap: False
