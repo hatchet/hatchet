@@ -6,6 +6,87 @@ import os.path as path
 import yaml
 
 
+class ConfigValidator:
+    def __init__(self):
+        self._validations = {}
+        self._set_validators_to_configs()
+
+    def bool_validator(self, key, value):
+        if not isinstance(value, bool):
+            raise TypeError(
+                'Error loading configuration: Configuration "{}" must be of type bool'.format(
+                    key
+                )
+            )
+        else:
+            return value
+
+    def str_validator(self, key, value):
+        if not isinstance(value, str):
+            raise TypeError(
+                'Error loading configuration: Configuration "{}" must be of type string'.format(
+                    key
+                )
+            )
+        else:
+            return value
+
+    def int_validator(self, key, value):
+        if not isinstance(value, int):
+            raise TypeError(
+                'Error loading configuration: Configuration "{}" must be of type int'.format(
+                    key
+                )
+            )
+        else:
+            return value
+
+    def float_validator(self, key, value):
+        if not isinstance(value, float):
+            raise TypeError(
+                'Error loading configuration: Configuration "{}" must be of type float'.format(
+                    key
+                )
+            )
+        else:
+            return value
+
+    def list_validator(self, key, value):
+        if not isinstance(value, list):
+            raise TypeError(
+                'Error loading configuration: Configuration "{}" must be of type list'.format(
+                    key
+                )
+            )
+        else:
+            return value
+
+    def dict_validator(self, key, value):
+        if not isinstance(value, dict):
+            raise TypeError(
+                'Error loading configuration: Configuration "{}" must be of type dict'.format(
+                    key
+                )
+            )
+        else:
+            return value
+
+    def validate(self, key, value):
+        try:
+            return self._validations[key](key, value)
+        except TypeError as e:
+            raise e
+        except KeyError:
+            pass
+
+    def _set_validators_to_configs(self):
+        # real configurations
+        self._validations["logging"] = self.bool_validator
+        self._validations["log_directory"] = self.str_validator
+        self._validations["highlight_name"] = self.bool_validator
+        self._validations["invert_colormap"] = self.bool_validator
+
+
 class RcManager(MutableMapping, dict):
     """
     A runtime configurations class; modeled after the RcParams class in matplotlib.
@@ -14,13 +95,18 @@ class RcManager(MutableMapping, dict):
     """
 
     def __init__(self, *args, **kwargs):
+        self._validator = ConfigValidator()
         self.update(*args, **kwargs)
 
     def __setitem__(self, key, val):
         """
-        We can put validation of configs here.
+        Function loads valid configurations and prints errors for invalid configs.
         """
-        return dict.__setitem__(self, key, val)
+        try:
+            self._validator.validate(key, val)
+            return dict.__setitem__(self, key, val)
+        except TypeError as e:
+            print(e)
 
     def __getitem__(self, key):
         return dict.__getitem__(self, key)

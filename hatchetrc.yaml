@@ -4,12 +4,18 @@
 ##                                          ##
 ##############################################
 
+## If you would like to customize these global configurations
+## please copy it to the following directory:
+## $HOME/.config/hatchet/
+##
+## The configurations in this file will take precedence
+
 ##
 ## Logging configuration
 ## 
 
 logging: False
-log-directory: "/usr/WS2/asde/hatchet-logs/"
+log_directory: "~"
 
 ##
 ## Tree Output Configuration
