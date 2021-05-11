@@ -137,16 +137,16 @@ class HPCToolkitReader:
         modules, src_files, procedure_names, and metric_names.
         """
         for loadm in (self.loadmodule_table).iter("LoadModule"):
-            self.load_modules[loadm.get("i")] = loadm.get("n")
+            self.load_modules[int(loadm.get("i"))] = loadm.get("n")
 
         for filename in (self.file_table).iter("File"):
-            self.src_files[filename.get("i")] = filename.get("n")
+            self.src_files[int(filename.get("i"))] = filename.get("n")
 
         for procedure in (self.procedure_table).iter("Procedure"):
-            self.procedure_names[procedure.get("i")] = procedure.get("n")
+            self.procedure_names[int(procedure.get("i"))] = procedure.get("n")
 
         for metric in (self.metricdb_table).iter("MetricDB"):
-            self.metric_names[metric.get("i")] = metric.get("n")
+            self.metric_names[int(metric.get("i"))] = metric.get("n")
 
         return (
             self.load_modules,
