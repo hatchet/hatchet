@@ -12,7 +12,6 @@ except ImportError:
 
     ABC = ABCMeta("ABC", (object,), {"__slots__": ()})
 
-import sys
 from itertools import groupby
 from numbers import Real
 import re

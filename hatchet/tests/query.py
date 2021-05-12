@@ -1088,6 +1088,19 @@ def test_apply_cypher(mock_graph_literal):
     query = CypherQuery(path)
     assert sorted(query.apply(gf)) == sorted(match)
 
+    path = u"""MATCH (p)-[]->(q)
+    WHERE p."time (inc)" > 100 OR p."time (inc)" <= 30 AND q."time (inc)" = 20
+    """
+    roots = gf.graph.roots
+    match = [
+        roots[0],
+        roots[0].children[0],
+        roots[1],
+        roots[1].children[0],
+    ]
+    query = CypherQuery(path)
+    assert sorted(query.apply(gf)) == sorted(match)
+
     # path = [{"name": "this"}, ("*", {"name": "is"}), {"name": "nonsense"}]
     path = u"""MATCH (p)-["*", q]->(r)
     WHERE p."name" = "this" AND q."name" = "is" AND r."name" = "nonsense"
