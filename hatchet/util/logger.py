@@ -6,7 +6,7 @@ import hatchet
 
 
 class Log(object):
-    def __init__(self, filename="hatchet_log.json", active=False):
+    def __init__(self, filename="hatchet.log", active=True):
         self._log_file = filename
         self._active = active
         self._nested = False  # ensures we only log user called commands
@@ -20,16 +20,17 @@ class Log(object):
     def set_inactive(self):
         self._active = False
 
+    def read(self):
+        logs = []
+        with open(self._log_file, "r") as f:
+            for line in f.readlines():
+                logs.append(json.loads(line))
+            print(logs)
+
     def append_to_file(self, log):
         """Manages the opening and writing of log information to a file."""
-        logs = []
-        if os.path.exists(self._log_file):
-            with open(self._log_file, "r") as f:
-                logs = json.loads(f.read())
-
-        logs.append(log)
-        with open(self._log_file, "w+") as f:
-            f.write(json.dumps(logs))
+        with open(self._log_file, "a") as f:
+            f.write(json.dumps(log)+'\n')
 
     def loggable(self, function):
         """A decrator which logs calls to hatchet functions"""
@@ -58,7 +59,7 @@ class Log(object):
                         # log a graphframe as a dictionary of metadata
                         graphframe_metadata = {}
 
-                        graphframe_metadata["object"] = arg.__name__
+                        graphframe_metadata["object"] = arg.__class__.__name__
                         graphframe_metadata["id"] = id(arg)
                         graphframe_metadata["rows"] = arg.dataframe.shape[0]
                         graphframe_metadata["nodes"] = len(arg.graph)
