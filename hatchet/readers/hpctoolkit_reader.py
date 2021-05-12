@@ -145,8 +145,9 @@ class HPCToolkitReader:
         for procedure in (self.procedure_table).iter("Procedure"):
             self.procedure_names[procedure.get("i")] = procedure.get("n")
 
+        # store the keys as ints because we sort on keys later
         for metric in (self.metricdb_table).iter("MetricDB"):
-            self.metric_names[metric.get("i")] = metric.get("n")
+            self.metric_names[int(metric.get("i"))] = metric.get("n")
 
         return (
             self.load_modules,
