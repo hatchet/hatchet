@@ -54,14 +54,14 @@ class NaryQuery(AbstractQuery):
                 )
 
     @abstractmethod
-    def _perform_nary_op(self, query_results):
+    def _perform_nary_op(self, query_results, gf):
         pass
 
     def apply(self, gf):
         results = []
         for query in self.subqueries:
             results.append(query.apply(gf))
-        return self._perform_nary_op(results)
+        return self._perform_nary_op(results, gf)
 
 
 class QueryMatcher(AbstractQuery):
@@ -638,7 +638,7 @@ class AndQuery(NaryQuery):
         if len(self.subqueries) < 2:
             raise BadNumberNaryQueryArgs("AndQuery requires 2 or more subqueries")
 
-    def _perform_nary_op(self, query_results):
+    def _perform_nary_op(self, query_results, gf):
         intersection_set = set(query_results[0]).intersection(*query_results[1:])
         return list(intersection_set)
 
@@ -657,7 +657,7 @@ class OrQuery(NaryQuery):
         if len(self.subqueries) < 2:
             raise BadNumberNaryQueryArgs("OrQuery requires 2 or more subqueries")
 
-    def _perform_nary_op(self, query_results):
+    def _perform_nary_op(self, query_results, gf):
         union_set = set().union(*query_results)
         return list(union_set)
 
@@ -676,7 +676,7 @@ class XorQuery(NaryQuery):
         if len(self.subqueries) < 2:
             raise BadNumberNaryQueryArgs("XorQuery requires 2 or more subqueries")
 
-    def _perform_nary_op(self, query_results):
+    def _perform_nary_op(self, query_results, gf):
         xor_set = set()
         for res in query_results:
             xor_set = xor_set.symmetric_difference(set(res))
@@ -685,6 +685,22 @@ class XorQuery(NaryQuery):
 
 # Alias of XorQuery to signify the relationship to set Symmetric Difference
 SymDifferenceQuery = XorQuery
+
+
+class NotQuery(NaryQuery):
+    """Compound Query that returns all nodes in the GraphFrame that
+    are not returned from the subquery."""
+
+    def __init__(self, *args):
+        # TODO Remove Arguments when Python 2.7 support is dropped
+        super(NotQuery, self).__init__(args)
+        if len(self.subqueries) != 1:
+            raise BadNumberNaryQueryArgs("NotQuery requires exactly 1 subquery")
+
+    def _perform_nary_op(self, query_results, gf):
+        nodes = set(gf.graph.traverse())
+        query_nodes = set(query_results[0])
+        return list(nodes.difference(query_nodes))
 
 
 class InvalidQueryPath(Exception):
