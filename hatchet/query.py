@@ -27,11 +27,23 @@ from .node import Node, traversal_order
 
 
 class AbstractQuery(ABC):
-    """Interface defining a Hatchet Query"""
+    """Abstract Base Class defining a Hatchet Query"""
 
     @abstractmethod
     def apply(self, gf):
         pass
+
+    def __and__(self, *others):
+        return AndQuery(self, *others)
+
+    def __or__(self, *others):
+        return OrQuery(self, *others)
+
+    def __xor__(self, *others):
+        return XorQuery(self, *others)
+
+    def __invert__(self):
+        return NotQuery(self)
 
 
 class NaryQuery(AbstractQuery):
