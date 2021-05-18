@@ -30,7 +30,7 @@ class TAUReader:
     def create_node_dict(
         self,
         node,
-        metric_names,
+        metrics,
         metric_values,
         name,
         filename,
@@ -47,11 +47,11 @@ class TAUReader:
             "name": name,
             "file": filename,
             "module": module,
-            "start_line": start_line,
+            "line": start_line,
             "end_line": end_line,
         }
         for i in range(len(metric_values)):
-            node_dict[metric_names[i + 1]] = metric_values[i]
+            node_dict[metrics[i + 1]] = metric_values[i]
 
         return node_dict
 
@@ -149,16 +149,20 @@ class TAUReader:
                 re.match(r"\#\s(.*)\s\#", second_line).group(1).split(" ")[:-1]
             )
             # Example metric_type: "CPU_TIME"
-            metric_type = re.search(r"<value>(.*?)<\/value>", second_line).group(1)
+            metric_name = (
+                re.search(r"<value>(.*?)<\/value>", second_line).group(1).lower()
+            )
+            if metric_name == "cpu_time":
+                metric_name = "time"
 
-            # TODO: decide if calls and subrs are excl or incl
+            # TODO: decide if calls and subrs are excl or incl.
             for i in range(len(metrics)):
-                metrics[i] = metrics[i]
-                if metrics[i] == "Excl":
-                    metrics[i] = metric_type
+                metrics[i] = metrics[i].lower()
+                if metrics[i] == "excl":
+                    metrics[i] = metric_name
                     self.exc_metrics.append(metrics[i])
-                elif metrics[i] == "Incl":
-                    metrics[i] = metric_type + " (inc)"
+                elif metrics[i] == "incl":
+                    metrics[i] = metric_name + " (inc)"
                     self.inc_metrics.append(metrics[i])
 
             # After first profile.0.0.0, only get Excl and Incl metrics
@@ -166,11 +170,13 @@ class TAUReader:
             for f_index in range(1, len(file_data_list)):
                 second_line = file_data_list[f_index][1]
 
-                # Example metric_type: "PAPI_L2_TCM"
-                metric_type = re.search(r"<value>(.*?)<\/value>", second_line).group(1)
-                self.exc_metrics.append(metric_type)
-                self.inc_metrics.append(metric_type + " (inc)")
-                metrics.extend([metric_type, metric_type + " (inc)"])
+                # Example metric_name: "PAPI_L2_TCM"
+                metric_name = (
+                    re.search(r"<value>(.*?)<\/value>", second_line).group(1).lower()
+                )
+                self.exc_metrics.append(metric_name)
+                self.inc_metrics.append(metric_name + " (inc)")
+                metrics.extend([metric_name, metric_name + " (inc)"])
 
             # Example: ".TAU application" 1 1 272 15755429 0 GROUP="TAU_DEFAULT"
             root_line = re.match(r"\"(.*)\"\s(.*)\sG", file_data_list[0][2])
@@ -388,11 +394,7 @@ class TAUReader:
                 lambda x: x.name[0].frame["name"], axis=1
             )
 
-        default_metric = ""
-        if "TIME" in self.exc_metrics:
-            default_metric = "TIME"
-        else:
-            default_metric = "CPU_TIME"
+        default_metric = "time (inc)"
 
         return hatchet.graphframe.GraphFrame(
             graph, dataframe, self.exc_metrics, self.inc_metrics, default_metric

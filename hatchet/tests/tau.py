@@ -32,7 +32,7 @@ def test_tree(tau_profile_dir):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
-        metric_column="TIME",
+        metric_column="time",
         precision=3,
         name_column="name",
         expand_name=False,
@@ -51,7 +51,7 @@ def test_tree(tau_profile_dir):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
-        metric_column="TIME",
+        metric_column="time",
         precision=3,
         name_column="name",
         expand_name=False,
