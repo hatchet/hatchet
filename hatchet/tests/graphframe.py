@@ -1208,6 +1208,16 @@ def test_excel_load_store(mock_graph_literal):
     gf_orig.to_excel("test_gframe.xlsx")
     gf_loaded = GraphFrame.from_excel("test_gframe.xlsx")
 
+    # Excel will convert integers represented as floats back into integers.
+    # To ensure "equals" evaluates correctly, I manually cast the "time" and "time (inc)"
+    # columns back to float
+    gf_loaded.dataframe["time"] = gf_loaded.dataframe["time"].astype(
+        gf_orig.dataframe.dtypes["time"]
+    )
+    gf_loaded.dataframe["time (inc)"] = gf_loaded.dataframe["time (inc)"].astype(
+        gf_orig.dataframe.dtypes["time (inc)"]
+    )
+
     assert gf_orig.dataframe.equals(gf_loaded.dataframe)
     assert gf_orig.graph == gf_loaded.graph
 
