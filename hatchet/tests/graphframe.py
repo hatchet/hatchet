@@ -1202,11 +1202,11 @@ def test_csv_load_store(mock_graph_literal):
 
 
 def test_excel_load_store(mock_graph_literal):
-    if os.path.exists("test_gframe.xlsx"):
-        os.remove("test_gframe.xlsx")
+    if os.path.exists("test_gframe.xls"):
+        os.remove("test_gframe.xls")
     gf_orig = GraphFrame.from_literal(mock_graph_literal)
-    gf_orig.to_excel("test_gframe.xlsx")
-    gf_loaded = GraphFrame.from_excel("test_gframe.xlsx")
+    gf_orig.to_excel("test_gframe.xls")
+    gf_loaded = GraphFrame.from_excel("test_gframe.xls")
 
     # Excel will convert integers represented as floats back into integers.
     # To ensure "equals" evaluates correctly, I manually cast the "time" and "time (inc)"
@@ -1221,8 +1221,8 @@ def test_excel_load_store(mock_graph_literal):
     assert gf_orig.dataframe.equals(gf_loaded.dataframe)
     assert gf_orig.graph == gf_loaded.graph
 
-    if os.path.exists("test_gframe.xlsx"):
-        os.remove("test_gframe.xlsx")
+    if os.path.exists("test_gframe.xls"):
+        os.remove("test_gframe.xls")
 
 
 def test_save_func_w_extension(mock_graph_literal):
