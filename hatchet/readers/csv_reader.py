@@ -9,13 +9,18 @@ import pandas as pd
 from .pandas_reader import PandasReader
 
 import pickle
+import sys
 
 
 def _unpickle_series_elems(pd_series):
     # unpickled_elems = [pickle.loads(e.encode("utf-8")) for e in pd_series]
     unpickled_elems = []
     for e in pd_series:
-        e_bytes = literal_eval(e)
+        e_bytes = e
+        print(sys.version_info)
+        print(sys.version_info >= (3,))
+        if sys.version_info >= (3,):
+            e_bytes = literal_eval(e)
         unpickled_elems.append(pickle.loads(e_bytes))
     return pd.Series(unpickled_elems)
 
