@@ -1,4 +1,4 @@
-# Copyright 2017-2020 Lawrence Livermore National Security, LLC and other
+# Copyright 2017-2021 Lawrence Livermore National Security, LLC and other
 # Hatchet Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
@@ -78,6 +78,6 @@ class PandasReader(ABC):
         df = self._read_from_file_type(**kwargs)
         rel_dict = _get_parents_and_children(df)
         graph = _reconstruct_graph(df, rel_dict)
-        graph.normalize()
+        graph.enumerate_traverse()
         df.drop(columns=["children", "parents"], inplace=True)
         return hatchet.graphframe.GraphFrame(graph, df)
