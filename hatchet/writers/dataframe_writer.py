@@ -31,8 +31,7 @@ def _get_node_from_df_iloc(df, ind):
     return node
 
 
-def _fill_children_and_parents(df):
-    dump_df = df.copy()
+def _fill_children_and_parents(dump_df):
     dump_df["children"] = [[] for _ in range(len(dump_df))]
     dump_df["parents"] = [[] for _ in range(len(dump_df))]
     for i in range(len(dump_df)):
@@ -40,27 +39,23 @@ def _fill_children_and_parents(df):
         dump_df.iat[i, dump_df.columns.get_loc("children")] = [
             c._hatchet_nid for c in node.children
         ]
+        node.children = []
         dump_df.iat[i, dump_df.columns.get_loc("parents")] = [
             p._hatchet_nid for p in node.parents
         ]
+        node.parents = []
     return dump_df
 
 
-class PandasWriter(ABC):
+class DataframeWriter(ABC):
     def __init__(self, filename):
-        self.fname = filename
+        self.filename = filename
 
     @abstractmethod
-    def _write_to_file_type(self, df, **kwargs):
+    def _write_dataframe_to_file(self, df, **kwargs):
         pass
 
     def write(self, gf, **kwargs):
         gf_cpy = gf.deepcopy()
         dump_df = _fill_children_and_parents(gf_cpy.dataframe)
-        for i in range(len(dump_df)):
-            node = _get_node_from_df_iloc(dump_df, i)
-            if len(node.children) != 0:
-                node.children = []
-            if len(node.parents) != 0:
-                node.parents = []
-        self._write_to_file_type(dump_df, **kwargs)
+        self._write_dataframe_to_file(dump_df, **kwargs)
