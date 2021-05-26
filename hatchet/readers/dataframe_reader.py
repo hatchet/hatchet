@@ -41,41 +41,33 @@ def _get_parents_and_children(df):
             rel_dict[node] = {}
             rel_dict[node]["parents"] = df.iloc[i].loc["parents"]
             rel_dict[node]["children"] = df.iloc[i].loc["children"]
-        else:
-            if sorted(rel_dict[node]["parents"]) != sorted(df.iloc[i].loc["parents"]):
-                # TODO Custom Error
-                raise RuntimeError
-            if sorted(rel_dict[node]["children"]) != sorted(df.iloc[i].loc["children"]):
-                # TODO Custom Error
-                raise RuntimeError
     return rel_dict
 
 
 def _reconstruct_graph(df, rel_dict):
-    node_list = sorted(set(list(df.index.copy().to_frame()["node"])))
+    node_list = sorted(list(df.index.to_frame()["node"]))
     for i in range(len(df)):
         node = _get_node_from_df_iloc(df, i)
         if len(node.children) == 0:
             node.children = [node_list[nid] for nid in rel_dict[node]["children"]]
         if len(node.parents) == 0:
             node.parents = [node_list[nid] for nid in rel_dict[node]["parents"]]
-    node_list = sorted(set(list(df.index.copy().to_frame()["node"])))
     roots = [node for node in node_list if len(node.parents) == 0]
     return Graph(roots)
 
 
-class PandasReader(ABC):
+class DataframeReader(ABC):
     """Abstract Base Class for reading in checkpointing files."""
 
     def __init__(self, filename):
-        self.fname = filename
+        self.filename = filename
 
     @abstractmethod
-    def _read_from_file_type(self, **kwargs):
+    def _read_dataframe_from_file(self, **kwargs):
         pass
 
     def read(self, **kwargs):
-        df = self._read_from_file_type(**kwargs)
+        df = self._read_dataframe_from_file(**kwargs)
         rel_dict = _get_parents_and_children(df)
         graph = _reconstruct_graph(df, rel_dict)
         graph.enumerate_traverse()
