@@ -71,5 +71,23 @@ class DataframeReader(ABC):
         rel_dict = _get_parents_and_children(df)
         graph = _reconstruct_graph(df, rel_dict)
         graph.enumerate_traverse()
-        df.drop(columns=["children", "parents"], inplace=True)
-        return hatchet.graphframe.GraphFrame(graph, df)
+        exc_metrics = df.iloc[0, df.columns.get_loc("exc_metrics")]
+        inc_metrics = df.iloc[0, df.columns.get_loc("inc_metrics")]
+        default_metric = df.iloc[0, df.columns.get_loc("default_metric")]
+        df.drop(
+            columns=[
+                "children",
+                "parents",
+                "exc_metrics",
+                "inc_metrics",
+                "default_metric",
+            ],
+            inplace=True,
+        )
+        return hatchet.graphframe.GraphFrame(
+            graph,
+            df,
+            exc_metrics=exc_metrics,
+            inc_metrics=inc_metrics,
+            default_metric=default_metric,
+        )

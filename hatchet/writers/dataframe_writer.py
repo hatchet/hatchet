@@ -58,4 +58,12 @@ class DataframeWriter(ABC):
     def write(self, gf, **kwargs):
         gf_cpy = gf.deepcopy()
         dump_df = _fill_children_and_parents(gf_cpy.dataframe)
+        dump_df["exc_metrics"] = None
+        dump_df.iat[0, dump_df.columns.get_loc("exc_metrics")] = gf_cpy.exc_metrics
+        dump_df["inc_metrics"] = None
+        dump_df.iat[0, dump_df.columns.get_loc("inc_metrics")] = gf_cpy.inc_metrics
+        dump_df["default_metric"] = None
+        dump_df.iat[
+            0, dump_df.columns.get_loc("default_metric")
+        ] = gf_cpy.default_metric
         self._write_dataframe_to_file(dump_df, **kwargs)
