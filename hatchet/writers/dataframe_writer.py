@@ -26,8 +26,9 @@ def _get_node_from_df_iloc(df, ind):
     elif isinstance(df.iloc[ind].name, Node):
         node = df.iloc[ind].name
     else:
-        # TODO Custom Error
-        raise RuntimeError
+        raise InvalidDataFrameIndex(
+            "DataFrame index elements must be either a tuple or a Node"
+        )
     return node
 
 
@@ -67,3 +68,7 @@ class DataframeWriter(ABC):
             0, dump_df.columns.get_loc("default_metric")
         ] = gf_cpy.default_metric
         self._write_dataframe_to_file(dump_df, **kwargs)
+
+
+class InvalidDataFrameIndex(Exception):
+    """Raised when the DataFrame index is of an invalid type."""

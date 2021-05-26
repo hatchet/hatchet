@@ -28,8 +28,9 @@ def _get_node_from_df_iloc(df, ind):
     elif isinstance(df.iloc[ind].name, Node):
         node = df.iloc[ind].name
     else:
-        # TODO Custom Error
-        raise RuntimeError
+        raise InvalidDataFrameIndex(
+            "DataFrame index elements must be either a tuple or a Node"
+        )
     return node
 
 
@@ -91,3 +92,7 @@ class DataframeReader(ABC):
             inc_metrics=inc_metrics,
             default_metric=default_metric,
         )
+
+
+class InvalidDataFrameIndex(Exception):
+    """Raised when the DataFrame index is of an invalid type."""
