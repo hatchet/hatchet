@@ -5,13 +5,17 @@
 
 import warnings
 import pandas as pd
+import sys
 from .dataframe_reader import DataframeReader
 
 
 class HDF5Reader(DataframeReader):
     def __init__(self, filename):
         # TODO Remove Arguments when Python 2.7 support is dropped
-        super(HDF5Reader, self).__init__(filename)
+        if sys.version_info[0] == 2:
+            super(HDF5Reader, self).__init__(filename)
+        else:
+            super().__init__(filename)
 
     def _read_dataframe_from_file(self, **kwargs):
         df = None

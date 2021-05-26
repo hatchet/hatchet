@@ -4,14 +4,17 @@
 # SPDX-License-Identifier: MIT
 
 import warnings
+import sys
 
 from .dataframe_writer import DataframeWriter
 
 
 class HDF5Writer(DataframeWriter):
     def __init__(self, filename):
-        # TODO Remove Arguments when Python 2.7 support is dropped
-        super(HDF5Writer, self).__init__(filename)
+        if sys.version_info[0] == 2:
+            super(HDF5Writer, self).__init__(filename)
+        else:
+            super().__init__(filename)
 
     def _write_dataframe_to_file(self, df, **kwargs):
         if "key" not in kwargs:
