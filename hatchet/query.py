@@ -15,6 +15,7 @@ except ImportError:
 from itertools import groupby
 from numbers import Real
 import re
+import sys
 import pandas as pd
 from pandas import DataFrame
 from pandas.core.indexes.multi import MultiIndex
@@ -645,8 +646,10 @@ class AndQuery(NaryQuery):
     of the subqueries"""
 
     def __init__(self, *args):
-        # TODO Remove Arguments when Python 2.7 support is dropped
-        super(AndQuery, self).__init__(args)
+        if sys.version_info[0] == 2:
+            super(AndQuery, self).__init__(args)
+        else:
+            super().__init__(args)
         if len(self.subqueries) < 2:
             raise BadNumberNaryQueryArgs("AndQuery requires 2 or more subqueries")
 
@@ -664,8 +667,10 @@ class OrQuery(NaryQuery):
     of the subqueries"""
 
     def __init__(self, *args):
-        # TODO Remove Arguments when Python 2.7 support is dropped
-        super(OrQuery, self).__init__(args)
+        if sys.version_info[0] == 2:
+            super(OrQuery, self).__init__(args)
+        else:
+            super().__init__(args)
         if len(self.subqueries) < 2:
             raise BadNumberNaryQueryArgs("OrQuery requires 2 or more subqueries")
 
@@ -683,8 +688,10 @@ class XorQuery(NaryQuery):
     (i.e., set-based XOR) of the results of the subqueries"""
 
     def __init__(self, *args):
-        # TODO Remove Arguments when Python 2.7 support is dropped
-        super(XorQuery, self).__init__(args)
+        if sys.version_info[0] == 2:
+            super(XorQuery, self).__init__(args)
+        else:
+            super().__init__(args)
         if len(self.subqueries) < 2:
             raise BadNumberNaryQueryArgs("XorQuery requires 2 or more subqueries")
 
@@ -704,8 +711,10 @@ class NotQuery(NaryQuery):
     are not returned from the subquery."""
 
     def __init__(self, *args):
-        # TODO Remove Arguments when Python 2.7 support is dropped
-        super(NotQuery, self).__init__(args)
+        if sys.version_info[0] == 2:
+            super(NotQuery, self).__init__(args)
+        else:
+            super().__init__(args)
         if len(self.subqueries) != 1:
             raise BadNumberNaryQueryArgs("NotQuery requires exactly 1 subquery")
 
