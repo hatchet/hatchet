@@ -7,6 +7,7 @@ import re
 import os
 import glob
 import pandas as pd
+import numpy as np
 import hatchet.graphframe
 from hatchet.node import Node
 from hatchet.graph import Graph
@@ -24,13 +25,14 @@ class TAUReader:
         self.filepath_to_data = {}
         self.inc_metrics = []
         self.exc_metrics = []
+        self.columns = []
         self.multiple_ranks = False
         self.multiple_threads = False
 
     def create_node_dict(
         self,
         node,
-        metrics,
+        columns,
         metric_values,
         name,
         filename,
@@ -51,49 +53,67 @@ class TAUReader:
             "end_line": end_line,
         }
         for i in range(len(metric_values)):
-            node_dict[metrics[i + 1]] = metric_values[i]
-
+            node_dict[columns[i + 1]] = metric_values[i]
         return node_dict
 
     def create_graph(self):
-        def create_parent(child_node, parent_callpath, metrics):
+        def _create_parent(child_node, parent_callpath):
+            """In TAU output, sometimes we see a node as a parent
+            in the callpath even though we haven't seen it before
+            as a child. In this case, we need to create a parent node
+            for the child.
+
+            We can't create a node_dict for the parent because we don't
+            know its metric values when we first see it in a callpath.
+
+            Example: a => b => c "<c_metric_values>"
+            Here if we don't see b before, we should create it when we create
+            c.
+
+            This function recursively creates parent nodes in a callpath
+            until it reaches the already existing parent in that callpath.
+            """
             parent_node = self.callpath_to_node.get(parent_callpath)
 
-            # return if arrives to the parent
-            # else create a parent and add parent/child
+            # Return if arrives to the parent
+            # Else create a parent and add parent/child
             if parent_node is not None:
                 parent_node.add_child(child_node)
                 child_node.add_parent(parent_node)
                 return
             else:
                 grand_parent_callpath = parent_callpath[:-1]
-                parent_name = parent_callpath[-1]
+                parent_info = parent_callpath[-1]
+                parent_name = ""
 
-                if "[{" in parent_name:
-                    if " C " in parent_name:
-                        # <name> C [{<file>} {<line>}]
-                        parent_name = parent_name.split(" C ")[0]
-                    elif " [@] " in parent_name:
-                        # [UNWIND] <file> [@] <name> [{} {}]
+                # Sometimes we see additional information about a function
+                # line file, line, module, etc.
+                # We just want to have the name and type to create a parent node.
+                # type can be [UNWIND] or [SAMPLE].
+                if "[{" in parent_info:
+                    if " C " in parent_info:
+                        # Example: <name> C [{<file>} {<line>}]
+                        parent_name = parent_info.split(" C ")[0]
+                    elif " [@] " in parent_info:
+                        # Example: [UNWIND] <file> [@] <name> [{} {}]
                         parent_name = (
-                            "[UNWIND] " + parent_name.split(" [@] ")[1].split()[0]
+                            "[UNWIND] " + parent_info.split(" [@] ")[1].split()[0]
                         )
                     else:
-                        # [<type>] <name> [{} {}]
-                        parent_name = parent_name.split(" [")[0]
+                        # Example: [<type>] <name> [{} {}]
+                        parent_name = parent_info.split(" [")[0]
                 else:
-                    if " [@] " in parent_name:
-                        # [UNWIND] <file> [@] <name> <module>
+                    if " [@] " in parent_info:
+                        # Example: [UNWIND] <file> [@] <name> <module>
                         parent_name = (
-                            "[UNWIND] " + parent_name.split(" [@] ")[1].split()[0]
+                            "[UNWIND] " + parent_info.split(" [@] ")[1].split()[0]
                         )
                     else:
-                        # [<type>] <name> <file>
-                        # [<type>] <name>
-                        # <name>
-                        dst_info = parent_name.split()
+                        # Example 1: [<type>] <name> <file>
+                        # Example 2: [<type>] <name>
+                        # Example 3: <name>
+                        dst_info = parent_info.split()
                         if len(dst_info) == 3:
-                            dst_info = parent_name.split()
                             parent_name = dst_info[0] + " " + dst_info[1]
 
                 parent_node = Node(
@@ -103,112 +123,118 @@ class TAUReader:
 
                 parent_node.add_child(child_node)
                 child_node.add_parent(parent_node)
+                _create_parent(parent_node, grand_parent_callpath)
 
-                create_parent(parent_node, grand_parent_callpath, metrics)
+        def _construct_column_list(first_rank_filenames):
+            """This function constructs columns, exc_metrics, and
+            inc_metrics using all metric files of a rank. It gets the
+            all metric files of a rank as a tuple and only loads the
+            second line (metadata) of these files.
+            """
+            columns = []
+            for file_index in range(len(first_rank_filenames)):
+                with open(first_rank_filenames[file_index], "r") as f:
+                    # Skip the first line: "192 templated_functions_MULTI_TIME"
+                    next(f)
+                    # No need to check if the metadata is the same for all metric files.
+                    metadata = next(f)
 
-        all_files = []
-        profile_files = glob.glob(self.dirname + "/profile.*")
+                    # Get first three columns from # Name Calls Subrs Excl Incl ProfileCalls #
+                    # ProfileCalls is removed since it is is typically set to 0 and not used.
+                    # We only do this once since these column names are the same for all files.
+                    if file_index == 0:
+                        columns.extend(
+                            re.match(r"\#\s(.*)\s\#", metadata).group(1).split(" ")[:-3]
+                        )
 
-        # check if there are profile files in given directory
-        # if not, check subdirectories
-        if not profile_files:
-            for dirpath, dirnames, files in os.walk(self.dirname):
-                profile_files = glob.glob(dirpath + "/profile.*")
-                if profile_files:
-                    all_files.append(profile_files)
-        else:
-            all_files.append(profile_files)
+                    # Example metric_name: "PAPI_L2_TCM"
+                    # TODO: Decide if Calls and Subrs should be inc or exc metrics
+                    metric_name = re.search(r"<value>(.*?)<\/value>", metadata).group(1)
+                    if metric_name == "CPU_TIME" or metric_name == "TIME":
+                        metric_name = "time"
+                    elif metric_name == "Name":
+                        metric_name == "name"
+                    columns.extend([metric_name, metric_name + " (inc)"])
+                    self.exc_metrics.append(metric_name)
+                    self.inc_metrics.append(metric_name + " (inc)")
+            return columns
 
-        # store all files in a list of tuples
-        # Example: [(event1/0.0.0, event2/0.0.0), (event1/1.0.0, event2/1.0.0), ...]
-        all_files = list(zip(*all_files))
+        # dirpath -> returns path of a directory, string
+        # dirnames -> returns directory names, list
+        # files -> returns filenames in a directory, list
+        profile_filenames = []
+        for dirpath, dirnames, files in os.walk(self.dirname):
+            profiles_in_foler = glob.glob(dirpath + "/profile.*")
+            if profiles_in_foler:
+                profile_filenames.append(profiles_in_foler)
+
+        # Store all files in a list of tuples.
+        # Each tuple stores every metric file of a rank.
+        # We process one rank at a time.
+        # Example: [(metric1/0.0.0, metric2/0.0.0), (metric1/1.0.0, metric2/1.0.0), ...]
+        profile_filenames = list(zip(*profile_filenames))
+
+        # Get column information from the metric files of a rank.
+        self.columns = _construct_column_list(profile_filenames[0])
 
         list_roots = []
-        metrics = []
         prev_rank, prev_thread = 0, 0
-
-        # example files_tuple: (event1/0.0.0, event2/0.0.0)
-        for files_tuple in all_files:
-            file_data_list = []
-            file_info = files_tuple[0].split(".")
+        # Example filenames_per_rank: (metric1/0.0.0, metric1/0.0.0, ...)
+        for filenames_per_rank in profile_filenames:
+            file_info = filenames_per_rank[0].split(".")
             rank, thread = int(file_info[-3]), int(file_info[-1])
-
             self.multiple_ranks = True if rank != prev_rank else False
             self.multiple_threads = True if thread != prev_thread else False
 
-            # read all files for a rank or thread
-            # if there are 4 events, there will be 4 profile.0.0.0
-            for f_index in range(len(files_tuple)):
-                file_data = open(files_tuple[f_index], "r").readlines()
-                file_data_list.append(file_data)
+            # Load all files represent a different metric for a rank or a thread.
+            # If there are 2 metrics, load metric1\profile.0.0.0 and metric2\profile.0.0.0
+            file_data = []
+            for f_index in range(len(filenames_per_rank)):
+                # Store the lines after metadata.
+                file_data.append(open(filenames_per_rank[f_index], "r").readlines()[2:])
 
-            # get metrics from this line: # Name Calls Subrs Excl Incl ProfileCalls #
-            # ProfileCalls is removed since it is is typically set to 0 and not used.
-            second_line = file_data_list[0][1]
-            metrics.extend(
-                re.match(r"\#\s(.*)\s\#", second_line).group(1).split(" ")[:-1]
-            )
-            # Example metric_type: "CPU_TIME"
-            metric_name = (
-                re.search(r"<value>(.*?)<\/value>", second_line).group(1).lower()
-            )
-            if metric_name == "cpu_time":
-                metric_name = "time"
-
-            # TODO: decide if calls and subrs are excl or incl.
-            for i in range(len(metrics)):
-                metrics[i] = metrics[i].lower()
-                if metrics[i] == "excl":
-                    metrics[i] = metric_name
-                    self.exc_metrics.append(metrics[i])
-                elif metrics[i] == "incl":
-                    metrics[i] = metric_name + " (inc)"
-                    self.inc_metrics.append(metrics[i])
-
-            # After first profile.0.0.0, only get Excl and Incl metrics
-            # no need to assert metadata line
-            for f_index in range(1, len(file_data_list)):
-                second_line = file_data_list[f_index][1]
-
-                # Example metric_name: "PAPI_L2_TCM"
-                metric_name = (
-                    re.search(r"<value>(.*?)<\/value>", second_line).group(1).lower()
-                )
-                self.exc_metrics.append(metric_name)
-                self.inc_metrics.append(metric_name + " (inc)")
-                metrics.extend([metric_name, metric_name + " (inc)"])
-
+            # Get the root information from only the first file to compare them
+            # with others.
             # Example: ".TAU application" 1 1 272 15755429 0 GROUP="TAU_DEFAULT"
-            root_line = re.match(r"\"(.*)\"\s(.*)\sG", file_data_list[0][2])
+            root_line = re.match(r"\"(.*)\"\s(.*)\sG", file_data[0][0])
             root_name = root_line.group(1).strip(" ")
+            # convert it to a tuple to use it as a key in callpath_to_node dictionary
             root_name_tuple = tuple([root_name])
             root_values = list(map(int, root_line.group(2).split(" ")[:-1]))
 
             # After first profile.0.0.0, only get Excl and Incl metric values
-            assert_line1 = re.search(r"\"(.*?)\"", file_data_list[0][2]).group(1)
-            for f_index in range(1, len(file_data_list)):
-                assert_line2 = re.search(
-                    r"\"(.*?)\"", file_data_list[f_index][2]
-                ).group(1)
-                assert assert_line1 == assert_line2
-                root_line = re.match(r"\"(.*)\"\s(.*)\sG", file_data_list[f_index][2])
+            # from other files since other columns will be the same.
+            # We assume each metric file of a rank has the same root.
+            first_file_root_name = re.search(r"\"(.*?)\"", file_data[0][0]).group(1)
+            for f_index in range(1, len(file_data)):
+                root_name = re.search(r"\"(.*?)\"", file_data[f_index][0]).group(1)
+                # Below assert statement throws an error if the roots are not the
+                # same for different metric files.
+                # TODO: We need to find a solution if this throws an error.
+                assert first_file_root_name == root_name, (
+                    "Metric files for a rank has different roots.\n"
+                    + "File: "
+                    + filenames_per_rank[f_index]
+                    + "\nLine: 2"
+                )
+                root_line = re.match(r"\"(.*)\"\s(.*)\sG", file_data[f_index][0])
                 root_values.extend(list(map(int, root_line.group(2).split(" ")[2:4])))
 
-            # if root doesn't exist
+            # If root doesn't exist
             if root_name_tuple not in self.callpath_to_node:
-                # create the root node since it doesn't exist
+                # Create the root node since it doesn't exist
                 root_node = Node(Frame({"name": root_name, "type": "function"}), None)
 
-                # store callpaths to identify nodes
+                # Store callpaths to identify nodes
                 self.callpath_to_node[root_name_tuple] = root_node
                 list_roots.append(root_node)
             else:
-                # directly create a node dict since the root node is created earlier
+                # Don't create a new node since it is created earlier
                 root_node = self.callpath_to_node.get(root_name_tuple)
 
             node_dict = self.create_node_dict(
                 root_node,
-                metrics,
+                self.columns,
                 root_values,
                 root_name,
                 None,
@@ -220,54 +246,74 @@ class TAUReader:
             )
             self.node_dicts.append(node_dict)
 
-            # start from the line after metadata
-            for line_index in range(3, len(file_data_list[0])):
-                line = file_data_list[0][line_index]
+            # Start from the line after root.
+            # Iterate over only the first metric file of a rank
+            # since the lines should be exactly the same across
+            # all metric files of a rank.
+            # Uses the same "line_index" for other metric files of a rank.
+            for line_index in range(1, len(file_data[0])):
+                line = file_data[0][line_index]
                 metric_values = []
                 if "=>" in line:
                     # Example: ".TAU application  => foo()  => bar()" 31 0 155019 155019 0 GROUP="TAU_SAMPLE|TAU_CALLPATH"
-                    call_line_regex = re.match(r"\"(.*)\"\s(.*)\sG", line)
+                    callpath_line_regex = re.match(r"\"(.*)\"\s(.*)\sG", line)
+                    # callpath: ".TAU application  => foo()  => bar()"
                     callpath = [
-                        name.strip(" ") for name in call_line_regex.group(1).split("=>")
+                        name.strip(" ")
+                        for name in callpath_line_regex.group(1).split("=>")
                     ]
 
+                    # Example dst_name: StrToInt [{lulesh-util.cc} {13,1}-{29,1}]
                     dst_name = callpath[-1]
-                    dst_file = None
-                    dst_module = None
-                    dst_start_line = 0
-                    dst_end_line = 0
+                    dst_file, dst_module = None, None
+                    dst_start_line, dst_end_line = 0, 0
                     callpath = tuple(callpath)
                     parent_callpath = callpath[:-1]
+                    # Don't include the value for ProfileCalls.
+                    # metric_values: 31 0 155019 155019
                     metric_values = list(
-                        map(float, call_line_regex.group(2).split(" ")[:-1])
+                        map(float, callpath_line_regex.group(2).split(" ")[:-1])
                     )
 
+                    # There are several different formats in TAU outputs.
+                    # There might be file, line, and module information.
+                    # The following if-else block covers all possible output
+                    # formats. Example formats are given in comments.
                     if "[{" in dst_name:
-                        # [{<file_or_module>} {<line>}]
+                        # Sometimes we see file and module information inside of [{}]
+                        # Example 1: [UNWIND] <file> [@] [{<file_or_module>} {<line>}]
+                        # Example 2: <name> C [{<file>} {<line>}]
+                        # Example 3: [<type>] <name> [{} {}]
                         tmp_module_or_file_line = (
                             re.search(r"\{.*\}\]", dst_name).group(0).split()
                         )
-                        dst_line = (
+                        dst_line_number = (
                             tmp_module_or_file_line[1].strip("}]").replace("{", "")
                         )
-                        if "-" in dst_line:
-                            dst_line_list = dst_line.split("-")
+                        if "-" in dst_line_number:
+                            # Sometimes there is "-" between start line and end line
+                            # Example: {341,1}-{396,1}
+                            dst_line_list = dst_line_number.split("-")
                             dst_start_line = int(dst_line_list[0].split(",")[0])
                             dst_end_line = int(dst_line_list[1].split(",")[0])
                         else:
-                            if "," in dst_line:
-                                dst_start_line = int(dst_line.split(",")[0])
-                                dst_end_line = int(dst_line.split(",")[1])
+                            if "," in dst_line_number:
+                                # Sometimes we don't have "-".
+                                # Example: {15,0}
+                                dst_start_line = int(dst_line_number.split(",")[0])
+                                dst_end_line = int(dst_line_number.split(",")[1])
                         if " C " in dst_name:
-                            # <name> C [{<file>} {<line>}]
+                            # Sometimes we see "C" symbol which means it's a C function.
+                            # Example: <name> C [{<file>} {<line>}]
                             dst_name = dst_name.split(" C ")[0]
                         elif " [@] " in dst_name:
-                            # [UNWIND] <file> [@] <name> [{} {}]
+                            # type is always UNWIND if there is [@] symbol.
+                            # Example: [UNWIND] <file> [@] <name> [{} {}]
                             dst_info = dst_name.split(" [@] ")
                             dst_file = dst_info[0].split()[1]
                             dst_name_module = dst_info[1].split(" [{")
                             dst_module = dst_name_module[1].split()[0].strip("}")
-                            # remove file or module if they are the same
+                            # Remove file or module if they are the same
                             if dst_module in dst_file:
                                 if ".so" in dst_file:
                                     dst_file = None
@@ -275,18 +321,20 @@ class TAUReader:
                                     dst_module = None
                             dst_name = "[UNWIND] " + dst_name_module[0]
                         else:
-                            # [<type>] <name> [{} {}]
+                            # If there isn't "C" or "[@]""
+                            # Example: [<type>] <name> [{} {}]
                             dst_info = dst_name.split(" [{")
                             dst_file = dst_info[1].split()[0].strip("}{")
                             dst_name = dst_info[0]
                     else:
+                        # If we don't see "[{", there won't be line number info.
                         if " [@] " in dst_name:
-                            # [UNWIND] <file> [@] <name> <module>
+                            # Example: [UNWIND] <file> [@] <name> <module>
                             dst_info = dst_name.split(" [@] ")
                             dst_file = dst_info[0].split()[1]
                             dst_name_module = dst_info[1].split()
                             dst_module = dst_name_module[1]
-                            # remove file or module if they are the same
+                            # Remove file or module if they are the same
                             if dst_module in dst_file:
                                 if ".so" in dst_file:
                                     dst_file = None
@@ -294,53 +342,64 @@ class TAUReader:
                                     dst_module = None
                             dst_name = "[UNWIND] " + dst_name_module[0]
                         else:
-                            # [<type>] <name> <file>
-                            # [<type>] <name>
-                            # <name>
+                            # Example 1: [<type>] <name> <module>
+                            # Example 2: [<type>] <name>
+                            # Example 3: <name>
                             dst_info = dst_name.split()
                             if len(dst_info) == 3:
                                 dst_info = dst_name.split()
                                 dst_module = dst_info[2]
                                 dst_name = dst_info[0] + " " + dst_info[1]
 
-                    assert_line1 = re.search(
-                        r"\"(.*?)\"", file_data_list[0][line_index]
+                    # Example: ".TAU application  => foo()  => bar()" 31 0 155019..."
+                    first_file_callpath_line = re.search(
+                        r"\"(.*?)\"", file_data[0][line_index]
                     ).group(1)
                     # After first profile.0.0.0, only get Excl and Incl metric values
-                    for f_index in range(1, len(file_data_list)):
-                        assert_line2 = re.search(
-                            r"\"(.*?)\"", file_data_list[f_index][line_index]
+                    # from other files.
+                    for f_index in range(1, len(file_data)):
+                        other_file_callpath_line = re.search(
+                            r"\"(.*?)\"", file_data[f_index][line_index]
                         ).group(1)
-                        assert assert_line1 == assert_line2
-                        call_line_regex = re.match(
-                            r"\"(.*)\"\s(.*)\sG", file_data_list[f_index][line_index]
+                        # We assume metric files of a rank should have the exact same lines.
+                        # Only difference should be the Incl and Excl metric values.
+                        # TODO: We should find a solution if this raises an error.
+                        assert first_file_callpath_line == other_file_callpath_line, (
+                            "Lines across metric files for a rank are not the same.\n"
+                            + "File: "
+                            + filenames_per_rank[f_index]
+                            + "\nLine: "
+                            + str(line_index + 3)
+                        )
+                        # Get the information from the same line in each file. "line_index".
+                        callpath_line_regex = re.match(
+                            r"\"(.*)\"\s(.*)\sG", file_data[f_index][line_index]
                         )
                         metric_values.extend(
-                            map(float, call_line_regex.group(2).split(" ")[2:4])
+                            map(float, callpath_line_regex.group(2).split(" ")[2:4])
                         )
 
-                    # dst_node is bar() in the example in line 116
                     dst_node = self.callpath_to_node.get(callpath)
-                    # check if that node is created earlier
+                    # Check if that node is created earlier
                     if dst_node is None:
-                        # create the node since it doesn't exist
+                        # Create the node since it doesn't exist
                         dst_node = Node(
                             Frame({"type": "function", "name": dst_name}), None
                         )
                         self.callpath_to_node[callpath] = dst_node
 
-                        # this assumes parent will appear before the child
-                        # get its parent from its callpath. foo() is the parent in line 116
+                        # Get its parent from its callpath.
                         parent_node = self.callpath_to_node.get(parent_callpath)
                         if parent_node is None:
-                            create_parent(dst_node, parent_callpath, metrics)
+                            # Create parent if it doesn't exist.
+                            _create_parent(dst_node, parent_callpath)
                         else:
                             parent_node.add_child(dst_node)
                             dst_node.add_parent(parent_node)
 
                     node_dict = self.create_node_dict(
                         dst_node,
-                        metrics,
+                        self.columns,
                         metric_values,
                         dst_name,
                         dst_file,
@@ -356,20 +415,17 @@ class TAUReader:
         return list_roots
 
     def read(self):
-        pd.set_option("display.max_rows", 1000)
-        pd.set_option("display.max_columns", 500)
-        pd.set_option("display.width", 5000)
         """Read the TAU profile file to extract the calling context tree."""
-        # add all nodes and roots
+        # Add all nodes and roots.
         roots = self.create_graph()
-        # create a graph object once all nodes have been added
+        # Create a graph object once all nodes have been added.
         graph = Graph(roots)
         graph.enumerate_traverse()
 
         dataframe = pd.DataFrame.from_dict(data=self.node_dicts)
 
         indices = []
-        # set indices according to rank/thread numbers
+        # Set indices according to rank/thread numbers.
         if self.multiple_ranks and self.multiple_threads:
             indices = ["node", "rank", "thread"]
         elif self.multiple_ranks:
@@ -384,15 +440,36 @@ class TAUReader:
         dataframe.set_index(indices, inplace=True)
         dataframe.sort_index(inplace=True)
 
-        # add rows with 0 values for the missing rows
-        # no need to handle if there is only one rank and thread
-        # name is taken from the corresponding node for that row
-        # TODO: missing file and modules are zero on the dataframe
-        if (self.multiple_ranks or self.multiple_threads) is not False:
-            dataframe = dataframe.unstack().fillna(0).stack()
-            dataframe["name"] = dataframe.apply(
-                lambda x: x.name[0].frame["name"], axis=1
-            )
+        # Fill the missing ranks
+        # After unstacking and iterating over rows, there
+        # will be "NaN" values for some ranks. Find the first
+        # rank that has notna value and use it for other rows/ranks
+        # of the multiindex.
+        # TODO: iterrows() is not the best way to iterate over rows.
+        if self.multiple_ranks or self.multiple_threads:
+            dataframe = dataframe.unstack()
+            for idx, row in dataframe.iterrows():
+
+                # There is always a valid name for an index.
+                # Take that valid name and assign to other ranks/rows.
+                name = row["name"][row["name"].first_valid_index()]
+                dataframe.loc[idx, "name"] = name
+
+                # Sometimes there is no file information.
+                if row["file"].first_valid_index() is not None:
+                    file = row["file"][row["file"].first_valid_index()]
+                    dataframe.loc[idx, "file"] = file
+
+                # Sometimes there is no module information.
+                if row["module"].first_valid_index() is not None:
+                    module = row["module"][row["module"].first_valid_index()]
+                    dataframe.loc[idx, "module"] = module
+
+                # Fill the rest with 0
+                dataframe.fillna(0, inplace=True)
+
+            # Stack the dataframe
+            dataframe = dataframe.stack()
 
         default_metric = "time (inc)"
 
