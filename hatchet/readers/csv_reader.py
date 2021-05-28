@@ -1,4 +1,4 @@
-# Copyright 2017-2020 Lawrence Livermore National Security, LLC and other
+# Copyright 2017-2021 Lawrence Livermore National Security, LLC and other
 # Hatchet Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 
 from ast import literal_eval
 import pandas as pd
-from .pandas_reader import PandasReader
+from .dataframe_reader import DataframeReader
 
 import pickle
 import sys
@@ -45,17 +45,19 @@ def _corrrect_children_and_parent_col_types(df):
     return df
 
 
-class CSVReader(PandasReader):
+class CSVReader(DataframeReader):
     def __init__(self, filename):
-        # TODO Remove Arguments when Python 2.7 support is dropped
-        super(CSVReader, self).__init__(filename)
+        if sys.version_info[0] == 2:
+            super(CSVReader, self).__init__(filename)
+        else:
+            super().__init__(filename)
 
-    def _read_from_file_type(self, **kwargs):
+    def _read_dataframe_from_file(self, **kwargs):
         index_col = None
         if "index_col" in kwargs:
             index_col = kwargs["index_col"]
             del kwargs["index_col"]
-        csv_df = pd.read_csv(self.fname, index_col=0, **kwargs)
+        csv_df = pd.read_csv(self.filename, index_col=0, **kwargs)
         csv_df["node"] = _unpickle_series_elems(csv_df["node"])
         csv_df = _corrrect_children_and_parent_col_types(csv_df)
         if index_col is not None:

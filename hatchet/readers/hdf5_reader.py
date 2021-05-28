@@ -11,7 +11,6 @@ from .dataframe_reader import DataframeReader
 
 class HDF5Reader(DataframeReader):
     def __init__(self, filename):
-        # TODO Remove Arguments when Python 2.7 support is dropped
         if sys.version_info[0] == 2:
             super(HDF5Reader, self).__init__(filename)
         else:
