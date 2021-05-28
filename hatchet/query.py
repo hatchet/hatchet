@@ -43,15 +43,44 @@ class AbstractQuery(ABC):
         pass
 
     def __and__(self, other):
+        """Create an AndQuery with this query and another.
+
+        Arguments:
+            other (GraphFrame): the other query to use in the AndQuery.
+
+        Returns:
+            (AndQuery): A query object representing the intersection of the two queries.
+        """
         return AndQuery(self, other)
 
     def __or__(self, other):
+        """Create an OrQuery with this query and another.
+
+        Arguments:
+            other (GraphFrame): the other query to use in the OrQuery.
+
+        Returns:
+            (OrQuery): A query object representing the union of the two queries.
+        """
         return OrQuery(self, other)
 
     def __xor__(self, other):
+        """Create a XorQuery with this query and another.
+
+        Arguments:
+            other (GraphFrame): the other query to use in the XorQuery.
+
+        Returns:
+            (XorQuery): A query object representing the symmetric difference of the two queries.
+        """
         return XorQuery(self, other)
 
     def __invert__(self):
+        """Create a NotQuery with this query.
+
+        Returns:
+            (NotQuery): A query object representing all nodes that don't match this query.
+        """
         return NotQuery(self)
 
 
