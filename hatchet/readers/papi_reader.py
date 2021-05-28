@@ -157,9 +157,7 @@ class PAPIReader:
         for region, data in iter(graph_data.items()):
             # print(region, data)
 
-            node_name = data["name"]
-
-            frame = Frame({"type": "region", "name": node_name})
+            frame = Frame({"type": "region", "name": data["name"]})
             node = Node(frame, None)
 
             contain_read_events = [0]
@@ -167,7 +165,7 @@ class PAPIReader:
 
             node_dict = dict(
                 {
-                    "name": node_name,
+                    "name": data["name"],
                     "node": node,
                     "rank": int(rank),
                     "thread": int(thread),
