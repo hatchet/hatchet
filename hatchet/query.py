@@ -80,11 +80,12 @@ class NaryQuery(AbstractQuery):
                 )
 
     @abstractmethod
-    def _perform_nary_op(self, query_results):
+    def _perform_nary_op(self, query_results, gf):
         """Perform the NaryQuery subclass's designated operation on the results of the subqueries.
 
         Arguments:
             query_results (list): the results of the subqueries.
+            gf (GraphFrame): the GraphFrame on which the query is applied.
 
         Returns:
             (list): A list of nodes representing the result of applying the subclass-designated operation to the results of the subqueries.
@@ -692,6 +693,7 @@ class AndQuery(NaryQuery):
 
         Arguments:
             query_results (list): the results of the subqueries.
+            gf (GraphFrame): the GraphFrame on which the query is applied.
 
         Returns:
             (list): A list of nodes representing the intersection of the results of the subqueries.
@@ -726,6 +728,7 @@ class OrQuery(NaryQuery):
 
         Arguments:
             query_results (list): the results of the subqueries.
+            gf (GraphFrame): the GraphFrame on which the query is applied.
 
         Returns:
             (list): A list of nodes representing the union of the results of the subqueries.
@@ -760,6 +763,7 @@ class XorQuery(NaryQuery):
 
         Arguments:
             query_results (list): the results of the subqueries.
+            gf (GraphFrame): the GraphFrame on which the query is applied.
 
         Returns:
             (list): A list of nodes representing the symmetric difference of the results of the subqueries.
@@ -779,6 +783,11 @@ class NotQuery(NaryQuery):
     are not returned from the subquery."""
 
     def __init__(self, *args):
+        """Create a new XorQuery object.
+
+        Arguments:
+            *args (tuple): the subquery (high-level, low-level, or compound) to be performed.
+        """
         if sys.version_info[0] == 2:
             super(NotQuery, self).__init__(args)
         else:
@@ -787,6 +796,15 @@ class NotQuery(NaryQuery):
             raise BadNumberNaryQueryArgs("NotQuery requires exactly 1 subquery")
 
     def _perform_nary_op(self, query_results, gf):
+        """Collect all nodes in the graph not present in the query result.
+
+        Arguments:
+            query_results (list): the result of the subquery.
+            gf (GraphFrame): the GraphFrame on which the query is applied.
+
+        Returns:
+            (list): A list of all nodes not found in the subquery.
+        """
         nodes = set(gf.graph.traverse())
         query_nodes = set(query_results[0])
         return list(nodes.difference(query_nodes))
