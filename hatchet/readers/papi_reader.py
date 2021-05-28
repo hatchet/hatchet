@@ -27,11 +27,11 @@ class PAPIReader:
         # this is the name of the PAPI performance report directory. The directory
         # contains json files per MPI rank.
 
-        # default indices
-        self.indices = ["node", "rank", "thread"]
         self.inc_metrics = []
         self.dict = {}
         self.filter = filter
+        # used to keep track of region ids in graph
+        self.node_graph_dict = OrderedDict()
 
         json_dict = {}
         json_rank = OrderedDict()
@@ -117,26 +117,17 @@ class PAPIReader:
             print("Error: {} does not exist.".format(file_path))
             sys.exit()
 
-    def __find_node(self, list_roots, id, name):
-        for root in list_roots:
-            node_list = list(root.traverse())
-            for node in node_list:
-                # print("Node: ", node)
-                if node.frame.values("id") == id and node.frame.values("name") == name:
-                    return node
-                    break
+    def __find_read_node(self, parent_node, name):
+        for node in list(parent_node.traverse()):
+            if node.frame.values("name") == name:
+                return node
+                break
         return None
 
-    def __add_child_node(self, list_roots, id, child_node):
-
-        for root in list_roots:
-            node_list = list(root.traverse())
-            for node in node_list:
-                # print("Node: ", node)
-                if node.frame.values("id") == id:
-                    child_node.add_parent(node)
-                    node.add_child(child_node)
-                    break
+    def __add_child_node(self, id, child_node):
+        parent_node = self.node_graph_dict[id][1]
+        child_node.add_parent(parent_node)
+        parent_node.add_child(child_node)
 
     def __get_metrics(self, data, contain_read_events):
         metrics = OrderedDict()
@@ -161,11 +152,14 @@ class PAPIReader:
             metrics[metric] = 0
         return metrics
 
-    def __create_graph(self, rank, thread, list_roots, node_dicts, node_graph_arr):
+    def __create_graph(self, rank, thread, list_roots, node_dicts):
         graph_data = self.dict["ranks"][str(rank)]["threads"][str(thread)]["regions"]
         for region, data in iter(graph_data.items()):
             # print(region, data)
-            frame = Frame({"type": "region", "name": data["name"], "id": int(region)})
+
+            node_name = data["name"]
+
+            frame = Frame({"type": "region", "name": node_name})
             node = Node(frame, None)
 
             contain_read_events = [0]
@@ -173,7 +167,7 @@ class PAPIReader:
 
             node_dict = dict(
                 {
-                    "name": data["name"],
+                    "name": node_name,
                     "node": node,
                     "rank": int(rank),
                     "thread": int(thread),
@@ -181,10 +175,14 @@ class PAPIReader:
                 }
             )
             node_dicts.append(node_dict)
+
+            # used to find node using parent_region_id
+            self.node_graph_dict[int(region)] = [data["name"], node]
+
             if int(data["parent_region_id"]) == -1:
                 list_roots.append(node)
             else:
-                self.__add_child_node(list_roots, int(data["parent_region_id"]), node)
+                self.__add_child_node(int(data["parent_region_id"]), node)
 
             # check if we have to create child nodes for read events
             if contain_read_events[0] == 1:
@@ -196,7 +194,7 @@ class PAPIReader:
                     node_name_read = "read_" + str(i)
 
                     read_frame = Frame(
-                        {"type": "region", "name": node_name_read, "id": int(region)}
+                        {"type": "region", "name": node_name_read}
                     )
                     read_node = Node(read_frame, node)
                     read_metrics = self.__get_read_metrics(data, node_name_read)
@@ -212,11 +210,6 @@ class PAPIReader:
                     node_dicts.append(node_dict)
                     node.add_child(read_node)
 
-        # set array of graph nodes
-        for attributes in iter(node_dicts):
-            g_node = attributes["node"].frame
-            if "read_" not in g_node["name"]:
-                node_graph_arr.append([g_node["id"], g_node["name"]])
 
     def __print_error_and_exit(self, region_name, rank, thread):
         print(
@@ -259,46 +252,37 @@ class PAPIReader:
                     graph_rank = int(rank)
                     graph_thread = int(thread)
 
-        # check graph indices
-        if rank_cnt == 1 and thread_cnt == 1:
-            self.indices = ["node"]
-
         # create graph
         list_roots = []
         node_dicts = []
-        node_graph_arr = []
         self.__create_graph(
-            graph_rank, graph_thread, list_roots, node_dicts, node_graph_arr
+            graph_rank, graph_thread, list_roots, node_dicts
         )
 
         # fill up node dictionaries for all remaining ranks and threads
         for rank, rank_value in iter(self.dict["ranks"].items()):
             for thread, thread_value in iter(rank_value["threads"].items()):
                 if int(rank) != graph_rank or int(thread) != graph_thread:
-                    node_graph_arr_iterator = iter(node_graph_arr)
-                    for region, data in iter(thread_value["regions"].items()):
-                        # print(region)
-                        # print(data)
+                    node_graph_id = -1
+                    for data in iter(thread_value["regions"].values()):
+                        # print(data["name"])
 
-                        # set iterator to the next graph region
-                        graph_region = next(node_graph_arr_iterator, None)
-                        if graph_region is None:
+                        node_graph_id += 1
+                        if node_graph_id >= len(self.node_graph_dict):
                             self.__print_error_and_exit(data["name"], rank, thread)
 
                         # find matching regions
                         found_match = False
                         while found_match is False:
-                            if graph_region[1] == data["name"]:
+                            if self.node_graph_dict[node_graph_id][0] == data["name"]:
                                 found_match = True
                             else:
                                 # create a tuple of zero values
                                 zero_metrics = self.__get_zero_metrics()
                                 node_dict = dict(
                                     {
-                                        "name": graph_region[1],
-                                        "node": self.__find_node(
-                                            list_roots, graph_region[0], graph_region[1]
-                                        ),
+                                        "name": self.node_graph_dict[node_graph_id][0],
+                                        "node": self.node_graph_dict[node_graph_id][1],
                                         "rank": int(rank),
                                         "thread": int(thread),
                                         **zero_metrics,
@@ -306,12 +290,10 @@ class PAPIReader:
                                 )
                                 node_dicts.append(node_dict)
 
-                                # set iterator to the next region
-                                graph_region = next(node_graph_arr_iterator, None)
-                                if graph_region is None:
-                                    self.__print_error_and_exit(
-                                        data["name"], rank, thread
-                                    )
+                                # set index to the next region
+                                node_graph_id += 1
+                                if node_graph_id >= len(self.node_graph_dict):
+                                    self.__print_error_and_exit(data["name"], rank, thread)
 
                         if found_match is True:
                             # we found a match
@@ -320,10 +302,8 @@ class PAPIReader:
 
                             node_dict = dict(
                                 {
-                                    "name": graph_region[1],
-                                    "node": self.__find_node(
-                                        list_roots, graph_region[0], graph_region[1]
-                                    ),
+                                    "name": self.node_graph_dict[node_graph_id][0],
+                                    "node": self.node_graph_dict[node_graph_id][1],
                                     "rank": int(rank),
                                     "thread": int(thread),
                                     **metrics,
@@ -345,9 +325,8 @@ class PAPIReader:
                                     node_dict = dict(
                                         {
                                             "name": node_name_read,
-                                            "node": self.__find_node(
-                                                list_roots,
-                                                graph_region[0],
+                                            "node": self.__find_read_node(
+                                                self.node_graph_dict[node_graph_id][1],
                                                 node_name_read,
                                             ),
                                             "rank": int(rank),
@@ -362,7 +341,23 @@ class PAPIReader:
         graph.enumerate_traverse()
 
         dataframe = pd.DataFrame(data=node_dicts)
-        dataframe.set_index(self.indices, inplace=True)
+
+        # check graph indices
+        if rank_cnt > 1 and thread_cnt > 1:
+            indices = ["node", "rank", "thread"]
+        elif rank_cnt > 1:
+            dataframe.drop(columns=["thread"], inplace=True)
+            indices = ["node", "rank"]
+        elif thread_cnt > 1:
+            dataframe.drop(columns=["rank"], inplace=True)
+            indices = ["node", "thread"]
+        else:
+            dataframe.drop(columns=["rank", "thread"], inplace=True)
+            indices = ["node"]
+
+        dataframe.set_index(indices, inplace=True)
         dataframe.sort_index(inplace=True)
 
-        return hatchet.graphframe.GraphFrame(graph, dataframe, [], self.inc_metrics)
+        default_metric = "real_time_nsec"
+
+        return hatchet.graphframe.GraphFrame(graph, dataframe, [], self.inc_metrics, default_metric)
