@@ -32,6 +32,14 @@ class AbstractQuery(ABC):
 
     @abstractmethod
     def apply(self, gf):
+        """Apply the query to a GraphFrame.
+
+        Arguments:
+            gf (GraphFrame): the GraphFrame on which to apply the query.
+
+        Returns:
+            (list): A list representing the set of nodes from paths that match this query.
+        """
         pass
 
     def __and__(self, other):
@@ -52,6 +60,11 @@ class NaryQuery(AbstractQuery):
     that acts on and merges N separate subqueries"""
 
     def __init__(self, *args):
+        """Create a new NaryQuery object.
+
+        Arguments:
+            *args (tuple): the subqueries (high-level, low-level, or compound) to be performed.
+        """
         self.subqueries = []
         if isinstance(args[0], tuple) and len(args) == 1:
             args = args[0]
@@ -67,10 +80,26 @@ class NaryQuery(AbstractQuery):
                 )
 
     @abstractmethod
-    def _perform_nary_op(self, query_results, gf):
+    def _perform_nary_op(self, query_results):
+        """Perform the NaryQuery subclass's designated operation on the results of the subqueries.
+
+        Arguments:
+            query_results (list): the results of the subqueries.
+
+        Returns:
+            (list): A list of nodes representing the result of applying the subclass-designated operation to the results of the subqueries.
+        """
         pass
 
     def apply(self, gf):
+        """Apply the NaryQuery to a GraphFrame.
+
+        Arguments:
+            gf (GraphFrame): the GraphFrame on which to apply the query.
+
+        Returns:
+            (list): A list of nodes representing the result of applying the subclass-designated operation to the results of the subqueries.
+        """
         results = []
         for query in self.subqueries:
             results.append(query.apply(gf))
@@ -376,7 +405,7 @@ class QueryMatcher(AbstractQuery):
             gf (GraphFrame): the GraphFrame on which to apply the query.
 
         Returns:
-            (list): A list of lists representing the set of paths that match this query.
+            (list): A list representing the set of nodes from paths that match this query.
         """
         self.search_cache = {}
         matches = []
@@ -646,6 +675,11 @@ class AndQuery(NaryQuery):
     of the subqueries"""
 
     def __init__(self, *args):
+        """Create a new AndQuery object.
+
+        Arguments:
+            *args (tuple): the subqueries (high-level, low-level, or compound) to be performed.
+        """
         if sys.version_info[0] == 2:
             super(AndQuery, self).__init__(args)
         else:
@@ -654,11 +688,19 @@ class AndQuery(NaryQuery):
             raise BadNumberNaryQueryArgs("AndQuery requires 2 or more subqueries")
 
     def _perform_nary_op(self, query_results, gf):
+        """Perform an intersection operation on the results of the subqueries.
+
+        Arguments:
+            query_results (list): the results of the subqueries.
+
+        Returns:
+            (list): A list of nodes representing the intersection of the results of the subqueries.
+        """
         intersection_set = set(query_results[0]).intersection(*query_results[1:])
         return list(intersection_set)
 
 
-# Alias of AndQuery to signify the relationship to set Intersection
+"""Alias of AndQuery to signify the relationship to set Intersection"""
 IntersectionQuery = AndQuery
 
 
@@ -667,6 +709,11 @@ class OrQuery(NaryQuery):
     of the subqueries"""
 
     def __init__(self, *args):
+        """Create a new OrQuery object.
+
+        Arguments:
+            *args (tuple): the subqueries (high-level, low-level, or compound) to be performed.
+        """
         if sys.version_info[0] == 2:
             super(OrQuery, self).__init__(args)
         else:
@@ -675,11 +722,19 @@ class OrQuery(NaryQuery):
             raise BadNumberNaryQueryArgs("OrQuery requires 2 or more subqueries")
 
     def _perform_nary_op(self, query_results, gf):
+        """Perform an union operation on the results of the subqueries.
+
+        Arguments:
+            query_results (list): the results of the subqueries.
+
+        Returns:
+            (list): A list of nodes representing the union of the results of the subqueries.
+        """
         union_set = set().union(*query_results)
         return list(union_set)
 
 
-# Alias of OrQuery to signify the relationship to set Union
+"""Alias of OrQuery to signify the relationship to set Union"""
 UnionQuery = OrQuery
 
 
@@ -688,6 +743,11 @@ class XorQuery(NaryQuery):
     (i.e., set-based XOR) of the results of the subqueries"""
 
     def __init__(self, *args):
+        """Create a new XorQuery object.
+
+        Arguments:
+            *args (tuple): the subqueries (high-level, low-level, or compound) to be performed.
+        """
         if sys.version_info[0] == 2:
             super(XorQuery, self).__init__(args)
         else:
@@ -696,13 +756,21 @@ class XorQuery(NaryQuery):
             raise BadNumberNaryQueryArgs("XorQuery requires 2 or more subqueries")
 
     def _perform_nary_op(self, query_results, gf):
+        """Perform a symmetric difference operation on the results of the subqueries.
+
+        Arguments:
+            query_results (list): the results of the subqueries.
+
+        Returns:
+            (list): A list of nodes representing the symmetric difference of the results of the subqueries.
+        """
         xor_set = set()
         for res in query_results:
             xor_set = xor_set.symmetric_difference(set(res))
         return list(xor_set)
 
 
-# Alias of XorQuery to signify the relationship to set Symmetric Difference
+"""Alias of XorQuery to signify the relationship to set Symmetric Difference"""
 SymDifferenceQuery = XorQuery
 
 
