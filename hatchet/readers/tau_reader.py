@@ -7,7 +7,6 @@ import re
 import os
 import glob
 import pandas as pd
-import numpy as np
 import hatchet.graphframe
 from hatchet.node import Node
 from hatchet.graph import Graph
