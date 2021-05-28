@@ -17,10 +17,6 @@ class HDF5Writer(DataframeWriter):
             super().__init__(filename)
 
     def _write_dataframe_to_file(self, df, **kwargs):
-        if "key" not in kwargs:
-            raise KeyError("Writing to HDF5 requires a user-supplied key")
-        key = kwargs["key"]
-        del kwargs["key"]
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", category=Warning)
-            df.to_hdf(self.filename, key, **kwargs)
+            df.to_hdf(self.filename, **kwargs)

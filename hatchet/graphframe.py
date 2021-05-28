@@ -366,18 +366,11 @@ class GraphFrame:
 
         return HDF5Reader(filename).read(key=key, **kwargs)
 
-    def to_hdf(
-        self,
-        filename,
-        key="hatchet_graphframe",
-        **kwargs
-    ):
+    def to_hdf(self, filename, key="hatchet_graphframe", **kwargs):
         # import this lazily to avoid circular dependencies
         from .writers.hdf5_writer import HDF5Writer
 
-        HDF5Writer(filename).write(
-            self, key=key, **kwargs
-        )
+        HDF5Writer(filename).write(self, key=key, **kwargs)
 
     @staticmethod
     def from_pickle(filename, **kwargs):
