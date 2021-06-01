@@ -85,7 +85,7 @@ def test_validator():
     except TypeError:
         assert True
 
-    #Testing valid inputs
+    # Testing valid inputs
     # Goes through to true assertion if
     # validation works
     try:

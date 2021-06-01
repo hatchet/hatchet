@@ -117,7 +117,7 @@ class RcManager(MutableMapping):
 
     def __str__(self):
         return "\n".join(map("{0[0]}: {0[1]}".format, sorted(self.items())))
-    
+
     def __len__(self):
         return len(self._data)
 
