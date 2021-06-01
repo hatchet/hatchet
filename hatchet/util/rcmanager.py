@@ -76,18 +76,17 @@ class ConfigValidator:
             return self._validations[key](key, value)
         except TypeError as e:
             raise e
-        except KeyError:
-            pass
+        except KeyError as e:
+            raise e
 
     def _set_validators_to_configs(self):
-        # real configurations
         self._validations["logging"] = self.bool_validator
         self._validations["log_directory"] = self.str_validator
         self._validations["highlight_name"] = self.bool_validator
         self._validations["invert_colormap"] = self.bool_validator
 
 
-class RcManager(MutableMapping, dict):
+class RcManager(MutableMapping):
     """
     A runtime configurations class; modeled after the RcParams class in matplotlib.
     The benifit of this class over a dictonary is validation of set item and formatting
@@ -95,8 +94,9 @@ class RcManager(MutableMapping, dict):
     """
 
     def __init__(self, *args, **kwargs):
+        self._data = {}
         self._validator = ConfigValidator()
-        self.update(*args, **kwargs)
+        self._data.update(*args, **kwargs)
 
     def __setitem__(self, key, val):
         """
@@ -104,19 +104,25 @@ class RcManager(MutableMapping, dict):
         """
         try:
             self._validator.validate(key, val)
-            return dict.__setitem__(self, key, val)
+            return self._data.__setitem__(key, val)
         except TypeError as e:
-            print(e)
+            raise e
 
     def __getitem__(self, key):
-        return dict.__getitem__(self, key)
+        return self._data[key]
 
     def __iter__(self):
-        for kv in sorted(dict.__iter__(self)):
+        for kv in sorted(self._data.__iter__(self)):
             yield kv
 
     def __str__(self):
         return "\n".join(map("{0[0]}: {0[1]}".format, sorted(self.items())))
+    
+    def __len__(self):
+        return len(self._data)
+
+    def __delitem__(self, item):
+        del self._data[item]
 
 
 def _resolve_conf_file():
@@ -131,7 +137,7 @@ def _resolve_conf_file():
     if path.exists(conf_dir):
         return conf_dir
     else:
-        my_path = path.abspath(path.dirname(__file__))
+        my_path = path.abspath(path.dirname(path.abspath(__file__)))
         rel_path = path.join(my_path, "..", "..", "hatchetrc.yaml")
         return rel_path
 

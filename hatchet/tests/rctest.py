@@ -84,3 +84,42 @@ def test_validator():
         assert False
     except TypeError:
         assert True
+
+    #Testing valid inputs
+    # Goes through to true assertion if
+    # validation works
+    try:
+        V.validate("bad_bool", True)
+        assert True
+    except TypeError:
+        assert False
+
+    try:
+        V.validate("bad_string", "string")
+        assert True
+    except TypeError:
+        assert False
+
+    try:
+        V.validate("bad_int", 1)
+        assert True
+    except TypeError:
+        assert False
+
+    try:
+        V.validate("bad_float", 1.2387)
+        assert True
+    except TypeError:
+        assert False
+
+    try:
+        V.validate("bad_list", [])
+        assert True
+    except TypeError:
+        assert False
+
+    try:
+        V.validate("bad_dict", {})
+        assert True
+    except TypeError:
+        assert False
