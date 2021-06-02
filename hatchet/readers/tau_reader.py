@@ -48,14 +48,108 @@ class TAUReader:
             "name": name,
             "file": filename,
             "module": module,
-            "line": start_line,
-            "end_line": end_line,
+            "line": int(start_line),
+            "end_line": int(end_line),
         }
         for i in range(len(metric_values)):
             node_dict[columns[i + 1]] = metric_values[i]
         return node_dict
 
     def create_graph(self):
+        def _get_name_file_module(is_parent, node_info, symbol):
+            name, file, module = None, None, None
+            # There are several different formats in TAU outputs.
+            # There might be file, line, and module information.
+            # The following if-else block covers all possible output
+            # formats. Example formats are given in comments.
+            if symbol == " [@] ":
+                # Check if there is a [@] symbol.
+                node_info = node_info.split(symbol)
+                # We don't need file and module information if it's a parent node.
+                if not is_parent:
+                    file = node_info[0].split()[1]
+                    if "[{" in node_info[1]:
+                        # Sometimes we see file and module information inside of [{}]
+                        # Example: [UNWIND] <file> [@] <name> [{<file_or_module>} {<line>}]
+                        name_module = node_info[1].split(" [{")
+                        module = name_module[1].split()[0].strip("}")
+                    else:
+                        # Example: [UNWIND] <file> [@] <name> <module>
+                        name_module = node_info[1].split()
+                        module = name_module[1]
+
+                    # If check if module is in file.
+                    # Assign None to file if it's .so.
+                    # Assign None to module if it's .c.
+                    if module in file:
+                        if ".so" in file:
+                            file = None
+                        if ".c" in module:
+                            module = None
+                    name = "[UNWIND] " + name_module[0]
+                else:
+                    # We just need to take name if it is a parent
+                    name = "[UNWIND] " + node_info[1].split()[0]
+            elif symbol == " C ":
+                # Check if there is a C symbol.
+                # "C" symbol means it's a C function.
+                node_info = node_info.split(symbol)
+                name = node_info[0]
+                # We don't need file and module information if it's a parent node.
+                if not is_parent:
+                    if "[{" in node_info[1]:
+                        # Example: <name> C [{<file>} {<line>}]
+                        node_info = node_info[1].split()
+                        file = node_info[0].strip("}[{")
+            else:
+                if "[{" in node_info:
+                    # If there isn't C or [@]
+                    # Example: [<type>] <name> [{} {}]
+                    node_info = node_info.split(" [{")
+                    name = node_info[0]
+                    # We don't need file and module information if it's a parent node.
+                    if not is_parent:
+                        file = node_info[1].split()[0].strip("}{")
+                else:
+                    # Example 1: [<type>] <name> <module>
+                    # Example 2: [<type>] <name>
+                    # Example 3: <name>
+                    name = node_info
+                    node_info = node_info.split()
+                    # We need to take module information from the first example.
+                    # Another example is "[CONTEXT] .TAU application" which contradicts
+                    # with the first example. So we check if there is "\" symbol which
+                    # will show the module information in this case.
+                    if len(node_info) == 3 and "/" in name:
+                        name = node_info[0] + " " + node_info[1]
+                        # We don't need file and module information if it's a parent node.
+                        if not is_parent:
+                            module = node_info[2]
+            return [name, file, module]
+
+        def _get_line_numbers(node_info):
+            start_line, end_line = 0, 0
+            # There should be [{}] symbols if there is line number information.
+            if "[{" in node_info:
+                tmp_module_or_file_line = (
+                    re.search(r"\{.*\}\]", node_info).group(0).split()
+                )
+                line_numbers = tmp_module_or_file_line[1].strip("}]").replace("{", "")
+                start_line = line_numbers
+                if "-" in line_numbers:
+                    # Sometimes there is "-" between start line and end line
+                    # Example: {341,1}-{396,1}
+                    line_numbers = line_numbers.split("-")
+                    start_line = line_numbers[0].split(",")[0]
+                    end_line = line_numbers[1].split(",")[0]
+                else:
+                    if "," in line_numbers:
+                        # Sometimes we don't have "-".
+                        # Example: {15,0}
+                        start_line = line_numbers.split(",")[0]
+                        end_line = line_numbers.split(",")[1]
+            return [start_line, end_line]
+
         def _create_parent(child_node, parent_callpath):
             """In TAU output, sometimes we see a node as a parent
             in the callpath even though we haven't seen it before
@@ -85,35 +179,12 @@ class TAUReader:
                 parent_info = parent_callpath[-1]
                 parent_name = ""
 
-                # Sometimes we see additional information about a function
-                # line file, line, module, etc.
-                # We just want to have the name and type to create a parent node.
-                # type can be [UNWIND] or [SAMPLE].
-                if "[{" in parent_info:
-                    if " C " in parent_info:
-                        # Example: <name> C [{<file>} {<line>}]
-                        parent_name = parent_info.split(" C ")[0]
-                    elif " [@] " in parent_info:
-                        # Example: [UNWIND] <file> [@] <name> [{} {}]
-                        parent_name = (
-                            "[UNWIND] " + parent_info.split(" [@] ")[1].split()[0]
-                        )
-                    else:
-                        # Example: [<type>] <name> [{} {}]
-                        parent_name = parent_info.split(" [")[0]
+                if " C " in parent_info:
+                    parent_name = _get_name_file_module(True, parent_info, " C ")[0]
+                elif " [@] " in parent_info:
+                    parent_name = _get_name_file_module(True, parent_info, " [@] ")[0]
                 else:
-                    if " [@] " in parent_info:
-                        # Example: [UNWIND] <file> [@] <name> <module>
-                        parent_name = (
-                            "[UNWIND] " + parent_info.split(" [@] ")[1].split()[0]
-                        )
-                    else:
-                        # Example 1: [<type>] <name> <file>
-                        # Example 2: [<type>] <name>
-                        # Example 3: <name>
-                        dst_info = parent_info.split()
-                        if len(dst_info) == 3:
-                            parent_name = dst_info[0] + " " + dst_info[1]
+                    parent_name = _get_name_file_module(True, parent_info, "")[0]
 
                 parent_node = Node(
                     Frame({"type": "function", "name": parent_name}), None
@@ -170,7 +241,7 @@ class TAUReader:
         # Store all files in a list of tuples.
         # Each tuple stores every metric file of a rank.
         # We process one rank at a time.
-        # Example: [(metric1/0.0.0, metric2/0.0.0), (metric1/1.0.0, metric2/1.0.0), ...]
+        # Example: [(metric1/profile.x.0.0, metric2/profile.x.0.0), ...]
         profile_filenames = list(zip(*profile_filenames))
 
         # Get column information from the metric files of a rank.
@@ -178,7 +249,7 @@ class TAUReader:
 
         list_roots = []
         prev_rank, prev_thread = 0, 0
-        # Example filenames_per_rank: (metric1/0.0.0, metric1/0.0.0, ...)
+        # Example filenames_per_rank: (metric1/profile.x.0.0 ...)
         for filenames_per_rank in profile_filenames:
             file_info = filenames_per_rank[0].split(".")
             rank, thread = int(file_info[-3]), int(file_info[-1])
@@ -186,7 +257,7 @@ class TAUReader:
             self.multiple_threads = True if thread != prev_thread else False
 
             # Load all files represent a different metric for a rank or a thread.
-            # If there are 2 metrics, load metric1\profile.0.0.0 and metric2\profile.0.0.0
+            # If there are 2 metrics, load metric1\profile.x.0.0 and metric2\profile.x.0.0
             file_data = []
             for f_index in range(len(filenames_per_rank)):
                 # Store the lines after metadata.
@@ -198,7 +269,7 @@ class TAUReader:
             root_line = re.match(r"\"(.*)\"\s(.*)\sG", file_data[0][0])
             root_name = root_line.group(1).strip(" ")
             # convert it to a tuple to use it as a key in callpath_to_node dictionary
-            root_name_tuple = tuple([root_name])
+            root_callpath = tuple([root_name])
             root_values = list(map(int, root_line.group(2).split(" ")[:-1]))
 
             # After first profile.0.0.0, only get Excl and Incl metric values
@@ -219,17 +290,18 @@ class TAUReader:
                 root_line = re.match(r"\"(.*)\"\s(.*)\sG", file_data[f_index][0])
                 root_values.extend(list(map(int, root_line.group(2).split(" ")[2:4])))
 
-            # If root doesn't exist
-            if root_name_tuple not in self.callpath_to_node:
+            # Check if the root exists in other ranks.
+            # Note that we assume the root is the same for all metric files of a rank.
+            if root_callpath not in self.callpath_to_node:
                 # Create the root node since it doesn't exist
                 root_node = Node(Frame({"name": root_name, "type": "function"}), None)
 
                 # Store callpaths to identify nodes
-                self.callpath_to_node[root_name_tuple] = root_node
+                self.callpath_to_node[root_callpath] = root_node
                 list_roots.append(root_node)
             else:
                 # Don't create a new node since it is created earlier
-                root_node = self.callpath_to_node.get(root_name_tuple)
+                root_node = self.callpath_to_node.get(root_callpath)
 
             node_dict = self.create_node_dict(
                 root_node,
@@ -253,6 +325,8 @@ class TAUReader:
             for line_index in range(1, len(file_data[0])):
                 line = file_data[0][line_index]
                 metric_values = []
+                # We only parse the lines that has "=>" symbol which shows the callpath info.
+                # We just skip the other lines.
                 if "=>" in line:
                     # Example: ".TAU application  => foo()  => bar()" 31 0 155019 155019 0 GROUP="TAU_SAMPLE|TAU_CALLPATH"
                     callpath_line_regex = re.match(r"\"(.*)\"\s(.*)\sG", line)
@@ -263,9 +337,7 @@ class TAUReader:
                     ]
 
                     # Example dst_name: StrToInt [{lulesh-util.cc} {13,1}-{29,1}]
-                    dst_name = callpath[-1]
-                    dst_file, dst_module = None, None
-                    dst_start_line, dst_end_line = 0, 0
+                    leaf_name = callpath[-1]
                     callpath = tuple(callpath)
                     parent_callpath = callpath[:-1]
                     # Don't include the value for ProfileCalls.
@@ -274,87 +346,28 @@ class TAUReader:
                         map(float, callpath_line_regex.group(2).split(" ")[:-1])
                     )
 
-                    # There are several different formats in TAU outputs.
-                    # There might be file, line, and module information.
-                    # The following if-else block covers all possible output
-                    # formats. Example formats are given in comments.
-                    if "[{" in dst_name:
-                        # Sometimes we see file and module information inside of [{}]
-                        # Example 1: [UNWIND] <file> [@] [{<file_or_module>} {<line>}]
-                        # Example 2: <name> C [{<file>} {<line>}]
-                        # Example 3: [<type>] <name> [{} {}]
-                        tmp_module_or_file_line = (
-                            re.search(r"\{.*\}\]", dst_name).group(0).split()
+                    # Get start and end line information
+                    leaf_line_numbers = _get_line_numbers(leaf_name)
+                    # Get name, file, and module information using the leaf name
+                    # and the symbol on it
+                    if " C " in leaf_name:
+                        leaf_name_file_module = _get_name_file_module(
+                            False, leaf_name, " C "
                         )
-                        dst_line_number = (
-                            tmp_module_or_file_line[1].strip("}]").replace("{", "")
+                    elif " [@] " in leaf_name:
+                        leaf_name_file_module = _get_name_file_module(
+                            False, leaf_name, " [@] "
                         )
-                        if "-" in dst_line_number:
-                            # Sometimes there is "-" between start line and end line
-                            # Example: {341,1}-{396,1}
-                            dst_line_list = dst_line_number.split("-")
-                            dst_start_line = int(dst_line_list[0].split(",")[0])
-                            dst_end_line = int(dst_line_list[1].split(",")[0])
-                        else:
-                            if "," in dst_line_number:
-                                # Sometimes we don't have "-".
-                                # Example: {15,0}
-                                dst_start_line = int(dst_line_number.split(",")[0])
-                                dst_end_line = int(dst_line_number.split(",")[1])
-                        if " C " in dst_name:
-                            # Sometimes we see "C" symbol which means it's a C function.
-                            # Example: <name> C [{<file>} {<line>}]
-                            dst_name = dst_name.split(" C ")[0]
-                        elif " [@] " in dst_name:
-                            # type is always UNWIND if there is [@] symbol.
-                            # Example: [UNWIND] <file> [@] <name> [{} {}]
-                            dst_info = dst_name.split(" [@] ")
-                            dst_file = dst_info[0].split()[1]
-                            dst_name_module = dst_info[1].split(" [{")
-                            dst_module = dst_name_module[1].split()[0].strip("}")
-                            # Remove file or module if they are the same
-                            if dst_module in dst_file:
-                                if ".so" in dst_file:
-                                    dst_file = None
-                                if ".c" in dst_module:
-                                    dst_module = None
-                            dst_name = "[UNWIND] " + dst_name_module[0]
-                        else:
-                            # If there isn't "C" or "[@]""
-                            # Example: [<type>] <name> [{} {}]
-                            dst_info = dst_name.split(" [{")
-                            dst_file = dst_info[1].split()[0].strip("}{")
-                            dst_name = dst_info[0]
                     else:
-                        # If we don't see "[{", there won't be line number info.
-                        if " [@] " in dst_name:
-                            # Example: [UNWIND] <file> [@] <name> <module>
-                            dst_info = dst_name.split(" [@] ")
-                            dst_file = dst_info[0].split()[1]
-                            dst_name_module = dst_info[1].split()
-                            dst_module = dst_name_module[1]
-                            # Remove file or module if they are the same
-                            if dst_module in dst_file:
-                                if ".so" in dst_file:
-                                    dst_file = None
-                                if ".c" in dst_module:
-                                    dst_module = None
-                            dst_name = "[UNWIND] " + dst_name_module[0]
-                        else:
-                            # Example 1: [<type>] <name> <module>
-                            # Example 2: [<type>] <name>
-                            # Example 3: <name>
-                            dst_info = dst_name.split()
-                            if len(dst_info) == 3:
-                                dst_info = dst_name.split()
-                                dst_module = dst_info[2]
-                                dst_name = dst_info[0] + " " + dst_info[1]
+                        leaf_name_file_module = _get_name_file_module(
+                            False, leaf_name, ""
+                        )
 
                     # Example: ".TAU application  => foo()  => bar()" 31 0 155019..."
                     first_file_callpath_line = re.search(
                         r"\"(.*?)\"", file_data[0][line_index]
                     ).group(1)
-                    # After first profile.0.0.0, only get Excl and Incl metric values
+                    # After first profile.x.0.0, only get Excl and Incl metric values
                     # from other files.
                     for f_index in range(1, len(file_data)):
                         other_file_callpath_line = re.search(
@@ -378,33 +391,38 @@ class TAUReader:
                             map(float, callpath_line_regex.group(2).split(" ")[2:4])
                         )
 
-                    dst_node = self.callpath_to_node.get(callpath)
+                    leaf_node = self.callpath_to_node.get(callpath)
                     # Check if that node is created earlier
-                    if dst_node is None:
+                    if leaf_node is None:
                         # Create the node since it doesn't exist
-                        dst_node = Node(
-                            Frame({"type": "function", "name": dst_name}), None
+                        leaf_node = Node(
+                            Frame({"type": "function", "name": leaf_name}), None
                         )
-                        self.callpath_to_node[callpath] = dst_node
+                        self.callpath_to_node[callpath] = leaf_node
 
                         # Get its parent from its callpath.
                         parent_node = self.callpath_to_node.get(parent_callpath)
                         if parent_node is None:
                             # Create parent if it doesn't exist.
-                            _create_parent(dst_node, parent_callpath)
+                            _create_parent(leaf_node, parent_callpath)
                         else:
-                            parent_node.add_child(dst_node)
-                            dst_node.add_parent(parent_node)
+                            parent_node.add_child(leaf_node)
+                            leaf_node.add_parent(parent_node)
 
                     node_dict = self.create_node_dict(
-                        dst_node,
+                        leaf_node,
                         self.columns,
                         metric_values,
-                        dst_name,
-                        dst_file,
-                        dst_module,
-                        dst_start_line,
-                        dst_end_line,
+                        # name
+                        leaf_name_file_module[0],
+                        # file
+                        leaf_name_file_module[1],
+                        # module
+                        leaf_name_file_module[2],
+                        # start line
+                        leaf_line_numbers[0],
+                        # end line
+                        leaf_line_numbers[1],
                         rank,
                         thread,
                     )

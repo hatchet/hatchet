@@ -14,9 +14,9 @@ def test_graphframe(tau_profile_dir):
     gf = GraphFrame.from_tau(str(tau_profile_dir))
 
     for col in gf.dataframe.columns:
-        if col in ("TIME (inc)", "TIME"):
+        if col in ("time (inc)", "time"):
             assert gf.dataframe[col].dtype == np.float64
-        elif col in ("start_line"):
+        elif col in ("line"):
             assert gf.dataframe[col].dtype == np.int64
         elif col in ("name", "node"):
             assert gf.dataframe[col].dtype == np.object
