@@ -3,6 +3,11 @@
 
    SPDX-License-Identifier: MIT
 
+..
+  TODO: Add color to the Checkmarks and X's
+.. |check|  unicode:: U+02713 .. CHECK MARK
+.. |cross|  unicode:: U+02717 .. BALLOT X
+
 **************
 Query Language
 **************
@@ -14,7 +19,45 @@ Regardless of API, queries in Hatchet represent abstract paths, or path patterns
 - A wildcard that specifies the number of real nodes to match to the abstract node
 - A filter that is used to determine whether a real node matches the abstract node
 
-The primary differences between the two APIs are the representation of filters, how wildcards and filters are combined into *abstract graph nodes*, and how *abstract graph nodes* are combined into a full query.
+The primary differences between the two APIs are the representation of filters, how wildcards and filters are combined into *abstract graph nodes*, and how *abstract graph nodes* are combined into a full query. Some of these differences are shown in the table below:
+
+|check|
+
++-------------------------------------------------------+--------------+--------------+---------------+
+| Feature                                               | High-Level   | Middle-Level | Low-Level     |
++=======================================================+==============+==============+===============+
+| Wildcards to specify number of nodes to match         | |check|      | |check|      | |check|       |
++-------------------------------------------------------+--------------+--------------+---------------+
+| String Attribute "Equivalence" Filters                | |check|      | |check|      | |check|       |
++-------------------------------------------------------+--------------+--------------+---------------+
+| String Attribute "Begins With" Filters                | |check|      | |check|      | |check|       |
++-------------------------------------------------------+--------------+--------------+---------------+
+| String Attribute "Ends With" Filters                  | |check|      | |check|      | |check|       |
++-------------------------------------------------------+--------------+--------------+---------------+
+| String Attribute "Contains" Filters                   | |check|      | |check|      | |check|       |
++-------------------------------------------------------+--------------+--------------+---------------+
+| String Attribute "Regex" Filters                      | |check|      | |check|      | |check|       |
++-------------------------------------------------------+--------------+--------------+---------------+
+| Number Attribute "Equivalence" Filters                | |check|      | |check|      | |check|       |
++-------------------------------------------------------+--------------+--------------+---------------+
+| Number Attribute "Less-Than (or Equal-To)" Filters    | |check|      | |check|      | |check|       |
++-------------------------------------------------------+--------------+--------------+---------------+
+| Number Attribute "Greater-Than (or Equal-To)" Filters | |check|      | |check|      | |check|       |
++-------------------------------------------------------+--------------+--------------+---------------+
+| Number Attribute "Is NaN" Filters                     | |cross| [1]_ | |check|      | |check|       |
++-------------------------------------------------------+--------------+--------------+---------------+
+| Number Attribute "Is Not NaN" Filters                 | |cross| [1]_ | |check|      | |check|       |
++-------------------------------------------------------+--------------+--------------+---------------+
+| Other Attribute Datatype Filters                      | |cross|      | |cross|      | |check|       |
++-------------------------------------------------------+--------------+--------------+---------------+
+| Combine Filters with AND for 1 Node                   | |check|      | |check|      | |check|       |
++-------------------------------------------------------+--------------+--------------+---------------+
+| Combine Filters with OR for 1 Node                    | |cross|      | |check|      | |check|       |
++-------------------------------------------------------+--------------+--------------+---------------+
+| Negate Filters for 1 Node                             | |cross|      | |check|      | |check|       |
++-------------------------------------------------------+--------------+--------------+---------------+
+| Other Ways of Combining Filters for 1 Node            | |cross|      | |cross|      | |check|       |
++-------------------------------------------------------+--------------+--------------+---------------+
 
 The following sections will describe the specifications for queries in both APIs and provide examples of how to use the query language.
 
@@ -83,6 +126,11 @@ In the high-level API, a query is represented as a Python list of *abstract grap
        (wildcard3, query3)
    ]
    filtered_gf = gf.filter(query)
+
+Middle-Level API
+================
+
+In Progress
 
 Low-Level API
 =============
@@ -155,6 +203,7 @@ Compound queries allow users to apply some operation on the results of one or mo
 - :code:`AndQuery` and :code:`IntersectionQuery`
 - :code:`OrQuery` and :code:`UnionQuery`
 - :code:`XorQuery` and :code:`SymDifferenceQuery`
+- :code:`NotQuery`
 
 Additionally, the compound query feature provides the following abstract base classes that can be used by users to implement their own compound queries:
 
@@ -176,7 +225,7 @@ NaryQuery
 AndQuery
 ~~~~~~~~
 
-The :code:`AndQuery` class can be used to perform two or more subqueries and compute the intersection of all the returned lists of matched nodes. To create an :code:`AndQuery`, simply create your subqueries (which can be high-level, low-level, or compound), and pass them to the :code:`AndQuery` constructor. The following code can be used as a template for creating an :code:`AndQuery`.
+The :code:`AndQuery` class can be used to perform two or more subqueries and compute the intersection of all the returned lists of matched nodes. To create an :code:`AndQuery`, simply create your subqueries (which can be of any type), and pass them to the :code:`AndQuery` constructor. The following code can be used as a template for creating an :code:`AndQuery`.
 
 .. code-block:: python
 
@@ -188,12 +237,14 @@ The :code:`AndQuery` class can be used to perform two or more subqueries and com
    and_query = AndQuery(query1, query2, query3)
    filtered_gf = gf.filter(and_query)
 
+:code:`AndQuery` objects can also be created from two (and only two) subqueries using the binary AND operator (:code:`&`).
+
 :code:`IntersectionQuery` is also provided as an alias (i.e., renaming) of :code:`AndQuery`. The two can be used interchangably.
 
 OrQuery
 ~~~~~~~~
 
-The :code:`OrQuery` class can be used to perform two or more subqueries and compute the union of all the returned lists of matched nodes. To create an :code:`OrQuery`, simply create your subqueries (which can be high-level, low-level, or compound), and pass them to the :code:`OrQuery` constructor. The following code can be used as a template for creating an :code:`OrQuery`.
+The :code:`OrQuery` class can be used to perform two or more subqueries and compute the union of all the returned lists of matched nodes. To create an :code:`OrQuery`, simply create your subqueries (which can be of any type), and pass them to the :code:`OrQuery` constructor. The following code can be used as a template for creating an :code:`OrQuery`.
 
 .. code-block:: python
 
@@ -205,12 +256,14 @@ The :code:`OrQuery` class can be used to perform two or more subqueries and comp
    or_query = OrQuery(query1, query2, query3)
    filtered_gf = gf.filter(or_query)
 
+:code:`OrQuery` objects can also be created from two (and only two) subqueries using the binary OR operator (:code:`|`).
+
 :code:`UnionQuery` is also provided as an alias (i.e., renaming) of :code:`OrQuery`. The two can be used interchangably.
 
 XorQuery
 ~~~~~~~~
 
-The :code:`XorQuery` class can be used to perform two or more subqueries and compute the symmetric difference (set theory equivalent to XOR) of all the returned lists of matched nodes. To create an :code:`XorQuery`, simply create your subqueries (which can be high-level, low-level, or compound), and pass them to the :code:`XorQuery` constructor. The following code can be used as a template for creating an :code:`XorQuery`.
+The :code:`XorQuery` class can be used to perform two or more subqueries and compute the symmetric difference (set theory equivalent to XOR) of all the returned lists of matched nodes. To create an :code:`XorQuery`, simply create your subqueries (which can be of any type), and pass them to the :code:`XorQuery` constructor. The following code can be used as a template for creating an :code:`XorQuery`.
 
 .. code-block:: python
 
@@ -222,4 +275,23 @@ The :code:`XorQuery` class can be used to perform two or more subqueries and com
    xor_query = XorQuery(query1, query2, query3)
    filtered_gf = gf.filter(xor_query)
 
+:code:`XorQuery` objects can also be created from two (and only two) subqueries using the binary XOR operator (:code:`^`).
+
 :code:`SymDifferenceQuery` is also provided as an alias (i.e., renaming) of :code:`XorQuery`. The two can be used interchangably.
+
+NotQuery
+~~~~~~~~
+
+The :code:`NotQuery` class can be used to get all nodes not captured by the one (and only one) subquery. To create a :code:`NotQuery`, simply create your subquery (which can be of any type), and pass them to the :code:`NotQuery` constructor. The following code can be used as a template for creating a :code:`NotQuery`.
+
+.. code-block:: python
+
+   from hatchet.query import NotQuery
+
+   query = <QUERY GOES HERE>
+   not_query = NotQuery(query)
+   filtered_gf = gf.filter(not_query)
+
+:code:`NotQuery` objects can also be created from the subquery using the binary NOT operator (:code:`~`).
+
+.. [1] The High-Level API cannot check for NaN because, in Python, NaN does not equal NaN.
