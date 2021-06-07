@@ -1,3 +1,8 @@
+# Copyright 2021 The University of Arizona and other Hatchet Project
+# Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: MIT
+
 try:
     from collections.abc import MutableMapping
 except ImportError:
@@ -129,16 +134,16 @@ def _resolve_conf_file():
     """
     Determines which configuration file to load.
     Uses the precendence order:
-        1. $HOME/.config/hatchet/hatchetrc.yaml
+        1. $HOME/.hatchet/hatchetrc.yaml
         2. $HATCHET_BASE_DIR/hatchetrc.yaml
     """
     home = path.expanduser("~")
-    conf_dir = path.join(home, ".config", "hatchet", "hatchetrc.yaml")
+    conf_dir = path.join(home, ".hatchet", "hatchetrc.yaml")
     if path.exists(conf_dir):
         return conf_dir
     else:
-        my_path = path.abspath(path.dirname(path.abspath(__file__)))
-        rel_path = path.join(my_path, "..", "..", "hatchetrc.yaml")
+        hatchet_path = path.abspath(path.dirname(path.abspath(__file__)))
+        rel_path = path.join(hatchet_path, "..", "..", "hatchetrc.yaml")
         return rel_path
 
 
