@@ -21,8 +21,6 @@ Regardless of API, queries in Hatchet represent abstract paths, or path patterns
 
 The primary differences between the two APIs are the representation of filters, how wildcards and filters are combined into *abstract graph nodes*, and how *abstract graph nodes* are combined into a full query. Some of these differences are shown in the table below:
 
-|check|
-
 +-------------------------------------------------------+--------------+--------------+---------------+
 | Feature                                               | High-Level   | Middle-Level | Low-Level     |
 +=======================================================+==============+==============+===============+
