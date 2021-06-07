@@ -1,15 +1,24 @@
 import inspect
 import os
+import getpass
 import json
 from datetime import datetime
 import hatchet
 
+RcParams = {"logging": True, "log_directory": "~/.hatchet/logs/"}
 
 class Log(object):
-    def __init__(self, filename="hatchet.log", active=True):
+    def __init__(self, filename='hatchet.log', active=None):
         self._log_file = filename
-        self._active = active
-        self._nested = False  # ensures we only log user called commands
+        if active is not None:
+            self._active = active
+        else:
+            self._active = RcParams["logging"]
+
+        # ensures we only log api calls made explicitly by
+        # a user
+        self._nested = False  
+
 
     def set_output_file(self, filename=""):
         self._log_file = filename
@@ -47,7 +56,17 @@ class Log(object):
                 log_dict = {}
                 arg_list = []
 
+                # Get a  user id
+                try:
+                    log_dict["user_id"] = os.getuid()
+                except:
+                    log_dict["user_id"] = getpass.getuser()
+
                 log_dict["function"] = function.__name__
+                
+                # for call in inspect.stack(context=1):
+                    # if 'usr' in call.filename and 'tce' not in call.filename:
+                        # print(call.filename)
 
                 for i, arg in enumerate(args):
                     if inspect.isfunction(arg):
