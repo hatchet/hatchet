@@ -77,12 +77,7 @@ class ConfigValidator:
             return value
 
     def validate(self, key, value):
-        try:
-            return self._validations[key](key, value)
-        except TypeError as e:
-            raise e
-        except KeyError as e:
-            raise e
+        return self._validations[key](key, value)
 
     def _set_validators_to_configs(self):
         self._validations["logging"] = self.bool_validator
