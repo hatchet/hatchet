@@ -8,6 +8,7 @@ import hatchet
 
 RcParams = {"logging": False, "log_directory": "~/.hatchet/logs/"}
 
+
 def isJsonable(var):
     try:
         json.dumps(var)
@@ -15,8 +16,9 @@ def isJsonable(var):
     except TypeError:
         return False
 
+
 class Log(object):
-    def __init__(self, filename='hatchet.log', active=None):
+    def __init__(self, filename="hatchet.log", active=None):
         self._log_file = filename
         if active is not None:
             self._active = active
@@ -25,7 +27,7 @@ class Log(object):
 
         # ensures we only log api calls made explicitly by
         # a user
-        self._nested = False  
+        self._nested = False
 
     def set_output_file(self, filename=""):
         self._log_file = filename
@@ -38,7 +40,7 @@ class Log(object):
 
     def append_to_file(self, log):
         """Manages the opening and writing of log information to a file."""
-        logpath = os.path.expanduser(RcParams['log_directory'])
+        logpath = os.path.expanduser(RcParams["log_directory"])
         if not os.path.exists(logpath):
             try:
                 os.makedirs(logpath)
@@ -49,10 +51,9 @@ class Log(object):
         logpath = os.path.join(logpath, self._log_file)
         with open(logpath, "a") as f:
             try:
-                f.write(json.dumps(log)+'\n')
+                f.write(json.dumps(log) + "\n")
             except TypeError as e:
                 raise e
-                
 
     def loggable(self, function):
         """A decrator which logs calls to hatchet functions"""
@@ -71,7 +72,6 @@ class Log(object):
                     except AttributeError:
                         # for windows machines
                         log_dict["user_id"] = getpass.getuser()
-
 
                     for i, arg in enumerate(args):
                         if inspect.isfunction(arg):
@@ -103,7 +103,7 @@ class Log(object):
                     self._nested = False
 
                     log_dict["end"] = datetime.now().isoformat()
-                    
+
                     log_dict["function"] = function.__name__
                     log_dict["args"] = tuple(arg_list)
 
@@ -120,7 +120,7 @@ class Log(object):
                     return holder
                 else:
                     return function(*args, **kwargs)
-            
+
             # If there is a file io error when logging
             # we run function as normal and abandon log
             except IOError:
