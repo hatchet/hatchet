@@ -396,7 +396,10 @@ class TAUReader:
                     if leaf_node is None:
                         # Create the node since it doesn't exist
                         leaf_node = Node(
-                            Frame({"type": "function", "name": leaf_name}), None
+                            Frame(
+                                {"type": "function", "name": leaf_name_file_module[0]}
+                            ),
+                            None,
                         )
                         self.callpath_to_node[callpath] = leaf_node
 
