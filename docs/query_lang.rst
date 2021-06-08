@@ -128,12 +128,48 @@ In the high-level API, a query is represented as a Python list of *abstract grap
 Middle-Level API
 ================
 
-In Progress
+The middle-level API for Hatchet's query language is designed to allow users to perform more complex queries than the high-level API allows, while still being simpler than the low-level API. Its syntax is a slightly modified subset of the [Cypher Query Language](https://www.opencypher.org/) for property graph databases. As a result, the specification and ordering of wildcards and filters is different from the high- and low-level APIs. As with Cypher queries, middle-level queries have two components:
+1. A Path Specification which defines and labels *abstract graph nodes*. Wildcards are specified here.
+2. A Filter Specification which defines all the filters as one long boolean expression.
+
+The following subsections will describe each of these components and how to combine them into a full query. Like high-level queries, middle-level queries can be used to filter a GraphFrame by passing it to the :code:`GraphFrame.filter` function as follows:
+
+.. code-block:: python
+
+  query = <QUERY GOES HERE>
+  filtered_gf = gf.filter(query)
+
+Path Specification
+~~~~~~~~~~~~~~~~~~
+
+The path specification defines the wildcards and order of abstract nodes. It also labels each abstract node with a variable name that will be used to refer to the node in the filter specification. This component of the query must start with the :code:`"MATCH"` keyword (case-sensitive). The rest of the specification consists of a series of abstract nodes and edges in the following general form:
+
+.. code-block:: cypher
+
+   MATCH (...)-[...]->(...)-[...]->(...)
+
+In the above example, every instance of :code:`"..."` represents information for a particular abstract node. Each instance can be replaced with one of the following options:
+1. Only a wildcard (same syntax as the high-level API) (e.g., :code:`"*"`)
+2. A variable name to be used in the filter specification (e.g., :code:`p`)
+3. Both a wildcard and a variable name, separated by a comma (e.g., :code:`"*", p`)
+
+Filter Specification
+~~~~~~~~~~~~~~~~~~~~
+
+The filter specification is used to specify all filters that define what real nodes can be matched to the abstract nodes defined in the path specification section. This is similar to the filters of the high- and low-level APIs, but, in the middle-level API, all the conditions are specified in a single boolean expression. Internally, the :code:`CypherQuery` class will convert the filter specification into individual filters.
+
+The filter specificaiton starts with the :code:`"WHERE"` keyword (case-sensitive) followed by the individual filters. Each individual filter has the following form:
+
+Full Queries
+~~~~~~~~~~~~
+
+Grammar
+~~~~~~~
 
 Low-Level API
 =============
 
-The low-level API for Hatchet's query language is designed to allow users to perform more complex queries. It's syntax is based on Python callables (e.g., functions, lambdas). The following subsections will describe each component of low-level queries. Like high-level queries, low-level queries can be used to filter a GraphFrame by passing it to the :code:`GraphFrame.filter` function as follows:
+The low-level API for Hatchet's query language is designed to allow users to perform more complex queries. Its syntax is based on Python callables (e.g., functions, lambdas). The following subsections will describe each component of low-level queries. Like high-level queries, low-level queries can be used to filter a GraphFrame by passing it to the :code:`GraphFrame.filter` function as follows:
 
 .. code-block:: python
 
