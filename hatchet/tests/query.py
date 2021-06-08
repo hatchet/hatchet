@@ -7,6 +7,8 @@ import pytest
 
 import re
 
+import numpy as np
+
 from hatchet import GraphFrame
 from hatchet.node import traversal_order
 from hatchet.query import (
@@ -895,11 +897,11 @@ def test_construct_cypher_api():
     mock_node_time_true = {"time (inc)": 0.1}
     mock_node_time_false = {"time (inc)": 0.001}
     # path1 = [{"name": "MPI_[_a-zA-Z]*"}, "*", {"name": "ibv[_a-zA-Z]*"}]
-    path1 = u"""MATCH (p)-["*"]->(q)
+    path1 = u"""MATCH (p)->("*")->(q)
     WHERE p."name" STARTS WITH "MPI_" AND q."name" STARTS WITH "ibv"
     """
     # path2 = [{"name": "MPI_[_a-zA-Z]*"}, 2, {"name": "ibv[_a-zA-Z]*"}]
-    path2 = u"""MATCH (p)-[2]->(q)
+    path2 = u"""MATCH (p)->(2)->(q)
     WHERE p."name" STARTS WITH "MPI_" AND q."name" STARTS WITH "ibv"
     """
     # path3 = [
@@ -907,7 +909,7 @@ def test_construct_cypher_api():
     #     ("+", {"time (inc)": ">= 0.1"}),
     #     {"name": "ibv[_a-zA-Z]*"},
     # ]
-    path3 = u"""MATCH (p)-["+", a]->(q)
+    path3 = u"""MATCH (p)->("+", a)->(q)
     WHERE p."name" STARTS WITH "MPI" AND a."time (inc)" >= 0.1 AND q."name" STARTS WITH "ibv"
     """
     # path4 = [
@@ -915,7 +917,7 @@ def test_construct_cypher_api():
     #     (3, {"time (inc)": 0.1}),
     #     {"name": "ibv[_a-zA-Z]*"},
     # ]
-    path4 = u"""MATCH (p)-[3, a]->(q)
+    path4 = u"""MATCH (p)->(3, a)->(q)
     WHERE p."name" STARTS WITH "MPI" AND a."time (inc)" = 0.1 AND q."name" STARTS WITH "ibv"
     """
     query1 = CypherQuery(path1)
@@ -978,7 +980,7 @@ def test_construct_cypher_api():
     #     ({"bad": "wildcard"}, {"time (inc)": 0.1}),
     #     {"name": "ibv[_a-zA-Z]*"},
     # ]
-    invalid_path = u"""MATCH (p)-[{"bad": "wildcard"}, a]->(q)
+    invalid_path = u"""MATCH (p)->({"bad": "wildcard"}, a)->(q)
     WHERE p."name" STARTS WITH "MPI" AND a."time (inc)" = 0.1 AND
     q."name" STARTS WITH "ibv"
     """
@@ -994,7 +996,7 @@ def test_apply_cypher(mock_graph_literal):
     #     ("*", {"name": "[^b][a-z]+"}),
     #     {"name": "gr[a-z]+"},
     # ]
-    path = u"""MATCH (p)-[]->(2, q)-["*", r]->(s)
+    path = u"""MATCH (p)->(2, q)->("*", r)->(s)
     WHERE p."time (inc)" >= 30.0 AND NOT q."name" STARTS WITH "b"
     AND r."name" =~ "[^b][a-z]+" AND s."name" STARTS WITH "gr"
     """
@@ -1025,7 +1027,7 @@ def test_apply_cypher(mock_graph_literal):
     assert sorted(query.apply(gf)) == sorted(match)
 
     # path = [{"time (inc)": ">= 30.0"}, ".", {"name": "bar"}, "*"]
-    path = u"""MATCH (p)-["."]->(q)-[]->("*")
+    path = u"""MATCH (p)->(".")->(q)->("*")
     WHERE p."time (inc)" >= 30.0 AND q."name" = "bar"
     """
     match = [
@@ -1052,7 +1054,7 @@ def test_apply_cypher(mock_graph_literal):
     assert sorted(query.apply(gf)) == sorted(match)
 
     # path = [{"name": "foo"}, {"name": "bar"}, {"time": 5.0}]
-    path = u"""MATCH (p)-[]->(q)-[]->(r)
+    path = u"""MATCH (p)->(q)->(r)
     WHERE p."name" = "foo" AND q."name" = "bar" AND r."time" = 5.0
     """
     # match = [[root, root.children[0], root.children[0].children[0]]]
@@ -1061,7 +1063,7 @@ def test_apply_cypher(mock_graph_literal):
     assert sorted(query.apply(gf)) == sorted(match)
 
     # path = [{"name": "foo"}, {"name": "qux"}, ("+", {"time (inc)": "> 15.0"})]
-    path = u"""MATCH (p)-[]->(q)-[]->("+", r)
+    path = u"""MATCH (p)->(q)->("+", r)
     WHERE p."name" = "foo" AND q."name" = "qux" AND r."time (inc)" > 15.0
     """
     match = [
@@ -1088,7 +1090,7 @@ def test_apply_cypher(mock_graph_literal):
     query = CypherQuery(path)
     assert sorted(query.apply(gf)) == sorted(match)
 
-    path = u"""MATCH (p)-[]->(q)
+    path = u"""MATCH (p)->(q)
     WHERE p."time (inc)" > 100 OR p."time (inc)" <= 30 AND q."time (inc)" = 20
     """
     roots = gf.graph.roots
@@ -1102,7 +1104,7 @@ def test_apply_cypher(mock_graph_literal):
     assert sorted(query.apply(gf)) == sorted(match)
 
     # path = [{"name": "this"}, ("*", {"name": "is"}), {"name": "nonsense"}]
-    path = u"""MATCH (p)-["*", q]->(r)
+    path = u"""MATCH (p)->("*", q)->(r)
     WHERE p."name" = "this" AND q."name" = "is" AND r."name" = "nonsense"
     """
 
@@ -1110,7 +1112,7 @@ def test_apply_cypher(mock_graph_literal):
     assert query.apply(gf) == []
 
     # path = [{"name": 5}, "*", {"name": "whatever"}]
-    path = u"""MATCH (p)-["*"]->(q)
+    path = u"""MATCH (p)->("*")->(q)
     WHERE p."name" = 5 AND q."name" = "whatever"
     """
     with pytest.raises(InvalidQueryFilter):
@@ -1118,7 +1120,7 @@ def test_apply_cypher(mock_graph_literal):
         query.apply(gf)
 
     # path = [{"time": "badstring"}, "*", {"name": "whatever"}]
-    path = u"""MATCH (p)-["*"]->(q)
+    path = u"""MATCH (p)->("*")->(q)
     WHERE p."time" = "badstring" AND q."name" = "whatever"
     """
     query = CypherQuery(path)
@@ -1137,7 +1139,7 @@ def test_apply_cypher(mock_graph_literal):
     ] = DummyType()
     gf = GraphFrame.from_literal(bad_field_test_dict)
     # path = [{"name": "foo"}, {"name": "bar"}, {"list": DummyType()}]
-    path = u"""MATCH (p)-[]->(q)-[]->(r)
+    path = u"""MATCH (p)->(q)->(r)
     WHERE p."name" = "foo" AND q."name" = "bar" AND p."list" = DummyType()
     """
     with pytest.raises(InvalidQueryPath):
@@ -1145,7 +1147,7 @@ def test_apply_cypher(mock_graph_literal):
         query.apply(gf)
 
     # path = ["*", {"name": "bar"}, {"name": "grault"}, "*"]
-    path = u"""MATCH ("*")-[]->(p)-[]->(q)-[]->("*")
+    path = u"""MATCH ("*")->(p)->(q)->("*")
     WHERE p."name" = "bar" AND q."name" = "grault"
     """
     match = [
@@ -1193,8 +1195,57 @@ def test_apply_cypher(mock_graph_literal):
     assert sorted(query.apply(gf)) == sorted(match)
 
     # path = ["*", {"name": "bar"}, {"name": "grault"}, "+"]
-    path = u"""MATCH ("*")-[]->(p)-[]->(q)-[]->("+")
+    path = u"""MATCH ("*")->(p)->(q)->("+")
     WHERE p."name" = "bar" AND q."name" = "grault"
     """
     query = CypherQuery(path)
     assert query.apply(gf) == []
+
+    gf.dataframe["time"] = np.NaN
+    gf.dataframe.at[gf.graph.roots[0], "time"] = 5.0
+    path = u"""MATCH ("*", p)
+    WHERE p."time" IS NOT NAN"""
+    match = [gf.graph.roots[0]]
+    query = CypherQuery(path)
+    assert query.apply(gf) == match
+
+    gf.dataframe["time"] = 5.0
+    gf.dataframe.at[gf.graph.roots[0], "time"] = np.NaN
+    path = u"""MATCH ("*", p)
+    WHERE p."time" IS NAN"""
+    match = [gf.graph.roots[0]]
+    query = CypherQuery(path)
+    assert query.apply(gf) == match
+
+    gf.dataframe["time"] = np.Inf
+    gf.dataframe.at[gf.graph.roots[0], "time"] = 5.0
+    path = u"""MATCH ("*", p)
+    WHERE p."time" IS NOT INF"""
+    match = [gf.graph.roots[0]]
+    query = CypherQuery(path)
+    assert query.apply(gf) == match
+
+    gf.dataframe["time"] = 5.0
+    gf.dataframe.at[gf.graph.roots[0], "time"] = np.Inf
+    path = u"""MATCH ("*", p)
+    WHERE p."time" IS INF"""
+    match = [gf.graph.roots[0]]
+    query = CypherQuery(path)
+    assert query.apply(gf) == match
+
+    names = gf.dataframe["name"].copy()
+    gf.dataframe["name"] = None
+    gf.dataframe.at[gf.graph.roots[0], "name"] = names.iloc[0]
+    path = u"""MATCH ("*", p)
+    WHERE p."name" IS NOT NONE"""
+    match = [gf.graph.roots[0]]
+    query = CypherQuery(path)
+    assert query.apply(gf) == match
+
+    gf.dataframe["name"] = names
+    gf.dataframe.at[gf.graph.roots[0], "name"] = None
+    path = u"""MATCH ("*", p)
+    WHERE p."name" IS NONE"""
+    match = [gf.graph.roots[0]]
+    query = CypherQuery(path)
+    assert query.apply(gf) == match

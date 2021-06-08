@@ -648,7 +648,7 @@ class QueryMatcher(AbstractQuery):
 GRAMMAR = u"""
 FullQuery: path_expr=MatchExpr(cond_expr=WhereExpr)?;
 MatchExpr: 'MATCH' path=PathQuery;
-PathQuery: '(' nodes=NodeExpr ')'('-['(nodes=NodeExpr)?']->' '(' nodes=NodeExpr ')')*;
+PathQuery: '(' nodes=NodeExpr ')'('->' '(' nodes=NodeExpr ')')*;
 NodeExpr: ((wcard=INT | wcard=STRING) ',' name=ID) | (wcard=INT | wcard=STRING) |  name=ID;
 WhereExpr: 'WHERE' ConditionExpr;
 ConditionExpr: conditions+=CompoundCond;
@@ -658,21 +658,25 @@ AndCond: 'AND' subcond=UnaryCond;
 OrCond: 'OR' subcond=UnaryCond;
 UnaryCond: NotCond | SingleCond;
 NotCond: 'NOT' subcond=SingleCond;
-SingleCond: StringCond | NumberCond;
+SingleCond: StringCond | NumberCond | NoneCond | NotNoneCond;
+NoneCond: name=ID '.' prop=STRING 'IS NONE';
+NotNoneCond: name=ID '.' prop=STRING 'IS NOT NONE';
 StringCond: StringEq | StringStartsWith | StringEndsWith | StringContains | StringMatch;
 StringEq: name=ID '.' prop=STRING '=' val=STRING;
 StringStartsWith: name=ID '.' prop=STRING 'STARTS WITH' val=STRING;
 StringEndsWith: name=ID '.' prop=STRING 'ENDS WITH' val=STRING;
 StringContains: name=ID '.' prop=STRING 'CONTAINS' val=STRING;
 StringMatch: name=ID '.' prop=STRING '=~' val=STRING;
-NumberCond: NumEq | NumLt | NumGt | NumLte | NumGte | NumNan | NumNotNan;
+NumberCond: NumEq | NumLt | NumGt | NumLte | NumGte | NumNan | NumNotNan | NumInf | NumNotInf;
 NumEq: name=ID '.' prop=STRING '=' val=NUMBER;
 NumLt: name=ID '.' prop=STRING '<' val=NUMBER;
 NumGt: name=ID '.' prop=STRING '>' val=NUMBER;
 NumLte: name=ID '.' prop=STRING '<=' val=NUMBER;
 NumGte: name=ID '.' prop=STRING '>=' val=NUMBER;
-NumNan: name=ID '.' prop=STRING 'IS NULL';
-NumNotNan: name=ID '.' prop=STRING 'IS NOT NULL';
+NumNan: name=ID '.' prop=STRING 'IS NAN';
+NumNotNan: name=ID '.' prop=STRING 'IS NOT NAN';
+NumInf: name=ID '.' prop=STRING 'IS INF';
+NumNotInf: name=ID '.' prop=STRING 'IS NOT INF';
 """
 
 mm = metamodel_from_str(GRAMMAR)
@@ -684,7 +688,7 @@ def cname(obj):
 
 def filter_check_types(type_check, df_row, filt_lambda):
     try:
-        if eval(type_check):
+        if type_check == "" or eval(type_check):
             return filt_lambda(df_row)
         else:
             raise InvalidQueryFilter("Type mismatch in filter")
@@ -746,10 +750,11 @@ class CypherQuery(AbstractQuery):
                     if cond[0] is not None:
                         bool_expr += " {}".format(cond[0])
                     bool_expr += " {}".format(cond[1])
-                    if j == 0:
-                        type_check += " {}".format(cond[2])
-                    else:
-                        type_check += " and {}".format(cond[2])
+                    if cond[2] is not None:
+                        if j == 0:
+                            type_check += " {}".format(cond[2])
+                        else:
+                            type_check += " and {}".format(cond[2])
                 bool_expr = "lambda df_row: {}".format(bool_expr)
                 bool_expr = (
                     'lambda df_row: filter_check_types("{}", df_row, {})'.format(
@@ -789,7 +794,12 @@ class CypherQuery(AbstractQuery):
                     self.filters[i][0][0] = None
 
     def _is_unary_cond(self, obj):
-        if cname(obj) == "NotCond" or self._is_str_cond(obj) or self._is_num_cond(obj):
+        if (
+            cname(obj) == "NotCond"
+            or self._is_str_cond(obj)
+            or self._is_num_cond(obj)
+            or cname(obj) in ["NoneCond", "NotNoneCond"]
+        ):
             return True
         return False
 
@@ -830,7 +840,55 @@ class CypherQuery(AbstractQuery):
             return self._parse_str(obj)
         if self._is_num_cond(obj):
             return self._parse_num(obj)
+        if cname(obj) == "NoneCond":
+            return self._parse_none(obj)
+        if cname(obj) == "NotNoneCond":
+            return self._parse_not_none(obj)
         raise RuntimeError("Bad Single Condition")
+
+    def _parse_none(self, obj):
+        if obj.prop == "depth":
+            return [
+                None,
+                obj.name,
+                "df_row.name._depth is None",
+                None,
+            ]
+        if obj.prop == "node_id":
+            return [
+                None,
+                obj.name,
+                "df_row.name._hatchet_nid is None",
+                None,
+            ]
+        return [
+            None,
+            obj.name,
+            'df_row["{}"] is None'.format(obj.prop),
+            None,
+        ]
+
+    def _parse_not_none(self, obj):
+        if obj.prop == "depth":
+            return [
+                None,
+                obj.name,
+                "df_row.name._depth is not None",
+                None,
+            ]
+        if obj.prop == "node_id":
+            return [
+                None,
+                obj.name,
+                "df_row.name._hatchet_nid is not None",
+                None,
+            ]
+        return [
+            None,
+            obj.name,
+            'df_row["{}"] is not None'.format(obj.prop),
+            None,
+        ]
 
     def _is_str_cond(self, obj):
         if cname(obj) in [
@@ -852,6 +910,8 @@ class CypherQuery(AbstractQuery):
             "NumGte",
             "NumNan",
             "NumNotNan",
+            "NumInf",
+            "NumNotInf",
         ]:
             return True
         return False
@@ -924,6 +984,10 @@ class CypherQuery(AbstractQuery):
             return self._parse_num_nan(obj)
         if cname(obj) == "NumNotNan":
             return self._parse_num_not_nan(obj)
+        if cname(obj) == "NumInf":
+            return self._parse_num_inf(obj)
+        if cname(obj) == "NumNotInf":
+            return self._parse_num_not_inf(obj)
         raise RuntimeError("Bad Number Op Class")
 
     def _parse_num_eq(self, obj):
@@ -1077,6 +1141,50 @@ class CypherQuery(AbstractQuery):
             None,
             obj.name,
             'not pd.isna(df_row["{}"])'.format(obj.prop),
+            "isinstance(df_row['{}'], Real)".format(obj.prop),
+        ]
+
+    def _parse_num_inf(self, obj):
+        if obj.prop == "depth":
+            return [
+                None,
+                obj.name,
+                "np.isinf(df_row.name._depth)",
+                "isinstance(df_row.name._depth, Real)",
+            ]
+        if obj.prop == "node_id":
+            return [
+                None,
+                obj.name,
+                "np.isinf(df_row.name._hatchet_nid)",
+                "isinstance(df_row.name._hatchet_nid, Real)",
+            ]
+        return [
+            None,
+            obj.name,
+            'np.isinf(df_row["{}"])'.format(obj.prop),
+            "isinstance(df_row['{}'], Real)".format(obj.prop),
+        ]
+
+    def _parse_num_not_inf(self, obj):
+        if obj.prop == "depth":
+            return [
+                None,
+                obj.name,
+                "not np.isinf(df_row.name._depth)",
+                "isinstance(df_row.name._depth, Real)",
+            ]
+        if obj.prop == "node_id":
+            return [
+                None,
+                obj.name,
+                "not np.isinf(df_row.name._hatchet_nid)",
+                "isinstance(df_row.name._hatchet_nid, Real)",
+            ]
+        return [
+            None,
+            obj.name,
+            'not np.isinf(df_row["{}"])'.format(obj.prop),
             "isinstance(df_row['{}'], Real)".format(obj.prop),
         ]
 
