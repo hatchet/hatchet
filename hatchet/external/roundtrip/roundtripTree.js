@@ -2,6 +2,17 @@
 //d3.v4
 (function (element) {
     require(['https://d3js.org/d3.v4.min.js'], function (d3) {
+        var globals = {
+            signals: {
+                CLICK: "CLICK",
+                BRUSH: "BRUSH",
+                HOVER: "HOVER",
+                ACTIVATEBRUSH: "ACTIVATEBRUSH"
+            },
+            layout: {
+                margin: {top: 20, right: 20, bottom: 80, left: 20},
+            } 
+        }
     
         
         // This is the makeSignaller from class
@@ -13,7 +24,7 @@
                 // Register a function with the notification system
                 add: function(handlerFunction) { _subscribers.push(handlerFunction); },
 
-                // Loop through all registered function snad call them with passed
+                // Loop through all registered function and call them with passed
                 // arguments
                 notify: function(args) {
                     for (var i = 0; i < _subscribers.length; i++) {
@@ -23,7 +34,8 @@
             };
         }
 
-        // Create an object that handles UI object
+
+        // Create an object that handles user interaction and events
         var createController = function(model) {
             var _model = model;
 
@@ -32,22 +44,16 @@
                 // function. The dispatch function decides what to do.
                 dispatch: function(evt) {
                     switch(evt.type) {
-                    case (ha3.signals.HOVER):
-                        model.setHoveredPoint(evt.beverage, evt.index);
-                        break;
-                    case (ha3.signals.CLICK):
-                        model.handleClick(evt.beverage, evt.index);
-                        break;
-                    case (ha3.signals.BRUSH):
-                        model.setBrushedPoints(evt.selection, evt.x, evt.y, evt.xScale, evt.yScale);
-                        break;
-                    case (ha3.signals.BRUSHCLEAR):
-                        model.clearBrushedPoints();
-                        break;
+                        case (globals.signals.HOVER):
+                            break;
+                        case (globals.signals.CLICK):
+                            break;
+                        case (globals.signals.BRUSH):
+                            break;
                         default:
                             console.log('Unknown event type', evt.type);
                     }
-            }
+                }
             };
         }
 
@@ -117,7 +123,6 @@
                 getCurrentTreeIndex: function(){
                     return _currTree;
                 },
-
                 addTreeMap: function(tm){
                     _data['treemaps'].push(tm);
                 },
@@ -126,10 +131,10 @@
                 },
 
                 getNodesFromMap: function(index){
-                    return _data['treemaps'][_currTree].descendants();
+                    return _data['treemaps'][index].descendants();
                 },
                 getLinksFromMap: function(index){
-                    return _data['treemaps'][_currTree].descendants().slice(1);
+                    return _data['treemaps'][index].descendants().slice(1);
                 },
 
                 updateNodes: function(f){
@@ -139,173 +144,219 @@
         }
 
 
-        var createView = function(elem, model){
-                
-            rootNodeNames = model.data["rootNodeNames"];
-            numberOfTrees = model.data["numberOfTrees"];
-            metricColumns = model.data["metricColumns"];
-            forestData = model.data["forestData"];
+        var createMenuView = function(elem, model){
+            //setup menu view
+            _observers = makeSignaller();
+            _svg = d3.select('.canvas');
+
+            var rootNodeNames = model.data["rootNodeNames"];
+            var numberOfTrees = model.data["numberOfTrees"];
+            var metricColumns = model.data["metricColumns"];
+            var forestData = model.data["forestData"];
             
-            selectedMetric = model.state["selectedMetric"];
-            brushOn = model.state["brushOn"];
+            var selectedMetric = model.state["selectedMetric"];
+            var brushOn = model.state["brushOn"];
+
+                 
+            //initialize bounds for svg
+            var treeHeight = 300;
+            var width = element.clientWidth - globals.layout.margin.right - globals.layout.margin.left;
+            var height = treeHeight * (model.data["numberOfTrees"] + 1);
             
 
-            // ************** Generate the tree diagram  *****************
-            var margin = {top: 20, right: 20, bottom: 80, left: 20},
-                    treeHeight = 300,
-                    width = elem.clientWidth - margin.right - margin.left,
-                    height = treeHeight * (numberOfTrees + 1),
-                    gOffset = [{x: margin.left, y: margin.top}]; //keep track of translations to know absolute position
+            return{
+                register: function(s){
+                    _observers.add(s);
+                },
+                render: function(){
+                    d3.select(elem).append('label').attr('for', 'metricSelect').text('Color by:');
+                    var metricInput = d3.select(elem).append("select") //element
+                            .attr("id", "metricSelect")
+                            .selectAll('option')
+                            .data(metricColumns)
+                            .enter()
+                            .append('option')
+                            .text(d => d)
+                            .attr('value', d => d);
+                    document.getElementById("metricSelect").style.margin = "10px 10px 10px 0px";
 
-            d3.select(elem).append('label').attr('for', 'metricSelect').text('Color by:');
-            var metricInput = d3.select(elem).append("select") //element
-                    .attr("id", "metricSelect")
-                    .selectAll('option')
-                    .data(metricColumns)
-                    .enter()
-                    .append('option')
-                    .text(d => d)
-                    .attr('value', d => d);
-            document.getElementById("metricSelect").style.margin = "10px 10px 10px 0px";
+                    d3.select(elem).append('label').style('margin', '0 0 0 10px').attr('for', 'treeRootSelect').text(' Display:');
+                    var treeRootInput = d3.select(elem).append("select") //element
+                            .attr("id", "treeRootSelect")
+                            .selectAll('option')
+                            .data(rootNodeNames)
+                            .enter()
+                            .append('option')
+                            .attr('selected', d => d.name == 'Show all trees' ? true : false)
+                            .text(d => d)
+                            .attr('value', (d, i) => i + "|" + d);
+                    document.getElementById("treeRootSelect").style.margin = "10px 10px 10px 10px";
 
-            d3.select(elem).append('label').style('margin', '0 0 0 10px').attr('for', 'treeRootSelect').text(' Display:');
-            var treeRootInput = d3.select(elem).append("select") //element
-                    .attr("id", "treeRootSelect")
-                    .selectAll('option')
-                    .data(rootNodeNames)
-                    .enter()
-                    .append('option')
-                    .attr('selected', d => d.name == 'Show all trees' ? true : false)
-                    .text(d => d)
-                    .attr('value', (d, i) => i + "|" + d);
-            document.getElementById("treeRootSelect").style.margin = "10px 10px 10px 10px";
+                            
+                    //make an svg in the scope of our current
+                    // element/drawing space
+                    var _svg = d3.select(element).append("svg") //element
+                    .attr("class", "canvas")
+                    .attr("width", width + globals.layout.margin.right + globals.layout.margin.left)
+                    .attr("height", height + globals.layout.margin.top + globals.layout.margin.bottom);
 
-            var tooltip = d3.select(elem).append("div")
-                    .attr('id', 'tooltip')
-                    .style('position', 'absolute')
-                    .style('top', '5px')
-                    .style('right', '15px')
-                    .style('padding', '5px')
-                    .style('border-radius', '5px')
-                    .style('background', '#ccc')
-                    .style('color', 'black')
-                    .style('font-size', '14px')
-                    .style('font-family', 'monospace')
-                    .html('<p>Click a node or "Select nodes" to see more info</p>');
+                    var tooltip = d3.select(elem).append("div")
+                            .attr('id', 'tooltip')
+                            .style('position', 'absolute')
+                            .style('top', '5px')
+                            .style('right', '15px')
+                            .style('padding', '5px')
+                            .style('border-radius', '5px')
+                            .style('background', '#ccc')
+                            .style('color', 'black')
+                            .style('font-size', '14px')
+                            .style('font-family', 'monospace')
+                            .html('<p>Click a node or "Select nodes" to see more info</p>');
 
-            var svg = d3.select(elem).append("svg") //element
-                    .attr("width", width + margin.right + margin.left)
-                    .attr("height", height + margin.top + margin.bottom);
+                    var button = _svg.append('g')
+                            .attr('id', 'selectButton')
+                            .append('rect')
+                            .attr('width', '80px')
+                            .attr('height', '15px')
+                            .attr('x', 0).attr('y', 0).attr('rx', 5)
+                            .style('fill', '#ccc')
+                            .on('click', function () {
+                                _observers.notify({
+                                    type: tree.signals.ACTIVATEBRUSH,
+                                })
 
-            var brushOn = 1;
-            // var colorScheme = 1; //default=1 : invert=-1
-            var button = svg.append('g')
-                    .attr('id', 'selectButton')
-                    .append('rect')
-                    .attr('width', '80px')
-                    .attr('height', '15px')
-                    .attr('x', 0).attr('y', 0).attr('rx', 5)
-                    .style('fill', '#ccc')
-                    .on('click', function () {
-                        brushOn = -1 * brushOn;
-                        activateBrush(brushOn);
-                    });
-            d3.select(elem).select('#selectButton').append('text')
-                    .attr("x", 3)
-                    .attr("y", 12)
-                    .text('Select nodes')
-                    .attr("font-family", "sans-serif")
-                    .attr("font-size", "12px")
-                    .attr('cursor', 'pointer')
-                    .on('click', function () {
-                        brushOn = -1 * brushOn;
-                        activateBrush(brushOn);
-                    });
-            var colorButton = svg.append('g')
-                    .attr('id', 'colorButton')
-                    .append('rect')
-                    .attr('width', '90px')
-                    .attr('height', '15px')
-                    .attr('x', 90).attr('y', 0).attr('rx', 5)
-                    .style('fill', '#ccc');
-            d3.select(elem).select('#colorButton').append('text')
-                    .attr("x", 93)
-                    .attr("y", 12)
-                    .text('Colors: default')
-                    .attr("font-family", "sans-serif")
-                    .attr("font-size", "12px")
-                    .attr('cursor', 'pointer')
-                    .on('click', function () {
-                        model.state["colorScheme"] = -1 * model.state["colorScheme"];
-                        var curMetric = d3.select(elem).select('#metricSelect').property('value');
-                        var curLegend = d3.select(elem).select('#unifyLegends').text();
-                        d3.select(elem).selectAll(".circleNode")
-                                .transition()
-                                .duration(duration)
-                                .style('fill', function (d) {
+                                brushOn = -1 * brushOn;
+                                activateBrush(brushOn);
+                            });
+                    d3.select(elem).select('#selectButton').append('text')
+                            .attr("x", 3)
+                            .attr("y", 12)
+                            .text('Select nodes')
+                            .attr("font-family", "sans-serif")
+                            .attr("font-size", "12px")
+                            .attr('cursor', 'pointer')
+                            .on('click', function () {
+                                brushOn = -1 * brushOn;
+                                activateBrush(brushOn);
+                            });
+
+                    var colorButton = _svg.append('g')
+                            .attr('id', 'colorButton')
+                            .append('rect')
+                            .attr('width', '90px')
+                            .attr('height', '15px')
+                            .attr('x', 90).attr('y', 0).attr('rx', 5)
+                            .style('fill', '#ccc');
+
+                    d3.select(elem).select('#colorButton').append('text')
+                            .attr("x", 93)
+                            .attr("y", 12)
+                            .text('Colors: default')
+                            .attr("font-family", "sans-serif")
+                            .attr("font-size", "12px")
+                            .attr('cursor', 'pointer')
+                            .on('click', function () {
+                                model.state["colorScheme"] = -1 * model.state["colorScheme"];
+                                var curMetric = d3.select(elem).select('#metricSelect').property('value');
+                                var curLegend = d3.select(elem).select('#unifyLegends').text();
+                                d3.select(elem).selectAll(".circleNode")
+                                        .transition()
+                                        .duration(duration)
+                                        .style('fill', function (d) {
+                                            if (curLegend == 'Legends: unified') {
+                                                return colorScale(d.data.metrics[curMetric], -1);
+                                            }
+                                            return colorScale(d.data.metrics[curMetric], d.treeIndex);
+                                        })
+                                        .style('stroke', 'black');
+
+                                //Update each individual legend to inverted scale
+                                for (var treeIndex = 0; treeIndex < numberOfTrees; treeIndex++) {
                                     if (curLegend == 'Legends: unified') {
-                                        return colorScale(d.data.metrics[curMetric], -1);
+                                        setColorLegend(-1);
+                                    } else {
+                                        setColorLegend(treeIndex);
                                     }
-                                    return colorScale(d.data.metrics[curMetric], d.treeIndex);
-                                })
-                                .style('stroke', 'black');
+                                }
+                            });
+                    var unifyLegends = _svg.append('g')
+                            .attr('id', 'unifyLegends')
+                            .append('rect')
+                            .attr('width', '100px')
+                            .attr('height', '15px')
+                            .attr('x', 190)
+                            .attr('y', 0)
+                            .attr('rx', 5)
+                            .style('fill', '#ccc');
+                    d3.select(elem).select('#unifyLegends').append('text')
+                            .attr("x", 195)
+                            .attr("y", 12)
+                            .text('Legends: unified')
+                            .attr("font-family", "sans-serif")
+                            .attr("font-size", "12px")
+                            .attr('cursor', 'pointer')
+                            .on('click', function () {
+                                var curMetric = d3.select(elem).select('#metricSelect').property('value');
+                                var sameLegend = true;
+                                if (d3.select(this).text() == 'Legends: unified') {
+                                    d3.select(this).text('Legends: indiv.');
+                                    sameLegend = false;
+                                    for (var treeIndex = 0; treeIndex < numberOfTrees; treeIndex++) {
+                                        setColorLegend(treeIndex);
+                                    }
+                                } else {
+                                    d3.select(this).text('Legends: unified');
+                                    sameLegend = true;
+                                    setColorLegend(-1);
+                                }
 
-                        //Update each individual legend to inverted scale
-                        for (var treeIndex = 0; treeIndex < numberOfTrees; treeIndex++) {
-                            if (curLegend == 'Legends: unified') {
-                                setColorLegend(-1);
-                            } else {
-                                setColorLegend(treeIndex);
-                            }
-                        }
-                    });
-            var unifyLegends = svg.append('g')
-                    .attr('id', 'unifyLegends')
-                    .append('rect')
-                    .attr('width', '100px')
-                    .attr('height', '15px')
-                    .attr('x', 190)
-                    .attr('y', 0)
-                    .attr('rx', 5)
-                    .style('fill', '#ccc');
-            d3.select(elem).select('#unifyLegends').append('text')
-                    .attr("x", 195)
-                    .attr("y", 12)
-                    .text('Legends: unified')
-                    .attr("font-family", "sans-serif")
-                    .attr("font-size", "12px")
-                    .attr('cursor', 'pointer')
-                    .on('click', function () {
-                        var curMetric = d3.select(elem).select('#metricSelect').property('value');
-                        var sameLegend = true;
-                        if (d3.select(this).text() == 'Legends: unified') {
-                            d3.select(this).text('Legends: indiv.');
-                            sameLegend = false;
-                            for (var treeIndex = 0; treeIndex < numberOfTrees; treeIndex++) {
-                                setColorLegend(treeIndex);
-                            }
-                        } else {
-                            d3.select(this).text('Legends: unified');
-                            sameLegend = true;
-                            setColorLegend(-1);
-                        }
+                                d3.select(elem).selectAll(".circleNode")
+                                        .transition()
+                                        .duration(duration)
+                                        .style("fill", function (d) {
+                                            return sameLegend ? colorScale(d.data.metrics[curMetric], -1) : colorScale(d.data.metrics[curMetric], d.treeIndex);
+                                        })
+                                        .style("stroke", 'black');
+                            });
+                }
+            }
+        }
 
-                        d3.select(elem).selectAll(".circleNode")
-                                .transition()
-                                .duration(duration)
-                                .style("fill", function (d) {
-                                    return sameLegend ? colorScale(d.data.metrics[curMetric], -1) : colorScale(d.data.metrics[curMetric], d.treeIndex);
-                                })
-                                .style("stroke", 'black');
-                    });
+        var createChartView = function(svg, model){
+            _observers = makeSignaller();
+
+            var rootNodeNames = model.data["rootNodeNames"];
+            var numberOfTrees = model.data["numberOfTrees"];
+            var metricColumns = model.data["metricColumns"];
+            var forestData = model.data["forestData"];
+            
+            var selectedMetric = model.state["selectedMetric"];
+            var brushOn = model.state["brushOn"];
+            
+            var treeHeight = 300;
+            var width = element.clientWidth - globals.layout.margin.right - globals.layout.margin.left;
+            var height = treeHeight * (model.data["numberOfTrees"] + 1);
+            var _margin = globals.layout.margin;
+
+
+            // Creates a curved (diagonal) path from parent to the child nodes
+            function diagonal(s, d) {
+                path = `M ${s.y} ${s.x}
+                C ${(s.y + d.y) / 2} ${s.x},
+                ${(s.y + d.y) / 2} ${d.x},
+                ${d.y} ${d.x}`
+
+                return path
+            }
+
 
 
             var mainG = svg.append("g")
                     .attr('id', "mainG")
-                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+                    .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
 
             // var treemap = d3.tree().size([(2000), width - margin.left]);
-            var treemap = d3.tree().size([(treeHeight), width - margin.left]);
+            var treemap = d3.tree().size([(treeHeight), width - _margin.left]);
 
             var maxHeight = 0;
 
@@ -315,7 +366,7 @@
                 currentRoot = d3.hierarchy(currentTreeData, d => d.children);
 
                 currentRoot.x0 = height;
-                currentRoot.y0 = margin.left;
+                currentRoot.y0 = _margin.left;
 
                 var currentTreeMap = treemap(currentRoot);
                 if (currentTreeMap.height > maxHeight) {
@@ -336,8 +387,8 @@
 
                 var currentTreeMap = model.getTreeMap(treeIndex);
                 var newg = mainG.append("g")
-                        .attr('class', 'group ' + treeIndex)
-                        .attr("transform", "translate(" + margin.left + "," + (treeHeight * treeIndex + margin.top) + ")");
+                        .attr('class', 'group-' + treeIndex)
+                        .attr("transform", "translate(" + _margin.left + "," + (treeHeight * treeIndex + _margin.top) + ")");
 
                 currentTreeMap.descendants().forEach(function (d) {
                     for (var i = 0; i < metricColumns.length; i++) {
@@ -364,39 +415,9 @@
                     .attr('class', 'chart')
                     .attr('chart-id', treeIndex);
 
-                //define and bind zoom functionality
-                var zoom = d3.zoom()
-                .scaleExtent([-8, 8])
-                .on('zoom', function() {
-                    d3.select(this)
-                    .selectAll(".chart")
-                    .attr('transform', d3.event.transform);
-
-                    //get correct chart
-                    model.setCurrentTreeIndex(d3.select(this).select(".chart").attr('chart-id'));
-
-                    //update model
-                    model.updateNodes(
-                        function(nodes){
-                            nodes.forEach(function(d){
-                                d.x0 = d.x;
-                                d.y0 = d.y;
-        
-                                // Store the overall position based on group
-                                d.xMainG = d.x + treeHeight * treeIndex + margin.top + d3.event.transform.x;
-                                d.yMainG = d.y + margin.left + d3.event.transform.y;
-                            })
-                        }
-                    )
-
-                    update();
-                });
-
-                newg.call(zoom);
-
                 
-                spreadFactor = width / (maxHeight + 1);
-                legendOffset = 30;
+                var spreadFactor = width / (maxHeight + 1);
+                var legendOffset = 30;
 
                 model.updateNodes(
                     function(n){
@@ -409,7 +430,7 @@
                     }
                 );
 
-                update(currentRoot, currentTreeMap, newg);
+                // update(currentRoot, currentTreeMap, newg);
 
                 model.updateNodes(
                     function(n){
@@ -420,8 +441,8 @@
                             d.y0 = d.y;
 
                             // Store the overall position based on group
-                            d.xMainG = d.x + treeHeight * treeIndex + margin.top;
-                            d.yMainG = d.y + margin.left;
+                            d.xMainG = d.x + treeHeight * treeIndex + _margin.top;
+                            d.yMainG = d.y + _margin.left;
                         });
                     }
                 );
@@ -432,182 +453,308 @@
             // Global min/max are the last entry of forestMetrics;
             forestMetrics.push(forestMinMax);
 
-            function update(source, treeData, g) {
-                var curMetric = d3.select(element).select('#metricSelect').property('value');
-                var treeIndex = g.attr("class").split(" ")[1];
-                if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
-                    setColorLegend(-1);
-                } else {
-                    setColorLegend(treeIndex);
-                }
+            // function update(source, treeData, g) {
+            //     var curMetric = d3.select(element).select('#metricSelect').property('value');
+            //     var treeIndex = g.attr("class").split(" ")[1];
+            //     if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
+            //         setColorLegend(-1);
+            //     } else {
+            //         setColorLegend(treeIndex);
+            //     }
     
-                // Compute the new tree layout
-                // var nodes = treeData.descendants();
-                // var links = treeData.descendants().slice(1);
-    
-                var nodes = model.getNodesFromMap();
-                var links = model.getLinksFromMap();
-    
+            //     var nodes = model.getNodesFromMap();
+            //     var links = model.getLinksFromMap();
                 
-                // // Normalize for fixed-depth.
-                // nodes.forEach(function (d) {
-                //     d.x = d.x + legendOffset ;
-                //     d.y = d.depth * spreadFactor;
-                //     d.treeIndex = treeIndex;
-                // });
+            //     var chart = g.selectAll('.chart');
+    
+            //     // Update the nodes…
+            //     var node = chart.selectAll("g.node")
+            //             .data(nodes, function (d) {
+            //                 return d.id || (d.id = ++i);
+            //             });
                 
-                var chart = g.selectAll('.chart');
+            //     //ENTER
+            //     // Enter any new nodes at the parent's previous position.
+            //     var nodeEnter = node.enter().append('g')
+            //             .attr('class', 'node')
+            //             .attr("transform", function (d) {
+            //                 return "translate(" + source.y0 + "," + source.x0 + ")";
+            //             })
+            //             .on("click", click)
+            //             .on('dblclick', function (d) {
+            //                 doubleclick(d, treeData, g);
+            //             });
     
-                // Update the nodes…
-                var node = chart.selectAll("g.node")
-                        .data(nodes, function (d) {
-                            return d.id || (d.id = ++i);
-                        });
+            //     nodeEnter.append("circle")
+            //             .attr('class', 'circleNode')
+            //             .attr("r", 1e-6)
+            //             .style("fill", function (d) {
+            //                 if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
+            //                     return colorScale(d.data.metrics[curMetric], -1);
+            //                 }
+            //                 return colorScale(d.data.metrics[curMetric], d.treeIndex);
+            //             })
+            //             .style('stroke-width', '1px')
+            //             .style('stroke', 'black');
     
-                // Enter any new nodes at the parent's previous position.
-                nodeEnter = node.enter().append('g')
-                        .attr('class', 'node')
-                        .attr("transform", function (d) {
-                            return "translate(" + source.y0 + "," + source.x0 + ")";
-                        })
-                        .on("click", click)
-                        .on('dblclick', function (d) {
-                            doubleclick(d, treeData, g);
-                        });
+            //     // commenting out text for now
+            //     // nodeEnter.append("text")
+            //     //         .attr("x", function (d) {
+            //     //             return d.children || d._children ? -13 : 13;
+            //     //         })
+            //     //         .attr("dy", ".75em")
+            //     //         .attr("text-anchor", function (d) {
+            //     //             return d.children || d._children ? "end" : "start";
+            //     //         })
+            //     //         .text(function (d) {
+            //     //             return d.data.name;
+            //     //         })
+            //     //         .attr('transform', 'rotate( -15)')
+            //     //         .style("stroke-width", "3px")
+            //     //         .style("font", "12px monospace");
+
+            //     // Update the links…
+            //     var link = chart.selectAll("path.link")
+            //     .data(links, function (d) {
+            //         return d.id;
+            //     });
+
+            //     // Enter any new links at the parent's previous position.
+            //     var linkEnter = link.enter().insert("path", "g")
+            //             .attr("class", "link")
+            //             .attr("d", function (d) {
+            //                 var o = {x: source.x0, y: source.y0};
+            //                 return diagonal(o, o);
+            //             })
+            //             .attr('fill', 'none')
+            //             .attr('stroke', '#ccc')
+            //             .attr('stroke-width', '2px');
+
+            //     var linkUpdate = linkEnter.merge(link);
+
+            //     // Transition links to their new position.
+            //     linkUpdate.transition()
+            //             .duration(duration)
+            //             .attr("d", function (d) {
+            //                 return diagonal(d, d.parent);
+            //             });
     
-                nodeEnter.append("circle")
-                        .attr('class', 'circleNode')
-                        .attr("r", 1e-6)
-                        .style("fill", function (d) {
-                            if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
-                                return colorScale(d.data.metrics[curMetric], -1);
-                            }
-                            return colorScale(d.data.metrics[curMetric], d.treeIndex);
-                        })
-                        .style('stroke-width', '1px')
-                        .style('stroke', 'black');
     
-                // commenting out text for now
-                // nodeEnter.append("text")
-                //         .attr("x", function (d) {
-                //             return d.children || d._children ? -13 : 13;
-                //         })
-                //         .attr("dy", ".75em")
-                //         .attr("text-anchor", function (d) {
-                //             return d.children || d._children ? "end" : "start";
-                //         })
-                //         .text(function (d) {
-                //             return d.data.name;
-                //         })
-                //         .attr('transform', 'rotate( -15)')
-                //         .style("stroke-width", "3px")
-                //         .style("font", "12px monospace");
+
+            //     //UPDATE
+            //     var nodeUpdate = nodeEnter.merge(node);
     
-                //UPDATE
-                var nodeUpdate = nodeEnter.merge(node);
+            //     // Transition nodes to their new position.
+            //     nodeUpdate.transition()
+            //             .duration(duration)
+            //             .attr("transform", function (d) {
+            //                 return "translate(" + d.y + "," + d.x + ")";
+            //             });
     
-                // Transition nodes to their new position.
-                nodeUpdate.transition()
-                        .duration(duration)
-                        .attr("transform", function (d) {
-                            return "translate(" + d.y + "," + d.x + ")";
-                        });
+            //     nodeUpdate.select('circle.circleNode')
+            //             .attr("r", 4)
+            //             .style('fill', function (d) {
+            //                 if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
+            //                     return colorScale(d.data.metrics[curMetric], -1);
+            //                 }
+            //                 return colorScale(d.data.metrics[curMetric], d.treeIndex);
+            //             })
+            //             .style('stroke', 'black')
+            //             .style("stroke-dasharray", function (d) {
+            //                 return d._children ? '4' : '0';
+            //             }) //lightblue
+            //             .style('stroke-width', d => d._children ? '6px' : '1px')
+            //             .attr('cursor', 'pointer');
     
-                nodeUpdate.select('circle.circleNode')
-                        .attr("r", 4)
-                        .style('fill', function (d) {
-                            if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
-                                return colorScale(d.data.metrics[curMetric], -1);
-                            }
-                            return colorScale(d.data.metrics[curMetric], d.treeIndex);
-                        })
-                        .style('stroke', 'black')
-                        .style("stroke-dasharray", function (d) {
-                            return d._children ? '4' : '0';
-                        }) //lightblue
-                        .style('stroke-width', d => d._children ? '6px' : '1px')
-                        .attr('cursor', 'pointer');
+            //     //EXIT
+            //     // Transition exiting nodes to the parent's new position.
+            //     var nodeExit = node.exit().transition()
+            //             .duration(duration)
+            //             .attr("transform", function (d) {
+            //                 return "translate(" + source.y + "," + source.x + ")";
+            //             })
+            //             .remove();
     
-                // Transition exiting nodes to the parent's new position.
-                var nodeExit = node.exit().transition()
-                        .duration(duration)
-                        .attr("transform", function (d) {
-                            return "translate(" + source.y + "," + source.x + ")";
-                        })
-                        .remove();
+            //     nodeExit.select("circle")
+            //             .attr("r", 1e-6);
     
-                nodeExit.select("circle")
-                        .attr("r", 1e-6);
+            //     nodeExit.select("text")
+            //             .style("fill-opacity", 1);
     
-                nodeExit.select("text")
-                        .style("fill-opacity", 1);
-    
-                /******** Links ********/
-                // Creates a curved (diagonal) path from parent to the child nodes
-                function diagonal(s, d) {
-                    path = `M ${s.y} ${s.x}
-                    C ${(s.y + d.y) / 2} ${s.x},
-                    ${(s.y + d.y) / 2} ${d.x},
-                    ${d.y} ${d.x}`
-    
-                    return path
-                }
-    
-                // Update the links…
-                var link = chart.selectAll("path.link")
+            //     // Transition exiting links to the parent's new position.
+            //     var linkExit = link.exit().transition()
+            //             .duration(duration)
+            //             .attr("d", function (d) {
+            //                 var o = {x: source.x, y: source.y};
+            //                 return diagonal(o, o);
+            //             })
+            //             .remove();
+                
+            // }
+
+            return{
+                register: function(s){
+                    _observers.add(s);
+                },
+                render: function(){
+                    for(var treeIndex = 0; treeIndex < model.data["numberOfTrees"]; treeIndex++){
+
+                        var source = d3.hierarchy(model.data["forestData"][treeIndex], d => d.children);
+                        
+                        var curMetric = d3.select(element).select('#metricSelect').property('value');
+                        if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
+                            setColorLegend(-1);
+                        } else {
+                            setColorLegend(treeIndex);
+                        }
+            
+                        var nodes = model.getNodesFromMap(treeIndex);
+                        var links = model.getLinksFromMap(treeIndex);
+                        
+                        var chart = svg.selectAll('.group-' + treeIndex);
+            
+                        // Update the nodes…
+                        var node = chart.selectAll("g.node")
+                                .data(nodes, function (d) {
+                                    return d.id || (d.id = ++i);
+                                });
+                        
+                        //ENTER
+                        // Enter any new nodes at the parent's previous position.
+                        var nodeEnter = node.enter().append('g')
+                                .attr('class', 'node')
+                                .attr("transform", function (d) {
+                                    return "translate(" + source.y0 + "," + source.x0 + ")";
+                                })
+                                .on("click", click)
+                                .on('dblclick', function (d) {
+                                    // doubleclick(d, treeData, g);
+                                });
+            
+                        nodeEnter.append("circle")
+                                .attr('class', 'circleNode')
+                                .attr("r", 1e-6)
+                                .style("fill", function (d) {
+                                    if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
+                                        return colorScale(d.data.metrics[curMetric], -1);
+                                    }
+                                    return colorScale(d.data.metrics[curMetric], d.treeIndex);
+                                })
+                                .style('stroke-width', '1px')
+                                .style('stroke', 'black');
+            
+                        // commenting out text for now
+                        // nodeEnter.append("text")
+                        //         .attr("x", function (d) {
+                        //             return d.children || d._children ? -13 : 13;
+                        //         })
+                        //         .attr("dy", ".75em")
+                        //         .attr("text-anchor", function (d) {
+                        //             return d.children || d._children ? "end" : "start";
+                        //         })
+                        //         .text(function (d) {
+                        //             return d.data.name;
+                        //         })
+                        //         .attr('transform', 'rotate( -15)')
+                        //         .style("stroke-width", "3px")
+                        //         .style("font", "12px monospace");
+        
+                        // Update the links…
+                        var link = chart.selectAll("path.link")
                         .data(links, function (d) {
                             return d.id;
                         });
-    
-                // Enter any new links at the parent's previous position.
-                var linkEnter = link.enter().insert("path", "g")
-                        .attr("class", "link")
-                        .attr("d", function (d) {
-                            var o = {x: source.x0, y: source.y0};
-                            return diagonal(o, o);
-                        })
-                        .attr('fill', 'none')
-                        .attr('stroke', '#ccc')
-                        .attr('stroke-width', '2px');
-    
-                var linkUpdate = linkEnter.merge(link);
-    
-                // Transition links to their new position.
-                linkUpdate.transition()
-                        .duration(duration)
-                        .attr("d", function (d) {
-                            return diagonal(d, d.parent);
-                        });
-    
-                // Transition exiting nodes to the parent's new position.
-                var linkExit = link.exit().transition()
-                        .duration(duration)
-                        .attr("d", function (d) {
-                            var o = {x: source.x, y: source.y};
-                            return diagonal(o, o);
-                        })
-                        .remove();
-                
-    
-    
+        
+                        // Enter any new links at the parent's previous position.
+                        var linkEnter = link.enter().insert("path", "g")
+                                .attr("class", "link")
+                                .attr("d", function (d) {
+                                    var o = {x: source.x0, y: source.y0};
+                                    return diagonal(o, o);
+                                })
+                                .attr('fill', 'none')
+                                .attr('stroke', '#ccc')
+                                .attr('stroke-width', '2px');
+        
+                        var linkUpdate = linkEnter.merge(link);
+        
+                        // Transition links to their new position.
+                        linkUpdate.transition()
+                                .duration(duration)
+                                .attr("d", function (d) {
+                                    return diagonal(d, d.parent);
+                                });
             
-                // Stash the old positions for transition and
-                // stash absolute positions (absolute in mainG)
-                // nodes.forEach(function (d) {
-                //     d.x0 = d.x;
-                //     d.y0 = d.y;
-    
-                //     // Store the overall position based on group
-                //     d.xMainG = d.x + treeHeight * treeIndex + margin.top;
-                //     d.yMainG = d.y + margin.left;
-                // });
+            
+        
+                        //UPDATE
+                        var nodeUpdate = nodeEnter.merge(node);
+            
+                        // Transition nodes to their new position.
+                        nodeUpdate.transition()
+                                .duration(duration)
+                                .attr("transform", function (d) {
+                                    return "translate(" + d.y + "," + d.x + ")";
+                                });
+            
+                        nodeUpdate.select('circle.circleNode')
+                                .attr("r", 4)
+                                .style('fill', function (d) {
+                                    if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
+                                        return colorScale(d.data.metrics[curMetric], -1);
+                                    }
+                                    return colorScale(d.data.metrics[curMetric], d.treeIndex);
+                                })
+                                .style('stroke', 'black')
+                                .style("stroke-dasharray", function (d) {
+                                    return d._children ? '4' : '0';
+                                }) //lightblue
+                                .style('stroke-width', d => d._children ? '6px' : '1px')
+                                .attr('cursor', 'pointer');
+            
+                        //EXIT
+                        // Transition exiting nodes to the parent's new position.
+                        var nodeExit = node.exit().transition()
+                                .duration(duration)
+                                .attr("transform", function (d) {
+                                    return "translate(" + source.y + "," + source.x + ")";
+                                })
+                                .remove();
+            
+                        nodeExit.select("circle")
+                                .attr("r", 1e-6);
+            
+                        nodeExit.select("text")
+                                .style("fill-opacity", 1);
+            
+                        // Transition exiting links to the parent's new position.
+                        var linkExit = link.exit().transition()
+                                .duration(duration)
+                                .attr("d", function (d) {
+                                    var o = {x: source.x, y: source.y};
+                                    return diagonal(o, o);
+                                })
+                                .remove();
+                    }
+                }
             }
             
         }
 
-        var model = createModel();
 
-        var view = createView(element, model);
+        var model = createModel();
+   
+
+
+
+        var menu = createMenuView(element, model);
+        menu.render();
+
+        var chart = createChartView(d3.select('.canvas'), model);
+        chart.render();
+        
+
+        model.register(menu.render);
 
         var i = 0,
         duration = 750;
