@@ -7,7 +7,8 @@
                 CLICK: "CLICK",
                 BRUSH: "BRUSH",
                 HOVER: "HOVER",
-                ACTIVATEBRUSH: "ACTIVATEBRUSH"
+                ACTIVATEBRUSH: "ACTIVATEBRUSH",
+                COLLAPSE: "COLLAPSE"
             },
             layout: {
                 margin: {top: 20, right: 20, bottom: 80, left: 20},
@@ -453,144 +454,6 @@
             // Global min/max are the last entry of forestMetrics;
             forestMetrics.push(forestMinMax);
 
-            // function update(source, treeData, g) {
-            //     var curMetric = d3.select(element).select('#metricSelect').property('value');
-            //     var treeIndex = g.attr("class").split(" ")[1];
-            //     if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
-            //         setColorLegend(-1);
-            //     } else {
-            //         setColorLegend(treeIndex);
-            //     }
-    
-            //     var nodes = model.getNodesFromMap();
-            //     var links = model.getLinksFromMap();
-                
-            //     var chart = g.selectAll('.chart');
-    
-            //     // Update the nodes…
-            //     var node = chart.selectAll("g.node")
-            //             .data(nodes, function (d) {
-            //                 return d.id || (d.id = ++i);
-            //             });
-                
-            //     //ENTER
-            //     // Enter any new nodes at the parent's previous position.
-            //     var nodeEnter = node.enter().append('g')
-            //             .attr('class', 'node')
-            //             .attr("transform", function (d) {
-            //                 return "translate(" + source.y0 + "," + source.x0 + ")";
-            //             })
-            //             .on("click", click)
-            //             .on('dblclick', function (d) {
-            //                 doubleclick(d, treeData, g);
-            //             });
-    
-            //     nodeEnter.append("circle")
-            //             .attr('class', 'circleNode')
-            //             .attr("r", 1e-6)
-            //             .style("fill", function (d) {
-            //                 if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
-            //                     return colorScale(d.data.metrics[curMetric], -1);
-            //                 }
-            //                 return colorScale(d.data.metrics[curMetric], d.treeIndex);
-            //             })
-            //             .style('stroke-width', '1px')
-            //             .style('stroke', 'black');
-    
-            //     // commenting out text for now
-            //     // nodeEnter.append("text")
-            //     //         .attr("x", function (d) {
-            //     //             return d.children || d._children ? -13 : 13;
-            //     //         })
-            //     //         .attr("dy", ".75em")
-            //     //         .attr("text-anchor", function (d) {
-            //     //             return d.children || d._children ? "end" : "start";
-            //     //         })
-            //     //         .text(function (d) {
-            //     //             return d.data.name;
-            //     //         })
-            //     //         .attr('transform', 'rotate( -15)')
-            //     //         .style("stroke-width", "3px")
-            //     //         .style("font", "12px monospace");
-
-            //     // Update the links…
-            //     var link = chart.selectAll("path.link")
-            //     .data(links, function (d) {
-            //         return d.id;
-            //     });
-
-            //     // Enter any new links at the parent's previous position.
-            //     var linkEnter = link.enter().insert("path", "g")
-            //             .attr("class", "link")
-            //             .attr("d", function (d) {
-            //                 var o = {x: source.x0, y: source.y0};
-            //                 return diagonal(o, o);
-            //             })
-            //             .attr('fill', 'none')
-            //             .attr('stroke', '#ccc')
-            //             .attr('stroke-width', '2px');
-
-            //     var linkUpdate = linkEnter.merge(link);
-
-            //     // Transition links to their new position.
-            //     linkUpdate.transition()
-            //             .duration(duration)
-            //             .attr("d", function (d) {
-            //                 return diagonal(d, d.parent);
-            //             });
-    
-    
-
-            //     //UPDATE
-            //     var nodeUpdate = nodeEnter.merge(node);
-    
-            //     // Transition nodes to their new position.
-            //     nodeUpdate.transition()
-            //             .duration(duration)
-            //             .attr("transform", function (d) {
-            //                 return "translate(" + d.y + "," + d.x + ")";
-            //             });
-    
-            //     nodeUpdate.select('circle.circleNode')
-            //             .attr("r", 4)
-            //             .style('fill', function (d) {
-            //                 if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
-            //                     return colorScale(d.data.metrics[curMetric], -1);
-            //                 }
-            //                 return colorScale(d.data.metrics[curMetric], d.treeIndex);
-            //             })
-            //             .style('stroke', 'black')
-            //             .style("stroke-dasharray", function (d) {
-            //                 return d._children ? '4' : '0';
-            //             }) //lightblue
-            //             .style('stroke-width', d => d._children ? '6px' : '1px')
-            //             .attr('cursor', 'pointer');
-    
-            //     //EXIT
-            //     // Transition exiting nodes to the parent's new position.
-            //     var nodeExit = node.exit().transition()
-            //             .duration(duration)
-            //             .attr("transform", function (d) {
-            //                 return "translate(" + source.y + "," + source.x + ")";
-            //             })
-            //             .remove();
-    
-            //     nodeExit.select("circle")
-            //             .attr("r", 1e-6);
-    
-            //     nodeExit.select("text")
-            //             .style("fill-opacity", 1);
-    
-            //     // Transition exiting links to the parent's new position.
-            //     var linkExit = link.exit().transition()
-            //             .duration(duration)
-            //             .attr("d", function (d) {
-            //                 var o = {x: source.x, y: source.y};
-            //                 return diagonal(o, o);
-            //             })
-            //             .remove();
-                
-            // }
 
             return{
                 register: function(s){
@@ -602,6 +465,7 @@
                         var source = d3.hierarchy(model.data["forestData"][treeIndex], d => d.children);
                         
                         var curMetric = d3.select(element).select('#metricSelect').property('value');
+
                         if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
                             setColorLegend(-1);
                         } else {
@@ -613,7 +477,10 @@
                         
                         var chart = svg.selectAll('.group-' + treeIndex);
             
+                        console.log(nodes);
+                        console.log(source);
                         // Update the nodes…
+                        var i = 0;
                         var node = chart.selectAll("g.node")
                                 .data(nodes, function (d) {
                                     return d.id || (d.id = ++i);
@@ -624,7 +491,7 @@
                         var nodeEnter = node.enter().append('g')
                                 .attr('class', 'node')
                                 .attr("transform", function (d) {
-                                    return "translate(" + source.y0 + "," + source.x0 + ")";
+                                    return "translate(" + source.y0 + "," + source.x0 + ")"; //source is for collapsed nodes
                                 })
                                 .on("click", click)
                                 .on('dblclick', function (d) {
@@ -744,9 +611,6 @@
 
         var model = createModel();
    
-
-
-
         var menu = createMenuView(element, model);
         menu.render();
 
@@ -755,6 +619,7 @@
         
 
         model.register(menu.render);
+        model.register(chart.render);
 
         var i = 0,
         duration = 750;
