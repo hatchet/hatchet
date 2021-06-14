@@ -5,6 +5,7 @@
         var globals = {
             signals: {
                 CLICK: "CLICK",
+                DBLCLICK: "DBLCLICK",
                 BRUSH: "BRUSH",
                 HOVER: "HOVER",
                 ACTIVATEBRUSH: "ACTIVATEBRUSH",
@@ -18,12 +19,12 @@
         
         // This is the makeSignaller from class
         var makeSignaller = function() {
-            var _subscribers = []; // Private member
+            let _subscribers = []; // Private member
 
             // Return the object that's created
             return {
                 // Register a function with the notification system
-                add: function(handlerFunction) { _subscribers.push(handlerFunction); },
+                add: function(handlerFunction) {_subscribers.push(handlerFunction); },
 
                 // Loop through all registered function and call them with passed
                 // arguments
@@ -48,6 +49,10 @@
                         case (globals.signals.HOVER):
                             break;
                         case (globals.signals.CLICK):
+                            _model.updateSelected([evt.node]);
+                            break;
+                        case (globals.signals.DBLCLICK):
+                            _model.handleDoubleClick(evt.node,evt.tree);
                             break;
                         case (globals.signals.BRUSH):
                             break;
@@ -62,7 +67,9 @@
             var _observers = makeSignaller();
             
             var _data = {"treemaps":[]};
-            var _state = {};
+            var _state = {"selectedNodes":[], 
+                            "collapsedNodes":[], 
+                            "lastClicked": null};
             var _currTree = 0;
 
             _state["colorScheme"] = 1;
@@ -83,6 +90,7 @@
 
             // pick the first metric listed to color the nodes
             _state["selectedMetric"] = _data["metricColumns"][0];
+            _state["lastClicked"] = d3.hierarchy(_data["forestData"][0], d => d.children)
 
             forestMetrics = [];
             forestMinMax = {};
@@ -140,15 +148,55 @@
 
                 updateNodes: function(f){
                     f(_data['treemaps'][_currTree].descendants());
+                },
+
+                updateSelected: function(nodes){
+                    for (var node in nodes){
+                        // console.log(nodes[node]);
+                    }
+
+    
+                    _state['selectedNodes'] = nodes;
+                    // we need to update tooltips etc.
+                    // these will be model "functions" as well
+                    // updateTooltip(nodes);
+                    // jsNodeSelected = printQuery(nodes);
+
+                    _observers.notify();
+                },
+
+                handleDoubleClick: function(d){
+                    console.log(_state["collapsedNodes"].includes(d))
+                    if (! _state["collapsedNodes"].includes(d) ){
+                        _state["collapsedNodes"].push(d);
+                    }
+                    else{
+                        // console.log("else");
+                        index = _state["collapsedNodes"].indexOf(d);
+                        _state["collapsedNodes"].splice(index, 1);
+                    }
+                    if (d.children) {
+                        d._children = d.children;
+                        d.children = null;
+                    } else {
+                        d.children = d._children;
+                        d._children = null;
+                    }
+
+                    _state["lastClicked"] = d;
+                    
+                    _observers.notify();
                 }
+
+
             }
         }
 
 
         var createMenuView = function(elem, model){
             //setup menu view
-            _observers = makeSignaller();
-            _svg = d3.select('.canvas');
+            let _observers = makeSignaller();
+            let _svg = d3.select('.canvas');
 
             var rootNodeNames = model.data["rootNodeNames"];
             var numberOfTrees = model.data["numberOfTrees"];
@@ -324,7 +372,7 @@
         }
 
         var createChartView = function(svg, model){
-            _observers = makeSignaller();
+            let _observers = makeSignaller();
 
             var rootNodeNames = model.data["rootNodeNames"];
             var numberOfTrees = model.data["numberOfTrees"];
@@ -379,10 +427,6 @@
 
             // Add a group and tree for each forestData[i]
             for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
-                // currentTreeData = forestData[treeIndex];
-                // currentRoot = d3.hierarchy(currentTreeData, d => d.children);
-                // currentRoot.x0 = height;
-                // currentRoot.y0 = margin.left;
 
                 model.setCurrentTreeIndex(treeIndex);
 
@@ -460,10 +504,13 @@
                     _observers.add(s);
                 },
                 render: function(){
+                    
+                    //render for any number of trees
                     for(var treeIndex = 0; treeIndex < model.data["numberOfTrees"]; treeIndex++){
 
+                        let lastClicked = model.state["lastClicked"];
+
                         var source = d3.hierarchy(model.data["forestData"][treeIndex], d => d.children);
-                        
                         var curMetric = d3.select(element).select('#metricSelect').property('value');
 
                         if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
@@ -477,8 +524,7 @@
                         
                         var chart = svg.selectAll('.group-' + treeIndex);
             
-                        console.log(nodes);
-                        console.log(source);
+
                         // Update the nodes…
                         var i = 0;
                         var node = chart.selectAll("g.node")
@@ -491,10 +537,22 @@
                         var nodeEnter = node.enter().append('g')
                                 .attr('class', 'node')
                                 .attr("transform", function (d) {
-                                    return "translate(" + source.y0 + "," + source.x0 + ")"; //source is for collapsed nodes
+                                    return "translate(" + lastClicked.y + "," + lastClicked.x + ")"; //source is for collapsed nodes
                                 })
-                                .on("click", click)
+                                // .on("click", click)
+                                .on("click", function(d){
+                                    _observers.notify({
+                                        type: globals.signals.CLICK,
+                                        node: d
+                                    })
+                                })
                                 .on('dblclick', function (d) {
+                                    console.log("Observers: ", _observers);
+                                    _observers.notify({
+                                        type: globals.signals.DBLCLICK,
+                                        node: d,
+                                        tree: treeIndex
+                                    })
                                     // doubleclick(d, treeData, g);
                                 });
             
@@ -513,11 +571,11 @@
                         // commenting out text for now
                         // nodeEnter.append("text")
                         //         .attr("x", function (d) {
-                        //             return d.children || d._children ? -13 : 13;
+                        //             return d.children || model.state['collapsedNodes'].includes(d) ? -13 : 13;
                         //         })
                         //         .attr("dy", ".75em")
                         //         .attr("text-anchor", function (d) {
-                        //             return d.children || d._children ? "end" : "start";
+                        //             return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
                         //         })
                         //         .text(function (d) {
                         //             return d.data.name;
@@ -572,11 +630,28 @@
                                     }
                                     return colorScale(d.data.metrics[curMetric], d.treeIndex);
                                 })
-                                .style('stroke', 'black')
+                                .style('stroke', function(d){
+                                    if (model.state['collapsedNodes'].includes(d)){
+                                        return "#89c3e0";
+                                    }
+                                    else{
+                                        return 'black';
+                                    }
+                                })
                                 .style("stroke-dasharray", function (d) {
-                                    return d._children ? '4' : '0';
+                                    return model.state['collapsedNodes'].includes(d) ? '4' : '0';
                                 }) //lightblue
-                                .style('stroke-width', d => d._children ? '6px' : '1px')
+                                .style('stroke-width', function(d){
+                                    if (model.state['collapsedNodes'].includes(d)){
+                                        return '6px';
+                                    } 
+                                    else if (model.state['selectedNodes'].includes(d)){
+                                        return '4px';
+                                    } 
+                                    else {
+                                        return '1px';
+                                    }
+                                })
                                 .attr('cursor', 'pointer');
             
                         //EXIT
@@ -584,7 +659,7 @@
                         var nodeExit = node.exit().transition()
                                 .duration(duration)
                                 .attr("transform", function (d) {
-                                    return "translate(" + source.y + "," + source.x + ")";
+                                    return "translate(" + lastClicked.y + "," + lastClicked.x + ")";
                                 })
                                 .remove();
             
@@ -610,15 +685,16 @@
 
 
         var model = createModel();
-   
+        var controller = createController(model);
+
         var menu = createMenuView(element, model);
         menu.render();
-
         var chart = createChartView(d3.select('.canvas'), model);
         chart.render();
         
-
-        model.register(menu.render);
+        menu.register(controller.dispatch);
+        chart.register(controller.dispatch);
+        // model.register(menu.render);
         model.register(chart.render);
 
         var i = 0,
@@ -946,34 +1022,6 @@
                     .html(tipText);
         }
 
-        function click(d) {
-            updateTooltip([d]);
-            jsNodeSelected = printQuery([d]);
-
-            var selectedData = d;
-            d3.select(element).selectAll('.circleNode')
-                .style('stroke', function (e) {
-                    if (e == selectedData)
-                        return 'black';
-                    else {
-                        var curMetric = d3.select(element).select('#metricSelect').property('value');
-                        return e._children ? "#89c3e0" : 'black';
-                    }
-                })
-                .style('stroke-width', e => e == selectedData ? '4px' : '1px');
-        }
-
-        // Toggle children on doubleclick.
-        function doubleclick(d, treeData, g) {
-            if (d.children) {
-                d._children = d.children;
-                d.children = null;
-            } else {
-                d.children = d._children;
-                d._children = null;
-            }
-            update(d, treeData, g);
-        }
 
         function changeMetric(allMin, allMax) {
             var curMetric = d3.select(element).select('#metricSelect').property('value');
