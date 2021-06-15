@@ -8,13 +8,15 @@
                 DBLCLICK: "DBLCLICK",
                 BRUSH: "BRUSH",
                 HOVER: "HOVER",
-                ACTIVATEBRUSH: "ACTIVATEBRUSH",
+                TOGGLEBRUSH: "TOGGLEBRUSH",
                 COLLAPSE: "COLLAPSE"
             },
             layout: {
                 margin: {top: 20, right: 20, bottom: 80, left: 20},
             } 
         }
+
+        jsNodeSelected = "['*']";
     
         
         // This is the makeSignaller from class
@@ -54,7 +56,11 @@
                         case (globals.signals.DBLCLICK):
                             _model.handleDoubleClick(evt.node,evt.tree);
                             break;
+                        case(globals.signals.TOGGLEBRUSH):
+                            _model.toggleBrush();
+                            break;
                         case (globals.signals.BRUSH):
+                            _model.setBrushedPoints(evt.selection, evt.end);
                             break;
                         default:
                             console.log('Unknown event type', evt.type);
@@ -73,7 +79,7 @@
             var _currTree = 0;
 
             _state["colorScheme"] = 1;
-            _state["brushOn"] = 1;
+            _state["brushOn"] = -1;
 
             //setup model
             var cleanTree = argList[0].replace(/'/g, '"');
@@ -119,6 +125,7 @@
 
             _data["forestMinMax"] = forestMinMax;
 
+
             return{
                 data: _data,
                 state: _state,
@@ -151,30 +158,33 @@
                 },
 
                 updateSelected: function(nodes){
-                    for (var node in nodes){
-                        // console.log(nodes[node]);
-                    }
 
-    
                     _state['selectedNodes'] = nodes;
-                    // we need to update tooltips etc.
-                    // these will be model "functions" as well
-                    // updateTooltip(nodes);
-                    // jsNodeSelected = printQuery(nodes);
+                    this.updateTooltip(nodes);
 
+                    if(nodes.length > 0){
+                        jsNodeSelected = printQuery(nodes);
+                    } else {
+                        jsNodeSelected = "['*']";
+                    }
+                    
                     _observers.notify();
                 },
-
                 handleDoubleClick: function(d){
-                    console.log(_state["collapsedNodes"].includes(d))
+                    // if the node is not already collapsed
+                    // keep track of our collapsed nodes
                     if (! _state["collapsedNodes"].includes(d) ){
                         _state["collapsedNodes"].push(d);
                     }
                     else{
-                        // console.log("else");
                         index = _state["collapsedNodes"].indexOf(d);
                         _state["collapsedNodes"].splice(index, 1);
                     }
+
+                    //this is kind of a hack for this paradigm
+                    // but it updates the passed data directly
+                    // and hides children nodes triggering update
+                    // when view is re-rendered
                     if (d.children) {
                         d._children = d.children;
                         d.children = null;
@@ -186,17 +196,55 @@
                     _state["lastClicked"] = d;
                     
                     _observers.notify();
-                }
+                },
+                toggleBrush: function(){
+                    _state["brushOn"] = -_state["brushOn"];
+                    _observers.notify();
+                },
+                setBrushedPoints(selection, end){
+                    brushedNodes = [];
 
+                    if(selection){
+                        //calculate brushed points
+                        for(var i = 0; i < _data["numberOfTrees"]; i++){
+                            nodes = _data['treemaps'][i].descendants();
+                            nodes.forEach(function(d){
+                                if(selection[0][0] <= d.yMainG && selection[1][0] >= d.yMainG 
+                                    && selection[0][1] <= d.xMainG && selection[1][1] >= d.xMainG){
+                                    brushedNodes.push(d);
+                                }
+                            })
+                        }
+
+                        //update if end
+                        if(end){
+                            //call update selected
+                            this.updateSelected(brushedNodes);
+                        }
+
+                    }
+                    else{
+                        this.updateSelected([]);
+                    }
+                    
+                },
+                updateTooltip: function(nodes){
+                    console.log(nodes);
+                    if(nodes.length > 0){
+                        _data["tipText"] = printNodeData(nodes);
+                    } 
+                    else{
+                        _data["tipText"] = '<p>Click a node or "Select nodes" to see more info</p>';
+                    }
+                }
 
             }
         }
 
-
         var createMenuView = function(elem, model){
             //setup menu view
             let _observers = makeSignaller();
-            let _svg = d3.select('.canvas');
+            // let _svg = d3.select('.canvas');
 
             var rootNodeNames = model.data["rootNodeNames"];
             var numberOfTrees = model.data["numberOfTrees"];
@@ -211,162 +259,243 @@
             var treeHeight = 300;
             var width = element.clientWidth - globals.layout.margin.right - globals.layout.margin.left;
             var height = treeHeight * (model.data["numberOfTrees"] + 1);
-            
 
+
+            d3.select(elem).append('label').attr('for', 'metricSelect').text('Color by:');
+            var metricInput = d3.select(elem).append("select") //element
+                    .attr("id", "metricSelect")
+                    .selectAll('option')
+                    .data(metricColumns)
+                    .enter()
+                    .append('option')
+                    .text(d => d)
+                    .attr('value', d => d);
+            document.getElementById("metricSelect").style.margin = "10px 10px 10px 0px";
+
+            d3.select(elem).append('label').style('margin', '0 0 0 10px').attr('for', 'treeRootSelect').text(' Display:');
+            var treeRootInput = d3.select(elem).append("select") //element
+                    .attr("id", "treeRootSelect")
+                    .selectAll('option')
+                    .data(rootNodeNames)
+                    .enter()
+                    .append('option')
+                    .attr('selected', d => d.name == 'Show all trees' ? true : false)
+                    .text(d => d)
+                    .attr('value', (d, i) => i + "|" + d);
+            document.getElementById("treeRootSelect").style.margin = "10px 10px 10px 10px";
+
+                    
+            //make an svg in the scope of our current
+            // element/drawing space
+            var _svg = d3.select(element).append("svg") //element
+            .attr("class", "canvas")
+            .attr("width", width + globals.layout.margin.right + globals.layout.margin.left)
+            .attr("height", height + globals.layout.margin.top + globals.layout.margin.bottom);
+
+
+            var brushButton = _svg.append('g')
+                    .attr('id', 'selectButton')
+                    .append('rect')
+                    .attr('width', '80px')
+                    .attr('height', '15px')
+                    .attr('x', 0).attr('y', 0).attr('rx', 5)
+                    .style('fill', '#ccc')
+                    .on('click', function () {
+                        _observers.notify({
+                            type: globals.signals.TOGGLEBRUSH
+                        })
+
+                        // brushOn = -1 * brushOn;
+                        // activateBrush(brushOn);
+                    });
+            var brushButtonText = d3.select(elem).select('#selectButton').append('text')
+                    .attr("x", 3)
+                    .attr("y", 12)
+                    .text('Select nodes')
+                    .attr("font-family", "sans-serif")
+                    .attr("font-size", "12px")
+                    .attr('cursor', 'pointer')
+                    .on('click', function () {
+                        _observers.notify({
+                            type: globals.signals.TOGGLEBRUSH
+                        })
+                        // brushOn = -1 * brushOn;
+                        // activateBrush(brushOn);
+                    });
+
+            var colorButton = _svg.append('g')
+                    .attr('id', 'colorButton')
+                    .append('rect')
+                    .attr('width', '90px')
+                    .attr('height', '15px')
+                    .attr('x', 90).attr('y', 0).attr('rx', 5)
+                    .style('fill', '#ccc');
+
+            d3.select(elem).select('#colorButton').append('text')
+                    .attr("x", 93)
+                    .attr("y", 12)
+                    .text('Colors: default')
+                    .attr("font-family", "sans-serif")
+                    .attr("font-size", "12px")
+                    .attr('cursor', 'pointer')
+                    .on('click', function () {
+                        model.state["colorScheme"] = -1 * model.state["colorScheme"];
+                        var curMetric = d3.select(elem).select('#metricSelect').property('value');
+                        var curLegend = d3.select(elem).select('#unifyLegends').text();
+                        d3.select(elem).selectAll(".circleNode")
+                                .transition()
+                                .duration(duration)
+                                .style('fill', function (d) {
+                                    if (curLegend == 'Legends: unified') {
+                                        return colorScale(d.data.metrics[curMetric], -1);
+                                    }
+                                    return colorScale(d.data.metrics[curMetric], d.treeIndex);
+                                })
+                                .style('stroke', 'black');
+
+                        //Update each individual legend to inverted scale
+                        for (var treeIndex = 0; treeIndex < numberOfTrees; treeIndex++) {
+                            if (curLegend == 'Legends: unified') {
+                                setColorLegend(-1);
+                            } else {
+                                setColorLegend(treeIndex);
+                            }
+                        }
+                    });
+
+            var unifyLegends = _svg.append('g')
+                    .attr('id', 'unifyLegends')
+                    .append('rect')
+                    .attr('width', '100px')
+                    .attr('height', '15px')
+                    .attr('x', 190)
+                    .attr('y', 0)
+                    .attr('rx', 5)
+                    .style('fill', '#ccc');
+            d3.select(elem).select('#unifyLegends').append('text')
+                    .attr("x", 195)
+                    .attr("y", 12)
+                    .text('Legends: unified')
+                    .attr("font-family", "sans-serif")
+                    .attr("font-size", "12px")
+                    .attr('cursor', 'pointer')
+                    .on('click', function () {
+                        var curMetric = d3.select(elem).select('#metricSelect').property('value');
+                        var sameLegend = true;
+                        if (d3.select(this).text() == 'Legends: unified') {
+                            d3.select(this).text('Legends: indiv.');
+                            sameLegend = false;
+                            for (var treeIndex = 0; treeIndex < numberOfTrees; treeIndex++) {
+                                setColorLegend(treeIndex);
+                            }
+                        } else {
+                            d3.select(this).text('Legends: unified');
+                            sameLegend = true;
+                            setColorLegend(-1);
+                        }
+
+                        d3.select(elem).selectAll(".circleNode")
+                                .transition()
+                                .duration(duration)
+                                .style("fill", function (d) {
+                                    return sameLegend ? colorScale(d.data.metrics[curMetric], -1) : colorScale(d.data.metrics[curMetric], d.treeIndex);
+                                })
+                                .style("stroke", 'black');
+                    });
+            
+            var mainG = _svg.append("g")
+                .attr('id', "mainG")
+                .attr("transform", "translate(" + globals.layout.margin.left + "," + globals.layout.margin.top + ")");
+
+            //setup brush
+            var brush = d3.brush()
+                    .extent([[0, 0], [2 * width, 2 * (height + globals.layout.margin.top + globals.layout.margin.bottom)]])
+                    .on('brush', function(){
+                        _observers.notify({
+                            type: globals.signals.BRUSH,
+                            selection: d3.event.selection,
+                            end: false
+                        })
+                    })
+                    .on('end', function(){
+                        _observers.notify({
+                            type: globals.signals.BRUSH,
+                            selection: d3.event.selection,
+                            end: true
+                        })
+                    });
+
+            const gBrush = d3.select("#mainG").append('g')
+                    .attr('class', 'brush')
+                    .call(brush);
+
+
+
+            d3.select(element).select('#treeRootSelect')
+                    .on('change', function () {
+                        var margin = globals.layout.margin;
+                        var rootIndex = d3.select(element).select('#treeRootSelect').property('value').split("|")[0];
+                        var rootName = d3.select(element).select('#treeRootSelect').property('value').split("|")[1];
+                        if (rootName == "Show all trees") {
+                            d3.select(element).selectAll(".subchart").attr('transform', function () {
+                                var groupIndex = d3.select(this).attr("id");
+                                return 'translate(' + margin.left + "," + (treeHeight * groupIndex + margin.top) + ")"
+                            });
+    
+                            d3.select(element).selectAll(".subchart").style("display", "inline-block");
+                        } else {
+                            d3.select(element).selectAll(".subchart").style("display", function () {
+                                var groupIndex = Number(d3.select(this).attr("id")) + 1;
+                                if (groupIndex == rootIndex) {
+                                    // Move this displayed tree to the top
+                                    d3.select(this).attr('transform', 'translate(' + margin.left + "," + margin.top + ")");
+                                    return "inline-block";
+                                } else {
+                                    // Return the other trees back to their original spots
+                                    d3.select(this).attr('transform', 'translate(' + margin.left + "," + (treeHeight * groupIndex + margin.top) + ")");
+                                    return "none";
+                                }
+                            });
+                        }
+                    });
+            
             return{
                 register: function(s){
                     _observers.add(s);
                 },
                 render: function(){
-                    d3.select(elem).append('label').attr('for', 'metricSelect').text('Color by:');
-                    var metricInput = d3.select(elem).append("select") //element
-                            .attr("id", "metricSelect")
-                            .selectAll('option')
-                            .data(metricColumns)
-                            .enter()
-                            .append('option')
-                            .text(d => d)
-                            .attr('value', d => d);
-                    document.getElementById("metricSelect").style.margin = "10px 10px 10px 0px";
+                    selectedMetric = model.state["selectedMetric"];
+                    brushOn = model.state["brushOn"];
+                    d3.selectAll('.brush').remove();
 
-                    d3.select(elem).append('label').style('margin', '0 0 0 10px').attr('for', 'treeRootSelect').text(' Display:');
-                    var treeRootInput = d3.select(elem).append("select") //element
-                            .attr("id", "treeRootSelect")
-                            .selectAll('option')
-                            .data(rootNodeNames)
-                            .enter()
-                            .append('option')
-                            .attr('selected', d => d.name == 'Show all trees' ? true : false)
-                            .text(d => d)
-                            .attr('value', (d, i) => i + "|" + d);
-                    document.getElementById("treeRootSelect").style.margin = "10px 10px 10px 10px";
+                    //updates
+                    brushButton.style("fill", function(){ 
+                        if(brushOn > 0){
+                            return "black";
+                        }
+                        else{
+                            return "#ccc";
+                        }
+                    })
+                    .attr('cursor', 'pointer');
 
-                            
-                    //make an svg in the scope of our current
-                    // element/drawing space
-                    var _svg = d3.select(element).append("svg") //element
-                    .attr("class", "canvas")
-                    .attr("width", width + globals.layout.margin.right + globals.layout.margin.left)
-                    .attr("height", height + globals.layout.margin.top + globals.layout.margin.bottom);
+                    brushButtonText.style("fill", function(){
+                        if(brushOn > 0){
+                            return "white";
+                        }
+                        else{
+                            return "black";
+                        }
+                    })
+                    .attr('cursor', 'pointer');
 
-                    var tooltip = d3.select(elem).append("div")
-                            .attr('id', 'tooltip')
-                            .style('position', 'absolute')
-                            .style('top', '5px')
-                            .style('right', '15px')
-                            .style('padding', '5px')
-                            .style('border-radius', '5px')
-                            .style('background', '#ccc')
-                            .style('color', 'black')
-                            .style('font-size', '14px')
-                            .style('font-family', 'monospace')
-                            .html('<p>Click a node or "Select nodes" to see more info</p>');
 
-                    var button = _svg.append('g')
-                            .attr('id', 'selectButton')
-                            .append('rect')
-                            .attr('width', '80px')
-                            .attr('height', '15px')
-                            .attr('x', 0).attr('y', 0).attr('rx', 5)
-                            .style('fill', '#ccc')
-                            .on('click', function () {
-                                _observers.notify({
-                                    type: tree.signals.ACTIVATEBRUSH,
-                                })
-
-                                brushOn = -1 * brushOn;
-                                activateBrush(brushOn);
-                            });
-                    d3.select(elem).select('#selectButton').append('text')
-                            .attr("x", 3)
-                            .attr("y", 12)
-                            .text('Select nodes')
-                            .attr("font-family", "sans-serif")
-                            .attr("font-size", "12px")
-                            .attr('cursor', 'pointer')
-                            .on('click', function () {
-                                brushOn = -1 * brushOn;
-                                activateBrush(brushOn);
-                            });
-
-                    var colorButton = _svg.append('g')
-                            .attr('id', 'colorButton')
-                            .append('rect')
-                            .attr('width', '90px')
-                            .attr('height', '15px')
-                            .attr('x', 90).attr('y', 0).attr('rx', 5)
-                            .style('fill', '#ccc');
-
-                    d3.select(elem).select('#colorButton').append('text')
-                            .attr("x", 93)
-                            .attr("y", 12)
-                            .text('Colors: default')
-                            .attr("font-family", "sans-serif")
-                            .attr("font-size", "12px")
-                            .attr('cursor', 'pointer')
-                            .on('click', function () {
-                                model.state["colorScheme"] = -1 * model.state["colorScheme"];
-                                var curMetric = d3.select(elem).select('#metricSelect').property('value');
-                                var curLegend = d3.select(elem).select('#unifyLegends').text();
-                                d3.select(elem).selectAll(".circleNode")
-                                        .transition()
-                                        .duration(duration)
-                                        .style('fill', function (d) {
-                                            if (curLegend == 'Legends: unified') {
-                                                return colorScale(d.data.metrics[curMetric], -1);
-                                            }
-                                            return colorScale(d.data.metrics[curMetric], d.treeIndex);
-                                        })
-                                        .style('stroke', 'black');
-
-                                //Update each individual legend to inverted scale
-                                for (var treeIndex = 0; treeIndex < numberOfTrees; treeIndex++) {
-                                    if (curLegend == 'Legends: unified') {
-                                        setColorLegend(-1);
-                                    } else {
-                                        setColorLegend(treeIndex);
-                                    }
-                                }
-                            });
-                    var unifyLegends = _svg.append('g')
-                            .attr('id', 'unifyLegends')
-                            .append('rect')
-                            .attr('width', '100px')
-                            .attr('height', '15px')
-                            .attr('x', 190)
-                            .attr('y', 0)
-                            .attr('rx', 5)
-                            .style('fill', '#ccc');
-                    d3.select(elem).select('#unifyLegends').append('text')
-                            .attr("x", 195)
-                            .attr("y", 12)
-                            .text('Legends: unified')
-                            .attr("font-family", "sans-serif")
-                            .attr("font-size", "12px")
-                            .attr('cursor', 'pointer')
-                            .on('click', function () {
-                                var curMetric = d3.select(elem).select('#metricSelect').property('value');
-                                var sameLegend = true;
-                                if (d3.select(this).text() == 'Legends: unified') {
-                                    d3.select(this).text('Legends: indiv.');
-                                    sameLegend = false;
-                                    for (var treeIndex = 0; treeIndex < numberOfTrees; treeIndex++) {
-                                        setColorLegend(treeIndex);
-                                    }
-                                } else {
-                                    d3.select(this).text('Legends: unified');
-                                    sameLegend = true;
-                                    setColorLegend(-1);
-                                }
-
-                                d3.select(elem).selectAll(".circleNode")
-                                        .transition()
-                                        .duration(duration)
-                                        .style("fill", function (d) {
-                                            return sameLegend ? colorScale(d.data.metrics[curMetric], -1) : colorScale(d.data.metrics[curMetric], d.treeIndex);
-                                        })
-                                        .style("stroke", 'black');
-                            });
+                    //add brush if there should be one
+                    if(brushOn > 0){
+                        d3.select("#mainG").append('g')
+                            .attr('class', 'brush')
+                            .call(brush);
+                    } 
                 }
             }
         }
@@ -400,9 +529,7 @@
 
 
 
-            var mainG = svg.append("g")
-                    .attr('id', "mainG")
-                    .attr("transform", "translate(" + _margin.left + "," + _margin.top + ")");
+            var mainG = svg.select("#mainG");
 
             // var treemap = d3.tree().size([(2000), width - margin.left]);
             var treemap = d3.tree().size([(treeHeight), width - _margin.left]);
@@ -432,7 +559,8 @@
 
                 var currentTreeMap = model.getTreeMap(treeIndex);
                 var newg = mainG.append("g")
-                        .attr('class', 'group-' + treeIndex)
+                        .attr('class', 'group-' + treeIndex + ' subchart')
+                        .attr('id', treeIndex)
                         .attr("transform", "translate(" + _margin.left + "," + (treeHeight * treeIndex + _margin.top) + ")");
 
                 currentTreeMap.descendants().forEach(function (d) {
@@ -683,76 +811,51 @@
             
         }
 
+        var createTooltipView = function(elem, model){
+            var _observers = makeSignaller();
+            var _tooltip = d3.select(elem).append("div")
+                    .attr('id', 'tooltip')
+                    .style('position', 'absolute')
+                    .style('top', '5px')
+                    .style('right', '15px')
+                    .style('padding', '5px')
+                    .style('border-radius', '5px')
+                    .style('background', '#ccc')
+                    .style('color', 'black')
+                    .style('font-size', '14px')
+                    .style('font-family', 'monospace')
+                    .html('<p>Click a node or "Select nodes" to see more info</p>');
+
+            return {
+                register: function(s){
+                    _observers.add(s);
+                },
+                render: function(){
+                    _tooltip.html(model.data["tipText"]);
+                }
+            }
+        }
 
         var model = createModel();
         var controller = createController(model);
 
         var menu = createMenuView(element, model);
-        menu.render();
+        var tooltip = createTooltipView(element, model);
         var chart = createChartView(d3.select('.canvas'), model);
+        
+        menu.render();
+        tooltip.render();
         chart.render();
         
         menu.register(controller.dispatch);
         chart.register(controller.dispatch);
-        // model.register(menu.render);
+
+        model.register(menu.render);
         model.register(chart.render);
+        model.register(tooltip.render);
 
         var i = 0,
         duration = 750;
-
-        
-        // Helper function for determining which nodes are in brush
-        function rectContains(selection, points) {
-            if (selection) {
-                var isBrushed = selection[0][0] <= points.yMainG && selection[1][0] >= points.yMainG && // Check X coordinate
-                        selection[0][1] <= points.xMainG && selection[1][1] >= points.xMainG  // And Y coordinate
-                //Remember points are at (y,x)
-                return isBrushed;
-            }
-        }
-
-        function highlightNodes(brushedNodes) {
-            if (brushedNodes.length == 0) {
-                d3.select(element).selectAll("circle")
-                        .style("stroke", 'black')
-                        .style("stroke-width", "1px");
-                return;
-            }
-            brushedNodes.transition()
-                    .duration(duration / 100)
-                    .style("stroke", "black")
-                    .style("stroke-width", "4px");
-        }
-
-        function activateBrush(brushOn) {
-            if (brushOn > 0) {
-                //Turn brush off
-                d3.select(element).select("#selectButton rect")
-                        .style("fill", "#ccc")
-                        .attr('cursor', 'pointer');
-                d3.select(element).select("#selectButton text")
-                        .style("fill", "black")
-                        .attr('cursor', 'pointer');
-                d3.selectAll('.brush').remove();
-                brushOn = -brushOn;
-            } else {
-                d3.select(element).select("#selectButton rect")
-                        .style("fill", "black")
-                        .attr('cursor', 'pointer');
-                d3.select(element).select("#selectButton text")
-                        .style("fill", "white")
-                        .attr('cursor', 'pointer');
-                var brush = d3.brush()
-                        .extent([[0, 0], [2 * width, 2 * (height + margin.top + margin.bottom)]])
-                        .on('brush', brushmove)
-                        .on('end', brushend);
-
-                const gBrush = mainG.append('g')
-                        .attr('class', 'brush')
-                        .call(brush);
-                brushOn = -brushOn;
-            }
-        }
 
         function setColors(treeIndex) {
             var invertColors = [['#edf8e9', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c'], //green
@@ -902,37 +1005,6 @@
             }
         }
 
-        d3.select(element).select('#treeRootSelect')
-                .on('change', function () {
-                    var rootIndex = d3.select(element).select('#treeRootSelect').property('value').split("|")[0];
-                    var rootName = d3.select(element).select('#treeRootSelect').property('value').split("|")[1];
-                    if (rootName == "Show all trees") {
-                        d3.select(element).selectAll(".group ").attr('transform', function () {
-                            var groupIndex = d3.select(this).attr("class").split(" ")[1];
-                            return 'translate(' + margin.left + "," + (treeHeight * groupIndex + margin.top) + ")"
-                        });
-
-                        d3.select(element).selectAll(".group ").style("display", "inline-block");
-                    } else {
-                        d3.select(element).selectAll(".group ").style("display", function () {
-                            var groupIndex = d3.select(this).attr("class").split(" ")[1];
-                            if (groupIndex == rootIndex) {
-                                // Move this displayed tree to the top
-                                d3.select(this).attr('transform', 'translate(' + margin.left + "," + margin.top + ")");
-                                return "inline-block";
-                            } else {
-                                // Return the other trees back to their original spots
-                                d3.select(this).attr('transform', 'translate(' + margin.left + "," + (treeHeight * groupIndex + margin.top) + ")");
-                                return "none";
-                            }
-                        });
-                    }
-                });
-
-        
-        
-        
-
         //When metricSelect is changed (metric_col)
         d3.select(element).select('#metricSelect')
                 .on('change', function () {
@@ -943,6 +1015,8 @@
         function printNodeData(nodeList) {
             var nodeStr = '<table><tr><td>name</td>';
             var numNodes = nodeList.length;
+            var metricColumns = model.data["metricColumns"];
+
             //lay the nodes out in a table
             for (var i = 0; i < metricColumns.length; i++) {
                 nodeStr += '<td>' + metricColumns[i] + '</td>';
@@ -965,8 +1039,6 @@
             return nodeStr;
         }
 
-        jsNodeSelected = "['*']"; //default: select all nodes
-
         function printQuery(nodeList) {
             var leftMostNode = {depth: Number.MAX_VALUE, data: {name: 'default'}};
             var rightMostNode = {depth: 0, data: {name: 'default'}};
@@ -987,6 +1059,8 @@
                     selectionIsAChain = false;
                 }
             }
+
+            console.log(nodeList);
 
             //do some evaluation for other subtrees
             // we could generate python code that does this
@@ -1022,15 +1096,14 @@
                     .html(tipText);
         }
 
-
         function changeMetric(allMin, allMax) {
             var curMetric = d3.select(element).select('#metricSelect').property('value');
             var nodes = d3.select(element).selectAll(".circleNode");
 
-            for (var treeIndex = 0; treeIndex < numberOfTrees; treeIndex++) {
+            for (var treeIndex = 0; treeIndex < model.data["numberOfTrees"]; treeIndex++) {
                 setColorLegend(treeIndex);
 
-                d3.select(element).selectAll(".group ").selectAll(".circleNode")
+                d3.select(element).selectAll(".subchart").selectAll(".circleNode")
                         .transition()
                         .duration(duration)
                         .style("fill", function (d) {
@@ -1041,42 +1114,6 @@
                         })
                         .style("stroke", 'black');
             }
-        }
-
-        function brushmove() {
-            const {selection} = d3.event;
-
-            if (!selection) {
-                highlightNodes([]);
-                return;
-            }
-            // Slow, unoptimized
-            const brushedNodes = d3.select(element).selectAll(".circleNode")
-                    .filter(d => rectContains(selection, d));
-
-            const brushedData = [];
-            brushedNodes.each(d => brushedData.push(d));
-
-            highlightNodes(brushedNodes);
-        }
-
-        function brushend() {
-            const {selection} = d3.event;
-
-            if (!selection) {
-                highlightNodes([]);
-                return;
-            }
-            // Slow, unoptimized
-            const brushedNodes = d3.select(element).selectAll(".circleNode")
-                    .filter(d => rectContains(selection, d));
-
-            const brushedData = [];
-            brushedNodes.each(d => brushedData.push(d));
-
-            updateTooltip(brushedData);
-
-            jsNodeSelected = printQuery(brushedData);
         }
 
     });
