@@ -7,17 +7,140 @@
                 CLICK: "CLICK",
                 DBLCLICK: "DBLCLICK",
                 BRUSH: "BRUSH",
-                HOVER: "HOVER",
                 TOGGLEBRUSH: "TOGGLEBRUSH",
-                COLLAPSE: "COLLAPSE"
+                COLLAPSE: "COLLAPSE",
+                METRICCHANGE: "METRICCHANGE"
             },
             layout: {
                 margin: {top: 20, right: 20, bottom: 80, left: 20},
-            } 
+            },
+            duration: 750
         }
 
         jsNodeSelected = "['*']";
+
+        var makeColorManager = function(model){
+            var _invertColors = [['#edf8e9', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c'], //green
+                ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#de2d26', '#a50f15'], //red
+                ['#eff3ff', '#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08519c'], //blue
+                ['#f2f0f7', '#dadaeb', '#bcbddc', '#9e9ac8', '#756bb1', '#54278f'], //purple
+                ['#feedde', '#fdd0a2', '#fdae6b', '#fd8d3c', '#e6550d', '#a63603'], //orange
+                ['#f7f7f7', '#d9d9d9', '#bdbdbd', '#969696', '#636363', '#252525']];  //black
+            
+            var _regularColors = [['#006d2c', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#edf8e9'], //green
+                ['#a50f15', '#de2d26', '#fb6a4a', '#fc9272', '#fcbba1', '#fee5d9'], //red
+                ['#08519c', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#eff3ff'], //blue
+                ['#54278f', '#756bb1', '#9e9ac8', '#bcbddc', '#dadaeb', '#f2f0f7'], //purple
+                ['#a63603', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#feedde'], //orange
+                ['#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7']]; //black
+        
+            var _allTreesColors = ['#d73027', '#fc8d59', '#fee090', '#e0f3f8', '#91bfdb', '#4575b4'];
+            var _invertedAllTrees = ['#4575b4', '#91bfdb', '#e0f3f8', '#fee090', '#fc8d59', '#d73027'];
+
+            _state = model.state;
+
+            return {
+                setColors: function(treeIndex){
+                    var colorSchemeUsed;
     
+                    if (treeIndex == -1) { //all trees are displayed
+                        if (_state["colorScheme"] == 1) {
+                            d3.select(element).select('#colorButton text')
+                            .text('Colors: default');
+                            colorSchemeUsed = _allTreesColors;
+                        } else {
+                            d3.select(element).select('#colorButton text')
+                            .text('Colors: inverted');
+                            colorSchemeUsed = _invertedAllTrees;
+                        }
+                    } else { //single tree is displayed
+                        if (_state["colorScheme"] == 1) {
+                            d3.select(element).select('#colorButton text')
+                            .text('Colors: default');
+                            colorSchemeUsed = _regularColors[treeIndex];
+                        } else {
+                            d3.select(element).select('#colorButton text')
+                            .text('Colors: inverted');
+                            colorSchemeUsed = _invertColors[treeIndex];
+                        }
+                    }
+    
+                    return colorSchemeUsed;
+                },
+                setColorLegend: function(treeIndex) {
+                    var curMetric = d3.select(element).select('#metricSelect').property('value');
+                    if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
+                        treeIndex = -1;
+                    }
+                    if (treeIndex == -1) { //unified color legend
+    
+                        var metric_range = forestMinMax[curMetric].max - forestMinMax[curMetric].min;
+                        var colorScaleDomain = [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1].map(function (x) {
+                            return x * metric_range + forestMinMax[curMetric].min;
+                        });
+    
+                        var colorSchemeUsed = this.setColors(treeIndex);
+                        var legendClass = ".legend";
+    
+                    } else {
+                        var metric_range = forestMetrics[treeIndex][curMetric].max - forestMetrics[treeIndex][curMetric].min;
+                        var colorScaleDomain = [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1].map(function (x) {
+                            return x * metric_range + forestMetrics[treeIndex][curMetric].min;
+                        });
+    
+                        var colorSchemeUsed = this.setColors(treeIndex);
+                        var legendClass = '.legend' + treeIndex;
+                    }
+                
+                    d3.select(element).selectAll(legendClass + ' rect')
+                            .transition()
+                            .duration(globals.duration)
+                            .attr('fill', function (d, i) {
+                                return colorSchemeUsed[d];
+                            })
+                            .attr('stroke', 'black');
+                    d3.select(element).selectAll(legendClass + ' text')
+                            .text((d, i) => {
+                                return colorScaleDomain[6 - d - 1] + ' - ' + colorScaleDomain[6 - d];
+                            })
+                },
+                calcColorScale: function(nodeMetric, treeIndex) {
+                    var curMetric = d3.select(element).select('#metricSelect').property('value');
+                    if (treeIndex == -1) {
+                        var colorSchemeUsed = this.setColors(treeIndex);
+                        var metric_range = forestMinMax[curMetric].max - forestMinMax[curMetric].min;
+                        var proportion_of_total = (nodeMetric - forestMinMax[curMetric].min) / metric_range;
+                    } else {
+                        var colorSchemeUsed = this.setColors(treeIndex);
+                        var metric_range = forestMetrics[treeIndex][curMetric].max - forestMetrics[treeIndex][curMetric].min;
+                        var proportion_of_total = nodeMetric / 1;
+    
+                        if (metric_range != 0) {
+                            proportion_of_total = (nodeMetric - forestMetrics[treeIndex][curMetric].min) / metric_range;
+                        }
+                    }
+    
+                    if (proportion_of_total > 0.9) {
+                        return colorSchemeUsed[0];
+                    }
+                    if (proportion_of_total > 0.7) {
+                        return colorSchemeUsed[1];
+                    }
+                    if (proportion_of_total > 0.5) {
+                        return colorSchemeUsed[2];
+                    }
+                    if (proportion_of_total > 0.3) {
+                        return colorSchemeUsed[3];
+                    }
+                    if (proportion_of_total > 0.1) {
+                        return colorSchemeUsed[4];
+                    } else {
+                        return colorSchemeUsed[5];
+                    }
+                }
+
+            }
+        }
         
         // This is the makeSignaller from class
         var makeSignaller = function() {
@@ -38,7 +161,6 @@
             };
         }
 
-
         // Create an object that handles user interaction and events
         var createController = function(model) {
             var _model = model;
@@ -48,8 +170,6 @@
                 // function. The dispatch function decides what to do.
                 dispatch: function(evt) {
                     switch(evt.type) {
-                        case (globals.signals.HOVER):
-                            break;
                         case (globals.signals.CLICK):
                             _model.updateSelected([evt.node]);
                             break;
@@ -62,12 +182,20 @@
                         case (globals.signals.BRUSH):
                             _model.setBrushedPoints(evt.selection, evt.end);
                             break;
+                        case (globals.signals.METRICCHANGE):
+                            _model.changeMetric(evt.newMetric);
+                            break;
+                        case(globals.signals.TOGGLECOLORSCHEME):
+                            _model.changeColorScheme();
+                            break;
                         default:
                             console.log('Unknown event type', evt.type);
                     }
                 }
             };
         }
+
+
 
         var createModel = function(){
             var _observers = makeSignaller();
@@ -85,18 +213,16 @@
             var cleanTree = argList[0].replace(/'/g, '"');
             
             _data["forestData"] = JSON.parse(cleanTree);
-
             _data["rootNodeNames"] = [];
             _data["rootNodeNames"].push("Show all trees");
 
             _data["numberOfTrees"] = _data["forestData"].length;
-            
-            // Get the metric_column names
             _data["metricColumns"] = d3.keys(_data["forestData"][0].metrics);
 
             // pick the first metric listed to color the nodes
             _state["selectedMetric"] = _data["metricColumns"][0];
             _state["lastClicked"] = d3.hierarchy(_data["forestData"][0], d => d.children)
+            _state["activeTree"] = "Show all trees";
 
             forestMetrics = [];
             forestMinMax = {};
@@ -105,6 +231,7 @@
 
                 // Get tree names for the display select options
                 _data["rootNodeNames"].push(thisTree.frame.name);
+                console.log(_data["rootNodeNames"]);
 
                 var thisTreeMetrics = {};
                 // init the min/max for all trees' metricColumns
@@ -125,7 +252,78 @@
 
             _data["forestMinMax"] = forestMinMax;
 
+            // HELPER FUNCTION DEFINTIONS
+            function _printNodeData(nodeList) {
+                // To pretty print the node data as a IPython table
+                var nodeStr = '<table><tr><td>name</td>';
+                var numNodes = nodeList.length;
+                var metricColumns = model.data["metricColumns"];
 
+                //lay the nodes out in a table
+                for (var i = 0; i < metricColumns.length; i++) {
+                    nodeStr += '<td>' + metricColumns[i] + '</td>';
+                }
+                nodeStr += '</tr>';
+                for (var i = 0; i < numNodes; i++) {
+                    for (var j = 0; j < metricColumns.length; j++) {
+                        if (j == 0) {
+                            nodeStr += '<tr><td>' + nodeList[i].data.frame.name + '</td><td>' + nodeList[i].data.metrics[metricColumns[j]] + '</td><td>';
+                        }
+                        else if (j == metricColumns.length - 1) {
+                            nodeStr += nodeList[i].data.metrics[metricColumns[j]] + '</td></tr>';
+                        }
+                        else {
+                            nodeStr += nodeList[i].data.metrics[metricColumns[j]];
+                        }
+                    }
+                }
+                nodeStr = nodeStr + '</table>';
+                return nodeStr;
+            }
+
+            function _printQuery(nodeList) {
+                var leftMostNode = {depth: Number.MAX_VALUE, data: {name: 'default'}};
+                var rightMostNode = {depth: 0, data: {name: 'default'}};
+                var lastNode = "";
+                var selectionIsAChain = false;
+
+                for (var i = 0; i < nodeList.length; i++) {
+                    if (nodeList[i].depth < leftMostNode.depth) {
+                        leftMostNode = nodeList[i];
+                    }
+                    if (nodeList[i].depth > rightMostNode.depth) {
+                        rightMostNode = nodeList[i];
+                    }
+                    if ((i > 1) && (nodeList[i].x == nodeList[i-1].x)) {
+                        selectionIsAChain = true;
+                    }
+                    else {
+                        selectionIsAChain = false;
+                    }
+                }
+
+                //do some evaluation for other subtrees
+                // we could generate python code that does this
+                var queryStr = "['<no query generated>']";
+                if ((nodeList.length > 1) && (selectionIsAChain)) {
+                    // This query is for chains
+                    queryStr = "[{'name': '" + leftMostNode.data.frame.name + "'}, '*', {'name': '" + rightMostNode.data.frame.name + "'}]";
+                }
+                else if (nodeList.length > 1) {
+                    // This query is for subtrees
+                    queryStr = "[{'name': '" + leftMostNode.data.frame.name + "'}, '*', {'depth': '<= " + rightMostNode.depth + "' }]";
+                }
+                else {
+                    //Single node query
+                    queryStr = "[{'name': '" + leftMostNode.data.frame.name + "'}]";
+                }
+
+                return queryStr;
+            }
+
+
+
+            /* Class object created from call to createModel */
             return{
                 data: _data,
                 state: _state,
@@ -163,7 +361,7 @@
                     this.updateTooltip(nodes);
 
                     if(nodes.length > 0){
-                        jsNodeSelected = printQuery(nodes);
+                        jsNodeSelected = _printQuery(nodes);
                     } else {
                         jsNodeSelected = "['*']";
                     }
@@ -229,13 +427,29 @@
                     
                 },
                 updateTooltip: function(nodes){
-                    console.log(nodes);
                     if(nodes.length > 0){
-                        _data["tipText"] = printNodeData(nodes);
+                        var longestName = 0;
+                        nodes.forEach(function (d) {
+                            var nodeData = d.data.frame.name + ': ' + d.data.metrics.time + 's (' + d.data.metrics["time (inc)"] + 's inc)';
+                            if (nodeData.length > longestName) {
+                                longestName = nodeData.length;
+                            }
+                        });
+                        _data["tipText"] = _printNodeData(nodes);
                     } 
                     else{
                         _data["tipText"] = '<p>Click a node or "Select nodes" to see more info</p>';
                     }
+                },
+                changeMetric: function(newMetric){
+                    _state["selectedMetric"] = newMetric;
+                    _observers.notify();
+                },
+                changeColorScheme: function(){
+                    
+                },
+                updateActiveTrees: function(activeTree){
+                    _state["activeTree"] = activeTree;
                 }
 
             }
@@ -244,7 +458,7 @@
         var createMenuView = function(elem, model){
             //setup menu view
             let _observers = makeSignaller();
-            // let _svg = d3.select('.canvas');
+            var _colorManager = makeColorManager(model);
 
             var rootNodeNames = model.data["rootNodeNames"];
             var numberOfTrees = model.data["numberOfTrees"];
@@ -279,12 +493,47 @@
                     .data(rootNodeNames)
                     .enter()
                     .append('option')
-                    .attr('selected', d => d.name == 'Show all trees' ? true : false)
+                    .attr('selected', d => d.includes('Show all trees') ? "selected" : null)
                     .text(d => d)
                     .attr('value', (d, i) => i + "|" + d);
+
             document.getElementById("treeRootSelect").style.margin = "10px 10px 10px 10px";
 
-                    
+            d3.select(element).select('#treeRootSelect')
+                    .on('change', function () {
+                      
+                        _observers.notify({
+                            type: globals.signals.TREECHANGE,
+                            display: this.value
+                        });
+
+                        var margin = globals.layout.margin;
+                        var rootIndex = d3.select(element).select('#treeRootSelect').property('value').split("|")[0];
+                        var rootName = d3.select(element).select('#treeRootSelect').property('value').split("|")[1];
+                        if (rootName == "Show all trees") {
+                            d3.select(element).selectAll(".subchart").attr('transform', function () {
+                                var groupIndex = d3.select(this).attr("id");
+                                return 'translate(' + margin.left + "," + (treeHeight * groupIndex + margin.top) + ")"
+                            });
+    
+                            d3.select(element).selectAll(".subchart").style("display", "inline-block");
+                        } else {
+                            d3.select(element).selectAll(".subchart").style("display", function () {
+                                var groupIndex = Number(d3.select(this).attr("id")) + 1;
+                                if (groupIndex == rootIndex) {
+                                    // Move this displayed tree to the top
+                                    d3.select(this).attr('transform', 'translate(' + margin.left + "," + margin.top + ")");
+                                    return "inline-block";
+                                } else {
+                                    // Return the other trees back to their original spots
+                                    d3.select(this).attr('transform', 'translate(' + margin.left + "," + (treeHeight * groupIndex + margin.top) + ")");
+                                    return "none";
+                                }
+                            });
+                        }
+                    });
+
+
             //make an svg in the scope of our current
             // element/drawing space
             var _svg = d3.select(element).append("svg") //element
@@ -331,7 +580,7 @@
                     .attr('x', 90).attr('y', 0).attr('rx', 5)
                     .style('fill', '#ccc');
 
-            d3.select(elem).select('#colorButton').append('text')
+            var colorButtonText = d3.select(elem).select('#colorButton').append('text')
                     .attr("x", 93)
                     .attr("y", 12)
                     .text('Colors: default')
@@ -339,26 +588,29 @@
                     .attr("font-size", "12px")
                     .attr('cursor', 'pointer')
                     .on('click', function () {
+                        _observers.notify({
+                            type: globals.signals.TOGGLECOLORSCHEME
+                        })
                         model.state["colorScheme"] = -1 * model.state["colorScheme"];
                         var curMetric = d3.select(elem).select('#metricSelect').property('value');
                         var curLegend = d3.select(elem).select('#unifyLegends').text();
                         d3.select(elem).selectAll(".circleNode")
                                 .transition()
-                                .duration(duration)
+                                .duration(globals.duration)
                                 .style('fill', function (d) {
                                     if (curLegend == 'Legends: unified') {
-                                        return colorScale(d.data.metrics[curMetric], -1);
+                                        return _colorManager.calcColorScale(d.data.metrics[curMetric], -1);
                                     }
-                                    return colorScale(d.data.metrics[curMetric], d.treeIndex);
+                                    return _colorManager.calcColorScale(d.data.metrics[curMetric], d.treeIndex);
                                 })
                                 .style('stroke', 'black');
 
                         //Update each individual legend to inverted scale
                         for (var treeIndex = 0; treeIndex < numberOfTrees; treeIndex++) {
                             if (curLegend == 'Legends: unified') {
-                                setColorLegend(-1);
+                                _colorManager.setColorLegend(-1);
                             } else {
-                                setColorLegend(treeIndex);
+                                _colorManager.setColorLegend(treeIndex);
                             }
                         }
                     });
@@ -386,19 +638,19 @@
                             d3.select(this).text('Legends: indiv.');
                             sameLegend = false;
                             for (var treeIndex = 0; treeIndex < numberOfTrees; treeIndex++) {
-                                setColorLegend(treeIndex);
+                                _colorManager.setColorLegend(treeIndex);
                             }
                         } else {
                             d3.select(this).text('Legends: unified');
                             sameLegend = true;
-                            setColorLegend(-1);
+                            _colorManager.setColorLegend(-1);
                         }
 
                         d3.select(elem).selectAll(".circleNode")
                                 .transition()
-                                .duration(duration)
+                                .duration(globals.duration)
                                 .style("fill", function (d) {
-                                    return sameLegend ? colorScale(d.data.metrics[curMetric], -1) : colorScale(d.data.metrics[curMetric], d.treeIndex);
+                                    return sameLegend ? _colorManager.calcColorScale(d.data.metrics[curMetric], -1) : _colorManager.calcColorScale(d.data.metrics[curMetric], d.treeIndex);
                                 })
                                 .style("stroke", 'black');
                     });
@@ -428,37 +680,18 @@
             const gBrush = d3.select("#mainG").append('g')
                     .attr('class', 'brush')
                     .call(brush);
-
-
-
-            d3.select(element).select('#treeRootSelect')
-                    .on('change', function () {
-                        var margin = globals.layout.margin;
-                        var rootIndex = d3.select(element).select('#treeRootSelect').property('value').split("|")[0];
-                        var rootName = d3.select(element).select('#treeRootSelect').property('value').split("|")[1];
-                        if (rootName == "Show all trees") {
-                            d3.select(element).selectAll(".subchart").attr('transform', function () {
-                                var groupIndex = d3.select(this).attr("id");
-                                return 'translate(' + margin.left + "," + (treeHeight * groupIndex + margin.top) + ")"
-                            });
-    
-                            d3.select(element).selectAll(".subchart").style("display", "inline-block");
-                        } else {
-                            d3.select(element).selectAll(".subchart").style("display", function () {
-                                var groupIndex = Number(d3.select(this).attr("id")) + 1;
-                                if (groupIndex == rootIndex) {
-                                    // Move this displayed tree to the top
-                                    d3.select(this).attr('transform', 'translate(' + margin.left + "," + margin.top + ")");
-                                    return "inline-block";
-                                } else {
-                                    // Return the other trees back to their original spots
-                                    d3.select(this).attr('transform', 'translate(' + margin.left + "," + (treeHeight * groupIndex + margin.top) + ")");
-                                    return "none";
-                                }
-                            });
-                        }
-                    });
             
+                
+            //When metricSelect is changed (metric_col)
+            d3.select(element).select('#metricSelect')
+            .on('change', function () {
+                _observers.notify({
+                    type: globals.signals.METRICCHANGE,
+                    newMetric: this.value
+                })
+                // changeMetric();
+            });
+
             return{
                 register: function(s){
                     _observers.add(s);
@@ -466,6 +699,8 @@
                 render: function(){
                     selectedMetric = model.state["selectedMetric"];
                     brushOn = model.state["brushOn"];
+                    colorScheme = model.state["colorScheme"];
+
                     d3.selectAll('.brush').remove();
 
                     //updates
@@ -496,25 +731,33 @@
                             .attr('class', 'brush')
                             .call(brush);
                     } 
+
+                    colorButtonText
+                    .text(function(){
+                        if(colorScheme == 1){
+                            return 'Colors: default';
+                        }
+                        else {
+                            return 'Colors: inverted';
+                        }
+                    })
                 }
             }
         }
 
         var createChartView = function(svg, model){
             let _observers = makeSignaller();
+            var _colorManager = makeColorManager(model);
 
-            var rootNodeNames = model.data["rootNodeNames"];
-            var numberOfTrees = model.data["numberOfTrees"];
             var metricColumns = model.data["metricColumns"];
             var forestData = model.data["forestData"];
             
-            var selectedMetric = model.state["selectedMetric"];
-            var brushOn = model.state["brushOn"];
             
             var treeHeight = 300;
             var width = element.clientWidth - globals.layout.margin.right - globals.layout.margin.left;
             var height = treeHeight * (model.data["numberOfTrees"] + 1);
             var _margin = globals.layout.margin;
+            
 
 
             // Creates a curved (diagonal) path from parent to the child nodes
@@ -580,8 +823,35 @@
                         }
                     }
                 });
+                
+            const legGroup = newg
+            .append('g')
+            .attr('class', 'legend-grp-' + treeIndex)
+            .attr('transform', 'translate(-20, 0)');
 
-                addColorLegendRects(newg);
+            const legendGroups = legGroup.selectAll("g")
+                    .data([0, 1, 2, 3, 4, 5])
+                    .enter()
+                    .append('g')
+                    .attr('class', 'legend legend' + treeIndex)
+                    .attr('transform', (d, i) => {
+                        const y = 18 * i;
+                        return "translate(-20, " + y + ")";
+                    });
+            const legendRects = legendGroups.append('rect')
+                    .attr('class', 'legend legend' + treeIndex)
+                    .attr('x', 0)
+                    .attr('y', 0)
+                    .attr('height', 15)
+                    .attr('width', 10)
+                    .style('stroke', 'black');
+            const legendText = legendGroups.append('text')
+                    .attr('class', 'legend legend' + treeIndex)
+                    .attr('x', 12)
+                    .attr('y', 13)
+                    .text("0.0 - 0.0")
+                    .style('font-family', 'monospace')
+                    .style('font-size', '12px');
 
                 //put tree itself into a group
                 newg.append('g')
@@ -632,26 +902,28 @@
                     _observers.add(s);
                 },
                 render: function(){
-                    
                     //render for any number of trees
                     for(var treeIndex = 0; treeIndex < model.data["numberOfTrees"]; treeIndex++){
 
                         let lastClicked = model.state["lastClicked"];
 
                         var source = d3.hierarchy(model.data["forestData"][treeIndex], d => d.children);
-                        var curMetric = d3.select(element).select('#metricSelect').property('value');
+                        var selectedMetric = model.state["selectedMetric"];
 
                         if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
-                            setColorLegend(-1);
+                            _colorManager.setColorLegend(-1);
                         } else {
-                            setColorLegend(treeIndex);
+                            _colorManager.setColorLegend(treeIndex);
                         }
             
                         var nodes = model.getNodesFromMap(treeIndex);
                         var links = model.getLinksFromMap(treeIndex);
                         
                         var chart = svg.selectAll('.group-' + treeIndex);
-            
+                        
+                        chart.style("display", function(){
+                            
+                        });
 
                         // Update the nodes…
                         var i = 0;
@@ -675,7 +947,6 @@
                                     })
                                 })
                                 .on('dblclick', function (d) {
-                                    console.log("Observers: ", _observers);
                                     _observers.notify({
                                         type: globals.signals.DBLCLICK,
                                         node: d,
@@ -689,9 +960,9 @@
                                 .attr("r", 1e-6)
                                 .style("fill", function (d) {
                                     if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
-                                        return colorScale(d.data.metrics[curMetric], -1);
+                                        return _colorManager.calcColorScale(d.data.metrics[selectedMetric], -1);
                                     }
-                                    return colorScale(d.data.metrics[curMetric], d.treeIndex);
+                                    return _colorManager.calcColorScale(d.data.metrics[selectedMetric], treeIndex);
                                 })
                                 .style('stroke-width', '1px')
                                 .style('stroke', 'black');
@@ -733,7 +1004,7 @@
         
                         // Transition links to their new position.
                         linkUpdate.transition()
-                                .duration(duration)
+                                .duration(globals.duration)
                                 .attr("d", function (d) {
                                     return diagonal(d, d.parent);
                                 });
@@ -745,19 +1016,13 @@
             
                         // Transition nodes to their new position.
                         nodeUpdate.transition()
-                                .duration(duration)
+                                .duration(globals.duration)
                                 .attr("transform", function (d) {
                                     return "translate(" + d.y + "," + d.x + ")";
                                 });
-            
+
                         nodeUpdate.select('circle.circleNode')
                                 .attr("r", 4)
-                                .style('fill', function (d) {
-                                    if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
-                                        return colorScale(d.data.metrics[curMetric], -1);
-                                    }
-                                    return colorScale(d.data.metrics[curMetric], d.treeIndex);
-                                })
                                 .style('stroke', function(d){
                                     if (model.state['collapsedNodes'].includes(d)){
                                         return "#89c3e0";
@@ -780,12 +1045,21 @@
                                         return '1px';
                                     }
                                 })
-                                .attr('cursor', 'pointer');
+                                .attr('cursor', 'pointer')
+                                .transition()
+                                .duration(globals.duration)
+                                .style('fill', function (d) {
+                                    if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
+                                        return _colorManager.calcColorScale(d.data.metrics[selectedMetric], -1);
+                                    }
+                                    return _colorManager.calcColorScale(d.data.metrics[selectedMetric], treeIndex);
+
+                                });
             
                         //EXIT
                         // Transition exiting nodes to the parent's new position.
                         var nodeExit = node.exit().transition()
-                                .duration(duration)
+                                .duration(globals.duration)
                                 .attr("transform", function (d) {
                                     return "translate(" + lastClicked.y + "," + lastClicked.x + ")";
                                 })
@@ -799,7 +1073,7 @@
             
                         // Transition exiting links to the parent's new position.
                         var linkExit = link.exit().transition()
-                                .duration(duration)
+                                .duration(globals.duration)
                                 .attr("d", function (d) {
                                     var o = {x: source.x, y: source.y};
                                     return diagonal(o, o);
@@ -836,285 +1110,29 @@
             }
         }
 
+        //model
         var model = createModel();
+        //controller
         var controller = createController(model);
-
+        //views
         var menu = createMenuView(element, model);
         var tooltip = createTooltipView(element, model);
         var chart = createChartView(d3.select('.canvas'), model);
         
+        //render all views one time
         menu.render();
         tooltip.render();
         chart.render();
         
+        //register signallers with each class
+        // tooltip is not interactive so 
+        // it does not need a signaller yet
         menu.register(controller.dispatch);
         chart.register(controller.dispatch);
 
         model.register(menu.render);
         model.register(chart.render);
         model.register(tooltip.render);
-
-        var i = 0,
-        duration = 750;
-
-        function setColors(treeIndex) {
-            var invertColors = [['#edf8e9', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c'], //green
-                ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#de2d26', '#a50f15'], //red
-                ['#eff3ff', '#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08519c'], //blue
-                ['#f2f0f7', '#dadaeb', '#bcbddc', '#9e9ac8', '#756bb1', '#54278f'], //purple
-                ['#feedde', '#fdd0a2', '#fdae6b', '#fd8d3c', '#e6550d', '#a63603'], //orange
-                ['#f7f7f7', '#d9d9d9', '#bdbdbd', '#969696', '#636363', '#252525']];  //black
-            var regularColors = [['#006d2c', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#edf8e9'], //green
-                ['#a50f15', '#de2d26', '#fb6a4a', '#fc9272', '#fcbba1', '#fee5d9'], //red
-                ['#08519c', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#eff3ff'], //blue
-                ['#54278f', '#756bb1', '#9e9ac8', '#bcbddc', '#dadaeb', '#f2f0f7'], //purple
-                ['#a63603', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#feedde'], //orange
-                ['#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7']]; //black
-
-            var allTreesColors = ['#d73027', '#fc8d59', '#fee090', '#e0f3f8', '#91bfdb', '#4575b4'];
-            var invertedAllTrees = ['#4575b4', '#91bfdb', '#e0f3f8', '#fee090', '#fc8d59', '#d73027', ]
-
-            var colorSchemeUsed;
-            if (treeIndex == -1) { //all trees are displayed
-                if (model.state["colorScheme"] == 1) {
-                    d3.select(element).select('#colorButton text')
-                            .text('Colors: default');
-                    colorSchemeUsed = allTreesColors;
-                } else {
-                    d3.select(element).select('#colorButton text')
-                            .text('Colors: inverted');
-                    colorSchemeUsed = invertedAllTrees;
-                }
-            } else { //single tree is displayed
-                if (model.state["colorScheme"] == 1) {
-                    d3.select(element).select('#colorButton text')
-                            .text('Colors: default');
-                    colorSchemeUsed = regularColors[treeIndex];
-                } else {
-                    d3.select(element).select('#colorButton text')
-                            .text('Colors: inverted');
-                    colorSchemeUsed = invertColors[treeIndex];
-                }
-            }
-            return colorSchemeUsed;
-        }
-
-        function addColorLegendRects(thisG) {
-            var treeIndex = thisG.attr("class").split(" ")[1];
-
-            const legGroup = thisG
-                    .append('g')
-                    .attr('class', 'legend-grp-'+treeIndex)
-                    .attr('transform', 'translate(-20, 0)');
-
-            const legendGroups = legGroup.selectAll("g")
-                    .data([0, 1, 2, 3, 4, 5])
-                    .enter()
-                    .append('g')
-                    .attr('class', 'legend legend' + treeIndex)
-                    .attr('transform', (d, i) => {
-                        const y = 18 * i;
-                        return "translate(-20, " + y + ")";
-                    });
-            const legendRects = legendGroups.append('rect')
-                    .attr('class', 'legend legend' + treeIndex)
-                    .attr('x', 0)
-                    .attr('y', 0)
-                    .attr('height', 15)
-                    .attr('width', 10)
-                    .style('stroke', 'black');
-            const legendText = legendGroups.append('text')
-                    .attr('class', 'legend legend' + treeIndex)
-                    .attr('x', 12)
-                    .attr('y', 13)
-                    .text("0.0 - 0.0")
-                    .style('font-family', 'monospace')
-                    .style('font-size', '12px');
-        }
-
-        function setColorLegend(treeIndex) {
-            var curMetric = d3.select(element).select('#metricSelect').property('value');
-            if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
-                treeIndex = -1;
-            }
-            if (treeIndex == -1) { //unified color legend
-
-                var metric_range = forestMinMax[curMetric].max - forestMinMax[curMetric].min;
-                var colorScaleDomain = [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1].map(function (x) {
-                    return x * metric_range + forestMinMax[curMetric].min;
-                });
-
-                var colorSchemeUsed = setColors(treeIndex);
-                var legendClass = ".legend";
-
-            } else {
-                var metric_range = forestMetrics[treeIndex][curMetric].max - forestMetrics[treeIndex][curMetric].min;
-                var colorScaleDomain = [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1].map(function (x) {
-                    return x * metric_range + forestMetrics[treeIndex][curMetric].min;
-                });
-
-                var colorSchemeUsed = setColors(treeIndex);
-                var legendClass = '.legend' + treeIndex;
-            }
-            d3.select(element).selectAll(legendClass + ' rect')
-                    .transition()
-                    .duration(duration)
-                    .attr('fill', function (d, i) {
-                        return colorSchemeUsed[d];
-                    })
-                    .attr('stroke', 'black');
-            d3.select(element).selectAll(legendClass + ' text')
-                    .text((d, i) => {
-                        return colorScaleDomain[6 - d - 1] + ' - ' + colorScaleDomain[6 - d];
-                    })
-        }
-
-        // Update colorScale with min and max
-        function colorScale(nodeMetric, treeIndex) {
-            var curMetric = d3.select(element).select('#metricSelect').property('value');
-            if (treeIndex == -1) {
-                var colorSchemeUsed = setColors(treeIndex);
-                var metric_range = forestMinMax[curMetric].max - forestMinMax[curMetric].min;
-                var proportion_of_total = (nodeMetric - forestMinMax[curMetric].min) / metric_range;
-            } else {
-                var colorSchemeUsed = setColors(treeIndex);
-                var metric_range = forestMetrics[treeIndex][curMetric].max - forestMetrics[treeIndex][curMetric].min;
-                var proportion_of_total = nodeMetric / 1;
-
-                if (metric_range != 0) {
-                    proportion_of_total = (nodeMetric - forestMetrics[treeIndex][curMetric].min) / metric_range;
-                }
-            }
-
-            if (proportion_of_total > 0.9) {
-                return colorSchemeUsed[0];
-            }
-            if (proportion_of_total > 0.7) {
-                return colorSchemeUsed[1];
-            }
-            if (proportion_of_total > 0.5) {
-                return colorSchemeUsed[2];
-            }
-            if (proportion_of_total > 0.3) {
-                return colorSchemeUsed[3];
-            }
-            if (proportion_of_total > 0.1) {
-                return colorSchemeUsed[4];
-            } else {
-                return colorSchemeUsed[5];
-            }
-        }
-
-        //When metricSelect is changed (metric_col)
-        d3.select(element).select('#metricSelect')
-                .on('change', function () {
-                    changeMetric();
-                });
-
-        // To pretty print the node data as a IPython table
-        function printNodeData(nodeList) {
-            var nodeStr = '<table><tr><td>name</td>';
-            var numNodes = nodeList.length;
-            var metricColumns = model.data["metricColumns"];
-
-            //lay the nodes out in a table
-            for (var i = 0; i < metricColumns.length; i++) {
-                nodeStr += '<td>' + metricColumns[i] + '</td>';
-            }
-            nodeStr += '</tr>';
-            for (var i = 0; i < numNodes; i++) {
-                for (var j = 0; j < metricColumns.length; j++) {
-                    if (j == 0) {
-                        nodeStr += '<tr><td>' + nodeList[i].data.frame.name + '</td><td>' + nodeList[i].data.metrics[metricColumns[j]] + '</td><td>';
-                    }
-                    else if (j == metricColumns.length - 1) {
-                        nodeStr += nodeList[i].data.metrics[metricColumns[j]] + '</td></tr>';
-                    }
-                    else {
-                        nodeStr += nodeList[i].data.metrics[metricColumns[j]];
-                    }
-                }
-            }
-            nodeStr = nodeStr + '</table>';
-            return nodeStr;
-        }
-
-        function printQuery(nodeList) {
-            var leftMostNode = {depth: Number.MAX_VALUE, data: {name: 'default'}};
-            var rightMostNode = {depth: 0, data: {name: 'default'}};
-            var lastNode = "";
-            var selectionIsAChain = false;
-
-            for (var i = 0; i < nodeList.length; i++) {
-                if (nodeList[i].depth < leftMostNode.depth) {
-                    leftMostNode = nodeList[i];
-                }
-                if (nodeList[i].depth > rightMostNode.depth) {
-                    rightMostNode = nodeList[i];
-                }
-                if ((i > 1) && (nodeList[i].x == nodeList[i-1].x)) {
-                    selectionIsAChain = true;
-                }
-                else {
-                    selectionIsAChain = false;
-                }
-            }
-
-            console.log(nodeList);
-
-            //do some evaluation for other subtrees
-            // we could generate python code that does this
-            var queryStr = "['<no query generated>']";
-            if ((nodeList.length > 1) && (selectionIsAChain)) {
-                // This query is for chains
-                queryStr = "[{'name': '" + leftMostNode.data.frame.name + "'}, '*', {'name': '" + rightMostNode.data.frame.name + "'}]";
-            }
-            else if (nodeList.length > 1) {
-                // This query is for subtrees
-                queryStr = "[{'name': '" + leftMostNode.data.frame.name + "'}, '*', {'depth': '<= " + rightMostNode.depth + "' }]";
-            }
-            else {
-                //Single node query
-                queryStr = "[{'name': '" + leftMostNode.data.frame.name + "'}]";
-            }
-
-            return queryStr;
-        }
-
-        function updateTooltip(nodeList) {
-            d3.select(element).selectAll("#tooltip text").remove();
-            var tipText = printNodeData(nodeList);
-            var longestName = 0;
-            nodeList.forEach(function (d) {
-                var nodeData = d.data.frame.name + ': ' + d.data.metrics.time + 's (' + d.data.metrics["time (inc)"] + 's inc)';
-                if (nodeData.length > longestName) {
-                    longestName = nodeData.length;
-                }
-            });
-
-            d3.select(element).select('#tooltip')
-                    .html(tipText);
-        }
-
-        function changeMetric(allMin, allMax) {
-            var curMetric = d3.select(element).select('#metricSelect').property('value');
-            var nodes = d3.select(element).selectAll(".circleNode");
-
-            for (var treeIndex = 0; treeIndex < model.data["numberOfTrees"]; treeIndex++) {
-                setColorLegend(treeIndex);
-
-                d3.select(element).selectAll(".subchart").selectAll(".circleNode")
-                        .transition()
-                        .duration(duration)
-                        .style("fill", function (d) {
-                            if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
-                                return colorScale(d.data.metrics[curMetric], -1);
-                            }
-                            return colorScale(d.data.metrics[curMetric], d.treeIndex);
-                        })
-                        .style("stroke", 'black');
-            }
-        }
 
     });
 
