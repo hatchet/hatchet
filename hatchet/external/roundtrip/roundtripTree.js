@@ -3,13 +3,18 @@
 (function (element) {
     require(['https://d3js.org/d3.v4.min.js'], function (d3) {
         var globals = {
+            UNIFIED: 0,
+            DEFAULT: 0,
             signals: {
                 CLICK: "CLICK",
                 DBLCLICK: "DBLCLICK",
                 BRUSH: "BRUSH",
                 TOGGLEBRUSH: "TOGGLEBRUSH",
                 COLLAPSE: "COLLAPSE",
-                METRICCHANGE: "METRICCHANGE"
+                METRICCHANGE: "METRICCHANGE",
+                TREECHANGE: "TREECHANGE",
+                COLORCLICK: "COLORCLICK",
+                LEGENDCLICK: "LEGENDCLICK"
             },
             layout: {
                 margin: {top: 20, right: 20, bottom: 80, left: 20},
@@ -20,12 +25,6 @@
         jsNodeSelected = "['*']";
 
         var makeColorManager = function(model){
-            var _invertColors = [['#edf8e9', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c'], //green
-                ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#de2d26', '#a50f15'], //red
-                ['#eff3ff', '#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08519c'], //blue
-                ['#f2f0f7', '#dadaeb', '#bcbddc', '#9e9ac8', '#756bb1', '#54278f'], //purple
-                ['#feedde', '#fdd0a2', '#fdae6b', '#fd8d3c', '#e6550d', '#a63603'], //orange
-                ['#f7f7f7', '#d9d9d9', '#bdbdbd', '#969696', '#636363', '#252525']];  //black
             
             var _regularColors = [['#006d2c', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#edf8e9'], //green
                 ['#a50f15', '#de2d26', '#fb6a4a', '#fc9272', '#fcbba1', '#fee5d9'], //red
@@ -33,6 +32,14 @@
                 ['#54278f', '#756bb1', '#9e9ac8', '#bcbddc', '#dadaeb', '#f2f0f7'], //purple
                 ['#a63603', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#feedde'], //orange
                 ['#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7']]; //black
+
+            var _invertColors = [['#edf8e9', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c'], //green
+                ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#de2d26', '#a50f15'], //red
+                ['#eff3ff', '#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08519c'], //blue
+                ['#f2f0f7', '#dadaeb', '#bcbddc', '#9e9ac8', '#756bb1', '#54278f'], //purple
+                ['#feedde', '#fdd0a2', '#fdae6b', '#fd8d3c', '#e6550d', '#a63603'], //orange
+                ['#f7f7f7', '#d9d9d9', '#bdbdbd', '#969696', '#636363', '#252525']];  //black
+            
         
             var _allTreesColors = ['#d73027', '#fc8d59', '#fee090', '#e0f3f8', '#91bfdb', '#4575b4'];
             var _invertedAllTrees = ['#4575b4', '#91bfdb', '#e0f3f8', '#fee090', '#fc8d59', '#d73027'];
@@ -44,65 +51,61 @@
                     var colorSchemeUsed;
     
                     if (treeIndex == -1) { //all trees are displayed
-                        if (_state["colorScheme"] == 1) {
-                            d3.select(element).select('#colorButton text')
-                            .text('Colors: default');
+                        if (_state["colorScheme"] == 0) {
                             colorSchemeUsed = _allTreesColors;
                         } else {
-                            d3.select(element).select('#colorButton text')
-                            .text('Colors: inverted');
                             colorSchemeUsed = _invertedAllTrees;
                         }
-                    } else { //single tree is displayed
-                        if (_state["colorScheme"] == 1) {
-                            d3.select(element).select('#colorButton text')
-                            .text('Colors: default');
+                    } 
+                    else { //single tree is displayed
+                        if (_state["colorScheme"] == 0) {
                             colorSchemeUsed = _regularColors[treeIndex];
                         } else {
-                            d3.select(element).select('#colorButton text')
-                            .text('Colors: inverted');
                             colorSchemeUsed = _invertColors[treeIndex];
                         }
                     }
     
                     return colorSchemeUsed;
                 },
-                setColorLegend: function(treeIndex) {
-                    var curMetric = d3.select(element).select('#metricSelect').property('value');
-                    if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
+                getLegendDomains: function(treeIndex){
+                    var colorScaleDomain;
+                    var metric_range;
+                    var curMetric = _state["selectedMetric"];
+                    
+                    // so hacky: need to fix later
+                    if (model.data["legends"][_state["legend"]].includes("Unified")) {
                         treeIndex = -1;
                     }
+
                     if (treeIndex == -1) { //unified color legend
-    
-                        var metric_range = forestMinMax[curMetric].max - forestMinMax[curMetric].min;
-                        var colorScaleDomain = [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1].map(function (x) {
+                        metric_range = forestMinMax[curMetric].max - forestMinMax[curMetric].min;
+                        colorScaleDomain = [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1].map(function (x) {
                             return x * metric_range + forestMinMax[curMetric].min;
                         });
-    
-                        var colorSchemeUsed = this.setColors(treeIndex);
-                        var legendClass = ".legend";
-    
-                    } else {
-                        var metric_range = forestMetrics[treeIndex][curMetric].max - forestMetrics[treeIndex][curMetric].min;
-                        var colorScaleDomain = [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1].map(function (x) {
+                    } 
+                    else{
+                        metric_range = forestMetrics[treeIndex][curMetric].max - forestMetrics[treeIndex][curMetric].min;
+                        colorScaleDomain = [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1].map(function (x) {
                             return x * metric_range + forestMetrics[treeIndex][curMetric].min;
                         });
-    
-                        var colorSchemeUsed = this.setColors(treeIndex);
-                        var legendClass = '.legend' + treeIndex;
                     }
+
+                    return colorScaleDomain;
+                },
+                getColorLegend: function(treeIndex) {
                 
-                    d3.select(element).selectAll(legendClass + ' rect')
-                            .transition()
-                            .duration(globals.duration)
-                            .attr('fill', function (d, i) {
-                                return colorSchemeUsed[d];
-                            })
-                            .attr('stroke', 'black');
-                    d3.select(element).selectAll(legendClass + ' text')
-                            .text((d, i) => {
-                                return colorScaleDomain[6 - d - 1] + ' - ' + colorScaleDomain[6 - d];
-                            })
+                    //hacky need to fix later
+                    if (model.data["legends"][_state["legend"]].includes("Unified")) {
+                        treeIndex = -1;
+                    }
+
+                    if (treeIndex == -1) { //unified color legend
+                        var colorSchemeUsed = this.setColors(treeIndex);
+    
+                    } else {
+                        var colorSchemeUsed = this.setColors(treeIndex);
+                    }
+                    return colorSchemeUsed;
                 },
                 calcColorScale: function(nodeMetric, treeIndex) {
                     var curMetric = d3.select(element).select('#metricSelect').property('value');
@@ -185,8 +188,14 @@
                         case (globals.signals.METRICCHANGE):
                             _model.changeMetric(evt.newMetric);
                             break;
-                        case(globals.signals.TOGGLECOLORSCHEME):
+                        case(globals.signals.COLORCLICK):
                             _model.changeColorScheme();
+                            break;
+                        case(globals.signals.TREECHANGE):
+                            _model.updateActiveTrees(evt.display);
+                            break;
+                        case(globals.signals.LEGENDCLICK):
+                            _model.updateLegends();
                             break;
                         default:
                             console.log('Unknown event type', evt.type);
@@ -196,18 +205,24 @@
         }
 
 
-
         var createModel = function(){
             var _observers = makeSignaller();
             
-            var _data = {"treemaps":[]};
-            var _state = {"selectedNodes":[], 
-                            "collapsedNodes":[], 
-                            "lastClicked": null};
-            var _currTree = 0;
+            //initialize default data and state
+            var _data = {
+                            "treemaps":[],
+                            "legends": ["Unified", "Indiv."],
+                            "colors": ["Default", "Inverted"]
+                        };
 
-            _state["colorScheme"] = 1;
-            _state["brushOn"] = -1;
+            var _state = {
+                            "selectedNodes":[], 
+                            "collapsedNodes":[], 
+                            "lastClicked": null,
+                            "legend": 0,
+                            "colorScheme": 0,
+                            "brushOn": -1
+                        };
 
             //setup model
             var cleanTree = argList[0].replace(/'/g, '"');
@@ -225,7 +240,7 @@
             _state["activeTree"] = "Show all trees";
 
             forestMetrics = [];
-            forestMinMax = {};
+            forestMinMax = {}; 
             for (var i = 0; i < _data["numberOfTrees"]; i++) {
                 var thisTree = _data["forestData"][i];
 
@@ -330,31 +345,21 @@
                 register: function(s){
                     _observers.add(s);
                 },
-
-                setCurrentTreeIndex: function(index){
-                    _currTree = index;
-                },
-                getCurrentTreeIndex: function(){
-                    return _currTree;
-                },
                 addTreeMap: function(tm){
                     _data['treemaps'].push(tm);
                 },
                 getTreeMap: function(index){
                     return _data['treemaps'][index];
                 },
-
                 getNodesFromMap: function(index){
                     return _data['treemaps'][index].descendants();
                 },
                 getLinksFromMap: function(index){
                     return _data['treemaps'][index].descendants().slice(1);
                 },
-
-                updateNodes: function(f){
-                    f(_data['treemaps'][_currTree].descendants());
+                updateNodes: function(index, f){
+                    f(_data['treemaps'][index].descendants());
                 },
-
                 updateSelected: function(nodes){
 
                     _state['selectedNodes'] = nodes;
@@ -446,10 +451,18 @@
                     _observers.notify();
                 },
                 changeColorScheme: function(){
-                    
+                    //loop through the possible color schemes
+                    _state["colorScheme"] = (_state["colorScheme"] + 1) % _data["colors"].length;
+                    _observers.notify();
+                },
+                updateLegends: function(){
+                    //loop through legend configruations
+                    _state["legend"] = (_state["legend"] + 1) % _data["legends"].length;
+                    _observers.notify();
                 },
                 updateActiveTrees: function(activeTree){
                     _state["activeTree"] = activeTree;
+                    _observers.notify();
                 }
 
             }
@@ -501,36 +514,10 @@
 
             d3.select(element).select('#treeRootSelect')
                     .on('change', function () {
-                      
                         _observers.notify({
                             type: globals.signals.TREECHANGE,
                             display: this.value
                         });
-
-                        var margin = globals.layout.margin;
-                        var rootIndex = d3.select(element).select('#treeRootSelect').property('value').split("|")[0];
-                        var rootName = d3.select(element).select('#treeRootSelect').property('value').split("|")[1];
-                        if (rootName == "Show all trees") {
-                            d3.select(element).selectAll(".subchart").attr('transform', function () {
-                                var groupIndex = d3.select(this).attr("id");
-                                return 'translate(' + margin.left + "," + (treeHeight * groupIndex + margin.top) + ")"
-                            });
-    
-                            d3.select(element).selectAll(".subchart").style("display", "inline-block");
-                        } else {
-                            d3.select(element).selectAll(".subchart").style("display", function () {
-                                var groupIndex = Number(d3.select(this).attr("id")) + 1;
-                                if (groupIndex == rootIndex) {
-                                    // Move this displayed tree to the top
-                                    d3.select(this).attr('transform', 'translate(' + margin.left + "," + margin.top + ")");
-                                    return "inline-block";
-                                } else {
-                                    // Return the other trees back to their original spots
-                                    d3.select(this).attr('transform', 'translate(' + margin.left + "," + (treeHeight * groupIndex + margin.top) + ")");
-                                    return "none";
-                                }
-                            });
-                        }
                     });
 
 
@@ -553,9 +540,6 @@
                         _observers.notify({
                             type: globals.signals.TOGGLEBRUSH
                         })
-
-                        // brushOn = -1 * brushOn;
-                        // activateBrush(brushOn);
                     });
             var brushButtonText = d3.select(elem).select('#selectButton').append('text')
                     .attr("x", 3)
@@ -568,8 +552,6 @@
                         _observers.notify({
                             type: globals.signals.TOGGLEBRUSH
                         })
-                        // brushOn = -1 * brushOn;
-                        // activateBrush(brushOn);
                     });
 
             var colorButton = _svg.append('g')
@@ -583,36 +565,16 @@
             var colorButtonText = d3.select(elem).select('#colorButton').append('text')
                     .attr("x", 93)
                     .attr("y", 12)
-                    .text('Colors: default')
+                    .text(function(){
+                        return `Colors: ${model.data["colors"][model.state["colorScheme"]]}`
+                    })
                     .attr("font-family", "sans-serif")
                     .attr("font-size", "12px")
                     .attr('cursor', 'pointer')
                     .on('click', function () {
                         _observers.notify({
-                            type: globals.signals.TOGGLECOLORSCHEME
+                            type: globals.signals.COLORCLICK
                         })
-                        model.state["colorScheme"] = -1 * model.state["colorScheme"];
-                        var curMetric = d3.select(elem).select('#metricSelect').property('value');
-                        var curLegend = d3.select(elem).select('#unifyLegends').text();
-                        d3.select(elem).selectAll(".circleNode")
-                                .transition()
-                                .duration(globals.duration)
-                                .style('fill', function (d) {
-                                    if (curLegend == 'Legends: unified') {
-                                        return _colorManager.calcColorScale(d.data.metrics[curMetric], -1);
-                                    }
-                                    return _colorManager.calcColorScale(d.data.metrics[curMetric], d.treeIndex);
-                                })
-                                .style('stroke', 'black');
-
-                        //Update each individual legend to inverted scale
-                        for (var treeIndex = 0; treeIndex < numberOfTrees; treeIndex++) {
-                            if (curLegend == 'Legends: unified') {
-                                _colorManager.setColorLegend(-1);
-                            } else {
-                                _colorManager.setColorLegend(treeIndex);
-                            }
-                        }
                     });
 
             var unifyLegends = _svg.append('g')
@@ -624,35 +586,17 @@
                     .attr('y', 0)
                     .attr('rx', 5)
                     .style('fill', '#ccc');
-            d3.select(elem).select('#unifyLegends').append('text')
+            var legendText = d3.select(elem).select('#unifyLegends').append('text')
                     .attr("x", 195)
                     .attr("y", 12)
-                    .text('Legends: unified')
+                    .text(function(){ return `Legends: ${model.data["legends"][model.state["legend"]]}`})
                     .attr("font-family", "sans-serif")
                     .attr("font-size", "12px")
                     .attr('cursor', 'pointer')
                     .on('click', function () {
-                        var curMetric = d3.select(elem).select('#metricSelect').property('value');
-                        var sameLegend = true;
-                        if (d3.select(this).text() == 'Legends: unified') {
-                            d3.select(this).text('Legends: indiv.');
-                            sameLegend = false;
-                            for (var treeIndex = 0; treeIndex < numberOfTrees; treeIndex++) {
-                                _colorManager.setColorLegend(treeIndex);
-                            }
-                        } else {
-                            d3.select(this).text('Legends: unified');
-                            sameLegend = true;
-                            _colorManager.setColorLegend(-1);
-                        }
-
-                        d3.select(elem).selectAll(".circleNode")
-                                .transition()
-                                .duration(globals.duration)
-                                .style("fill", function (d) {
-                                    return sameLegend ? _colorManager.calcColorScale(d.data.metrics[curMetric], -1) : _colorManager.calcColorScale(d.data.metrics[curMetric], d.treeIndex);
-                                })
-                                .style("stroke", 'black');
+                        _observers.notify({
+                            type: globals.signals.LEGENDCLICK
+                        });
                     });
             
             var mainG = _svg.append("g")
@@ -699,7 +643,12 @@
                 render: function(){
                     selectedMetric = model.state["selectedMetric"];
                     brushOn = model.state["brushOn"];
-                    colorScheme = model.state["colorScheme"];
+
+                    curColor = model.state["colorScheme"];
+                    colors = model.data["colors"];
+                    
+                    curLegend = model.state["legend"];
+                    legends = model.data["legends"];
 
                     d3.selectAll('.brush').remove();
 
@@ -734,12 +683,12 @@
 
                     colorButtonText
                     .text(function(){
-                        if(colorScheme == 1){
-                            return 'Colors: default';
-                        }
-                        else {
-                            return 'Colors: inverted';
-                        }
+                        return `Colors: ${colors[curColor]}`;
+                    })
+
+                    legendText
+                    .text(function(){
+                        return `Legends: ${legends[curLegend]}`;
                     })
                 }
             }
@@ -751,15 +700,12 @@
 
             var metricColumns = model.data["metricColumns"];
             var forestData = model.data["forestData"];
-            
-            
+                 
             var treeHeight = 300;
             var width = element.clientWidth - globals.layout.margin.right - globals.layout.margin.left;
             var height = treeHeight * (model.data["numberOfTrees"] + 1);
             var _margin = globals.layout.margin;
             
-
-
             // Creates a curved (diagonal) path from parent to the child nodes
             function diagonal(s, d) {
                 path = `M ${s.y} ${s.x}
@@ -769,7 +715,6 @@
 
                 return path
             }
-
 
 
             var mainG = svg.select("#mainG");
@@ -798,12 +743,10 @@
             // Add a group and tree for each forestData[i]
             for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
 
-                model.setCurrentTreeIndex(treeIndex);
-
                 var currentTreeMap = model.getTreeMap(treeIndex);
                 var newg = mainG.append("g")
                         .attr('class', 'group-' + treeIndex + ' subchart')
-                        .attr('id', treeIndex)
+                        .attr('tree_id', treeIndex)
                         .attr("transform", "translate(" + _margin.left + "," + (treeHeight * treeIndex + _margin.top) + ")");
 
                 currentTreeMap.descendants().forEach(function (d) {
@@ -823,35 +766,35 @@
                         }
                     }
                 });
-                
-            const legGroup = newg
-            .append('g')
-            .attr('class', 'legend-grp-' + treeIndex)
-            .attr('transform', 'translate(-20, 0)');
+                    
+                const legGroup = newg
+                .append('g')
+                .attr('class', 'legend-grp-' + treeIndex)
+                .attr('transform', 'translate(-20, 0)');
 
-            const legendGroups = legGroup.selectAll("g")
-                    .data([0, 1, 2, 3, 4, 5])
-                    .enter()
-                    .append('g')
-                    .attr('class', 'legend legend' + treeIndex)
-                    .attr('transform', (d, i) => {
-                        const y = 18 * i;
-                        return "translate(-20, " + y + ")";
-                    });
-            const legendRects = legendGroups.append('rect')
-                    .attr('class', 'legend legend' + treeIndex)
-                    .attr('x', 0)
-                    .attr('y', 0)
-                    .attr('height', 15)
-                    .attr('width', 10)
-                    .style('stroke', 'black');
-            const legendText = legendGroups.append('text')
-                    .attr('class', 'legend legend' + treeIndex)
-                    .attr('x', 12)
-                    .attr('y', 13)
-                    .text("0.0 - 0.0")
-                    .style('font-family', 'monospace')
-                    .style('font-size', '12px');
+                const legendGroups = legGroup.selectAll("g")
+                        .data([0, 1, 2, 3, 4, 5])
+                        .enter()
+                        .append('g')
+                        .attr('class', 'legend legend' + treeIndex)
+                        .attr('transform', (d, i) => {
+                            const y = 18 * i;
+                            return "translate(-20, " + y + ")";
+                        });
+                const legendRects = legendGroups.append('rect')
+                        .attr('class', 'legend legend' + treeIndex)
+                        .attr('x', 0)
+                        .attr('y', 0)
+                        .attr('height', 15)
+                        .attr('width', 10)
+                        .style('stroke', 'black');
+                const legendText = legendGroups.append('text')
+                        .attr('class', 'legend legend' + treeIndex)
+                        .attr('x', 12)
+                        .attr('y', 13)
+                        .text("0.0 - 0.0")
+                        .style('font-family', 'monospace')
+                        .style('font-size', '12px');
 
                 //put tree itself into a group
                 newg.append('g')
@@ -862,7 +805,7 @@
                 var spreadFactor = width / (maxHeight + 1);
                 var legendOffset = 30;
 
-                model.updateNodes(
+                model.updateNodes(treeIndex,
                     function(n){
                         // Normalize for fixed-depth.
                         n.forEach(function (d) {
@@ -873,9 +816,7 @@
                     }
                 );
 
-                // update(currentRoot, currentTreeMap, newg);
-
-                model.updateNodes(
+                model.updateNodes(treeIndex,
                     function(n){
                         // Stash the old positions for transition and
                         // stash absolute positions (absolute in mainG)
@@ -909,22 +850,14 @@
 
                         var source = d3.hierarchy(model.data["forestData"][treeIndex], d => d.children);
                         var selectedMetric = model.state["selectedMetric"];
-
-                        if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
-                            _colorManager.setColorLegend(-1);
-                        } else {
-                            _colorManager.setColorLegend(treeIndex);
-                        }
-            
                         var nodes = model.getNodesFromMap(treeIndex);
                         var links = model.getLinksFromMap(treeIndex);
-                        
                         var chart = svg.selectAll('.group-' + treeIndex);
-                        
-                        chart.style("display", function(){
-                            
-                        });
 
+
+
+
+                        //ENTER 
                         // Update the nodes…
                         var i = 0;
                         var node = chart.selectAll("g.node")
@@ -932,12 +865,11 @@
                                     return d.id || (d.id = ++i);
                                 });
                         
-                        //ENTER
                         // Enter any new nodes at the parent's previous position.
                         var nodeEnter = node.enter().append('g')
                                 .attr('class', 'node')
                                 .attr("transform", function (d) {
-                                    return "translate(" + lastClicked.y + "," + lastClicked.x + ")"; //source is for collapsed nodes
+                                    return "translate(" + lastClicked.y + "," + lastClicked.x + ")";
                                 })
                                 // .on("click", click)
                                 .on("click", function(d){
@@ -959,7 +891,7 @@
                                 .attr('class', 'circleNode')
                                 .attr("r", 1e-6)
                                 .style("fill", function (d) {
-                                    if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
+                                    if(model.state["legend"] == globals.UNIFIED){
                                         return _colorManager.calcColorScale(d.data.metrics[selectedMetric], -1);
                                     }
                                     return _colorManager.calcColorScale(d.data.metrics[selectedMetric], treeIndex);
@@ -983,7 +915,8 @@
                         //         .style("stroke-width", "3px")
                         //         .style("font", "12px monospace");
         
-                        // Update the links…
+
+                        // links
                         var link = chart.selectAll("path.link")
                         .data(links, function (d) {
                             return d.id;
@@ -1000,19 +933,61 @@
                                 .attr('stroke', '#ccc')
                                 .attr('stroke-width', '2px');
         
-                        var linkUpdate = linkEnter.merge(link);
+
+
         
+                        //UPDATES
+                        var nodeUpdate = nodeEnter.merge(node);
+                        var linkUpdate = linkEnter.merge(link);
+                
+                        // Chart updates
+                        chart
+                        .transition()
+                        .duration(globals.duration)
+                        .attr("transform", function(){
+                            if(model.state["activeTree"].includes(model.data["rootNodeNames"][treeIndex+1])){
+                                return `translate(${_margin.left}, ${_margin.top})`;
+                            } 
+                            else {
+                                return `translate(${_margin.left}, ${_margin.top + (treeHeight*treeIndex)})`;
+                            }
+                        })    
+                        .style("display", function(){
+                            if(model.state["activeTree"].includes("Show all trees")){
+                                return "inline-block";
+                            } 
+                            else if(model.state["activeTree"].includes(model.data["rootNodeNames"][treeIndex+1])){
+                                return "inline-block";
+                            } 
+                            else {
+                                return "none";
+                            }
+                        });
+
+
+                        //legend updates
+                        chart.selectAll(".legend rect")
+                                .transition()
+                                .duration(globals.duration)
+                                .attr('fill', function (d, i) {
+                                    return _colorManager.getColorLegend(treeIndex)[d];
+                                })
+                                .attr('stroke', 'black');
+
+                        chart.selectAll('.legend text')
+                                .transition()
+                                .duration(globals.duration)
+                                .text((d, i) => {
+                                    return _colorManager.getLegendDomains(treeIndex)[6 - d - 1] + ' - ' + _colorManager.getLegendDomains(treeIndex)[6 - d];
+                                });
+
                         // Transition links to their new position.
                         linkUpdate.transition()
                                 .duration(globals.duration)
                                 .attr("d", function (d) {
                                     return diagonal(d, d.parent);
                                 });
-            
-            
-        
-                        //UPDATE
-                        var nodeUpdate = nodeEnter.merge(node);
+
             
                         // Transition nodes to their new position.
                         nodeUpdate.transition()
@@ -1049,13 +1024,15 @@
                                 .transition()
                                 .duration(globals.duration)
                                 .style('fill', function (d) {
-                                    if (d3.select(element).select('#unifyLegends').text() == 'Legends: unified') {
+                                    if(model.state["legend"] == globals.UNIFIED){
                                         return _colorManager.calcColorScale(d.data.metrics[selectedMetric], -1);
                                     }
                                     return _colorManager.calcColorScale(d.data.metrics[selectedMetric], treeIndex);
 
                                 });
-            
+
+
+                                
                         //EXIT
                         // Transition exiting nodes to the parent's new position.
                         var nodeExit = node.exit().transition()
