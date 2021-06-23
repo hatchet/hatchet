@@ -841,6 +841,7 @@
                     .on("dblclick.zoom", null);
                     
 
+
                 model.updateNodes(treeIndex,
                     function(n){
                         // Normalize for fixed-depth.
