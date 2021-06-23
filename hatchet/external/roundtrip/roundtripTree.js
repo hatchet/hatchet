@@ -14,7 +14,8 @@
                 METRICCHANGE: "METRICCHANGE",
                 TREECHANGE: "TREECHANGE",
                 COLORCLICK: "COLORCLICK",
-                LEGENDCLICK: "LEGENDCLICK"
+                LEGENDCLICK: "LEGENDCLICK",
+                PAN: "PAN"
             },
             layout: {
                 margin: {top: 20, right: 20, bottom: 80, left: 20},
@@ -195,6 +196,8 @@
                             break;
                         case(globals.signals.LEGENDCLICK):
                             _model.updateLegends();
+                            break;
+                        case(globals.signals.PAN):
                             break;
                         default:
                             console.log('Unknown event type', evt.type);
@@ -429,7 +432,6 @@
                             //call update selected
                             this.updateSelected(brushedNodes);
                         }
-
                     }
                     else{
                         this.updateSelected([]);
@@ -469,7 +471,6 @@
                     _state["activeTree"] = activeTree;
                     _observers.notify();
                 }
-
             }
         }
 
@@ -811,13 +812,13 @@
                 var spreadFactor = width / (maxHeight + 1);
                 var legendOffset = 30;
 
+
                 model.updateNodes(treeIndex,
                     function(n){
                         // Normalize for fixed-depth.
                         n.forEach(function (d) {
-                            d.x = d.x + legendOffset ;
-                            d.y = d.depth * spreadFactor;
-                            d.treeIndex = treeIndex;
+                            d.x = d.x;
+                            d.y = (d.depth * spreadFactor);
                         });
                     }
                 );
@@ -836,6 +837,7 @@
                         });
                     }
                 );
+
 
                 newg.style("display", "inline-block");
             } //end for-loop "add tree"
@@ -859,14 +861,13 @@
                         var nodes = model.getNodesFromMap(treeIndex);
                         var links = model.getLinksFromMap(treeIndex);
                         var chart = svg.selectAll('.group-' + treeIndex);
-
-
+                        var tree = chart.selectAll('.chart');
 
 
                         //ENTER 
                         // Update the nodes…
                         var i = 0;
-                        var node = chart.selectAll("g.node")
+                        var node = tree.selectAll("g.node")
                                 .data(nodes, function (d) {
                                     return d.id || (d.id = ++i);
                                 });
@@ -877,7 +878,6 @@
                                 .attr("transform", function (d) {
                                     return "translate(" + lastClicked.y + "," + lastClicked.x + ")";
                                 })
-                                // .on("click", click)
                                 .on("click", function(d){
                                     _observers.notify({
                                         type: globals.signals.CLICK,
@@ -890,7 +890,6 @@
                                         node: d,
                                         tree: treeIndex
                                     })
-                                    // doubleclick(d, treeData, g);
                                 });
             
                         nodeEnter.append("circle")
@@ -923,7 +922,7 @@
         
 
                         // links
-                        var link = chart.selectAll("path.link")
+                        var link = tree.selectAll("path.link")
                         .data(links, function (d) {
                             return d.id;
                         });
@@ -938,8 +937,6 @@
                                 .attr('fill', 'none')
                                 .attr('stroke', '#ccc')
                                 .attr('stroke-width', '2px');
-        
-
 
         
                         //UPDATES
@@ -970,7 +967,6 @@
                             }
                         });
 
-
                         //legend updates
                         chart.selectAll(".legend rect")
                                 .transition()
@@ -999,7 +995,7 @@
                         nodeUpdate.transition()
                                 .duration(globals.duration)
                                 .attr("transform", function (d) {
-                                    return "translate(" + d.y + "," + d.x + ")";
+                                    return `translate(${d.y}, ${d.x})`;
                                 });
 
                         nodeUpdate.select('circle.circleNode')
