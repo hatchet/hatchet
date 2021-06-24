@@ -702,6 +702,7 @@ class GraphFrame:
         depth=10000,
         highlight_name=False,
         invert_colormap=False,
+        color_map="RdYlGn",
     ):
         """Format this graphframe as a tree and return the resulting string."""
         color = sys.stdout.isatty()
@@ -738,6 +739,7 @@ class GraphFrame:
             depth=depth,
             highlight_name=highlight_name,
             invert_colormap=invert_colormap,
+            color_map=color_map,
         )
 
     def to_dot(self, metric=None, name="name", rank=0, thread=0, threshold=0.0):

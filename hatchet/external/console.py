@@ -60,6 +60,12 @@ class ConsoleRenderer:
         self.depth = kwargs["depth"]
         self.highlight = kwargs["highlight_name"]
         self.invert_colormap = kwargs["invert_colormap"]
+        # know what the user input for the colormap
+        self.color_map = kwargs["color_map"]
+
+        if self.color:
+            # assigning the colormap based on user input
+            self.assign_mapcolor()
 
         if isinstance(self.metric_columns, str):
             self.primary_metric = self.metric_columns
@@ -100,7 +106,6 @@ class ConsoleRenderer:
 
         # grab the min and max value for the primary metric, ignoring inf and
         # nan values
-
         if "rank" in dataframe.index.names:
             metric_series = (dataframe.xs(self.rank, level=1))[self.primary_metric]
         else:
@@ -145,6 +150,41 @@ class ConsoleRenderer:
         ]
 
         return "\n".join(lines)
+
+    # This function is used for assigning different color schemes for colormaps if
+    # the user decided to choose a color scheme other than the default colormap.
+    def assign_mapcolor(self):
+        # Here we are changing the color schemes of the
+        # the map based on the user input
+
+        # This is the default colormap (RdYlGn)
+        # if the user doesn't enter any specific colormap option
+        # then the color is by default RdYlGn
+        if self.color_map == ("RdYlGn"):
+            self.colors.colormap = self.colors.colormap_RdYlGn
+        elif self.color_map == ("BrBG"):
+            self.colors.colormap = self.colors.colormap_BrBG
+        elif self.color_map == ("PiYG"):
+            self.colors.colormap = self.colors.colormap_PiYG
+        elif self.color_map == ("PRGn"):
+            self.colors.colormap = self.colors.colormap_PRGn
+        elif self.color_map == ("PiYG"):
+            self.colors.colormap = self.colors.colormap_PiYG
+        elif self.color_map == ("PuOr"):
+            self.colors.colormap = self.colors.colormap_PuOr
+        elif self.color_map == ("RdBu"):
+            self.colors.colormap = self.colors.colormap_RdBu
+        elif self.color_map == ("RdGy"):
+            self.colors.colormap = self.colors.colormap_RdGy
+        elif self.color_map == ("RdYlBu"):
+            self.colors.colormap = self.colors.colormap_RdYlBu
+        elif self.color_map == ("Spectral"):
+            self.colors.colormap = self.colors.colormap_Spectral
+        else:
+            raise ValueError(
+                "Incorrect Colormap. Select any one out of BrBG, PiYg, PRGn,"
+                + " PuOr, RdBu, RdGy, RdYlBu, RdYlGn and Spectral."
+            )
 
     def render_legend(self):
         def render_label(index, low, high):
@@ -317,14 +357,96 @@ class ConsoleRenderer:
             return self.colors.bg_white_255 + self.colors.dark_gray_255
 
     class colors_enabled:
-        # red-green color map
-        colormap = [
+        colormap = []
+
+        # RdYlGn (Default) color map
+        colormap_RdYlGn = [
             "\033[38;5;196m",  # red
             "\033[38;5;208m",  # orange
             "\033[38;5;220m",  # yellow-ish
             "\033[38;5;46m",  # neon green
             "\033[38;5;34m",  # light green
             "\033[38;5;22m",  # dark green
+        ]
+
+        # BrBG color map
+        colormap_BrBG = [
+            "\033[38;5;94m",  # Brown
+            "\033[38;5;179m",  # Light Brown
+            "\033[38;5;222m",  # Cream
+            "\033[38;5;116m",  # Light Turqouise
+            "\033[38;5;37m",  # Blue-Green 73
+            "\033[38;5;23m",  # Dark Blue-Green
+        ]
+
+        #  PiYG color map
+        colormap_PiYG = [
+            "\033[38;5;162m",  # Dark Pink
+            "\033[38;5;176m",  # Light-ish Pink
+            "\033[38;5;219m",  # Pale Pink
+            "\033[38;5;149m",  # Pale Green
+            "\033[38;5;70m",  # Light Forest Green
+            "\033[38;5;22m",  # Dark Green
+        ]
+
+        # PRGn color map
+        colormap_PRGn = [
+            "\033[38;5;90m",  # Dark Purple
+            "\033[38;5;140m",  # Purple
+            "\033[38;5;183m",  # Light Purple
+            "\033[38;5;151m",  # Pale Green
+            "\033[38;5;70m",  # Forest Green
+            "\033[38;5;22m",  # Dark Green
+        ]
+
+        # PuOr color map
+        colormap_PuOr = [
+            "\033[38;5;130m",  # Brown
+            "\033[38;5;208m",  # Orange
+            "\033[38;5;220m",  # Pale Orange
+            "\033[38;5;189m",  # Pale Purple
+            "\033[38;5;104m",  # Light-ish Purple
+            "\033[38;5;57m",  # Dark Purple
+        ]
+
+        # RdBu color map
+        colormap_RdBu = [
+            "\033[38;5;124m",  # Maroon Red
+            "\033[38;5;209m",  # Dark Orange
+            "\033[38;5;224m",  # Pale Orange
+            "\033[38;5;153m",  # Light Sky Blue
+            "\033[38;5;75m",  # Light-ish Blue
+            "\033[38;5;25m",  # Navy Blue
+        ]
+
+        # RdGy color map
+        colormap_RdGy = [
+            "\033[38;5;124m",  # Maroon Red
+            "\033[38;5;209m",  # Dark Orange
+            "\033[38;5;223m",  # Pale Orange
+            "\033[38;5;251m",  # Pale Grey
+            "\033[38;5;244m",  # Grey
+            "\033[38;5;238m",  # Dark Grey
+        ]
+
+        # RdYlBu color map
+        colormap_RdYlBu = [
+            "\033[38;5;196m",  # Red
+            "\033[38;5;208m",  # Orange
+            "\033[38;5;220m",  # Yellow-ish
+            "\033[38;5;153m",  # Light Cyan Blue
+            "\033[38;5;68m",  # Seagull Blue
+            "\033[38;5;24m",  # Dark Blue
+        ]
+
+        # Spectral color map
+        colormap_Spectral = [
+            "\033[38;5;196m",  # Red
+            "\033[38;5;208m",  # Orange
+            "\033[38;5;220m",  # Yellow-ish
+            "\033[38;5;191m",  # Yellow-ish Green
+            "\033[38;5;114m",  # Olive Green
+            "\033[38;5;26m",  # Dark Blue
         ]
 
         blue = "\033[34m"

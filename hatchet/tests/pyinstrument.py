@@ -90,6 +90,7 @@ def test_tree(hatchet_pyinstrument_json):
         depth=10000,
         highlight_name=False,
         invert_colormap=False,
+        color_map="RdYlGn",
     )
     assert "0.000 <module> examples.py" in output
     assert "0.025 read hatchet/readers/caliper_reader.py" in output
@@ -107,6 +108,7 @@ def test_tree(hatchet_pyinstrument_json):
         depth=10000,
         highlight_name=False,
         invert_colormap=False,
+        color_map="RdYlGn",
     )
     assert "0.478 <module> examples.py" in output
     assert "0.063 from_caliper_json hatchet/graphframe.py" in output
