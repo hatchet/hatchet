@@ -15,7 +15,7 @@
                 TREECHANGE: "TREECHANGE",
                 COLORCLICK: "COLORCLICK",
                 LEGENDCLICK: "LEGENDCLICK",
-                PAN: "PAN"
+                ZOOM: "ZOOM"
             },
             layout: {
                 margin: {top: 20, right: 20, bottom: 80, left: 20},
@@ -23,6 +23,28 @@
             duration: 750,
             treeHeight: 300
         })
+
+
+        // Returns a function, that, as long as it continues to be invoked, will not
+        // be triggered. The function will be called after it stops being called for
+        // N milliseconds. If `immediate` is passed, trigger the function on the
+        // leading edge, instead of the trailing.
+        // Taken from: https://davidwalsh.name/javascript-debounce-function
+        function debounce(func, wait, immediate) {
+            var timeout;
+            return function() {
+                var context = this, args = arguments;
+                var later = function() {
+                    timeout = null;
+                    if (!immediate) func.apply(context, args);
+                };
+                var callNow = immediate && !timeout;
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+                if (callNow) func.apply(context, args);
+            };
+        };
+
 
         var makeColorManager = function(model){
             
@@ -197,7 +219,9 @@
                         case(globals.signals.LEGENDCLICK):
                             _model.updateLegends();
                             break;
-                        case(globals.signals.PAN):
+                        case(globals.signals.ZOOM):
+                            // add debounce
+                            _model.updateNodeLocations(evt.index, evt.transformation);
                             break;
                         default:
                             console.log('Unknown event type', evt.type);
@@ -470,6 +494,12 @@
                 updateActiveTrees: function(activeTree){
                     _state["activeTree"] = activeTree;
                     _observers.notify();
+                },
+                updateNodeLocations: function(index, transformation){
+                    _data["treemaps"][index].descendants().forEach(function(d) {
+                        d.xMainG = d.xMainG0 + transformation.y;
+                        d.yMainG = d.yMainG0 + transformation.x;
+                    });
                 }
             }
         }
@@ -743,6 +773,10 @@
 
                 model.addTreeMap(currentTreeMap);
             }
+            
+            //layout variables            
+            var spreadFactor = width / (maxHeight + 1);
+            var legendOffset = 30;
 
             // Add a group and tree for each forestData[i]
             for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
@@ -803,15 +837,28 @@
                         .style('font-family', 'monospace')
                         .style('font-size', '12px');
 
+
+                var zoom = d3.zoom().on("zoom", function (){
+                    zoomObj = d3.select(this).selectAll(".chart");
+
+                    zoomObj.attr("transform", d3.event.transform);
+
+                    //update for scale view
+                    _observers.notify({
+                        type: globals.signals.ZOOM,
+                        index: zoomObj.attr("chart-id"),
+                        transformation: d3.event.transform
+                    })
+                });
+
                 //put tree itself into a group
                 newg.append('g')
                     .attr('class', 'chart')
                     .attr('chart-id', treeIndex);
 
-                
-                var spreadFactor = width / (maxHeight + 1);
-                var legendOffset = 30;
-
+                newg.call(zoom)
+                    .on("dblclick.zoom", null);
+                    
 
                 model.updateNodes(treeIndex,
                     function(n){
@@ -819,21 +866,16 @@
                         n.forEach(function (d) {
                             d.x = d.x;
                             d.y = (d.depth * spreadFactor);
-                        });
-                    }
-                );
 
-                model.updateNodes(treeIndex,
-                    function(n){
-                        // Stash the old positions for transition and
-                        // stash absolute positions (absolute in mainG)
-                        n.forEach(function (d) {
                             d.x0 = d.x;
                             d.y0 = d.y;
 
                             // Store the overall position based on group
                             d.xMainG = d.x + globals.treeHeight * treeIndex + _margin.top;
                             d.yMainG = d.y + _margin.left;
+
+                            d.xMainG0 = d.xMainG;
+                            d.yMainG0 = d.yMainG;
                         });
                     }
                 );
@@ -851,6 +893,7 @@
                     _observers.add(s);
                 },
                 render: function(){
+
                     //render for any number of trees
                     for(var treeIndex = 0; treeIndex < model.data["numberOfTrees"]; treeIndex++){
 
