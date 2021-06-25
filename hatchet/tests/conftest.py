@@ -827,6 +827,9 @@ def timemory_json_data():
 
     # disable automatic output during finalization
     timemory.settings.auto_output = False
+    # timemory.settings.json_output = False
+    # timemory.settings.tree_output = True
+
     # enable flat collection because of the coverage exe
     timemory.settings.flat_profile = True
 
@@ -846,7 +849,8 @@ def timemory_json_data():
         TracerConfig.only_filenames = ["timemory_func.py"]
         trace_func(trace_arr, tol)
 
-    return timemory.get(hierarchy=True)
+    # TODO: cannot combine if there are multiple metrics in the same json
+    return timemory.get(hierarchy=True, components=["wall_clock"])
 
 
 @pytest.fixture
