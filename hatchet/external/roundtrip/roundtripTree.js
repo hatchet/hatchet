@@ -222,10 +222,6 @@
                             _model.updateLegends();
                             break;
                         case(globals.signals.ZOOM):
-<<<<<<< HEAD
-=======
-                            // add debounce
->>>>>>> Panning and zooming works and updates for brushing.
                             _model.updateNodeLocations(evt.index, evt.transformation);
                             break;
                         default:
@@ -500,7 +496,6 @@
                     _observers.notify();
                 },
                 updateNodeLocations: function(index, transformation){
-<<<<<<< HEAD
                     _data["treemaps"][index].descendants().forEach(function(d, i) {
                         // This function gets the absolute location for each point based on the relative
                         // locations of the points based on transformations
@@ -510,11 +505,6 @@
                         // Adapted from: https://stackoverflow.com/questions/18554224/getting-screen-positions-of-d3-nodes-after-transform
                         d.yMainG = transformation.e + d.y0*transformation.d + d.x0*transformation.c - globals.layout.margin.left;
                         d.xMainG = transformation.f + d.y0*transformation.b + d.x0*transformation.a - globals.layout.margin.top;
-=======
-                    _data["treemaps"][index].descendants().forEach(function(d) {
-                        d.xMainG = d.xMainG0 + transformation.y;
-                        d.yMainG = d.yMainG0 + transformation.x;
->>>>>>> Panning and zooming works and updates for brushing.
                     });
                 }
             }
@@ -857,11 +847,7 @@
                     _observers.notify({
                         type: globals.signals.ZOOM,
                         index: zoomObj.attr("chart-id"),
-<<<<<<< HEAD
                         transformation: zoomObj.node().getCTM()
-=======
-                        transformation: d3.event.transform
->>>>>>> Panning and zooming works and updates for brushing.
                     })
                 });
 
@@ -876,10 +862,6 @@
                 newg.call(zoom)
                     .on("dblclick.zoom", null);
                     
-<<<<<<< HEAD
-
-=======
->>>>>>> Panning and zooming works and updates for brushing.
 
                 model.updateNodes(treeIndex,
                     function(n){
