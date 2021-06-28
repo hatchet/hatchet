@@ -220,8 +220,7 @@
                             _model.updateLegends();
                             break;
                         case(globals.signals.ZOOM):
-                            // add debounce
-                            _model.updateNodeLocations(evt.index, evt.transformation, evt.trans);
+                            _model.updateNodeLocations(evt.index, evt.transformation);
                             break;
                         default:
                             console.log('Unknown event type', evt.type);
@@ -494,13 +493,14 @@
                     _state["activeTree"] = activeTree;
                     _observers.notify();
                 },
-                updateNodeLocations: function(index, transformation, trans){
+                updateNodeLocations: function(index, transformation){
                     _data["treemaps"][index].descendants().forEach(function(d, i) {
-                        //this function gets the absolute location for each point based on the relative
+                        // This function gets the absolute location for each point based on the relative
                         // locations of the points based on transformations
                         // the margins were being added into the .e and .f values so they have to be subtracted
-                        // I think they come from the margins being added into the main group when it is created
+                        // I think they come from the margins being added into the "main group" when it is created
                         // We can brush regardless of zoom or pan
+                        // Adapted from: https://stackoverflow.com/questions/18554224/getting-screen-positions-of-d3-nodes-after-transform
                         d.yMainG = transformation.e + d.y0*transformation.d + d.x0*transformation.c - globals.layout.margin.left;
                         d.xMainG = transformation.f + d.y0*transformation.b + d.x0*transformation.a - globals.layout.margin.top;
                     });
@@ -851,8 +851,7 @@
                     _observers.notify({
                         type: globals.signals.ZOOM,
                         index: zoomObj.attr("chart-id"),
-                        transformation: zoomObj.node().getCTM(),
-                        trans: d3.event.transform
+                        transformation: zoomObj.node().getCTM()
                     })
                 });
 
