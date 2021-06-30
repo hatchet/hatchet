@@ -1,4 +1,3 @@
-
 //d3.v4
 (function (element) {
     require(['https://d3js.org/d3.v4.min.js'], function (d3) {
@@ -257,7 +256,7 @@
             
             //initialize default data and state
             var _data = {
-                            "treemaps":[],
+                            "trees":[],
                             "legends": ["Unified", "Indiv."],
                             "colors": ["Default", "Inverted"],
                             "forestData": null,
@@ -397,20 +396,20 @@
                 register: function(s){
                     _observers.add(s);
                 },
-                addTreeMap: function(tm){
-                    _data['treemaps'].push(tm);
+                addTree: function(tm){
+                    _data['trees'].push(tm);
                 },
-                getTreeMap: function(index){
-                    return _data['treemaps'][index];
+                getTree: function(index){
+                    return _data['trees'][index];
                 },
                 getNodesFromMap: function(index){
-                    return _data['treemaps'][index].descendants();
+                    return _data['trees'][index].descendants();
                 },
                 getLinksFromMap: function(index){
-                    return _data['treemaps'][index].descendants().slice(1);
+                    return _data['trees'][index].descendants().slice(1);
                 },
                 updateNodes: function(index, f){
-                    f(_data['treemaps'][index].descendants());
+                    f(_data['trees'][index].descendants());
                 },
                 updateSelected: function(nodes){
 
@@ -457,12 +456,12 @@
                     _observers.notify();
                 },
                 setBrushedPoints(selection, end){
-                    brushedNodes = [];
+                    var brushedNodes = [];
 
                     if(selection){
                         //calculate brushed points
                         for(var i = 0; i < _data["numberOfTrees"]; i++){
-                            nodes = _data['treemaps'][i].descendants();
+                            var nodes = _data['trees'][i].descendants();
                             nodes.forEach(function(d){
                                 if(selection[0][0] <= d.yMainG && selection[1][0] >= d.yMainG 
                                     && selection[0][1] <= d.xMainG && selection[1][1] >= d.xMainG){
@@ -516,7 +515,7 @@
                     _observers.notify();
                 },
                 updateNodeLocations: function(index, transformation){
-                    _data["treemaps"][index].descendants().forEach(function(d, i) {
+                    _data["trees"][index].descendants().forEach(function(d, i) {
                         // This function gets the absolute location for each point based on the relative
                         // locations of the points based on transformations
                         // the margins were being added into the .e and .f values so they have to be subtracted
@@ -755,6 +754,9 @@
             }
         }
 
+
+
+
         var createChartView = function(svg, model){
             let _observers = makeSignaller();
             var _colorManager = makeColorManager(model);
@@ -763,10 +765,24 @@
             var forestData = model.data["forestData"];
                  
             var width = element.clientWidth - globals.layout.margin.right - globals.layout.margin.left;
-            var height = globals.treeHeight * (model.data["numberOfTrees"] + 1);
+            var height = globals.layout.margin.top + globals.layout.margin.bottom;
             var _margin = globals.layout.margin;
-            
-            // Creates a curved (diagonal) path from parent to the child nodes
+            var widths = [];
+
+            var _nodeRadius = 10;
+
+            var treeLayoutHeights = [];
+
+            //layout variables            
+            var spreadFactor = 0;
+            var legendOffset = 0;
+            var maxHeight = 0;
+            var chartOffset = _margin.top;
+            var treeOffset = 0;
+            var minmax = [];
+
+
+            // Creates a curved (diagonal) path from parent ------------------to the child nodes
             function diagonal(s, d) {
                 path = `M ${s.y} ${s.x}
                 C ${(s.y + d.y) / 2} ${s.x},
@@ -776,13 +792,46 @@
                 return path
             }
 
+            function _getMinxMaxxFromTree(root){
+                var obj = {}
+                var min = Infinity;
+                var max = -Infinity;
+                root.descendants().forEach(function(d){
+                    if(d.x > max){
+                        max = d.x;
+                    }
+                    else if(d.x < min){
+                        min = d.x;
+                    }
+                })
 
+                obj.min = min;
+                obj.max = max;
+
+                return obj;
+            }
+
+            function _getHeightFromTree(root){
+                let minmax = _getMinxMaxxFromTree(root);
+                let min = minmax["min"];
+                let max = minmax["max"];
+
+                if (max == min) {
+                    return Math.abs(max);
+                }
+                return Math.abs(max) + Math.abs(min);
+            }
+
+            function _getSelectionHeight(elem){
+                return elem.node().getBBox().height;
+            }
+            
             var mainG = svg.select("#mainG");
 
-            // var treemap = d3.tree().size([(2000), width - margin.left]);
-            var treemap = d3.tree().size([(globals.treeHeight), width - _margin.left]);
+            var tree = d3.tree().nodeSize([_nodeRadius, _nodeRadius]);
+            // .size([treeHeight, width - _margin.left]);
 
-            var maxHeight = 0;
+    
 
             // Find the tallest tree for layout purposes (used to set a uniform spreadFactor)
             for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
@@ -792,31 +841,32 @@
                 currentRoot.x0 = height;
                 currentRoot.y0 = _margin.left;
 
-                var currentTreeMap = treemap(currentRoot);
-                if (currentTreeMap.height > maxHeight) {
-                    maxHeight = currentTreeMap.height;
+                var currentTree = tree(currentRoot);
+
+                if (currentTree.height > maxHeight) {
+                    maxHeight = currentTree.height;
                 }
 
-                model.addTreeMap(currentTreeMap);
+                model.addTree(currentTree);
+
+                treeLayoutHeights.push(_getHeightFromTree(currentRoot));
+                minmax.push(_getMinxMaxxFromTree(currentRoot))
             }
             
-            //layout variables            
-            var spreadFactor = width / (maxHeight + 1);
-            var legendOffset = 30;
+            spreadFactor = width/maxHeight;
 
             // Add a group and tree for each forestData[i]
             for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
                 var forestMetrics = model.data["forestMetrics"];
                 var forestMinMax = model.data["forestMinMax"];
 
-                var currentTreeMap = model.getTreeMap(treeIndex);
-
+                var currentTree = model.getTree(treeIndex);
                 var newg = mainG.append("g")
                         .attr('class', 'group-' + treeIndex + ' subchart')
                         .attr('tree_id', treeIndex)
-                        .attr("transform", "translate(" + _margin.left + "," + (globals.treeHeight * treeIndex + _margin.top) + ")");
+                        .attr("transform", "translate(" + _margin.left + "," + chartOffset + ")");
 
-                currentTreeMap.descendants().forEach(function (d) {
+                currentTree.descendants().forEach(function (d) {
                     for (var i = 0; i < metricColumns.length; i++) {
                         var tempMetric = metricColumns[i];
                         if (d.data.metrics[tempMetric] > forestMetrics[treeIndex][tempMetric].max) {
@@ -877,31 +927,36 @@
                     })
                 });
 
+                legendOffset = legGroup.node().getBBox().height;
+
                 //put tree itself into a group
                 newg.append('g')
                     .attr('class', 'chart')
                     .attr('chart-id', treeIndex)
                     .append('rect')
-                    .attr('height', globals.treeHeight)
+                    .attr('height', treeLayoutHeights[treeIndex])
                     .attr('width', width)
                     .attr('fill', 'rgba(0,0,0,0)');
 
                 newg.call(zoom)
                     .on("dblclick.zoom", null);
-                    
+                
+                
+                treeOffset = 0 + legendOffset + _margin.top;
+
 
                 model.updateNodes(treeIndex,
                     function(n){
                         // Normalize for fixed-depth.
                         n.forEach(function (d) {
-                            d.x = d.x + legendOffset;
+                            d.x = d.x + treeOffset + Math.abs(minmax[treeIndex]["min"]);
                             d.y = (d.depth * spreadFactor);
 
                             d.x0 = d.x;
                             d.y0 = d.y;
 
                             // Store the overall position based on group
-                            d.xMainG = d.x + globals.treeHeight * treeIndex + _margin.top;
+                            d.xMainG = d.x + chartOffset;
                             d.yMainG = d.y + _margin.left;
 
                             d.xMainG0 = d.xMainG;
@@ -910,9 +965,15 @@
                     }
                 );
 
-
                 newg.style("display", "inline-block");
+
+                //updates
+                chartOffset += treeLayoutHeights[treeIndex] + treeOffset + _margin.top;
+                height += chartOffset;
             } //end for-loop "add tree"
+
+
+            svg.attr("height", height);
 
             // Global min/max are the last entry of forestMetrics;
             forestMetrics.push(forestMinMax);
@@ -923,7 +984,7 @@
                     _observers.add(s);
                 },
                 render: function(){
-
+                    chartOffset = _margin.top;
                     //render for any number of trees
                     for(var treeIndex = 0; treeIndex < model.data["numberOfTrees"]; treeIndex++){
 
@@ -978,20 +1039,28 @@
                                 .style('stroke', 'black');
             
                         // commenting out text for now
-                        // nodeEnter.append("text")
-                        //         .attr("x", function (d) {
-                        //             return d.children || model.state['collapsedNodes'].includes(d) ? -13 : 13;
-                        //         })
-                        //         .attr("dy", ".75em")
-                        //         .attr("text-anchor", function (d) {
-                        //             return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
-                        //         })
-                        //         .text(function (d) {
-                        //             return d.data.name;
-                        //         })
-                        //         .attr('transform', 'rotate( -15)')
-                        //         .style("stroke-width", "3px")
-                        //         .style("font", "12px monospace");
+                        nodeEnter.append("text")
+                                .attr("x", function (d) {
+                                    return d.children || model.state['collapsedNodes'].includes(d) ? -13 : 13;
+                                })
+                                .attr("dy", ".75em")
+                                .attr("text-anchor", function (d) {
+                                    return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
+                                })
+                                .text(function (d) {
+                                    if(!d.children){
+                                        return d.data.name;
+                                    }
+                                    else if(d.children.length == 1){
+                                        return "";
+                                    }
+                                    else {
+                                        return d.data.name.slice(0,5) + "...";
+                                    }
+                                })
+                                // .attr('transform', 'rotate( -15)')
+                                // .style("stroke-width", "3px")
+                                .style("font", "12px monospace");
         
 
                         // links
@@ -1025,7 +1094,7 @@
                                 return `translate(${_margin.left}, ${_margin.top})`;
                             } 
                             else {
-                                return `translate(${_margin.left}, ${_margin.top + (globals.treeHeight*treeIndex)})`;
+                                return `translate(${_margin.left}, ${chartOffset})`;
                             }
                         })    
                         .style("display", function(){
@@ -1131,7 +1200,9 @@
                                     return diagonal(o, o);
                                 })
                                 .remove();
-                    }
+
+                        chartOffset += treeLayoutHeights[treeIndex] + treeOffset + _margin.top;
+                    }                    
                 }
             }
             
