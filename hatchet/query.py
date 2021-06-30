@@ -32,18 +32,55 @@ class AbstractQuery(ABC):
 
     @abstractmethod
     def apply(self, gf):
+        """Apply the query to a GraphFrame.
+
+        Arguments:
+            gf (GraphFrame): the GraphFrame on which to apply the query.
+
+        Returns:
+            (list): A list representing the set of nodes from paths that match this query.
+        """
         pass
 
     def __and__(self, other):
+        """Create an AndQuery with this query and another.
+
+        Arguments:
+            other (GraphFrame): the other query to use in the AndQuery.
+
+        Returns:
+            (AndQuery): A query object representing the intersection of the two queries.
+        """
         return AndQuery(self, other)
 
     def __or__(self, other):
+        """Create an OrQuery with this query and another.
+
+        Arguments:
+            other (GraphFrame): the other query to use in the OrQuery.
+
+        Returns:
+            (OrQuery): A query object representing the union of the two queries.
+        """
         return OrQuery(self, other)
 
     def __xor__(self, other):
+        """Create a XorQuery with this query and another.
+
+        Arguments:
+            other (GraphFrame): the other query to use in the XorQuery.
+
+        Returns:
+            (XorQuery): A query object representing the symmetric difference of the two queries.
+        """
         return XorQuery(self, other)
 
     def __invert__(self):
+        """Create a NotQuery with this query.
+
+        Returns:
+            (NotQuery): A query object representing all nodes that don't match this query.
+        """
         return NotQuery(self)
 
 
@@ -52,6 +89,11 @@ class NaryQuery(AbstractQuery):
     that acts on and merges N separate subqueries"""
 
     def __init__(self, *args):
+        """Create a new NaryQuery object.
+
+        Arguments:
+            *args (tuple): the subqueries (high-level, low-level, or compound) to be performed.
+        """
         self.subqueries = []
         if isinstance(args[0], tuple) and len(args) == 1:
             args = args[0]
@@ -68,9 +110,26 @@ class NaryQuery(AbstractQuery):
 
     @abstractmethod
     def _perform_nary_op(self, query_results, gf):
+        """Perform the NaryQuery subclass's designated operation on the results of the subqueries.
+
+        Arguments:
+            query_results (list): the results of the subqueries.
+            gf (GraphFrame): the GraphFrame on which the query is applied.
+
+        Returns:
+            (list): A list of nodes representing the result of applying the subclass-designated operation to the results of the subqueries.
+        """
         pass
 
     def apply(self, gf):
+        """Apply the NaryQuery to a GraphFrame.
+
+        Arguments:
+            gf (GraphFrame): the GraphFrame on which to apply the query.
+
+        Returns:
+            (list): A list of nodes representing the result of applying the subclass-designated operation to the results of the subqueries.
+        """
         results = []
         for query in self.subqueries:
             results.append(query.apply(gf))
@@ -376,7 +435,7 @@ class QueryMatcher(AbstractQuery):
             gf (GraphFrame): the GraphFrame on which to apply the query.
 
         Returns:
-            (list): A list of lists representing the set of paths that match this query.
+            (list): A list representing the set of nodes from paths that match this query.
         """
         self.search_cache = {}
         matches = []
@@ -646,6 +705,11 @@ class AndQuery(NaryQuery):
     of the subqueries"""
 
     def __init__(self, *args):
+        """Create a new AndQuery object.
+
+        Arguments:
+            *args (tuple): the subqueries (high-level, low-level, or compound) to be performed.
+        """
         if sys.version_info[0] == 2:
             super(AndQuery, self).__init__(args)
         else:
@@ -654,11 +718,20 @@ class AndQuery(NaryQuery):
             raise BadNumberNaryQueryArgs("AndQuery requires 2 or more subqueries")
 
     def _perform_nary_op(self, query_results, gf):
+        """Perform an intersection operation on the results of the subqueries.
+
+        Arguments:
+            query_results (list): the results of the subqueries.
+            gf (GraphFrame): the GraphFrame on which the query is applied.
+
+        Returns:
+            (list): A list of nodes representing the intersection of the results of the subqueries.
+        """
         intersection_set = set(query_results[0]).intersection(*query_results[1:])
         return list(intersection_set)
 
 
-# Alias of AndQuery to signify the relationship to set Intersection
+"""Alias of AndQuery to signify the relationship to set Intersection"""
 IntersectionQuery = AndQuery
 
 
@@ -667,6 +740,11 @@ class OrQuery(NaryQuery):
     of the subqueries"""
 
     def __init__(self, *args):
+        """Create a new OrQuery object.
+
+        Arguments:
+            *args (tuple): the subqueries (high-level, low-level, or compound) to be performed.
+        """
         if sys.version_info[0] == 2:
             super(OrQuery, self).__init__(args)
         else:
@@ -675,11 +753,20 @@ class OrQuery(NaryQuery):
             raise BadNumberNaryQueryArgs("OrQuery requires 2 or more subqueries")
 
     def _perform_nary_op(self, query_results, gf):
+        """Perform an union operation on the results of the subqueries.
+
+        Arguments:
+            query_results (list): the results of the subqueries.
+            gf (GraphFrame): the GraphFrame on which the query is applied.
+
+        Returns:
+            (list): A list of nodes representing the union of the results of the subqueries.
+        """
         union_set = set().union(*query_results)
         return list(union_set)
 
 
-# Alias of OrQuery to signify the relationship to set Union
+"""Alias of OrQuery to signify the relationship to set Union"""
 UnionQuery = OrQuery
 
 
@@ -688,6 +775,11 @@ class XorQuery(NaryQuery):
     (i.e., set-based XOR) of the results of the subqueries"""
 
     def __init__(self, *args):
+        """Create a new XorQuery object.
+
+        Arguments:
+            *args (tuple): the subqueries (high-level, low-level, or compound) to be performed.
+        """
         if sys.version_info[0] == 2:
             super(XorQuery, self).__init__(args)
         else:
@@ -696,13 +788,22 @@ class XorQuery(NaryQuery):
             raise BadNumberNaryQueryArgs("XorQuery requires 2 or more subqueries")
 
     def _perform_nary_op(self, query_results, gf):
+        """Perform a symmetric difference operation on the results of the subqueries.
+
+        Arguments:
+            query_results (list): the results of the subqueries.
+            gf (GraphFrame): the GraphFrame on which the query is applied.
+
+        Returns:
+            (list): A list of nodes representing the symmetric difference of the results of the subqueries.
+        """
         xor_set = set()
         for res in query_results:
             xor_set = xor_set.symmetric_difference(set(res))
         return list(xor_set)
 
 
-# Alias of XorQuery to signify the relationship to set Symmetric Difference
+"""Alias of XorQuery to signify the relationship to set Symmetric Difference"""
 SymDifferenceQuery = XorQuery
 
 
@@ -711,6 +812,11 @@ class NotQuery(NaryQuery):
     are not returned from the subquery."""
 
     def __init__(self, *args):
+        """Create a new XorQuery object.
+
+        Arguments:
+            *args (tuple): the subquery (high-level, low-level, or compound) to be performed.
+        """
         if sys.version_info[0] == 2:
             super(NotQuery, self).__init__(args)
         else:
@@ -719,6 +825,15 @@ class NotQuery(NaryQuery):
             raise BadNumberNaryQueryArgs("NotQuery requires exactly 1 subquery")
 
     def _perform_nary_op(self, query_results, gf):
+        """Collect all nodes in the graph not present in the query result.
+
+        Arguments:
+            query_results (list): the result of the subquery.
+            gf (GraphFrame): the GraphFrame on which the query is applied.
+
+        Returns:
+            (list): A list of all nodes not found in the subquery.
+        """
         nodes = set(gf.graph.traverse())
         query_nodes = set(query_results[0])
         return list(nodes.difference(query_nodes))
