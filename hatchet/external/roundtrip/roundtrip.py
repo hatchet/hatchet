@@ -31,6 +31,7 @@ class Roundtrip(Magics):
         "json": "text/json",
         "css": "text/css",
     }
+    
     codeMap = {}
 
     @line_magic
@@ -62,7 +63,7 @@ class Roundtrip(Magics):
         displayObj = display(HTML(argList), display_id=True)
 
         args[1] = self.shell.user_ns[args[1]]
-        displayObj.update(Javascript('argList.push("' + str(args[1]) + '")'))
+        displayObj.update( Javascript( 'argList.push("{}")'.format(str(args[1])) ) )
 
         # Check that users provided a tree literal
         if not isinstance(args[1], list):
@@ -88,12 +89,13 @@ class Roundtrip(Magics):
         preRun = """
         // Grab current context
         elementTop = element.get(0);"""
+
         displayObj.update(Javascript(preRun))
 
-        self.runVis(name, javascriptFile)
+        self.runVis(name, javascriptFile, path)
         self.id_number += 1
 
-    def runVis(self, name, javascriptFile):
+    def runVis(self, name, javascriptFile, path):
         name = "roundtripTreeVis" + str(self.id_number)
 
         javascriptExport = """

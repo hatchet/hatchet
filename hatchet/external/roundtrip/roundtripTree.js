@@ -1,4 +1,3 @@
-
 //d3.v4
 (function (element) {
     require(['https://d3js.org/d3.v4.min.js'], function (d3) {
@@ -565,7 +564,7 @@
                     if(selection){
                         //calculate brushed points
                         for(var i = 0; i < _data["numberOfTrees"]; i++){
-                            nodes = _data['trees'][i].descendants();
+                            var nodes = _data['trees'][i].descendants();
                             nodes.forEach(function(d){
                                 if(selection[0][0] <= d.yMainG && selection[1][0] >= d.yMainG 
                                     && selection[0][1] <= d.xMainG && selection[1][1] >= d.xMainG){
@@ -926,7 +925,7 @@
             var spreadFactor = 0;
             var legendOffset = 0;
             var maxHeight = 0;
-            var chartOffset = 0;
+            var chartOffset = _margin.top;
             var treeOffset = 0;
             var minmax = [];
 
@@ -1116,6 +1115,10 @@
                 );
 
                 newg.style("display", "inline-block");
+
+                //updates
+                chartOffset += treeLayoutHeights[treeIndex] + treeOffset + _margin.top;
+                height += chartOffset;
             } //end for-loop "add tree"
 
 
