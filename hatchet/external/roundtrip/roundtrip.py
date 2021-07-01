@@ -122,7 +122,7 @@ class Roundtrip(Magics):
             <script type=module>
                 import Test from './{1}test.js'
                 elementTop.appendChild(document.getElementById('{2}'));
-                element = document.getElementById('{2}');
+                var element = document.getElementById('{2}');
                 {3}
             </script>
         """.format(name, path, str(name), javascriptFile)
