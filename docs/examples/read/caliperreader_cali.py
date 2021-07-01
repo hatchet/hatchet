@@ -9,10 +9,10 @@ if __name__ == "__main__":
         "../../../hatchet/tests/data/caliper-lulesh-cali/lulesh-annotation-profile.cali"
     )
 
-    gf = ht.GraphFrame.from_caliper_db(cali_file)
+    gf = ht.GraphFrame.from_caliperreader(cali_file)
 
     # Printout the DataFrame component of the GraphFrame.
     print(gf.dataframe)
 
-    # Printout the graph component of the GraphFrame.
-    print(gf.tree())
+    # Printout the graph component of the GraphFrame with the specified metric.
+    print(gf.tree(metric_column="avg#inclusive#sum#time.duration"))

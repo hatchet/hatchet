@@ -12,11 +12,10 @@ if __name__ == "__main__":
     r = cr.CaliperReader()
     r.read(cali_file)
 
-    gf = ht.GraphFrame.from_caliper_db(r)
+    gf = ht.GraphFrame.from_caliperreader(r)
 
     # Printout the DataFrame component of the GraphFrame.
-    print(gf.dataframe)
+    print(gf.dataframe.columns)
 
-    # Printout the graph component of the GraphFrame.
-    # Use "avg#inclusive#sum#time.duration" as the metric column to be displayed
+    # Printout the graph component of the GraphFrame with the specified metric.
     print(gf.tree(metric_column="avg#inclusive#sum#time.duration"))

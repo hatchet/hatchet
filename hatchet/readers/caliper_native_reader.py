@@ -1,4 +1,4 @@
-# Copyright 2017-2020 Lawrence Livermore National Security, LLC and other
+# Copyright 2021 Lawrence Livermore National Security, LLC and other
 # Hatchet Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
@@ -16,11 +16,11 @@ from hatchet.frame import Frame
 from hatchet.util.timer import Timer
 
 
-class CaliperDBReader:
-    """Read in a Caliper file using Caliper's native python reader."""
+class CaliperNativeReader:
+    """Read in a native `.cali` file using Caliper's python reader."""
 
     def __init__(self, filename_or_caliperreader):
-        """Read in a cali with native Caliper reader.
+        """Read in a native cali with Caliper's python reader.
 
         Args:
             filename_or_caliperreader (str or CaliperReader): name of a `cali` file OR
@@ -87,7 +87,6 @@ class CaliperDBReader:
                     parent_hnode = visited[parent_frame]
 
                     hnode = Node(frame, parent_hnode)
-                    print("DEBUG CREATING NODE", hnode)
 
                     visited[frame] = hnode
 
@@ -126,7 +125,6 @@ class CaliperDBReader:
                     # since this node does not have a parent, this is a root
                     graph_root = Node(frame, None)
                     visited[frame] = graph_root
-                    print("DEBUG CREATING ROOT node=", graph_root)
                     list_roots.append(graph_root)
 
                     node_dict = dict(
@@ -138,12 +136,11 @@ class CaliperDBReader:
         return list_roots
 
     def read(self):
-        """Read the caliper JSON string to extract the calling context tree."""
+        """Read the caliper records to extract the calling context tree."""
         if isinstance(self.filename_or_caliperreader, str):
             if self.filename_ext != ".cali":
-                raise ValueError("from_caliper_db() can only read .cali files")
+                raise ValueError("from_caliperreader() needs a .cali file")
             else:
-                print("DEBUG Creating caliperreader()")
                 cali_file = self.filename_or_caliperreader
                 self.filename_or_caliperreader = cr.CaliperReader()
                 self.filename_or_caliperreader.read(cali_file)
@@ -167,16 +164,6 @@ class CaliperDBReader:
                 dataframe.columns.values[idx] = "rank"
             if item == "module#cali.sampler.pc":
                 dataframe.columns.values[idx] = "module"
-            if item == "sum#time.duration" or item == "sum#avg#sum#time.duration":
-                dataframe.columns.values[idx] = "time"
-            if (
-                item == "inclusive#sum#time.duration"
-                or item == "sum#avg#inclusive#sum#time.duration"
-            ):
-                dataframe.columns.values[idx] = "time (inc)"
-
-        # for i in self.filename_or_caliperreader.attributes():
-        #     print("RRR", i, self.filename_or_caliperreader.attribute(i).attribute_type())
 
         # create list of exclusive and inclusive metric columns
         exc_metrics = []

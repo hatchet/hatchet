@@ -127,17 +127,17 @@ class GraphFrame:
         return CaliperReader(filename_or_stream).read()
 
     @staticmethod
-    def from_caliper_db(filename_or_caliperreader):
-        """Read in Caliper python reader JSON output.
+    def from_caliperreader(filename_or_caliperreader):
+        """Read in a native Caliper `cali' file using Caliper's python reader.
 
         Args:
-            filename_or_caliperreader (str or CaliperReader): name of a `cali` file OR
-                a CaliperReader object
+            filename_or_caliperreader (str or CaliperReader): name of a Caliper
+                output file in `.cali` format, or a CaliperReader object
         """
         # import this lazily to avoid circular dependencies
-        from .readers.caliper_db_reader import CaliperDBReader
+        from .readers.caliper_native_reader import CaliperNativeReader
 
-        return CaliperDBReader(filename_or_caliperreader).read()
+        return CaliperNativeReader(filename_or_caliperreader).read()
 
     @staticmethod
     def from_gprof_dot(filename):
