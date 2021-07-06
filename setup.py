@@ -42,7 +42,15 @@ setup(
         "hatchet.tests",
         "hatchet.cython_modules.libs",
     ],
-    install_requires=["pydot", "PyYAML", "matplotlib", "numpy", "pandas", "textX"],
+    install_requires=[
+        "pydot",
+        "PyYAML",
+        "matplotlib",
+        "numpy",
+        "pandas",
+        "textX",
+        "multiprocess",
+    ],
     ext_modules=[
         Extension(
             "hatchet.cython_modules.libs.reader_modules",
