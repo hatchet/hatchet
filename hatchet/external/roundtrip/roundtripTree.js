@@ -327,7 +327,7 @@
                 
                 var nodeStr = '<table><tr><td>name</td>';
                 var numNodes = nodeList.length;
-                var metricColumns = model.data["metricColumns"];
+                var metricColumns = _data["metricColumns"];
 
                 //lay the nodes out in a table
                 for (var i = 0; i < metricColumns.length; i++) {
@@ -521,7 +521,7 @@
                         _state["collapsedNodes"].push(d);
                     }
                     else{
-                        index = _state["collapsedNodes"].indexOf(d);
+                        var index = _state["collapsedNodes"].indexOf(d);
                         _state["collapsedNodes"].splice(index, 1);
                     }
 
@@ -682,7 +682,13 @@
             const allColumns = metricColumns.concat(attributeColumns);
             var brushOn = model.state["brushOn"];
             var curColor = model.state["colorScheme"];
+<<<<<<< HEAD
             var colors = model.data["colors"];
+=======
+            var colors = model.data["colors"];        
+            var curLegend = model.state["legend"];
+            var legends = model.data["legends"];
+>>>>>>> moved zooming and selection into chart view. It makes sense with how offset specific the selection is
 
             //initialize bounds for svg
             var width = element.clientWidth - globals.layout.margin.right - globals.layout.margin.left;
@@ -996,8 +1002,8 @@
 
             // Find the tallest tree for layout purposes (used to set a uniform spreadFactor)
             for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
-                var currentTreeData = forestData[treeIndex];
-                var currentRoot = d3.hierarchy(currentTreeData, d => d.children);
+                let currentTreeData = forestData[treeIndex];
+                let currentRoot = d3.hierarchy(currentTreeData, d => d.children);
 
                 currentRoot.x0 = height;
                 currentRoot.y0 = _margin.left;
@@ -1116,6 +1122,7 @@
 
                 newg.style("display", "inline-block");
 
+                
                 //updates
                 chartOffset += treeLayoutHeights[treeIndex] + treeOffset + _margin.top;
                 height += chartOffset;
@@ -1136,7 +1143,6 @@
 
                     chartOffset = _margin.top;
                     height = _margin.top + _margin.bottom;
-
                     //render for any number of trees
                     for(var treeIndex = 0; treeIndex < model.data["numberOfTrees"]; treeIndex++){
 
