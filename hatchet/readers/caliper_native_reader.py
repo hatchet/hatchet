@@ -154,7 +154,10 @@ class CaliperNativeReader:
 
         dataframe = pd.DataFrame(data=self.node_dicts)
 
-        dataframe.set_index(["node"], inplace=True)
+        indices = ["node"]
+        if "rank" in dataframe.columns:
+            indices.append("rank")
+        dataframe.set_index(indices, inplace=True)
         dataframe.sort_index(inplace=True)
 
         # change column names

@@ -210,6 +210,7 @@ def test_graphframe_native_lulesh_from_file(lulesh_caliper_cali):
     """Sanity check the native Caliper reader by examining a known input."""
 
     gf = GraphFrame.from_caliperreader(str(lulesh_caliper_cali))
+    print(list(gf.dataframe.columns))
 
     assert len(gf.dataframe.groupby("name")) == 19
 
