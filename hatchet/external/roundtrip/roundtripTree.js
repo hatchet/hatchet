@@ -14,13 +14,15 @@
                 TREECHANGE: "TREECHANGE",
                 COLORCLICK: "COLORCLICK",
                 LEGENDCLICK: "LEGENDCLICK",
-                ZOOM: "ZOOM"
+                ZOOM: "ZOOM",
+                STOREINITIALLAYOUTOFFSETS: "STORE",
+                MASSPRUNE: "MASSPRUNE"
             },
             layout: {
                 margin: {top: 20, right: 20, bottom: 20, left: 20},
             },
             duration: 750,
-            treeHeight: 300
+            nodeScale: d3.scaleLinear()
         });
 
         jsNodeSelected = "['*']";
@@ -239,6 +241,12 @@
                         case(globals.signals.ZOOM):
                             _model.updateNodeLocations(evt.index, evt.transformation);
                             break;
+                        case(globals.signals.STOREINITIALLAYOUTOFFSETS):
+                            _model.storeXOffsets(evt.index, evt.globalXOffset, evt.localXOffset);
+                            break;
+                        case(globals.signals.MASSPRUNE):
+                            _model.pruneTree(evt.threshold);
+                            break;
                         default:
                             console.log('Unknown event type', evt.type);
                     }
@@ -271,26 +279,45 @@
                             "lastClicked": null,
                             "legend": 0,
                             "colorScheme": 0,
-                            "brushOn": -1
+                            "brushOn": -1,
+                            "hierarchyUpdated": true,
+                            "cachedThreshold": 0
                         };
 
             //setup model
             var cleanTree = argList[0].replace(/'/g, '"');
-            
-            _data["forestData"] = JSON.parse(cleanTree);
-            _data["rootNodeNames"].push("Show all trees");
-            _data["numberOfTrees"] = _data["forestData"].length;
-            _data["metricColumns"] = d3.keys(_data["forestData"][0].metrics);
-            _data["attributeColumns"] = d3.keys(_data["forestData"][0].attributes);
+            var _forestData = JSON.parse(cleanTree);
+
+            _data.hierarchy = [];
+            _data.immutableHierarchy = [];
+            _data.maxHeight = 0;
+
+            //load hierarchies
+            for (var treeIndex = 0; treeIndex < _forestData.length; treeIndex++) {
+                _data.immutableHierarchy.push(d3.hierarchy(_forestData[treeIndex], d => d.children));
+                _data.hierarchy.push(d3.hierarchy(_forestData[treeIndex], d => d.children));
+                if (_data.immutableHierarchy[treeIndex].height > _data.maxHeight){
+                    _data.maxHeight = _data.immutableHierarchy[treeIndex].height;
+                }
+            }
+
+            _data.rootNodeNames = [];
+            _data.rootNodeNames.push("Show all trees");
+
+            _data.numberOfTrees = _forestData.length;
+            _data.metricColumns = d3.keys(_forestData[0].metrics);
 
             // pick the first metric listed to color the nodes
-            _state["selectedMetric"] = _data["metricColumns"][0];
-            _state["lastClicked"] = d3.hierarchy(_data["forestData"][0], d => d.children)
-            _state["activeTree"] = "Show all trees";
+            _state.selectedMetric = _data.metricColumns[0];
+            _state.lastClicked = _data.hierarchy[0];
+            _state.activeTree = "Show all trees";
+            _state.treeXOffsets = [];
+
             
-            //forest stats holds statistical descriptions of
-            // the metrics on each tree in the forest
-            var _forestStats = [];
+
+            //get the max and min metrics across the forest
+            // and for each indifvidual tree
+            var _forestMetrics = [];
             var _forestMinMax = {}; 
             for (var i = 0; i < _data["numberOfTrees"]; i++) {
                 var thisTree = _data["forestData"][i];
@@ -314,8 +341,61 @@
                 _forestStats.push(thisTreeMetrics);
             }
 
-            _data["forestMinMax"] = _forestMinMax;
-            _data["forestStats"] = _forestStats;
+            _data.forestMetrics = _forestMetrics;
+
+            // Global min/max are the last entry of forestMetrics;
+            _data.forestMinMax = _forestMinMax;
+            _data.forestMetrics.push(_forestMinMax);
+
+            function _visitor(root, condition){
+                if(root.children){
+                    var dummyHolder = root.children[0];
+                    dummyHolder.elided = [];
+                    for(var childNdx = root.children.length-1; childNdx >= 0; childNdx--){
+                        var child = root.children[childNdx];
+                        //condition where we remove child
+                        if(child.value < condition){
+                            if(!root._children){
+                                root._children = [];
+                            }
+                            root._children.push(child);
+                            dummyHolder.elided.push(child);
+                            
+                            if (childNdx > 0){
+                                root.children.splice(childNdx, 1);
+                            }
+                        
+                        }
+                    }
+
+                    if (root._children && root._children.length > 0){
+                        dummyHolder.children = null;
+                        dummyHolder.dummy = true;
+                        dummyHolder.parent = root;
+                    }
+
+
+                    for(var child of root.children){
+                        _visitor(child, condition);
+                    }
+
+                    if(root.children.length == 0){
+                        root.children = null;
+                    }
+                }
+            }
+
+            //problems with actively modifying the tree
+            // may need to build a custom each
+            function _pruneDefaultTree(condition){
+                for(var i = 0; i < _data.numberOfTrees; i++){
+                    console.log(condition);
+                    var h = _data.immutableHierarchy[i].copy().sum(d => d.metrics[_state.selectedMetric]);
+                    _visitor(h, condition);
+                    _data.hierarchy[i] = h;
+                    console.log(h);
+                }
+            }
 
             // HELPER FUNCTION DEFINTIONS
             function _printNodeData(nodeList) {
@@ -474,20 +554,22 @@
                         _forestMinMax[metric].min = Math.min(_forestMinMax[metric].min, curTreeData[metric].min);
                     }
 
-                    for (let attribute of _data["attributeColumns"]) {
-                        // get all the unique types into the array.
-                        _data['trees'][index].descendants().forEach(function(d) {
-                            if (!curTreeData[attribute].includes(d.data.attributes[attribute])) {
-                                curTreeData[attribute].push(d.data.attributes[attribute]);
-                            }
-                            if (!_forestMinMax[attribute].includes(d.data.attributes[attribute])) {
-                                _forestMinMax[attribute].push(d.data.attributes[attribute]);
-                            }
-                        });
-                    }
+                        _data["forestStats"] = _forestStats;
+                        _data["forestMinMax"] = _forestMinMax;
+                },
+                pruneTree: function(threshold){
+                    _pruneDefaultTree(threshold);
 
-                    _data["forestStats"] = _forestStats;
-                    _data["forestMinMax"] = _forestMinMax;
+                    _state.cachedThreshold = threshold;
+                    _state.hierarchyUpdated = true;
+
+                    _observers.notify();
+                },
+                storeXOffsets: function(index, globalOffset, localOffset){
+                    var obj = {
+                        global: globalOffset,
+                        local: localOffset
+                    }
                 },
                 updateSelected: function(nodes){
                     /**
@@ -615,6 +697,11 @@
                      */
 
                     _state["selectedMetric"] = newMetric;
+                    
+                    //need to cache last value of 
+                    _pruneDefaultTree(_state.cachedThreshold);
+                    _state.hierarchyUpdated = true;
+
                     _observers.notify();
                 },
                 changeColorScheme: function(){
@@ -682,13 +769,9 @@
             const allColumns = metricColumns.concat(attributeColumns);
             var brushOn = model.state["brushOn"];
             var curColor = model.state["colorScheme"];
-<<<<<<< HEAD
-            var colors = model.data["colors"];
-=======
             var colors = model.data["colors"];        
             var curLegend = model.state["legend"];
             var legends = model.data["legends"];
->>>>>>> moved zooming and selection into chart view. It makes sense with how offset specific the selection is
 
             //initialize bounds for svg
             var width = element.clientWidth - globals.layout.margin.right - globals.layout.margin.left;
@@ -735,7 +818,25 @@
             // Create SVG and SVG-based interactables
             // ----------------------------------------------
 
-            //make an svg in the scope of the current
+            d3.select(elem).append("select")
+                .attr("id", "test_pruning")
+                .selectAll("option")
+                .data([0, 1000, 60000, 100000])
+                .enter()
+                .append('option')
+                .text(d => d)
+                .attr("value", d=>(d));
+
+            d3.select(elem).select('#test_pruning')
+                .on('change', function(){
+                    _observers.notify({
+                        type: globals.signals.MASSPRUNE,
+                        threshold: this.value
+                    });
+                })
+
+
+            //make an svg in the scope of our current
             // element/drawing space
             var _svg = d3.select(elem).append('svg').attr('class','inputCanvas');
 
@@ -812,6 +913,9 @@
             
             _svg.attr('height', '15px').attr('width', width);
 
+            var mainG = _svg.append("g")
+                .attr('id', "mainG")
+                .attr("transform", "translate(" + globals.layout.margin.left + "," + globals.layout.margin.top + ")");
 
            // ----------------------------------------------
             // Define and set d3 callbacks for changes
@@ -927,6 +1031,11 @@
                         .attr("width", width)
                         .attr("height", height);
 
+            var _maxNodeRadius = 12;
+            var _treeDepthScale = d3.scaleLinear().range([0,element.clientWidth]).domain([0, model.data.maxHeight])
+            globals.nodeScale.range([5, _maxNodeRadius]).domain([0, model.data.forestMinMax[model.state.selectedMetric].max]);
+            var _treeLayoutHeights = [];
+
             //layout variables            
             var spreadFactor = 0;
             var legendOffset = 0;
@@ -935,21 +1044,27 @@
             var treeOffset = 0;
             var minmax = [];
 
+            //view specific data
+            var nodes = [];
+            var surrogates = [];
+            var links = [];
 
-            
-            function diagonal(s, d) {
-                /**
+            function diagonal(s, d, ti) {
+                              /**
                  * Creates a curved diagonal path from parent to child nodes
                  * 
                  * @param {Object} s - parent node
                  * @param {Object} d - child node
                  * 
                  */
-
-                let path = `M ${s.y} ${s.x}
-                C ${(s.y + d.y) / 2} ${s.x},
-                ${(s.y + d.y) / 2} ${d.x},
-                ${d.y} ${d.x}`
+                var dy = _treeDepthScale(d.depth);
+                var sy = _treeDepthScale(s.depth);
+                var sx = _getLocalNodeX(s.x, ti);
+                var dx = _getLocalNodeX(d.x, ti);
+                let path = `M ${sy} ${sx}
+                C ${(sy + dy) / 2} ${sx},
+                ${(sy + dy) / 2} ${dx},
+                ${dy} ${dx}`
 
                 return path
             }
@@ -998,7 +1113,10 @@
                             .attr('id', "mainG")
                             .attr("transform", "translate(" + globals.layout.margin.left + "," + 0 + ")");
 
-            var tree = d3.tree().nodeSize([_nodeRadius, _nodeRadius]);
+            var mainG = svg.select("#mainG");
+            var tree = d3.tree().size([maxTreeCanvasHeight, width - _margin.left]);
+            // .nodeSize([_maxNodeRadius, _maxNodeRadius]);
+            
 
             // Find the tallest tree for layout purposes (used to set a uniform spreadFactor)
             for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
@@ -1095,21 +1213,23 @@
 
                 newg.call(zoom)
                     .on("dblclick.zoom", null);
+                    
+                //store node and link layout data for use later
+                var treeLayout = tree(model.data.hierarchy[treeIndex]);
+                nodes.push(treeLayout.descendants());
+                surrogates.push([]);
+                links.push(treeLayout.descendants().slice(1));
                 
                 //X value where tree should start being drawn
                 treeOffset = 0 + legendOffset + _margin.top;
 
-                //Initialize nodes with x/y data based on their current location
-                model.updateNodes(treeIndex,
-                    function(n){
-                        // Normalize for fixed-depth.
-                        n.forEach(function (d) {
-                            d.x = d.x + treeOffset - minmax[treeIndex]["min"];
-                            d.y = (d.depth * spreadFactor);
-
-                            d.x0 = d.x;
-                            d.y0 = d.y;
-
+                //updates
+                // put this on the immutable tree
+                nodes[treeIndex].forEach(
+                    function (d) {
+                            d.x0 = _getLocalNodeX(d.x, treeIndex);
+                            d.y0 = _treeDepthScale(d.depth);
+                        
                             // Store the overall position based on group
                             d.xMainG = d.x + chartOffset;
                             d.yMainG = d.y + _margin.left;
@@ -1117,8 +1237,6 @@
                             d.xMainG0 = d.xMainG;
                             d.yMainG0 = d.yMainG;
                         });
-                    }
-                );
 
                 newg.style("display", "inline-block");
 
@@ -1129,7 +1247,10 @@
             } //end for-loop "add tree"
 
 
+            newg.call(zoom)
+                    .on("dblclick.zoom", null);
 
+            //return object        
             return{
                 register: function(s){
                     _observers.add(s);
@@ -1143,15 +1264,39 @@
 
                     chartOffset = _margin.top;
                     height = _margin.top + _margin.bottom;
+                    globals.nodeScale.domain([0, model.data.forestMinMax[model.state.selectedMetric].max]);
+
+
+                     //add brush if there should be one
+                     if(model.state.brushOn > 0){
+                        d3.select("#mainG").append('g')
+                            .attr('class', 'brush')
+                            .call(brush);
+                    } 
+
                     //render for any number of trees
-                    for(var treeIndex = 0; treeIndex < model.data["numberOfTrees"]; treeIndex++){
+                    for(var treeIndex = 0; treeIndex < model.data.numberOfTrees; treeIndex++){
+                        //retrieve new data from model
+                        let lastClicked = model.state.lastClicked;
+                        var selectedMetric = model.state.selectedMetric;
+                        var source = model.data.hierarchy[treeIndex];
 
-                        let lastClicked = model.state["lastClicked"];
+                        //will need to optimize this redrawing
+                        // by cacheing tree between calls
+                        if(model.state.hierarchyUpdated == true){
+                            var treeLayout = tree(source);
+                            nodes[treeIndex] = treeLayout.descendants().filter(d=>{return !d.dummy});
+                            surrogates[treeIndex] = treeLayout.descendants().filter(d=>{return d.dummy});
+                            links[treeIndex] = treeLayout.descendants().slice(1);
+                            
+                            console.log(surrogates, nodes);
+                            //only update after last tree
+                            if(treeIndex == model.data.numberOfTrees - 1){
+                                model.state.hierarchyUpdated = false;
+                            }
+                        }
 
-                        var source = d3.hierarchy(model.data["forestData"][treeIndex], d => d.children);
-                        var selectedMetric = model.state["selectedMetric"];
-                        var nodes = model.getNodesFromMap(treeIndex);
-                        var links = model.getLinksFromMap(treeIndex);
+                        
                         var chart = svg.selectAll('.group-' + treeIndex);
                         var tree = chart.selectAll('.chart');
 
@@ -1165,6 +1310,30 @@
                                     return d.id || (d.id = ++i);
                                 });
                         
+                        var dummyNodes = tree_group.selectAll("g.fakeNode")
+                            .data(surrogates[treeIndex], function (d) {
+                                return d.id || (d.id = ++i);
+                            });
+                        
+                        var dNodeEnter = dummyNodes.enter().append('g')
+                            .attr('class', 'fakeNode')
+                            .attr("transform", function (d) {
+                                return "translate(" + lastClicked.y + "," + lastClicked.x + ")";
+                            })
+                            .on("click", function(d){
+                                _observers.notify({
+                                    type: globals.signals.CLICK,
+                                    node: d
+                                })
+                            })
+                            .on('dblclick', function (d) {
+                                _observers.notify({
+                                    type: globals.signals.DBLCLICK,
+                                    node: d,
+                                    tree: treeIndex
+                                })
+                            });
+
                         // Enter any new nodes at the parent's previous position.
                         var nodeEnter = node.enter().append('g')
                                 .attr('class', 'node')
@@ -1184,37 +1353,51 @@
                                 });
 
                         nodeEnter.append("circle")
-                            .attr('class', 'circleNode')
-                            .attr("r", 1e-6)
-                            .style("fill", function(d) {
-                                return _colorManager.calcColorScale(d.data, treeIndex);
-                            })
-                            .style('stroke-width', '1px')
-                            .style('stroke', 'black');
+                                .attr('class', 'circleNode')
+                                .attr("r", 1e-6)
+                                .style("fill", function (d) {
+                                    if(model.state["legend"] == globals.UNIFIED){
+                                        return _colorManager.calcColorScale(d.data.metrics[selectedMetric], -1);
+                                    }
+                                    return _colorManager.calcColorScale(d.data.metrics[selectedMetric], treeIndex);
+                                })
+                                .style('stroke-width', '1px')
+                                .style('stroke', 'black');
+            
+                        dNodeEnter.append("path")
+                                .attr('class', 'dummyNode')
+                                .attr("d", "M 6 2 C 6 2 5 2 5 3 S 6 4 6 4 S 7 4 7 3 S 6 2 6 2 Z M 6 3 S 6 3 6 3 Z M 8 0 C 8 0 7 0 7 1 C 7 1 7 2 8 2 C 8 2 9 2 9 1 C 9 0 8 0 8 0 M 9 5 C 9 4 8 4 8 4 S 7 4 7 5 S 8 6 8 6 S 9 6 9 5")
+                                .attr("fill", "rgba(0,0,0, .4)")
+                                .style("stroke-width", ".5px")
+                                .style("stroke", "rgba(100,100,100)")
 
-                        //Append text to nodes
+                        // commenting out text for now
                         nodeEnter.append("text")
-                        .attr("x", function (d) {
-                            return d.children || model.state['collapsedNodes'].includes(d) ? -13 : 13;
-                        })
-                        .attr("dy", ".75em")
-                        .attr("text-anchor", function (d) {
-                            return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
-                        })
-                        .text(function (d) {
-                            if(!d.children){
-                                return d.data.name;
-                            }
-                            else if(d.children.length == 1){
-                                return "";
-                            }
-                            else {
-                                return d.data.name.slice(0,5) + "...";
-                            }
-                        })
-                        .style("font", "12px monospace");
-
-
+                                .attr("x", function (d) {
+                                    return d.children || model.state['collapsedNodes'].includes(d) ? -13 : 13;
+                                })
+                                .attr("dy", ".75em")
+                                .attr("text-anchor", function (d) {
+                                    return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
+                                })
+                                .text(function (d) {
+                                    if(d.dummy == true){
+                                        return "";
+                                    }
+                                    else if(!d.children){
+                                        return d.data.name;
+                                    }
+                                    else if(d.children.length == 1){
+                                        return "";
+                                    }
+                                    else {
+                                        return d.data.name.slice(0,5) + "...";
+                                    }
+                                })
+                                // .attr('transform', 'rotate( -15)')
+                                // .style("stroke-width", "3px")
+                                .style("font", "12px monospace");
+        
 
                         // links
                         var link = tree.selectAll("path.link")
@@ -1238,31 +1421,32 @@
                         // Updates 
                         // ---------------------------------------------
                         var nodeUpdate = nodeEnter.merge(node);
+                        var dNodeUpdate = dNodeEnter.merge(dummyNodes);
                         var linkUpdate = linkEnter.merge(link);
                 
                         // Chart updates
                         chart
-                        .transition()
-                        .duration(globals.duration)
-                        .attr("transform", function(){
-                            if(model.state["activeTree"].includes(model.data["rootNodeNames"][treeIndex+1])){
-                                return `translate(${_margin.left}, ${_margin.top})`;
-                            } 
-                            else {
-                                return `translate(${_margin.left}, ${chartOffset})`;
-                            }
-                        })    
-                        .style("display", function(){
-                            if(model.state["activeTree"].includes("Show all trees")){
-                                return "inline-block";
-                            } 
-                            else if(model.state["activeTree"].includes(model.data["rootNodeNames"][treeIndex+1])){
-                                return "inline-block";
-                            } 
-                            else {
-                                return "none";
-                            }
-                        });
+                            .transition()
+                            .duration(globals.duration)
+                            .attr("transform", function(){
+                                if(model.state["activeTree"].includes(model.data["rootNodeNames"][treeIndex+1])){
+                                    return `translate(${_margin.left}, ${_margin.top})`;
+                                } 
+                                else {
+                                    return `translate(${_margin.left}, ${chartOffset})`;
+                                }
+                            })    
+                            .style("display", function(){
+                                if(model.state["activeTree"].includes("Show all trees")){
+                                    return "inline-block";
+                                } 
+                                else if(model.state["activeTree"].includes(model.data["rootNodeNames"][treeIndex+1])){
+                                    return "inline-block";
+                                } 
+                                else {
+                                    return "none";
+                                }
+                            });
 
                         //legend updates
                         chart.selectAll(".legend rect")
@@ -1293,67 +1477,68 @@
                                 });
 
             
-                        // Transition nodes to their new position.
-                        nodeUpdate.transition()
-                                .duration(globals.duration)
-                                .attr("transform", function (d) {
-                                    return `translate(${d.y}, ${d.x})`;
-                                });
+                        // Transition normal nodes to their new position.
+                        nodeUpdate
+                            .transition()
+                            .duration(globals.duration)
+                            .attr("transform", function (d) {
+                                return `translate(${_treeDepthScale(d.depth)}, ${_getLocalNodeX(d.x, treeIndex)})`;
+                            });
+                                
+                        //update other characteristics of nodes
+                        nodeUpdate
+                            .select('circle.circleNode')
+                            .style('stroke', function(d){
+                                if (model.state['collapsedNodes'].includes(d)){
+                                    return "#89c3e0";
+                                }
+                                else{
+                                    return 'black';
+                                }
+                            })
+                            .style("stroke-dasharray", function (d) {
+                                return model.state['collapsedNodes'].includes(d) ? '4' : '0';
+                            }) //lightblue
+                            .style('stroke-width', function(d){
+                                if (model.state['collapsedNodes'].includes(d)){
+                                    return '6px';
+                                } 
+                                else if (model.state['selectedNodes'].includes(d)){
+                                    return '4px';
+                                } 
+                                else {
+                                    return '1px';
+                                }
+                            })
+                            .attr('cursor', 'pointer')
+                            .transition()
+                            .duration(globals.duration)
+                            .attr("r", function(d){
+                                return globals.nodeScale(d.data.metrics[selectedMetric])})
+                            .style('fill', function (d) {
+                                if(model.state["legend"] == globals.UNIFIED){
+                                    return _colorManager.calcColorScale(d.data.metrics[selectedMetric], -1);
+                                }
+                                return _colorManager.calcColorScale(d.data.metrics[selectedMetric], treeIndex);
 
-                        nodeUpdate.select('circle.circleNode')
-                                .attr("r", 5)
-                                .style('stroke', function(d){
-                                    if (model.state['collapsedNodes'].includes(d)){
-                                        return "#89c3e0";
-                                    }
-                                    else{
-                                        return 'black';
-                                    }
-                                })
-                                .style("stroke-dasharray", function (d) {
-                                    return model.state['collapsedNodes'].includes(d) ? '4' : '0';
-                                }) //lightblue
-                                .style('stroke-width', function(d){
-                                    if (model.state['collapsedNodes'].includes(d)){
-                                        return '6px';
-                                    } 
-                                    else if (model.state['selectedNodes'].includes(d)){
-                                        return '4px';
-                                    } 
-                                    else {
-                                        return '1px';
-                                    }
-                                })
-                                .attr('cursor', 'pointer')
-                                .transition()
-                                .duration(globals.duration)
-                                .style('fill', function(d) {
-                                    return _colorManager.calcColorScale(d.data, treeIndex);
-                                })
-
-                        nodeUpdate.select('text')
-                                .attr("x", function (d) {
-                                    return d.children || model.state['collapsedNodes'].includes(d) ? -13 : 13;
-                                })
-                                .attr("dy", ".75em")
-                                .attr("text-anchor", function (d) {
-                                    return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
-                                })
-                                .text(function (d) {
-                                    if(!d.children){
-                                        return d.data.name;
-                                    }
-                                    else if(d.children.length == 1){
-                                        return "";
-                                    }
-                                    else {
-                                        return d.data.name.slice(0,5) + "...";
-                                    }
-                                })
-                                .style("font", "12px monospace")
-                                .attr("fill", "black");
-
-
+                            });
+                        
+                        
+                        dNodeUpdate
+                            .selectAll(".dummyNode")
+                            .attr("d", "M 6 2 C 6 2 5 2 5 3 S 6 4 6 4 S 7 4 7 3 S 6 2 6 2 Z M 6 3 S 6 3 6 3 Z M 8 0 C 8 0 7 0 7 1 C 7 1 7 2 8 2 C 8 2 9 2 9 1 C 9 0 8 0 8 0 M 9 5 C 9 4 8 4 8 4 S 7 4 7 5 S 8 6 8 6 S 9 6 9 5")
+                            .attr("fill", "rgba(0,0,0, .4)")
+                            .style("stroke-width", ".5px")
+                            .style("stroke", "rgba(100,100,100)")
+                        
+                        dNodeUpdate
+                            .transition()
+                            .duration(globals.duration)
+                            .attr("transform", function (d) {
+                                    let scale = 4;
+                                    let h = this.getBBox().height*4;
+                                    return `translate(${_treeDepthScale(d.depth)-15}, ${_getLocalNodeX(d.x, treeIndex) - h/2}) scale(${scale})`;
+                            });
                                 
                         // ---------------------------------------------
                         // Exit
@@ -1371,6 +1556,13 @@
             
                         nodeExit.select("text")
                                 .style("fill-opacity", 1);
+                        
+                        var dNodeExit = dummyNodes.exit().transition()
+                                .duration(globals.duration)
+                                .attr("transform", function (d) {
+                                    return "translate(" + lastClicked.y + "," + lastClicked.x + ")";
+                                })
+                                .remove();
             
                         // Transition exiting links to the parent's new position.
                         var linkExit = link.exit().transition()
