@@ -63,7 +63,9 @@ class Roundtrip(Magics):
         displayObj = display(HTML(argList), display_id=True)
 
         data = self.shell.user_ns[args[1]]
+        displayObj.update(Javascript('argList.push("' + str(path) + '")'))
         displayObj.update(Javascript('argList.push("' + str(data) + '")'))
+
 
         dataValidation = {
             "literal_tree": self._validate_literal_tree,
