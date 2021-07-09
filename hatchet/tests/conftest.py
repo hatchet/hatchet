@@ -832,7 +832,7 @@ def timemory_json_data():
 
     # enable flat collection because of the coverage exe
     timemory.settings.flat_profile = True
-    ProfilerConfig.full_filenames = True
+    ProfilerConfig.include_line = False
     ProfilerConfig.only_filenames = ["timemory_func.py", "_methods.py"]
 
     with marker(components, key="main"):
