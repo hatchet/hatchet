@@ -25,7 +25,7 @@ def _unpickle_series_elems(pd_series):
     return pd.Series(unpickled_elems)
 
 
-def _corrrect_children_and_parent_col_types(df):
+def _correct_children_and_parent_col_types(df):
     new_children_col = []
     for c in df["children"]:
         if not isinstance(c, list):
@@ -59,7 +59,7 @@ class CSVReader(DataframeReader):
             del kwargs["index_col"]
         csv_df = pd.read_csv(self.filename, index_col=0, **kwargs)
         csv_df["node"] = _unpickle_series_elems(csv_df["node"])
-        csv_df = _corrrect_children_and_parent_col_types(csv_df)
+        csv_df = _correct_children_and_parent_col_types(csv_df)
         if index_col is not None:
             return csv_df.reset_index(drop=True).set_index(index_col)
         multindex_cols = ["node", "rank", "thread"]
