@@ -1,75 +1,113 @@
-# Copyright 2017-2021 Lawrence Livermore National Security, LLC and other
-# CallFlow Project Developers. See the top-level LICENSE file for details.
-#
-# SPDX-License-Identifier: MIT
-# ------------------------------------------------------------------------------
-
-import numpy as np
 import hatchet as ht
-from scipy.stats import kurtosis, skew
+import numpy as np 
+import pandas as pd
+from scipy import stats
 
 class BoxPlot:
     """
     Boxplot computation for a dataframe segment
     """
 
-    def __init__(self, tgt_gf, bkg_gf=None, callsite=[], iqr_scale=1.5):
+    def __init__(self, tgt_gf, bkg_gf=None, callsites=[], metrics=["time", "time (inc)"], iqr_scale=1.5):
         """
-        Boxplot for callsite or module
+        Boxplot for callsite 
         
         :param tgt_gf: (ht.GraphFrame) Target GraphFrame 
         :param bkg_gf: (ht.GraphFrame) Relative supergraph
-        :param callsite: (str) Callsite name
+        :param callsites: (list) Callsite name
+        :param metrics: (list) Runtime metrics
         :param iqr_scale: (float) IQR range for outliers.
         """
         assert isinstance(tgt_gf, ht.GraphFrame)
-        assert isinstance(callsite, list)
+        assert isinstance(callsites, list)
         assert isinstance(iqr_scale, float)
-
-        assert 0
+        
+        self.metrics = metrics
+        self.iqr_scale = iqr_scale
+        self.callsites = callsites
+        
+        tgt_gf.dataframe.reset_index(inplace=True)
+        tgt_dict = BoxPlot.df_bi_level_group(tgt_gf.dataframe, "name", None, cols=metrics + ["nid"], group_by=["rank"], apply_func=lambda _: _.mean())
+        
+        if bkg_gf is not None:
+            bkg_gf.dataframe.reset_index(inplace=True)
+            bkg_dict = BoxPlot.df_bi_level_group(bkg_gf.dataframe, "name", None, cols=metrics + ["nid"], group_by=["rank"], apply_func=lambda _: _.mean())
+        
+        self.result = {}
 
         self.box_types = ["tgt"]        
-        if relative_gf is not None:
+        if bkg_gf is not None:
             self.box_types = ["tgt", "bkg"]
 
-        self.nid = gf.get_idx(name, ntype)
-        node = {"id": self.nid, "type": ntype, "name": name}
+        for callsite in self.callsites:
+            ret = {}
+            tgt_df = tgt_dict[callsite]
+            ret["tgt"] = self.compute(tgt_df)
 
-        # TODO: Avoid this.
-        self.c_path = None
-        self.rel_c_path = None
-
-        if ntype == "callsite":
-            df = sg.callsite_aux_dict[name]
-            if 'component_path' in sg.dataframe.columns:
-                self.c_path = sg.get_component_path(node)
+            if bkg_gf is not None:
+                bkg_df = bkg_dict[callsite]
+                ret["bkg"] = self.compute(bkg_df)
                 
-            if relative_sg is not None:
-                rel_df = relative_sg.callsite_aux_dict[name]
+            self.result[callsite] = ret
+    
+    @staticmethod
+    def df_bi_level_group(df, frst_group_attr, scnd_group_attr, cols, group_by, apply_func, proxy={}):
+        _cols = cols + group_by
 
-                if 'component_path' in relative_sg.dataframe.columns:
-                    self.rel_c_path = sg.get_component_path(node)
-            
-        elif ntype == "module":
-            df = sg.module_aux_dict[self.nid]
-            if relative_sg is not None:
-                rel_df = relative_sg.module_aux_dict[self.nid]
-        
-        if relative_sg is not None and "dataset" in rel_df.columns:
-            self.ndataset = df_count(rel_df, 'dataset')
+        # If there is only one attribute to group by, we use the 1st index.
+        if len(group_by) == 1:
+            group_by = group_by[0]
 
-        self.time_columns = [proxy_columns.get(_, _) for _ in TIME_COLUMNS]
-        self.result = {}
-        self.ntype = ntype
-        self.iqr_scale = iqr_scale
+        # Find the grouping
+        if scnd_group_attr is not None:
+            _groups = [frst_group_attr, scnd_group_attr]
+        else:
+            _groups = [frst_group_attr]
 
-        self.result["name"] = name
-        if ntype == "callsite":
-            self.result["module"] = sg.get_module(sg.get_idx(name, ntype))
+        # Set the df.index as the _groups
+        _df = df.set_index(_groups)
+        _levels = _df.index.unique().tolist()
 
-        if relative_sg is not None:
-            self.result["bkg"] = self.compute(rel_df)
-        self.result["tgt"] = self.compute(df)
+        # If "rank" is present in the columns, we will group by "rank".
+        if "rank" in _df.columns and len(df["rank"].unique().tolist()) > 1:
+            if scnd_group_attr is not None:
+                if len(group_by) == 0:
+                    _cols = _cols + ["rank"]
+                    return { _ : _df.xs(_)[_cols] for (_, __) in _levels }
+                return { _ : (_df.xs(_)[_cols].groupby(group_by).mean()).reset_index() for (_, __) in _levels }
+            else:
+                if len(group_by) == 0:
+                    _cols = _cols + ["rank"]
+                    return { _ : _df.xs(_)[_cols] for _ in _levels }
+                return { _ : (_df.xs(_)[_cols].groupby(group_by).mean()).reset_index() for _ in _levels }
+        else: 
+            return { _ : _df.xs(_)[_cols] for _ in _levels}
+    
+    @staticmethod
+    def outliers(data, scale=1.5, side="both"):
+        assert isinstance(data, (pd.Series, np.ndarray))
+        assert len(data.shape) == 1
+        assert isinstance(scale, float)
+        assert side in ["gt", "lt", "both"]
+
+        d_q13 = np.percentile(data, [25.0, 75.0])
+        iqr_distance = np.multiply(stats.iqr(data), scale)
+
+        if side in ["gt", "both"]:
+            upper_range = d_q13[1] + iqr_distance
+            upper_outlier = np.greater(data - upper_range.reshape(1), 0)
+
+        if side in ["lt", "both"]:
+            lower_range = d_q13[0] - iqr_distance
+            lower_outlier = np.less(data - lower_range.reshape(1), 0)
+
+        if side == "gt":
+            return upper_outlier
+        if side == "lt":
+            return lower_outlier
+        if side == "both":
+            return np.logical_or(upper_outlier, lower_outlier)
+
         
     def compute(self, df):
         """
@@ -79,10 +117,10 @@ class BoxPlot:
         :return:
         """
 
-        ret = {_: {} for _ in TIME_COLUMNS}
-        for tk, tv in zip(TIME_COLUMNS, self.time_columns):
+        ret = {_: {} for _ in self.metrics}
+        for tk, tv in zip(self.metrics, self.metrics):
             q = np.percentile(df[tv], [0.0, 25.0, 50.0, 75.0, 100.0])
-            mask = outliers(df[tv], scale=self.iqr_scale)
+            mask = BoxPlot.outliers(df[tv], scale=self.iqr_scale)
             mask = np.where(mask)[0]
 
             if 'rank' in df.columns:
@@ -94,8 +132,8 @@ class BoxPlot:
             _min, _mean, _max = _data.min(), _data.mean(), _data.max()
             _var = _data.var() if _data.shape[0] > 0 else 0.0
             _imb = (_max - _mean) / _mean if not np.isclose(_mean, 0.0) else _max
-            _skew = skew(_data)
-            _kurt = kurtosis(_data)
+            _skew = stats.skew(_data)
+            _kurt = stats.kurtosis(_data)
 
             ret[tk] = {
                 "q": q,
@@ -106,17 +144,9 @@ class BoxPlot:
                 "uv": (_mean, _var),
                 "imb": _imb,
                 "ks": (_kurt, _skew),
-                "nid": self.nid,
             }
             if 'dataset' in df.columns:
                 ret[tk]['odset'] = df['dataset'].to_numpy()[mask]
-
-            # TODO: Find a better way to send the component_path from data.
-            if self.c_path is not None:
-                ret[tk]['cpath'] = self.c_path
-            
-            if self.rel_c_path is not None:
-                ret[tk]['rel_cpath'] = self.rel_c_path
 
         return ret
             
@@ -125,37 +155,28 @@ class BoxPlot:
         Unpack the boxplot data into JSON format.
         """
         result = {}
-        for box_type in self.box_types:
-            result[box_type] = {}
-            for metric in self.time_columns:
-                box = self.result[box_type][metric]
-                result[box_type][metric] = {
-                    "q": box["q"].tolist(),
-                    "outliers": {
-                        "values": box["oval"].tolist(),
-                        "ranks": box["orank"].tolist()
-                    },
-                    "min": box["rng"][0],
-                    "max": box["rng"][1],
-                    "mean": box["uv"][0],
-                    "var": box["uv"][1],
-                    "imb": box["imb"],
-                    "kurt": box["ks"][0],
-                    "skew": box["ks"][1],
-                    "nid": box["nid"],
-                    "name": self.result["name"],
-                }
-                result["name"] = self.result["name"]
-                
-                if 'odset' in box:
-                    result[box_type][metric]['odset'] = box['odset'].tolist()
+        for callsite in self.callsites:
+            result[callsite] = {}
+            for box_type in self.box_types:
+                result[callsite][box_type] = {}
+                for metric in self.metrics:
+                    box = self.result[callsite][box_type][metric]
+                    result[callsite][box_type][metric] = {
+                        "q": box["q"].tolist(),
+                        "outliers": {
+                            "values": box["oval"].tolist(),
+                            "ranks": box["orank"].tolist()
+                        },
+                        "min": box["rng"][0],
+                        "max": box["rng"][1],
+                        "mean": box["uv"][0],
+                        "var": box["uv"][1],
+                        "imb": box["imb"],
+                        "kurt": box["ks"][0],
+                        "skew": box["ks"][1],
+                    }
 
-                if 'cpath' in box:
-                    result[box_type][metric]['cpath'] = box['cpath']
-
-                if 'rel_cpath' in box:
-                    result[box_type][metric]['rel_cpath'] = box['rel_cpath']
+                    if 'odset' in box:
+                        result[callsite][box_type][metric]['odset'] = box['odset'].tolist()
 
         return result
-
-# ------------------------------------------------------------------------------

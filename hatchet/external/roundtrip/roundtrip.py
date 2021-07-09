@@ -52,6 +52,10 @@ class Roundtrip(Magics):
             "literal_tree": "roundtripTree.js",
             "boxplot": "boxplot.js"
         }
+        dataValidation = {
+            "literal_tree": self._validate_literal_tree,
+            "boxplot": self._validate_boxplot
+        }
 
         fileAndPath = os.path.join(path, visToFileMapping[args[1]])
         javascriptFile = open(fileAndPath).read()
@@ -65,12 +69,6 @@ class Roundtrip(Magics):
         data = self.shell.user_ns[args[1]]
         displayObj.update(Javascript('argList.push("' + str(path) + '")'))
         displayObj.update(Javascript('argList.push("' + str(data) + '")'))
-
-
-        dataValidation = {
-            "literal_tree": self._validate_literal_tree,
-            "boxplot": self._validate_boxplot
-        }
 
         dataValidation[args[1]](data)
 

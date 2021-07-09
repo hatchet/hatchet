@@ -79,6 +79,15 @@ define(function (require) {
         .append('option')
         .text(d => d)
         .attr('value', d => d);
+    },
+
+    // Formatting numbers
+    formatRuntime: (val) => {
+      if (val == 0) {
+        return val;
       }
+      let format = d3.format(".3");
+      return format(val);
+    },
   }
 });
