@@ -348,13 +348,25 @@
             _data.forestMetrics.push(_forestMinMax);
 
             function _visitor(root, condition){
+
+                if (root.data.name.includes("mv2_increment")){
+                    console.log("found", root.data.name, root.children);
+                }
                 if(root.children){
                     var dummyHolder = root.children[0];
                     dummyHolder.elided = [];
                     for(var childNdx = root.children.length-1; childNdx >= 0; childNdx--){
                         var child = root.children[childNdx];
+
+                        if (root.data.name.includes("201:MPIR_Init_")){
+                            print(child, condition);
+                        }
+
                         //condition where we remove child
                         if(child.value < condition){
+                            if (root.data.name.includes("201:MPIR_Init_thread")){
+                                print("triggered");
+                            }
                             if(!root._children){
                                 root._children = [];
                             }
@@ -389,11 +401,9 @@
             // may need to build a custom each
             function _pruneDefaultTree(condition){
                 for(var i = 0; i < _data.numberOfTrees; i++){
-                    console.log(condition);
                     var h = _data.immutableHierarchy[i].copy().sum(d => d.metrics[_state.selectedMetric]);
                     _visitor(h, condition);
                     _data.hierarchy[i] = h;
-                    console.log(h);
                 }
             }
 
@@ -1113,6 +1123,19 @@
                             .attr('id', "mainG")
                             .attr("transform", "translate(" + globals.layout.margin.left + "," + 0 + ")");
 
+            function _calcNodePositions(nodes, treeIndex){
+                nodes.forEach(
+                    function (d) {
+                            d.x0 = _getLocalNodeX(d.x, treeIndex);
+                            d.y0 = _treeDepthScale(d.depth);
+                        
+                            // Store the overall position based on group
+                            d.xMainG = d.x0 + chartOffset;
+                            d.yMainG = d.y0 + _margin.left;
+                    }
+                );
+            }
+
             var mainG = svg.select("#mainG");
             var tree = d3.tree().size([maxTreeCanvasHeight, width - _margin.left]);
             // .nodeSize([_maxNodeRadius, _maxNodeRadius]);
@@ -1225,18 +1248,7 @@
 
                 //updates
                 // put this on the immutable tree
-                nodes[treeIndex].forEach(
-                    function (d) {
-                            d.x0 = _getLocalNodeX(d.x, treeIndex);
-                            d.y0 = _treeDepthScale(d.depth);
-                        
-                            // Store the overall position based on group
-                            d.xMainG = d.x + chartOffset;
-                            d.yMainG = d.y + _margin.left;
-
-                            d.xMainG0 = d.xMainG;
-                            d.yMainG0 = d.yMainG;
-                        });
+                _calcNodePositions(nodes[treeIndex], treeIndex);
 
                 newg.style("display", "inline-block");
 
@@ -1288,8 +1300,8 @@
                             nodes[treeIndex] = treeLayout.descendants().filter(d=>{return !d.dummy});
                             surrogates[treeIndex] = treeLayout.descendants().filter(d=>{return d.dummy});
                             links[treeIndex] = treeLayout.descendants().slice(1);
-                            
-                            console.log(surrogates, nodes);
+                            _calcNodePositions(nodes[treeIndex], treeIndex);
+
                             //only update after last tree
                             if(treeIndex == model.data.numberOfTrees - 1){
                                 model.state.hierarchyUpdated = false;
@@ -1339,6 +1351,7 @@
                                 .attr('class', 'node')
                                 .attr("transform", () => {return "translate(" + lastClicked.y + "," + lastClicked.x + ")"})
                                 .on("click", function(d){
+                                    console.log(d.data.name, d.data.frame.name, _getLocalNodeX(d.x, 1), d.children);
                                     _observers.notify({
                                         type: globals.signals.CLICK,
                                         node: d
@@ -1381,10 +1394,10 @@
                                     return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
                                 })
                                 .text(function (d) {
-                                    if(d.dummy == true){
-                                        return "";
-                                    }
-                                    else if(!d.children){
+                                    // if(d.data.name.includes("mv2_increment")){
+                                    //     return d.data.frame.name;
+                                    // }
+                                    if(!d.children){
                                         return d.data.name;
                                     }
                                     else if(d.children.length == 1){
@@ -1394,8 +1407,6 @@
                                         return d.data.name.slice(0,5) + "...";
                                     }
                                 })
-                                // .attr('transform', 'rotate( -15)')
-                                // .style("stroke-width", "3px")
                                 .style("font", "12px monospace");
         
 
@@ -1523,6 +1534,26 @@
 
                             });
                         
+                        nodeUpdate.select("text")
+                            .attr("x", function (d) {
+                                return d.children || model.state['collapsedNodes'].includes(d) ? -13 : 13;
+                            })
+                            .attr("dy", ".75em")
+                            .attr("text-anchor", function (d) {
+                                return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
+                            })
+                            .text(function (d) {
+                                if(!d.children || d.children.length == 0){
+                                    return d.data.name;
+                                }
+                                else if(d.children.length == 1){
+                                    return "";
+                                }
+                                else {
+                                    return d.data.name.slice(0,10) + "...";
+                                }
+                            })
+                            .attr("transform", "rotate(-13)");
                         
                         dNodeUpdate
                             .selectAll(".dummyNode")
@@ -1555,7 +1586,8 @@
                                 .attr("r", 1e-6);
             
                         nodeExit.select("text")
-                                .style("fill-opacity", 1);
+                                .style("fill-opacity", 1)
+                                .remove();
                         
                         var dNodeExit = dummyNodes.exit().transition()
                                 .duration(globals.duration)
