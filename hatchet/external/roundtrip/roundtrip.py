@@ -13,10 +13,21 @@ import os
 
 @magics_class
 class Roundtrip(Magics):
+    
 
     # Note to self: Custom magic classes MUST call parent's constructor
     def __init__(self, shell):
         super(Roundtrip, self).__init__(shell)
+        global VIS_TO_FILE, DATA_TO_VALIDATION
+
+        VIS_TO_FILE = {
+            "literal_tree": "roundtripTree.js",
+            "boxplot": "boxplot.js"
+        }
+        DATA_TO_VALIDATION = {
+            "literal_tree": self._validate_literal_tree,
+            "boxplot": self._validate_boxplot
+        }
         self.id_number = 0
         # Clean up namespace function
         display(
@@ -34,30 +45,32 @@ class Roundtrip(Magics):
     }
     codeMap = {}
 
-    @line_magic
-    def loadVisualization(self, line):
-        # Get command line args for loading the vis
-        args = line.split(" ")
-        name = "roundtripTreeVis" + str(self.id_number)
-        path = ""
-        if '"' in args[0]:
-            path = args[0].replace('"', "")
-        elif "'" in args[0]:
-            path = args[0].replace("'", "")
+    def cleanLineArgument(self, arg):
+        if '"' in arg:
+            return arg.replace('"', "")
+        elif "'" in arg:
+            return arg.replace("'", "")
         else:
             # Path is a variable from the nb namespace
-            path = self.shell.user_ns[args[0]]
+            return self.shell.user_ns[arg]
+        
+    @line_magic
+    def loadVisualization(self, line):
+        # Get command line args for loading the vis.
+        args = line.split(" ")
+        # Clean up the input arguments.
+        path = self.cleanLineArgument(args[0])
+        visType = self.cleanLineArgument(args[1])
+        data = self.shell.user_ns[args[2]]
 
-        visToFileMapping = {
-            "literal_tree": "roundtripTree.js",
-            "boxplot": "boxplot.js"
-        }
-        dataValidation = {
-            "literal_tree": self._validate_literal_tree,
-            "boxplot": self._validate_boxplot
-        }
+        if visType not in VIS_TO_FILE.keys():
+            assert(f"Invalid visualization type provided. Valid types include {''.join(VIS_TO_FILE.keys())}")
 
-        fileAndPath = os.path.join(path, visToFileMapping[args[1]])
+        # Set a name to visualization cell.
+        name = "roundtripTreeVis" + str(self.id_number)
+    
+        # Read the appropriate JS file.
+        fileAndPath = os.path.join(path, VIS_TO_FILE[visType])
         javascriptFile = open(fileAndPath).read()
 
         # Source input files
@@ -66,13 +79,13 @@ class Roundtrip(Magics):
 
         displayObj = display(HTML(argList), display_id=True)
 
-        data = self.shell.user_ns[args[1]]
         displayObj.update(Javascript('argList.push("' + str(path) + '")'))
+        displayObj.update(Javascript('argList.push("' + str(visType) + '")'))
         displayObj.update(Javascript('argList.push("' + str(data) + '")'))
 
-        dataValidation[args[1]](data)
+        DATA_TO_VALIDATION[visType](data)
 
-        # Get curent cell id
+        # Get curent cell id.
         self.codeMap[name] = javascriptFile
 
         preRun = """

@@ -1,6 +1,16 @@
-//d3.v4
 (function (element) {
-    const [path, data_string] = argList;
+    function cleanInputs(strings) {
+        return strings.map( (_) =>  _.replace(/'/g, '"'));
+    }
+
+    const [path, visType, variableString] = cleanInputs(argList);
+
+    // Quit if visType is not boxplot. 
+    if (visType !== "boxplot") {
+        console.error("Incorrect visualization type passed.")
+        return;
+    }
+
     requirejs.config({
         baseUrl: path,
          paths: {
@@ -15,18 +25,23 @@
         }
     });
     require(['d3', 'd3-utils'], (d3, d3_utils) => {
-        const data = JSON.parse(data_string.replace(/'/g, '"'));
+        const data = JSON.parse(variableString.replace(/'/g, '"'));
+        const BOXPLOT_TYPES = ["tgt", "bkg"];
 
         /**
          * Sort the callsite ordering based on the attribute.
          *
          * @param {Array} callsites - Callsites as a list.
-         * @param {Stirng} metric - Metric (e.g., time or time (inc))
+         * @param {Stirng} metric - Metric (e.g., time or time (inc)).
          * @param {String} attribute - Attribute to sort by.
+         * @param {String} boxplotType -  boxplot type - for options, refer BOXPLOT_TYPES.
          */
-        const sortByAttribute = (callsites, metric, attribute, boxplot_type) => {
+        const sortByAttribute = (callsites, metric, attribute, boxplotType) => {
+            if (!BOXPLOT_TYPES.includes(boxplotType)) {
+                console.error("Invalid boxplot type. Use either 'tgt' or 'bkg'")
+            }
             let items = Object.keys(callsites).map(function (key) {
-                return [key, callsites[key][boxplot_type]];
+                return [key, callsites[key][boxplotType]];
             });
 
             items = items.sort( (first, second) => {
@@ -131,7 +146,7 @@
                     x: xScale(d.outliers["values"][idx]),
 					value: d.outliers["values"][idx],
 					rank: d.outliers["ranks"][idx],
-					// dataset: d.dataset
+					// dataset: d.dataset # TODO: pass dataset to differentiate.
                 })
             }
             d3_utils.drawCircle(g, outliers, outlierRadius, boxYOffset, fillColor);
