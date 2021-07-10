@@ -1,3 +1,4 @@
+// TODO: Adopt MVC pattern for this module.
 (function (element) {
     function cleanInputs(strings) {
         return strings.map( (_) =>  _.replace(/'/g, '"'));
@@ -11,6 +12,7 @@
         return;
     }
 
+    // Setup the requireJS config to get required libraries.
     requirejs.config({
         baseUrl: path,
          paths: {
@@ -24,6 +26,7 @@
             }
         }
     });
+
     require(['d3', 'd3-utils'], (d3, d3_utils) => {
         const data = JSON.parse(variableString.replace(/'/g, '"'));
         const BOXPLOT_TYPES = ["tgt", "bkg"];
@@ -58,26 +61,28 @@
 
         // Selection dropdown for metrics.
         const metrics = Object.keys(data[callsites[0]]["tgt"]);
-        const selected_metric = metrics[0]
+        const selectedMetric = metrics[0]
         d3_utils.selectionDropDown(element, metrics, "metricSelect");
 
         // Selection dropdown for attributes.
         const attributes = ["min", "max", "mean", "var", "imb", "kurt", "skew"];
-        const selected_attribute = "mean";
+        const selectedAttribute = "mean";
         d3_utils.selectionDropDown(element, attributes, "attributeSelect");
 
-        const sort_callsites = sortByAttribute(data, selected_metric, selected_attribute, "tgt");
+        // Sort the callsites by the selected attribute and metric.
+        const sortedCallsites = sortByAttribute(data, selectedMetric, selectedAttribute, "tgt");
 
+        // Setup VIS area.
         const margin = {top: 20, right: 20, bottom: 0, left: 20},
-                containerHeight = 100 * Object.keys(sort_callsites).length,
+                containerHeight = 100 * Object.keys(sortedCallsites).length,
                 width = element.clientWidth - margin.right - margin.left,
                 height = containerHeight - margin.top - margin.bottom;
-
         const svgArea = d3_utils.prepareSvgArea(width, height, margin);
         const svg = d3_utils.prepareSvg(element, svgArea);
         
+        // TODO: Remove idx variable from here.
         let idx = 0;
-        for (let [callsite, d] of Object.entries(sort_callsites)) {
+        for (let [callsite, d] of Object.entries(sortedCallsites)) {
             const stats = { 
                 "min": d3_utils.formatRuntime(d.min),
                 "max": d3_utils.formatRuntime(d.max),
@@ -99,8 +104,11 @@
                 .attr("id", gId)
                 .attr("width", boxWidth)
                 .attr("transform", "translate(0, " + gYOffset * idx  + ")");
+
+            // Text for callsite name
             d3_utils.drawText(element, gId, "callsite: " + callsite, 10, 0);
 
+            // Text for statistics
             let statIdx = 1;
             for( let [stat, val] of Object.entries(stats)) {
                 d3_utils.drawText(element, gId, `${stat}:  ${val}`, 1.1 * boxWidth, 15, statIdx);
@@ -108,7 +116,6 @@
             }
 
             // const tooltip = element;
-
             // const mouseover = (data) => tooltip.render(data);
             // const mouseout = (data) => tooltip.clear();
             // const click = (data) => tooltip.render(data);
