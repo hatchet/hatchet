@@ -1,9 +1,5 @@
 // TODO: Adopt MVC pattern for this module.
 (function (element) {
-    function cleanInputs(strings) {
-        return strings.map( (_) =>  _.replace(/'/g, '"'));
-    }
-
     const [path, visType, variableString] = cleanInputs(argList);
 
     // Quit if visType is not boxplot. 
@@ -27,35 +23,43 @@
         }
     });
 
+    // --------------------------------------------------------------------------------
+    // Utility functions.
+    // --------------------------------------------------------------------------------
+    // TODO: Move this to a common utils folder.
+    function cleanInputs(strings) {
+        return strings.map( (_) =>  _.replace(/'/g, '"'));
+    }
+
+    /**
+     * Sort the callsite ordering based on the attribute.
+     *
+     * @param {Array} callsites - Callsites as a list.
+     * @param {Stirng} metric - Metric (e.g., time or time (inc)).
+     * @param {String} attribute - Attribute to sort by.
+     * @param {String} boxplotType -  boxplot type - for options, refer BOXPLOT_TYPES.
+     */
+    function sortByAttribute (callsites, metric, attribute, boxplotType) {
+        if (!BOXPLOT_TYPES.includes(boxplotType)) {
+            console.error("Invalid boxplot type. Use either 'tgt' or 'bkg'")
+        }
+        let items = Object.keys(callsites).map(function (key) {
+            return [key, callsites[key][boxplotType]];
+        });
+
+        items = items.sort( (first, second) => {
+            return second[1][metric][attribute] - first[1][metric][attribute];
+        });
+
+        return items.reduce(function (map, obj) {
+            map[obj[0]] = obj[1][metric];
+            return map;
+        }, {});
+    }
+
     require(['d3', 'd3-utils'], (d3, d3_utils) => {
         const data = JSON.parse(variableString.replace(/'/g, '"'));
         const BOXPLOT_TYPES = ["tgt", "bkg"];
-
-        /**
-         * Sort the callsite ordering based on the attribute.
-         *
-         * @param {Array} callsites - Callsites as a list.
-         * @param {Stirng} metric - Metric (e.g., time or time (inc)).
-         * @param {String} attribute - Attribute to sort by.
-         * @param {String} boxplotType -  boxplot type - for options, refer BOXPLOT_TYPES.
-         */
-        const sortByAttribute = (callsites, metric, attribute, boxplotType) => {
-            if (!BOXPLOT_TYPES.includes(boxplotType)) {
-                console.error("Invalid boxplot type. Use either 'tgt' or 'bkg'")
-            }
-            let items = Object.keys(callsites).map(function (key) {
-                return [key, callsites[key][boxplotType]];
-            });
-
-            items = items.sort( (first, second) => {
-                return second[1][metric][attribute] - first[1][metric][attribute];
-            });
-
-            return items.reduce(function (map, obj) {
-                map[obj[0]] = obj[1][metric];
-                return map;
-            }, {});
-        }
 
         const callsites = Object.keys(data);
 
