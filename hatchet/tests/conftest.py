@@ -852,7 +852,7 @@ def timemory_json_data():
         trace_func(trace_arr, tol)
 
     # TODO: cannot combine if there are multiple metrics in the same json
-    data = timemory.get(hierarchy=True, components=["wall_clock"])
+    data = timemory.get(hierarchy=True)
     print(data)
     return data
 
