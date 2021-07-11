@@ -853,7 +853,6 @@ def timemory_json_data():
 
     # TODO: cannot combine if there are multiple metrics in the same json
     data = timemory.get(hierarchy=True)
-    print(data)
     return data
 
 
