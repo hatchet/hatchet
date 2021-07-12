@@ -31,7 +31,7 @@ class Roundtrip(Magics):
         "json": "text/json",
         "css": "text/css",
     }
-    
+
     codeMap = {}
 
     @line_magic
@@ -63,7 +63,7 @@ class Roundtrip(Magics):
         displayObj = display(HTML(argList), display_id=True)
 
         args[1] = self.shell.user_ns[args[1]]
-        displayObj.update( Javascript( 'argList.push("{}")'.format(str(args[1])) ) )
+        displayObj.update(Javascript('argList.push("{}")'.format(str(args[1]))))
 
         # Check that users provided a tree literal
         if not isinstance(args[1], list):
