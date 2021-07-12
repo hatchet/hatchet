@@ -112,7 +112,7 @@ define(function (require) {
         .append('text')
         .attr("x", xOffset)
         .attr("y", yOffset * yOffsetIdx)
-        .attr("stroke", textColor)
+        .attr("fill", textColor)
         .attr('for', forId)
         .text(text);
     },

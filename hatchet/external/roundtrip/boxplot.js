@@ -89,13 +89,13 @@
         const svgArea = d3_utils.prepareSvgArea(width, height, margin);
         const svg = d3_utils.prepareSvg(element, svgArea);
 
-        visualize(sortedCallsites, nameToIdxMap, "tgt");
+        visualize(sortedCallsites, nameToIdxMap, "tgt", true);
         if (MODE == "COMPARISON") {
             const sortedBkgCallsites = sortByAttribute(data, selectedMetric, selectedAttribute, "bkg");
-            visualize(sortedBkgCallsites, nameToIdxMap, "bkg");
+            visualize(sortedBkgCallsites, nameToIdxMap, "bkg", false);
         }
         
-        function visualize(callsites, idxMap, mode) {
+        function visualize(callsites, idxMap, mode, drawCenterLine) {
             for (let [callsite, d] of Object.entries(callsites)) {
                 const stats = { 
                     "min": d3_utils.formatRuntime(d.min),
@@ -141,12 +141,14 @@
 
                 const boxHeight = 80;
                 const boxYOffset = 30;
-                const fillColor = mode === "tgt" ? "#d9d9d9": "#4DAF4A";
+                const fillColor = mode === "tgt" ? "#4DAF4A": "#D9D9D9";
                 const strokeColor = "#202020";
                 const strokeWidth = 1;
 
                 // Centerline
-                d3_utils.drawLine(g, xScale(d.q[0]), boxYOffset + boxHeight/2, xScale(d.q[4]), boxYOffset + boxHeight/2, strokeColor);
+                if (drawCenterLine) {
+                    d3_utils.drawLine(g, xScale(d.q[0]), boxYOffset + boxHeight/2, xScale(d.q[4]), boxYOffset + boxHeight/2, strokeColor);
+                }
 
                 // Box
                 const box = d3_utils.drawRect(g, {
