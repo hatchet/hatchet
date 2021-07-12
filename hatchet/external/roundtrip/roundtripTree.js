@@ -349,24 +349,14 @@
 
             function _visitor(root, condition){
 
-                if (root.data.name.includes("mv2_increment")){
-                    console.log("found", root.data.name, root.children);
-                }
                 if(root.children){
                     var dummyHolder = root.children[0];
                     dummyHolder.elided = [];
                     for(var childNdx = root.children.length-1; childNdx >= 0; childNdx--){
                         var child = root.children[childNdx];
 
-                        if (root.data.name.includes("201:MPIR_Init_")){
-                            print(child, condition);
-                        }
-
                         //condition where we remove child
                         if(child.value < condition){
-                            if (root.data.name.includes("201:MPIR_Init_thread")){
-                                print("triggered");
-                            }
                             if(!root._children){
                                 root._children = [];
                             }
@@ -591,7 +581,7 @@
                     _state['selectedNodes'] = nodes;
                     this.updateTooltip(nodes);
 
-                    if(nodes.length > 0){
+                    if(nodes.length > 0 && nodes[0]){
                         jsNodeSelected = _printQuery(nodes);
                     } else {
                         jsNodeSelected = "['*']";
@@ -677,14 +667,7 @@
                     
                 },
                 updateTooltip: function(nodes){
-                    /**
-                     * Updates the model with new tooltip information based on user selection
-                     * 
-                     * @param {Array} nodes - A list of selected nodes
-                     *
-                     */
-
-                    if(nodes.length > 0){
+                    if(nodes.length > 0 && nodes[0]){
                         var longestName = 0;
                         nodes.forEach(function (d) {
                             var nodeData = d.data.frame.name + ': ' + d.data.metrics.time + 's (' + d.data.metrics["time (inc)"] + 's inc)';
@@ -698,6 +681,7 @@
                         _data["tipText"] = '<p>Click a node or "Select nodes" to see more info</p>';
                     }
                 },
+
                 changeMetric: function(newMetric){
                     /**
                      * Changes the currently selected metric in the model.
@@ -790,6 +774,9 @@
             // ----------------------------------------------
             // Create HTML interactables
             // ----------------------------------------------
+
+            d3.select(elem).append('label').attr('for', 'metricSelect').text('Color by:');
+
             const htmlInputs = d3.select(elem).insert('div', '.canvas').attr('class','html-inputs');
 
             htmlInputs.append('label').attr('for', 'metricSelect').text('Color by:');
@@ -828,14 +815,16 @@
             // Create SVG and SVG-based interactables
             // ----------------------------------------------
 
+
             d3.select(elem).append("select")
                 .attr("id", "test_pruning")
                 .selectAll("option")
-                .data([0, 1000, 60000, 100000])
+                .data([0, 1, 60000, 100000])
                 .enter()
                 .append('option')
                 .text(d => d)
                 .attr("value", d=>(d));
+
 
             d3.select(elem).select('#test_pruning')
                 .on('change', function(){
@@ -854,7 +843,6 @@
             var brushButton = _svg.append('g')
                     .attr('id', 'selectButton')
                     .append('rect')
-                    .attr('width', '80px')
                     .attr('height', '15px')
                     .attr('x', 0).attr('y', 0).attr('rx', 5)
                     .style('fill', '#ccc')
@@ -875,6 +863,8 @@
                             type: globals.signals.TOGGLEBRUSH
                         })
                     });
+
+            brushButton.attr('width', brushButtonText.node().getBBox().width + 5);
 
             var colorButton = _svg.append('g')
                     .attr('id', 'colorButton')
@@ -899,6 +889,8 @@
                         })
                     });
 
+            colorButton.attr('width', colorButtonText.node().getBBox().width + 5);
+
             var unifyLegends = _svg.append('g')
                     .attr('id', 'unifyLegends')
                     .append('rect')
@@ -922,6 +914,8 @@
                     });
             
             _svg.attr('height', '15px').attr('width', width);
+            unifyLegends.attr('width', legendText.node().getBBox().width);
+     
 
             var mainG = _svg.append("g")
                 .attr('id', "mainG")
@@ -1018,6 +1012,10 @@
                     .text(function(){
                         return `Legends: ${legends[curLegend]}`;
                     })
+
+                    colorButton.attr('width', colorButtonText.node().getBBox().width + 10);
+                    unifyLegends.attr('width', legendText.node().getBBox().width + 10);
+                    
                 }
             }
         }
@@ -1053,6 +1051,7 @@
             var chartOffset = _margin.top;
             var treeOffset = 0;
             var minmax = [];
+            var maxTreeCanvasHeight = 800;
 
             //view specific data
             var nodes = [];
@@ -1351,7 +1350,6 @@
                                 .attr('class', 'node')
                                 .attr("transform", () => {return "translate(" + lastClicked.y + "," + lastClicked.x + ")"})
                                 .on("click", function(d){
-                                    console.log(d.data.name, d.data.frame.name, _getLocalNodeX(d.x, 1), d.children);
                                     _observers.notify({
                                         type: globals.signals.CLICK,
                                         node: d
@@ -1362,6 +1360,18 @@
                                         type: globals.signals.DBLCLICK,
                                         node: d,
                                         tree: treeIndex
+                                    })
+                                })
+                                .on("mouseover", function(d){
+                                    _observers.notify({
+                                        type: globals.signals.CLICK,
+                                        node: d
+                                    })
+                                })
+                                .on("mouseout", function(d){
+                                    _observers.notify({
+                                        type: globals.signals.CLICK,
+                                        node: null
                                     })
                                 });
 
@@ -1382,7 +1392,14 @@
                                 .attr("d", "M 6 2 C 6 2 5 2 5 3 S 6 4 6 4 S 7 4 7 3 S 6 2 6 2 Z M 6 3 S 6 3 6 3 Z M 8 0 C 8 0 7 0 7 1 C 7 1 7 2 8 2 C 8 2 9 2 9 1 C 9 0 8 0 8 0 M 9 5 C 9 4 8 4 8 4 S 7 4 7 5 S 8 6 8 6 S 9 6 9 5")
                                 .attr("fill", "rgba(0,0,0, .4)")
                                 .style("stroke-width", ".5px")
-                                .style("stroke", "rgba(100,100,100)")
+                                .style("stroke", "rgba(100,100,100)");
+                        dNodeEnter.append("path")
+                                .attr('class', 'dummyNode2')
+                                .attr("d", "M 6 2 C 6 2 5 2 5 3 S 6 4 6 4 S 7 4 7 3 S 6 2 6 2 Z M 6 3 S 6 3 6 3 Z M 8 0 C 8 0 7 0 7 1 C 7 1 7 2 8 2 C 8 2 9 2 9 1 C 9 0 8 0 8 0 M 9 5 C 9 4 8 4 8 4 S 7 4 7 5 S 8 6 8 6 S 9 6 9 5")
+                                .attr("fill", "rgba(0,0,0, .4)")
+                                .style("stroke-width", ".5px")
+                                .style("stroke", "rgba(100,100,100)");
+                                
 
                         // commenting out text for now
                         nodeEnter.append("text")
@@ -1404,7 +1421,7 @@
                                         return "";
                                     }
                                     else {
-                                        return d.data.name.slice(0,5) + "...";
+                                        return d.data.name.slice(0,10) + "...";
                                     }
                                 })
                                 .style("font", "12px monospace");
@@ -1522,10 +1539,15 @@
                                 }
                             })
                             .attr('cursor', 'pointer')
+                            .attr("r", 
+                            function(d){
+                                if (model.state['selectedNodes'].includes(d)){
+                                    return globals.nodeScale(d.data.metrics[selectedMetric]) + 3;
+                                }
+                                return globals.nodeScale(d.data.metrics[selectedMetric]);
+                            })
                             .transition()
                             .duration(globals.duration)
-                            .attr("r", function(d){
-                                return globals.nodeScale(d.data.metrics[selectedMetric])})
                             .style('fill', function (d) {
                                 if(model.state["legend"] == globals.UNIFIED){
                                     return _colorManager.calcColorScale(d.data.metrics[selectedMetric], -1);
@@ -1552,15 +1574,24 @@
                                 else {
                                     return d.data.name.slice(0,10) + "...";
                                 }
-                            })
-                            .attr("transform", "rotate(-13)");
+                            });
                         
                         dNodeUpdate
                             .selectAll(".dummyNode")
                             .attr("d", "M 6 2 C 6 2 5 2 5 3 S 6 4 6 4 S 7 4 7 3 S 6 2 6 2 Z M 6 3 S 6 3 6 3 Z M 8 0 C 8 0 7 0 7 1 C 7 1 7 2 8 2 C 8 2 9 2 9 1 C 9 0 8 0 8 0 M 9 5 C 9 4 8 4 8 4 S 7 4 7 5 S 8 6 8 6 S 9 6 9 5")
-                            .attr("fill", "rgba(0,0,0, .4)")
+                            .attr("fill", "rgba(180,180,180)")
                             .style("stroke-width", ".5px")
                             .style("stroke", "rgba(100,100,100)")
+                        
+                        dNodeUpdate
+                            .selectAll(".dummyNode2")
+                            .attr("d", "M 6 2 C 6 2 5 2 5 3 S 6 4 6 4 S 7 4 7 3 S 6 2 6 2 Z M 6 3 S 6 3 6 3 Z M 8 0 C 8 0 7 0 7 1 C 7 1 7 2 8 2 C 8 2 9 2 9 1 C 9 0 8 0 8 0 M 9 5 C 9 4 8 4 8 4 S 7 4 7 5 S 8 6 8 6 S 9 6 9 5")
+                            .attr("fill", "rgba(180,180,180)")
+                            .style("stroke-width", ".5px")
+                            .style("stroke", "rgba(100,100,100)")
+                            .attr("transform", function (d) {
+                                return `translate(0, 1)`;
+                            })
                         
                         dNodeUpdate
                             .transition()
