@@ -860,7 +860,7 @@
                     .attr('class', 'chart')
                     .attr('chart-id', treeIndex)
                     .append('rect')
-                    .attr('height', treeHeight)
+                    .attr('height', globals.treeHeight)
                     .attr('width', width)
                     .attr('fill', 'rgba(0,0,0,0)');
 
