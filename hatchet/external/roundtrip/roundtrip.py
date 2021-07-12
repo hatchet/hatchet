@@ -107,6 +107,7 @@ class Roundtrip(Magics):
                   element = document.getElementById('"""
             + str(name)
             + """');"""
+            + """var jsNodeSelected;"""
         )
         footer = """</script>"""
         display(HTML(header + javascriptFile + footer))

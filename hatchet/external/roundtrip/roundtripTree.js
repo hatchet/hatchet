@@ -2,7 +2,7 @@
 //d3.v4
 (function (element) {
     require(['https://d3js.org/d3.v4.min.js'], function (d3) {
-        var globals = {
+        const globals = Object.freeze({
             UNIFIED: 0,
             DEFAULT: 0,
             signals: {
@@ -19,10 +19,9 @@
             layout: {
                 margin: {top: 20, right: 20, bottom: 80, left: 20},
             },
-            duration: 750
-        }
-
-        jsNodeSelected = "['*']";
+            duration: 750,
+            treeHeight: 300
+        })
 
         var makeColorManager = function(model){
             
@@ -42,9 +41,10 @@
             
         
             var _allTreesColors = ['#d73027', '#fc8d59', '#fee090', '#e0f3f8', '#91bfdb', '#4575b4'];
-            var _invertedAllTrees = ['#4575b4', '#91bfdb', '#e0f3f8', '#fee090', '#fc8d59', '#d73027'];
+            var _invertedAllTreesColors = ['#4575b4', '#91bfdb', '#e0f3f8', '#fee090', '#fc8d59', '#d73027'];
 
-            _state = model.state;
+            var _state = model.state;
+            var forestMinMax = model.data["forestMinMax"];
 
             return {
                 setColors: function(treeIndex){
@@ -54,7 +54,7 @@
                         if (_state["colorScheme"] == 0) {
                             colorSchemeUsed = _allTreesColors;
                         } else {
-                            colorSchemeUsed = _invertedAllTrees;
+                            colorSchemeUsed = _invertedAllTreesColors;
                         }
                     } 
                     else { //single tree is displayed
@@ -109,14 +109,13 @@
                 },
                 calcColorScale: function(nodeMetric, treeIndex) {
                     var curMetric = d3.select(element).select('#metricSelect').property('value');
+                    var colorSchemeUsed = this.setColors(treeIndex);
                     if (treeIndex == -1) {
-                        var colorSchemeUsed = this.setColors(treeIndex);
                         var metric_range = forestMinMax[curMetric].max - forestMinMax[curMetric].min;
                         var proportion_of_total = (nodeMetric - forestMinMax[curMetric].min) / metric_range;
                     } else {
-                        var colorSchemeUsed = this.setColors(treeIndex);
                         var metric_range = forestMetrics[treeIndex][curMetric].max - forestMetrics[treeIndex][curMetric].min;
-                        var proportion_of_total = nodeMetric / 1;
+                        var proportion_of_total = nodeMetric;
     
                         if (metric_range != 0) {
                             proportion_of_total = (nodeMetric - forestMetrics[treeIndex][curMetric].min) / metric_range;
@@ -212,12 +211,19 @@
             var _data = {
                             "treemaps":[],
                             "legends": ["Unified", "Indiv."],
-                            "colors": ["Default", "Inverted"]
+                            "colors": ["Default", "Inverted"],
+                            "forestData": null,
+                            "rootNodeNames": [],
+                            "numberOfTrees": 0,
+                            "metricColumns": [],
+                            "forestMinMax": [],
+                            "forestMetrics": []
                         };
 
             var _state = {
                             "selectedNodes":[], 
-                            "collapsedNodes":[], 
+                            "collapsedNodes":[],
+                            "selectedMetric": [],
                             "lastClicked": null,
                             "legend": 0,
                             "colorScheme": 0,
@@ -228,7 +234,6 @@
             var cleanTree = argList[0].replace(/'/g, '"');
             
             _data["forestData"] = JSON.parse(cleanTree);
-            _data["rootNodeNames"] = [];
             _data["rootNodeNames"].push("Show all trees");
 
             _data["numberOfTrees"] = _data["forestData"].length;
@@ -239,18 +244,17 @@
             _state["lastClicked"] = d3.hierarchy(_data["forestData"][0], d => d.children)
             _state["activeTree"] = "Show all trees";
 
-            forestMetrics = [];
-            forestMinMax = {}; 
+            var forestMetrics = [];
+            var forestMinMax = {}; 
             for (var i = 0; i < _data["numberOfTrees"]; i++) {
                 var thisTree = _data["forestData"][i];
 
                 // Get tree names for the display select options
                 _data["rootNodeNames"].push(thisTree.frame.name);
-                console.log(_data["rootNodeNames"]);
 
                 var thisTreeMetrics = {};
-                // init the min/max for all trees' metricColumns
 
+                // init the min/max for all trees' metricColumns
                 for (var j = 0; j < _data["metricColumns"].length; j++) {
                     thisTreeMetrics[_data["metricColumns"][j]] = {};
                     thisTreeMetrics[_data["metricColumns"][j]]["min"] = Number.MAX_VALUE;
@@ -266,6 +270,7 @@
             }
 
             _data["forestMinMax"] = forestMinMax;
+            _data["forestMetrics"] = forestMetrics;
 
             // HELPER FUNCTION DEFINTIONS
             function _printNodeData(nodeList) {
@@ -483,9 +488,8 @@
 
                  
             //initialize bounds for svg
-            var treeHeight = 300;
             var width = element.clientWidth - globals.layout.margin.right - globals.layout.margin.left;
-            var height = treeHeight * (model.data["numberOfTrees"] + 1);
+            var height = globals.treeHeight * (model.data["numberOfTrees"] + 1);
 
 
             d3.select(elem).append('label').attr('for', 'metricSelect').text('Color by:');
@@ -701,9 +705,8 @@
             var metricColumns = model.data["metricColumns"];
             var forestData = model.data["forestData"];
                  
-            var treeHeight = 300;
             var width = element.clientWidth - globals.layout.margin.right - globals.layout.margin.left;
-            var height = treeHeight * (model.data["numberOfTrees"] + 1);
+            var height = globals.treeHeight * (model.data["numberOfTrees"] + 1);
             var _margin = globals.layout.margin;
             
             // Creates a curved (diagonal) path from parent to the child nodes
@@ -720,14 +723,14 @@
             var mainG = svg.select("#mainG");
 
             // var treemap = d3.tree().size([(2000), width - margin.left]);
-            var treemap = d3.tree().size([(treeHeight), width - _margin.left]);
+            var treemap = d3.tree().size([(globals.treeHeight), width - _margin.left]);
 
             var maxHeight = 0;
 
             // Find the tallest tree for layout purposes (used to set a uniform spreadFactor)
             for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
-                currentTreeData = forestData[treeIndex];
-                currentRoot = d3.hierarchy(currentTreeData, d => d.children);
+                var currentTreeData = forestData[treeIndex];
+                var currentRoot = d3.hierarchy(currentTreeData, d => d.children);
 
                 currentRoot.x0 = height;
                 currentRoot.y0 = _margin.left;
@@ -742,12 +745,15 @@
 
             // Add a group and tree for each forestData[i]
             for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
+                var forestMetrics = model.data["forestMetrics"];
+                var forestMinMax = model.data["forestMinMax"];
 
                 var currentTreeMap = model.getTreeMap(treeIndex);
+
                 var newg = mainG.append("g")
                         .attr('class', 'group-' + treeIndex + ' subchart')
                         .attr('tree_id', treeIndex)
-                        .attr("transform", "translate(" + _margin.left + "," + (treeHeight * treeIndex + _margin.top) + ")");
+                        .attr("transform", "translate(" + _margin.left + "," + (globals.treeHeight * treeIndex + _margin.top) + ")");
 
                 currentTreeMap.descendants().forEach(function (d) {
                     for (var i = 0; i < metricColumns.length; i++) {
@@ -825,7 +831,7 @@
                             d.y0 = d.y;
 
                             // Store the overall position based on group
-                            d.xMainG = d.x + treeHeight * treeIndex + _margin.top;
+                            d.xMainG = d.x + globals.treeHeight * treeIndex + _margin.top;
                             d.yMainG = d.y + _margin.left;
                         });
                     }
@@ -949,7 +955,7 @@
                                 return `translate(${_margin.left}, ${_margin.top})`;
                             } 
                             else {
-                                return `translate(${_margin.left}, ${_margin.top + (treeHeight*treeIndex)})`;
+                                return `translate(${_margin.left}, ${_margin.top + (globals.treeHeight*treeIndex)})`;
                             }
                         })    
                         .style("display", function(){
