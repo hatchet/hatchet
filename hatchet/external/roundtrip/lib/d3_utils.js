@@ -140,6 +140,33 @@ define(function (require) {
 				.on("click", (d) => click(d))
 				.on("mouseover", (d) => mouseover(d))
 				.on("mouseout", (d) => mouseout(d));
+    },
+    drawXAxis: (element, xScale, numOfTicks, tickFormatFn, xOffset, yOffset, strokeColor) => {
+      const axis = d3.axisBottom(xScale)
+        .ticks(numOfTicks)
+        .tickFormat(tickFormatFn);
+
+      const line = element.append("g")
+        .attr("class", "xAxis")
+        .attr("transform", `translate(${xOffset}, ${yOffset})`)
+        .call(axis);
+      
+      line.selectAll("path")
+				.style("fill", "none")
+				.style("stroke", strokeColor)
+				.style("stroke-width", "1px");
+
+			line.selectAll("line")
+				.style("fill", "none")
+				.style("stroke", strokeColor)
+				.style("stroke-width", "1px");
+
+			line.selectAll("text")
+				.style("font-size", "12px")
+				.style("font-family", "sans-serif")
+				.style("font-weight", "lighter");
+      
+      return line;
     }
   }
 });

@@ -89,6 +89,7 @@
         const svgArea = d3_utils.prepareSvgArea(width, height, margin);
         const svg = d3_utils.prepareSvg(element, svgArea);
 
+        // Visualize the boxplots.
         visualize(sortedCallsites, nameToIdxMap, "tgt", true);
         if (MODE == "COMPARISON") {
             const sortedBkgCallsites = sortByAttribute(data, selectedMetric, selectedAttribute, "bkg");
@@ -96,6 +97,12 @@
         }
         
         function visualize(callsites, idxMap, mode, drawCenterLine) {
+            const boxHeight = 80;
+            const boxYOffset = 30;
+            const fillColor = mode === "tgt" ? "#4DAF4A": "#D9D9D9";
+            const strokeColor = "#202020";
+            const strokeWidth = 1;
+
             for (let [callsite, d] of Object.entries(callsites)) {
                 const stats = { 
                     "min": d3_utils.formatRuntime(d.min),
@@ -120,9 +127,13 @@
                     .attr("width", boxWidth)
                     .attr("transform", "translate(0, " + gYOffset * idx  + ")");
 
-                // Text for callsite name
+                const axisOffset = boxHeight * 1.5;
+                d3_utils.drawXAxis(g, xScale, 5, d3_utils.formatRuntime, 0, axisOffset, "black");
+
+                // Text for callsite name.
                 d3_utils.drawText(element, gId, "callsite: " + callsite, 10, 0);
 
+                // Text fpr statistics title.
                 const yOffset = mode === "tgt" ? 1.1 * boxWidth : 1.4 * boxWidth;
                 const textColor = mode === "tgt" ? "#4DAF4A": "#202020";
                 d3_utils.drawText(element, gId, mode, yOffset, 15, 0, textColor);
@@ -139,11 +150,7 @@
                 // const mouseout = (data) => tooltip.clear();
                 // const click = (data) => tooltip.render(data);
 
-                const boxHeight = 80;
-                const boxYOffset = 30;
-                const fillColor = mode === "tgt" ? "#4DAF4A": "#D9D9D9";
-                const strokeColor = "#202020";
-                const strokeWidth = 1;
+                
 
                 // Centerline
                 if (drawCenterLine) {
@@ -178,6 +185,7 @@
                     })
                 }
                 d3_utils.drawCircle(g, outliers, outlierRadius, boxYOffset, fillColor);
+                
             }
         }
 
