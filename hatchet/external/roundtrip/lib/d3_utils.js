@@ -106,12 +106,13 @@ define(function (require) {
         .on("mouseover", mouseover)
         .on("mouseout", mouseout);
     },
-    drawText: (element, forId, text, xOffset, yOffset, yOffsetIdx) => {
+    drawText: (element, forId, text, xOffset, yOffset, yOffsetIdx, textColor) => {
       return d3.select(element)
         .select('#' + forId)
         .append('text')
         .attr("x", xOffset)
         .attr("y", yOffset * yOffsetIdx)
+        .attr("stroke", textColor)
         .attr('for', forId)
         .text(text);
     },

@@ -1,5 +1,6 @@
 // TODO: Adopt MVC pattern for this module.
 (function (element) {
+    const BOXPLOT_TYPES = ["tgt", "bkg"];
     const [path, visType, variableString] = cleanInputs(argList);
 
     // Quit if visType is not boxplot. 
@@ -59,9 +60,13 @@
 
     require(['d3', 'd3-utils'], (d3, d3_utils) => {
         const data = JSON.parse(variableString.replace(/'/g, '"'));
-        const BOXPLOT_TYPES = ["tgt", "bkg"];
 
         const callsites = Object.keys(data);
+        const MODE = Object.keys(data[callsites[0]]).length == 2 ? "COMPARISON" : "NORMAL";
+        
+        // Assign an index to the callsites. 
+        const idxToNameMap = Object.assign({}, callsites.map((callsite) => (callsite)));
+        const nameToIdxMap = Object.entries(idxToNameMap).reduce((acc, [key, value]) => (acc[value] = key, acc), {})
 
         // Selection dropdown for metrics.
         const metrics = Object.keys(data[callsites[0]]["tgt"]);
@@ -78,91 +83,101 @@
 
         // Setup VIS area.
         const margin = {top: 20, right: 20, bottom: 0, left: 20},
-                containerHeight = 100 * Object.keys(sortedCallsites).length,
+                containerHeight = 100 * Object.keys(callsites).length,
                 width = element.clientWidth - margin.right - margin.left,
                 height = containerHeight - margin.top - margin.bottom;
         const svgArea = d3_utils.prepareSvgArea(width, height, margin);
         const svg = d3_utils.prepareSvg(element, svgArea);
-        
-        // TODO: Remove idx variable from here.
-        let idx = 0;
-        for (let [callsite, d] of Object.entries(sortedCallsites)) {
-            const stats = { 
-                "min": d3_utils.formatRuntime(d.min),
-                "max": d3_utils.formatRuntime(d.max),
-                "mean": d3_utils.formatRuntime(d.mean),
-                "var": d3_utils.formatRuntime(d.var),
-                "imb": d3_utils.formatRuntime(d.imb),
-                "kurt": d3_utils.formatRuntime(d.kurt),
-                "skew": d3_utils.formatRuntime(d.skew),
-            };
-            
-            const boxWidth = 0.6 * width;
-            const xScale = d3.scaleLinear()
-                .domain([d.min, d.max])
-                .range([0.05 * boxWidth, boxWidth - 0.05 * boxWidth]);
 
-            const gId = "box-" + idx;
-            const gYOffset = 200;
-            const g = svg.append("g")
-                .attr("id", gId)
-                .attr("width", boxWidth)
-                .attr("transform", "translate(0, " + gYOffset * idx  + ")");
-
-            // Text for callsite name
-            d3_utils.drawText(element, gId, "callsite: " + callsite, 10, 0);
-
-            // Text for statistics
-            let statIdx = 1;
-            for( let [stat, val] of Object.entries(stats)) {
-                d3_utils.drawText(element, gId, `${stat}:  ${val}`, 1.1 * boxWidth, 15, statIdx);
-                statIdx += 1;
-            }
-
-            // const tooltip = element;
-            // const mouseover = (data) => tooltip.render(data);
-            // const mouseout = (data) => tooltip.clear();
-            // const click = (data) => tooltip.render(data);
-
-            const boxHeight = 80;
-            const boxYOffset = 30;
-            const fillColor = "#d9d9d9";
-            const strokeColor = "#202020";
-            const strokeWidth = 1;
-
-            // Centerline
-            d3_utils.drawLine(g, xScale(d.q[0]), boxYOffset + boxHeight/2, xScale(d.q[4]), boxYOffset + boxHeight/2, strokeColor);
-
-            // Box
-            const box = d3_utils.drawRect(g, {
-                "class": "rect",      
-                "x": xScale(d.q[1]),
-                "y": boxYOffset,
-                "height": boxHeight,
-                "fill": fillColor,
-                "width": xScale(d.q[3]) - xScale(d.q[1]),
-                "stroke": strokeColor,
-                "stroke-width": strokeWidth
-            });
-
-            // Markers
-            d3_utils.drawLine(g, xScale(d.q[0]), boxYOffset, xScale(d.q[0]), boxYOffset + boxHeight, strokeColor);
-            d3_utils.drawLine(g, xScale(d.q[4]), boxYOffset, xScale(d.q[4]), boxYOffset + boxHeight, strokeColor);
-
-            // Outliers
-            const outlierRadius = 4; 
-            let outliers = []
-            for (let idx = 0; idx < d.outliers["values"].length; idx += 1) {
-                outliers.push({
-                    x: xScale(d.outliers["values"][idx]),
-					value: d.outliers["values"][idx],
-					rank: d.outliers["ranks"][idx],
-					// dataset: d.dataset # TODO: pass dataset to differentiate.
-                })
-            }
-            d3_utils.drawCircle(g, outliers, outlierRadius, boxYOffset, fillColor);
-
-            idx += 1
+        visualize(sortedCallsites, nameToIdxMap, "tgt");
+        if (MODE == "COMPARISON") {
+            const sortedBkgCallsites = sortByAttribute(data, selectedMetric, selectedAttribute, "bkg");
+            visualize(sortedBkgCallsites, nameToIdxMap, "bkg");
         }
+        
+        function visualize(callsites, idxMap, mode) {
+            for (let [callsite, d] of Object.entries(callsites)) {
+                const stats = { 
+                    "min": d3_utils.formatRuntime(d.min),
+                    "max": d3_utils.formatRuntime(d.max),
+                    "mean": d3_utils.formatRuntime(d.mean),
+                    "var": d3_utils.formatRuntime(d.var),
+                    "imb": d3_utils.formatRuntime(d.imb),
+                    "kurt": d3_utils.formatRuntime(d.kurt),
+                    "skew": d3_utils.formatRuntime(d.skew),
+                };
+                
+                const boxWidth = 0.6 * width;
+                const xScale = d3.scaleLinear()
+                    .domain([d.min, d.max])
+                    .range([0.05 * boxWidth, boxWidth - 0.05 * boxWidth]);
+
+                const idx = idxMap[callsite];
+                const gId = "box-" + idx;
+                const gYOffset = 200;
+                const g = svg.append("g")
+                    .attr("id", gId)
+                    .attr("width", boxWidth)
+                    .attr("transform", "translate(0, " + gYOffset * idx  + ")");
+
+                // Text for callsite name
+                d3_utils.drawText(element, gId, "callsite: " + callsite, 10, 0);
+
+                const yOffset = mode === "tgt" ? 1.1 * boxWidth : 1.4 * boxWidth;
+                const textColor = mode === "tgt" ? "#4DAF4A": "#202020";
+                d3_utils.drawText(element, gId, mode, yOffset, 15, 0, textColor);
+
+                // Text for statistics
+                let statIdx = 1;
+                for( let [stat, val] of Object.entries(stats)) {
+                    d3_utils.drawText(element, gId, `${stat}:  ${val}`, yOffset, 15, statIdx, textColor);
+                    statIdx += 1;
+                }
+
+                // const tooltip = element;
+                // const mouseover = (data) => tooltip.render(data);
+                // const mouseout = (data) => tooltip.clear();
+                // const click = (data) => tooltip.render(data);
+
+                const boxHeight = 80;
+                const boxYOffset = 30;
+                const fillColor = mode === "tgt" ? "#d9d9d9": "#4DAF4A";
+                const strokeColor = "#202020";
+                const strokeWidth = 1;
+
+                // Centerline
+                d3_utils.drawLine(g, xScale(d.q[0]), boxYOffset + boxHeight/2, xScale(d.q[4]), boxYOffset + boxHeight/2, strokeColor);
+
+                // Box
+                const box = d3_utils.drawRect(g, {
+                    "class": "rect",      
+                    "x": xScale(d.q[1]),
+                    "y": boxYOffset,
+                    "height": boxHeight,
+                    "fill": fillColor,
+                    "width": xScale(d.q[3]) - xScale(d.q[1]),
+                    "stroke": strokeColor,
+                    "stroke-width": strokeWidth
+                });
+
+                // Markers
+                d3_utils.drawLine(g, xScale(d.q[0]), boxYOffset, xScale(d.q[0]), boxYOffset + boxHeight, strokeColor);
+                d3_utils.drawLine(g, xScale(d.q[4]), boxYOffset, xScale(d.q[4]), boxYOffset + boxHeight, strokeColor);
+
+                // Outliers
+                const outlierRadius = 4; 
+                let outliers = []
+                for (let idx = 0; idx < d.outliers["values"].length; idx += 1) {
+                    outliers.push({
+                        x: xScale(d.outliers["values"][idx]),
+                        value: d.outliers["values"][idx],
+                        rank: d.outliers["ranks"][idx],
+                        // dataset: d.dataset # TODO: pass dataset to differentiate.
+                    })
+                }
+                d3_utils.drawCircle(g, outliers, outlierRadius, boxYOffset, fillColor);
+            }
+        }
+
     });
 })(element);
