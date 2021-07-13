@@ -119,18 +119,26 @@
             };
         }
 
-        function visualizeStats (d, mode, gId, boxWidth) {
+        function visualizeStats (g, d, type, boxWidth) {
             const stats = _format(d);
+            const TYPE_TEXTS = {
+                "tgt": "Target",
+                "bkg": "Background"
+            };
 
             // Text fpr statistics title.
-            const xOffset = mode === "tgt" ? 1.1 * boxWidth : 1.4 * boxWidth;
-            const textColor = mode === "tgt" ? "#4DAF4A": "#202020";
-            // d3_utils.drawText(element, gId, mode, xOffset, 15, 0, textColor);
+            const xOffset = type === "tgt" ? 1.1 * boxWidth : 1.4 * boxWidth;
+            const textColor = type === "tgt" ? "#4DAF4A": "#202020";
+
+            const statsG = g.append("g")
+                .attr("class", "stats");
+
+            d3_utils.drawText(statsG, TYPE_TEXTS[type], xOffset, 15, 0, textColor, "underline");
 
             // Text for statistics
             let statIdx = 1;
             for( let [stat, val] of Object.entries(stats)) {
-                d3_utils.drawText(element, gId, `${stat}:  ${val}`, xOffset, 15, statIdx, textColor);
+                d3_utils.drawText(statsG, `${stat}:  ${val}`, xOffset, 15, statIdx, textColor);
                 statIdx += 1;
             }
         }
@@ -151,6 +159,14 @@
                 d3_utils.drawLine(g, xScale(min), boxYOffset + boxHeight/2, xScale(max), boxYOffset + boxHeight/2, strokeColor);
             }
 
+            // Tooltip
+            const tooltipWidth = 100;
+            const tooltipHeight = 30;
+            const tooltipText = `q1: ${d3_utils.formatRuntime(d.q[1])}, q3: ${d3_utils.formatRuntime(d.q[3])}`;
+            const mouseover = (event) => d3_utils.drawToolTip(g, event, tooltipText, tooltipWidth, tooltipHeight);
+            const mouseout = (event) => d3_utils.clearToolTip(g, event);
+            const click = (event) => d3_utils.drawToolTip(g, event, tooltipText, tooltipWidth, tooltipHeight);
+
             // Box
             d3_utils.drawRect(g, {
                 "class": "rect",      
@@ -161,7 +177,7 @@
                 "width": xScale(d.q[3]) - xScale(d.q[1]),
                 "stroke": strokeColor,
                 "stroke-width": strokeWidth
-            });
+            }, click, mouseover, mouseout);
 
             // Markers
             const markerStrokeWidth = 3;
@@ -224,17 +240,12 @@
                 d3_utils.drawXAxis(g, xScale, 5, d3_utils.formatRuntime, 0, axisOffset, "black");
 
                 // Text for callsite name.
-                d3_utils.drawText(element, gId, "callsite: " + callsite, 0, 0);
+                d3_utils.drawText(g, "callsite: " + callsite, 0, 0);
 
-                visualizeStats(tgt, "tgt", gId, boxWidth);
+                visualizeStats(g, tgt, "tgt", boxWidth);
                 if (bkg !== undefined) {
-                    visualizeStats(bkg, "bkg", gId, boxWidth);
+                    visualizeStats(g, bkg, "bkg", boxWidth);
                 }
-
-                // const tooltip = element;
-                // const mouseover = (data) => tooltip.render(data);
-                // const mouseout = (data) => tooltip.clear();
-                // const click = (data) => tooltip.render(data);
 
                 visualizeBoxplot(g, tgt, "tgt", xScale, true);
                 if (bkg !== undefined) {

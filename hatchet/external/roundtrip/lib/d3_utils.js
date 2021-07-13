@@ -106,14 +106,13 @@ define(function (require) {
         .on("mouseover", mouseover)
         .on("mouseout", mouseout);
     },
-    drawText: (element, forId, text, xOffset, yOffset, yOffsetIdx, textColor) => {
-      return d3.select(element)
-        .select('#' + forId)
+    drawText: (element, text, xOffset, yOffset, yOffsetIdx, textColor, textDecoration) => {
+      return element
         .append('text')
         .attr("x", xOffset)
         .attr("y", yOffset * yOffsetIdx)
         .attr("fill", textColor)
-        .attr('for', forId)
+        .attr("text-decoration", textDecoration)
         .text(text);
     },
     drawLine: (element, x1, y1, x2, y2, strokeColor, strokeWidth) => {
@@ -167,6 +166,35 @@ define(function (require) {
 				.style("font-weight", "lighter");
       
       return line;
+    },
+    drawToolTip: (element, event, text, width, height) => {
+      const [ mousePosX, mousePosY] = d3.pointer(event, element.node());
+      console.log(mousePosX, mousePosY);
+      const toolTipG = element
+        .append("g")
+        .attr("class", "tooltip")
+        .attr("transform", `translate(${mousePosX}, ${mousePosY})`)
+
+      toolTipG.append("rect")
+        .attr("fill", "#fff")
+        .attr("stroke", "#000")
+        .attr("rx", "10px")
+        .attr("width", width)
+        .attr("height", height);
+
+      toolTipG.append("text")
+				.style("font-family", "sans-serif")
+				.style("font-size", "12px")
+        .attr("fill", "#000")
+				.attr("class", "tooltip-content")
+        .text(text);
+
+      // return toolTipG;
+      
+    },
+    clearToolTip: (element) => {
+      element.selectAll(".tooltip").remove();
+      element.selectAll(".tooltip-content").remove();
     }
   }
 });
