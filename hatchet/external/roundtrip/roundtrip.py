@@ -97,24 +97,6 @@ class Roundtrip(Magics):
 
     def runVis(self, name, javascriptFile, path):
         name = "roundtripTreeVis" + str(self.id_number)
-<<<<<<< HEAD
-        header = (
-            """
-                  <div id=\""""
-            + name
-            + """\"></div>
-                  <script>
-                  elementTop.appendChild(document.getElementById('"""
-            + str(name)
-            + """'));
-                  element = document.getElementById('"""
-            + str(name)
-            + """');"""
-            + """var jsNodeSelected;"""
-        )
-        footer = """</script>"""
-        display(HTML(header + javascriptFile + footer))
-=======
 
         javascriptExport = """
             <div id=\"{0}\">
@@ -130,7 +112,6 @@ class Roundtrip(Magics):
         )
 
         display(HTML(javascriptExport))
->>>>>>> Fixed up the layout to be dunamic to the size of the tree. We will need to reduce trees now.
 
     @line_magic
     def fetchData(self, dest):
