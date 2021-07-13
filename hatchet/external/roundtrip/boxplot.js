@@ -9,10 +9,13 @@
         return;
     }
 
+    // --------------------------------------------------------------------------------
+    // RequireJS setup.
+    // --------------------------------------------------------------------------------
     // Setup the requireJS config to get required libraries.
     requirejs.config({
         baseUrl: path,
-         paths: {
+        paths: {
             d3src: 'https://d3js.org',
             lib: 'lib',
         },
@@ -29,7 +32,7 @@
     // --------------------------------------------------------------------------------
     // TODO: Move this to a common utils folder.
     function cleanInputs(strings) {
-        return strings.map( (_) =>  _.replace(/'/g, '"'));
+        return strings.map((_) => _.replace(/'/g, '"'));
     }
 
     /**
@@ -40,7 +43,7 @@
      * @param {String} attribute - Attribute to sort by.
      * @param {String} boxplotType -  boxplot type - for options, refer BOXPLOT_TYPES.
      */
-    function sortByAttribute (callsites, metric, attribute, boxplotType) {
+    function sortByAttribute(callsites, metric, attribute, boxplotType) {
         if (!BOXPLOT_TYPES.includes(boxplotType)) {
             console.error("Invalid boxplot type. Use either 'tgt' or 'bkg'")
         }
@@ -48,7 +51,7 @@
         // Sanity check to see if the boxplotType is present in the callsites.
         let _is_empty = false;
         Object.keys(callsites).map(function (key) {
-            if(callsites[key][boxplotType] === undefined) {
+            if (callsites[key][boxplotType] === undefined) {
                 _is_empty = true;
             }
         })
@@ -56,12 +59,12 @@
         let items = Object.keys(callsites).map(function (key) {
             return [key, callsites[key][boxplotType]];
         });
-        
-        if(!_is_empty) {
-            items = items.sort( (first, second) => {
+
+        if (!_is_empty) {
+            items = items.sort((first, second) => {
                 return second[1][metric][attribute] - first[1][metric][attribute];
             });
-        }      
+        }
 
         return items.reduce(function (map, obj) {
             if (obj[1] !== undefined) {
@@ -74,14 +77,17 @@
     }
 
     require(['d3', 'd3-utils'], (d3, d3_utils) => {
+        // --------------------------------------------------------------------------------
+        // Main logic.
+        // --------------------------------------------------------------------------------
+
         const data = JSON.parse(variableString);
 
         const callsites = Object.keys(data);
-        const MODE = Object.keys(data[callsites[0]]).length == 2 ? "COMPARISON" : "NORMAL";
-        
+
         // Assign an index to the callsites. 
         const idxToNameMap = Object.assign({}, callsites.map((callsite) => (callsite)));
-        const nameToIdxMap = Object.entries(idxToNameMap).reduce((acc, [key, value]) => (acc[value] = key, acc), {})
+        const nameToIdxMap = Object.entries(idxToNameMap).reduce((acc, [key, value]) => (acc[value] = key, acc), {});
 
         // Selection dropdown for metrics.
         const metrics = Object.keys(data[callsites[0]]["tgt"]);
@@ -97,18 +103,13 @@
         const sortedTgtCallsites = sortByAttribute(data, selectedMetric, selectedAttribute, "tgt");
         const sortedBkgCallsites = sortByAttribute(data, selectedMetric, selectedAttribute, "bkg");
 
-        // Setup VIS area.
-        const margin = {top: 20, right: 20, bottom: 0, left: 20},
-                containerHeight = 100 * Object.keys(callsites).length,
-                width = element.clientWidth - margin.right - margin.left,
-                height = containerHeight - margin.top - margin.bottom;
-        const svgArea = d3_utils.prepareSvgArea(width, height, margin);
-        const svg = d3_utils.prepareSvg(element, svgArea);
+        visualize(callsites, sortedTgtCallsites, sortedBkgCallsites, nameToIdxMap);
 
-        visualize(sortedTgtCallsites, sortedBkgCallsites, nameToIdxMap, false);
-       
+        // --------------------------------------------------------------------------------
+        // Visualization functions.
+        // --------------------------------------------------------------------------------
         function _format(d) {
-            return { 
+            return {
                 "min": d3_utils.formatRuntime(d.min),
                 "max": d3_utils.formatRuntime(d.max),
                 "mean": d3_utils.formatRuntime(d.mean),
@@ -119,7 +120,7 @@
             };
         }
 
-        function visualizeStats (g, d, type, boxWidth) {
+        function visualizeStats(g, d, type, boxWidth) {
             const stats = _format(d);
             const TYPE_TEXTS = {
                 "tgt": "Target",
@@ -128,7 +129,7 @@
 
             // Text fpr statistics title.
             const xOffset = type === "tgt" ? 1.1 * boxWidth : 1.4 * boxWidth;
-            const textColor = type === "tgt" ? "#4DAF4A": "#202020";
+            const textColor = type === "tgt" ? "#4DAF4A" : "#202020";
 
             const statsG = g.append("g")
                 .attr("class", "stats");
@@ -137,14 +138,14 @@
 
             // Text for statistics
             let statIdx = 1;
-            for( let [stat, val] of Object.entries(stats)) {
+            for (let [stat, val] of Object.entries(stats)) {
                 d3_utils.drawText(statsG, `${stat}:  ${val}`, xOffset, 15, statIdx, textColor);
                 statIdx += 1;
             }
         }
 
         function visualizeBoxplot(g, d, type, xScale, drawCenterLine) {
-            const fillColor = { 
+            const fillColor = {
                 "tgt": "#4DAF4A",
                 "bkg": "#D9D9D9"
             };
@@ -158,9 +159,8 @@
             // Centerline
             if (drawCenterLine) {
                 const [min, max] = xScale.domain();
-                d3_utils.drawLine(boxG, xScale(min), boxYOffset + boxHeight/2, xScale(max), boxYOffset + boxHeight/2, strokeColor);
+                d3_utils.drawLine(boxG, xScale(min), boxYOffset + boxHeight / 2, xScale(max), boxYOffset + boxHeight / 2, strokeColor);
             }
-
 
             // Tooltip
             const tooltipWidth = 100;
@@ -172,7 +172,7 @@
 
             // Box
             d3_utils.drawRect(boxG, {
-                "class": "rect",      
+                "class": "rect",
                 "x": xScale(d.q[1]),
                 "y": boxYOffset,
                 "height": boxHeight,
@@ -201,8 +201,16 @@
             }
             d3_utils.drawCircle(boxG, outliers, outlierRadius, outlierYOffset, fillColor[type]);
         }
-        
-        function visualize(tgtCallsites, bkgCallsites, idxMap) {
+
+        function visualize(callsites, tgtCallsites, bkgCallsites, idxMap) {
+            // Setup VIS area.
+            const margin = { top: 20, right: 20, bottom: 0, left: 20 },
+                containerHeight = 150 * Object.keys(callsites).length,
+                width = element.clientWidth - margin.right - margin.left,
+                height = containerHeight - margin.top - margin.bottom;
+            const svgArea = d3_utils.prepareSvgArea(width, height, margin);
+            const svg = d3_utils.prepareSvg(element, svgArea);
+
             const boxWidth = 0.6 * width;
             const allCallsites = [...new Set([...Object.keys(tgtCallsites), ...Object.keys(bkgCallsites)])];
 
@@ -227,8 +235,8 @@
                     max = Math.max(tgt.max, bkg.max);
                 }
                 const xScale = d3.scaleLinear()
-                        .domain([min, max])
-                        .range([0.05 * boxWidth, boxWidth - 0.05 * boxWidth]);
+                    .domain([min, max])
+                    .range([0.05 * boxWidth, boxWidth - 0.05 * boxWidth]);
 
                 // Set up a g container
                 const idx = idxMap[callsite];
@@ -237,7 +245,7 @@
                 const g = svg.append("g")
                     .attr("id", gId)
                     .attr("width", boxWidth)
-                    .attr("transform", "translate(0, " + gYOffset * idx  + ")");
+                    .attr("transform", "translate(20, " + gYOffset * idx + ")");
 
                 const axisOffset = gYOffset * 0.6;
                 d3_utils.drawXAxis(g, xScale, 5, d3_utils.formatRuntime, 0, axisOffset, "black");
@@ -256,6 +264,5 @@
                 }
             }
         }
-
     });
 })(element);
