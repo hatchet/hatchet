@@ -21,8 +21,7 @@
             layout: {
                 margin: {top: 20, right: 20, bottom: 20, left: 20},
             },
-            duration: 750,
-            nodeScale: d3.scaleLinear()
+            duration: 750
         });
 
         jsNodeSelected = "['*']";
@@ -1041,7 +1040,7 @@
 
             var _maxNodeRadius = 12;
             var _treeDepthScale = d3.scaleLinear().range([0,element.clientWidth]).domain([0, model.data.maxHeight])
-            globals.nodeScale.range([5, _maxNodeRadius]).domain([0, model.data.forestMinMax[model.state.selectedMetric].max]);
+            var nodeScale = d3.scaleLinear().range([5, _maxNodeRadius]).domain([0, model.data.forestMinMax[model.state.selectedMetric].max]);
             var _treeLayoutHeights = [];
 
             //layout variables            
@@ -1275,7 +1274,7 @@
 
                     chartOffset = _margin.top;
                     height = _margin.top + _margin.bottom;
-                    globals.nodeScale.domain([0, model.data.forestMinMax[model.state.selectedMetric].max]);
+                    nodeScale.domain([0, model.data.forestMinMax[model.state.selectedMetric].max]);
 
 
                      //add brush if there should be one
@@ -1542,9 +1541,9 @@
                             .attr("r", 
                             function(d){
                                 if (model.state['selectedNodes'].includes(d)){
-                                    return globals.nodeScale(d.data.metrics[selectedMetric]) + 3;
+                                    return nodeScale(d.data.metrics[selectedMetric]) + 3;
                                 }
-                                return globals.nodeScale(d.data.metrics[selectedMetric]);
+                                return nodeScale(d.data.metrics[selectedMetric]);
                             })
                             .transition()
                             .duration(globals.duration)
