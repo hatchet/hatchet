@@ -116,7 +116,7 @@ define(function (require) {
         .attr('for', forId)
         .text(text);
     },
-    drawLine: (element, x1, y1, x2, y2, strokeColor) => {
+    drawLine: (element, x1, y1, x2, y2, strokeColor, strokeWidth) => {
       return element
 				.append("line")
 				.attr("class", "line")
@@ -125,7 +125,7 @@ define(function (require) {
         .attr("x2", x2)
         .attr("y2", y2)
         .attr("stroke", strokeColor)
-				.style("stroke-width", "1.5");
+				.style("stroke-width", strokeWidth);
     },
     drawCircle: (element, data, radius, yOffset, fillColor, click = () => { }, mouseover = () => { }, mouseout = () => { }) => {
       return element
