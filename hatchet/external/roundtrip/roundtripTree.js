@@ -121,15 +121,24 @@
 
                     return this.setColors(treeIndex);
                 },
-                calcColorScale: function(nodeData, treeIndex) {
-                    /**
-                     * Calculates the bins for the color scheme based on the current, user-selected metric.
-                     *
-                     * @param {String} nodeData - the name of the current metric being mapped to a color range
-                     */
-
-                    if (model.state["legend"] == globals.UNIFIED) {
-                        treeIndex  = -1
+                calcColorScale: function(nodeMetric, treeIndex) {
+                    var curMetric = _state["primaryMetric"];
+                    var colorSchemeUsed = this.setColors(treeIndex);
+                    
+                    if (treeIndex == -1) {
+                        var metric_range = _forestMinMax[curMetric].max - _forestMinMax[curMetric].min;
+                        var proportion_of_total = (nodeMetric - _forestMinMax[curMetric].min) / metric_range;
+                    } else {
+                        var metric_range = _modelForestStats[treeIndex][curMetric].max - _modelForestStats[treeIndex][curMetric].min;
+                        var proportion_of_total = nodeMetric / 1;
+    
+                        if (metric_range != 0) {
+                            proportion_of_total = (nodeMetric - _modelForestStats[treeIndex][curMetric].min) / metric_range;
+                        }
+                    }
+    
+                    if (proportion_of_total > 0.9) {
+                        return colorSchemeUsed[0];
                     }
 
                     // Decide the color scheme for the settings.
@@ -226,7 +235,7 @@
                             _model.setBrushedPoints(evt.selection, evt.end);
                             break;
                         case (globals.signals.METRICCHANGE):
-                            _model.changeMetric(evt.newMetric);
+                            _model.changeMetric(evt.newMetric, evt.source);
                             break;
                         case(globals.signals.COLORCLICK):
                             _model.changeColorScheme();
@@ -274,7 +283,8 @@
             var _state = {
                             "selectedNodes":[], 
                             "collapsedNodes":[],
-                            "selectedMetric": [],
+                            "primaryMetric": null,
+                            "secondaryMetric": null,
                             "lastClicked": null,
                             "legend": 0,
                             "colorScheme": 0,
@@ -285,6 +295,7 @@
 
             //setup model
             var cleanTree = argList[0].replace(/'/g, '"');
+            var cleanTree = cleanTree.replace(/nan/g, '\"nan\"');
             var _forestData = JSON.parse(cleanTree);
 
             _data.hierarchy = [];
@@ -307,7 +318,8 @@
             _data.metricColumns = d3.keys(_forestData[0].metrics);
 
             // pick the first metric listed to color the nodes
-            _state.selectedMetric = _data.metricColumns[0];
+            _state.primaryMetric = _data.metricColumns[0];
+            _state.secondaryMetric = _data.metricColumns[1];
             _state.lastClicked = _data.hierarchy[0];
             _state.activeTree = "Show all trees";
             _state.treeXOffsets = [];
@@ -390,8 +402,10 @@
             // may need to build a custom each
             function _pruneDefaultTree(condition){
                 for(var i = 0; i < _data.numberOfTrees; i++){
-                    var h = _data.immutableHierarchy[i].copy().sum(d => d.metrics[_state.selectedMetric]);
-                    _visitor(h, condition);
+                    var h = _data.immutableHierarchy[i].copy().sum(d => d.metrics[_state.primaryMetric]);
+                    if (condition != 0){   
+                        _visitor(h, condition);
+                    }
                     _data.hierarchy[i] = h;
                 }
             }
@@ -414,17 +428,14 @@
                 }
                 nodeStr += '</tr>';
                 for (var i = 0; i < numNodes; i++) {
+                    nodeStr += "<tr>"
                     for (var j = 0; j < metricColumns.length; j++) {
                         if (j == 0) {
-                            nodeStr += '<tr><td>' + nodeList[i].data.frame.name + '</td><td>' + nodeList[i].data.metrics[metricColumns[j]] + '</td><td>';
+                            nodeStr += `<td>${nodeList[i].data.frame.name}</td>`;
                         }
-                        else if (j == metricColumns.length - 1) {
-                            nodeStr += nodeList[i].data.metrics[metricColumns[j]] + '</td></tr>';
-                        }
-                        else {
-                            nodeStr += nodeList[i].data.metrics[metricColumns[j]];
-                        }
+                        nodeStr += `<td>${nodeList[i].data.metrics[metricColumns[j]]}</td>`
                     }
+                    nodeStr += '</tr>'
                 }
                 nodeStr = nodeStr + '</table>';
                 return nodeStr;
@@ -680,16 +691,20 @@
                         _data["tipText"] = '<p>Click a node or "Select nodes" to see more info</p>';
                     }
                 },
-
-                changeMetric: function(newMetric){
-                    /**
+                changeMetric: function(newMetric, source){
+                      /**
                      * Changes the currently selected metric in the model.
                      * 
                      * @param {String} newMetric - the most recently selected metric
                      *
                      */
 
-                    _state["selectedMetric"] = newMetric;
+                    if(source.includes("primary")){
+                        _state.primaryMetric = newMetric;
+                    } 
+                    else if(source.includes("secondary")){
+                        _state.secondaryMetric = newMetric;
+                    }
                     
                     //need to cache last value of 
                     _pruneDefaultTree(_state.cachedThreshold);
@@ -760,6 +775,9 @@
             var metricColumns = model.data["metricColumns"];
             const attributeColumns = model.data["attributeColumns"];
             const allColumns = metricColumns.concat(attributeColumns);
+            
+            var forestData = model.data["forestData"];
+            var primaryMetric = model.state["primaryMetric"];
             var brushOn = model.state["brushOn"];
             var curColor = model.state["colorScheme"];
             var colors = model.data["colors"];        
@@ -774,20 +792,33 @@
             // Create HTML interactables
             // ----------------------------------------------
 
-            d3.select(elem).append('label').attr('for', 'metricSelect').text('Color by:');
-
             const htmlInputs = d3.select(elem).insert('div', '.canvas').attr('class','html-inputs');
 
-            htmlInputs.append('label').attr('for', 'metricSelect').text('Color by:');
+            htmlInputs.append('label').attr('for', 'primaryMetricSelect').text('Color by:');
             var metricInput = htmlInputs.append("select") //element
-                .attr("id", "metricSelect")
-                .selectAll('option')
-                .data(allColumns)
-                .enter()
-                .append('option')
-                .text(d => d)
-                .attr('value', d => d);
-            document.getElementById("metricSelect").style.margin = "10px 10px 10px 0px";
+                    .attr("id", "primaryMetricSelect")
+            var metricInput = d3.select(elem).append("select") //element
+                    .attr("id", "primaryMetricSelect")
+                    .selectAll('option')
+                    .data(metricColumns)
+                    .enter()
+                    .append('option')
+                    .text(d => d)
+                    .attr('value', d => d);
+            document.getElementById("primaryMetricSelect").style.margin = "10px 10px 10px 0px";
+
+            d3.select(elem).append('label').attr('for', 'secondaryMetricSelect').text('Radius:');
+            var metricInputRadius = d3.select(elem).append("select") //element
+                    .attr("id", "secondaryMetricSelect")
+                    .selectAll('option')
+                    .data(metricColumns)
+                    .enter()
+                    .append('option')
+                    .attr('selected', (d,i) => i == 1 ? "selected" : null)
+                    .text(d => d)
+                    .attr('value', d => d);
+            document.getElementById("secondaryMetricSelect").style.margin = "10px 10px 10px 0px";
+
 
             htmlInputs.append('label').style('margin', '0 0 0 10px').attr('for', 'treeRootSelect').text(' Display:');
             var treeRootInput = htmlInputs.append("select") //element
@@ -814,7 +845,8 @@
             // Create SVG and SVG-based interactables
             // ----------------------------------------------
 
-
+            
+            d3.select(elem).append('label').style('margin', '0 0 0 10px').attr('for', 'test_pruning').text(' Prune Less Than:');
             d3.select(elem).append("select")
                 .attr("id", "test_pruning")
                 .selectAll("option")
@@ -823,6 +855,8 @@
                 .append('option')
                 .text(d => d)
                 .attr("value", d=>(d));
+
+            document.getElementById("test_pruning").style.margin = "10px 10px 10px 10px";
 
 
             d3.select(elem).select('#test_pruning')
@@ -946,24 +980,29 @@
             
                 
             //When metricSelect is changed (metric_col)
-            d3.select(element).select('#metricSelect')
-            .on('change', function () {
-                _observers.notify({
-                    type: globals.signals.METRICCHANGE,
-                    newMetric: this.value
-                })
-            });
+            d3.select(element).select('#primaryMetricSelect')
+                .on('change', function () {
+                    _observers.notify({
+                        type: globals.signals.METRICCHANGE,
+                        newMetric: this.value,
+                        source: d3.select(this).attr('id')
+                    })
+                });
+
+            d3.select(element).select('#secondaryMetricSelect')
+                .on('change', function(){
+                    _observers.notify({
+                        type:globals.signals.METRICCHANGE,
+                        newMetric: this.value,
+                        source: d3.select(this).attr('id')
+                    })
+                });
 
             return{
                 register: function(s){
                     _observers.add(s);
                 },
                 render: function(){
-                    /**
-                     * Core call for drawing menu related screen elements
-                     */
-
-                    selectedMetric = model.state["selectedMetric"];
                     brushOn = model.state["brushOn"];
                     curColor = model.state["colorScheme"];
                     colors = model.data["colors"];
@@ -1040,7 +1079,7 @@
 
             var _maxNodeRadius = 12;
             var _treeDepthScale = d3.scaleLinear().range([0,element.clientWidth]).domain([0, model.data.maxHeight])
-            var nodeScale = d3.scaleLinear().range([5, _maxNodeRadius]).domain([0, model.data.forestMinMax[model.state.selectedMetric].max]);
+            var nodeScale = d3.scaleLinear().range([5, _maxNodeRadius]).domain([0, model.data.forestMinMax[model.state.secondaryMetric].max]);
             var _treeLayoutHeights = [];
 
             //layout variables            
@@ -1203,7 +1242,6 @@
 
                 legendOffset = legGroup.node().getBBox().height;
 
-
                 //make an invisible rectangle for zooming on
                 newg.append('rect')
                     .attr('height', treeLayoutHeights[treeIndex])
@@ -1274,7 +1312,7 @@
 
                     chartOffset = _margin.top;
                     height = _margin.top + _margin.bottom;
-                    nodeScale.domain([0, model.data.forestMinMax[model.state.selectedMetric].max]);
+                    nodeScale.domain([0, model.data.forestMinMax[model.state.secondaryMetric].max]);
 
 
                      //add brush if there should be one
@@ -1288,7 +1326,8 @@
                     for(var treeIndex = 0; treeIndex < model.data.numberOfTrees; treeIndex++){
                         //retrieve new data from model
                         let lastClicked = model.state.lastClicked;
-                        var selectedMetric = model.state.selectedMetric;
+                        var primaryMetric = model.state.primaryMetric;
+                        var secondaryMetric = model.state.secondaryMetric;
                         var source = model.data.hierarchy[treeIndex];
 
                         //will need to optimize this redrawing
@@ -1379,9 +1418,9 @@
                                 .attr("r", 1e-6)
                                 .style("fill", function (d) {
                                     if(model.state["legend"] == globals.UNIFIED){
-                                        return _colorManager.calcColorScale(d.data.metrics[selectedMetric], -1);
+                                        return _colorManager.calcColorScale(d.data.metrics[primaryMetric], -1);
                                     }
-                                    return _colorManager.calcColorScale(d.data.metrics[selectedMetric], treeIndex);
+                                    return _colorManager.calcColorScale(d.data.metrics[primaryMetric], treeIndex);
                                 })
                                 .style('stroke-width', '1px')
                                 .style('stroke', 'black');
@@ -1541,17 +1580,17 @@
                             .attr("r", 
                             function(d){
                                 if (model.state['selectedNodes'].includes(d)){
-                                    return nodeScale(d.data.metrics[selectedMetric]) + 3;
+                                    return nodeScale(d.data.metrics[secondaryMetric]) + 3;
                                 }
-                                return nodeScale(d.data.metrics[selectedMetric]);
+                                return nodeScale(d.data.metrics[secondaryMetric]);
                             })
                             .transition()
                             .duration(globals.duration)
                             .style('fill', function (d) {
                                 if(model.state["legend"] == globals.UNIFIED){
-                                    return _colorManager.calcColorScale(d.data.metrics[selectedMetric], -1);
+                                    return _colorManager.calcColorScale(d.data.metrics[primaryMetric], -1);
                                 }
-                                return _colorManager.calcColorScale(d.data.metrics[selectedMetric], treeIndex);
+                                return _colorManager.calcColorScale(d.data.metrics[primaryMetric], treeIndex);
 
                             });
                         
