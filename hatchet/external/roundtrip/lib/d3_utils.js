@@ -15,7 +15,7 @@ define(function (require) {
       }
     },
     prepareSvg: (id, svgArea) => {
-      d3.select(id).selectAll('*').remove();
+      // d3.select(id).selectAll('*').remove();
       const svg = d3.select(id)
         .append('svg')
         .attr('width', svgArea.width + svgArea.margin.left + svgArea.margin.right)
@@ -71,9 +71,11 @@ define(function (require) {
     },
 
     // UI Components
-    selectionDropDown: (element, data, id) => {
-      return d3.select(element).append("select")
+    selectionDropDown: (element, data, id, title) => {
+      d3.select(element).append('label').attr('for', id).text(title);
+      d3.select(element).append("select")
         .attr("id", id)
+        .style("margin", "10px 10px 10px 0px")
         .selectAll('option')
         .data(data)
         .enter()

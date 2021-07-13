@@ -80,24 +80,14 @@
         // --------------------------------------------------------------------------------
         // Main logic.
         // --------------------------------------------------------------------------------
-
         const data = JSON.parse(variableString);
-
         const callsites = Object.keys(data);
 
         // Assign an index to the callsites. 
         const idxToNameMap = Object.assign({}, callsites.map((callsite) => (callsite)));
         const nameToIdxMap = Object.entries(idxToNameMap).reduce((acc, [key, value]) => (acc[value] = key, acc), {});
-
-        // Selection dropdown for metrics.
-        const metrics = Object.keys(data[callsites[0]]["tgt"]);
-        const selectedMetric = metrics[0]
-        d3_utils.selectionDropDown(element, metrics, "metricSelect");
-
-        // Selection dropdown for attributes.
-        const attributes = ["min", "max", "mean", "var", "imb", "kurt", "skew"];
-        const selectedAttribute = "mean";
-        d3_utils.selectionDropDown(element, attributes, "attributeSelect");
+        
+        const { selectedAttribute, selectedMetric } = menu();
 
         // Sort the callsites by the selected attribute and metric.
         const sortedTgtCallsites = sortByAttribute(data, selectedMetric, selectedAttribute, "tgt");
@@ -118,6 +108,22 @@
                 "kurt": d3_utils.formatRuntime(d.kurt),
                 "skew": d3_utils.formatRuntime(d.skew),
             };
+        }
+
+        function menu() {
+            // Selection dropdown for metrics.
+            const metrics = Object.keys(data[callsites[0]]["tgt"]);
+            const selectedMetric = metrics[0]
+            const metricSelectTitle = "Metric: ";
+            d3_utils.selectionDropDown(element, metrics, "metricSelect", metricSelectTitle);
+
+            // Selection dropdown for attributes.
+            const attributes = ["min", "max", "mean", "var", "imb", "kurt", "skew"];
+            const selectedAttribute = "mean";
+            const attributeSelectTitle = "Sort by: ";
+            d3_utils.selectionDropDown(element, attributes, "attributeSelect", attributeSelectTitle);
+
+            return { selectedAttribute, selectedMetric }
         }
 
         function visualizeStats(g, d, type, boxWidth) {
