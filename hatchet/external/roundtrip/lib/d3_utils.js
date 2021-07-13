@@ -169,32 +169,27 @@ define(function (require) {
     },
     drawToolTip: (element, event, text, width, height) => {
       const [ mousePosX, mousePosY] = d3.pointer(event, element.node());
-      console.log(mousePosX, mousePosY);
       const toolTipG = element
         .append("g")
         .attr("class", "tooltip")
         .attr("transform", `translate(${mousePosX}, ${mousePosY})`)
 
       toolTipG.append("rect")
-        .attr("fill", "#fff")
-        .attr("stroke", "#000")
-        .attr("rx", "10px")
+        .attr("class", "tooltip-area")
         .attr("width", width)
-        .attr("height", height);
+        .attr("height", height)
+        .attr("fill", "#fff")
+        .attr("stroke", "#000");
 
       toolTipG.append("text")
+        .attr("class", "tooltip-content")
 				.style("font-family", "sans-serif")
 				.style("font-size", "12px")
         .attr("fill", "#000")
-				.attr("class", "tooltip-content")
         .text(text);
-
-      // return toolTipG;
-      
     },
     clearToolTip: (element) => {
       element.selectAll(".tooltip").remove();
-      element.selectAll(".tooltip-content").remove();
     }
   }
 });

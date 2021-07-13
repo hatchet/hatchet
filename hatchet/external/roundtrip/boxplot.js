@@ -153,22 +153,25 @@
             const strokeColor = "#202020";
             const boxHeight = 80;
 
+            const boxG = g.append("g").attr("class", "box");
+
             // Centerline
             if (drawCenterLine) {
                 const [min, max] = xScale.domain();
-                d3_utils.drawLine(g, xScale(min), boxYOffset + boxHeight/2, xScale(max), boxYOffset + boxHeight/2, strokeColor);
+                d3_utils.drawLine(boxG, xScale(min), boxYOffset + boxHeight/2, xScale(max), boxYOffset + boxHeight/2, strokeColor);
             }
+
 
             // Tooltip
             const tooltipWidth = 100;
             const tooltipHeight = 30;
             const tooltipText = `q1: ${d3_utils.formatRuntime(d.q[1])}, q3: ${d3_utils.formatRuntime(d.q[3])}`;
-            const mouseover = (event) => d3_utils.drawToolTip(g, event, tooltipText, tooltipWidth, tooltipHeight);
-            const mouseout = (event) => d3_utils.clearToolTip(g, event);
-            const click = (event) => d3_utils.drawToolTip(g, event, tooltipText, tooltipWidth, tooltipHeight);
+            const mouseover = (event) => d3_utils.drawToolTip(boxG, event, tooltipText, tooltipWidth, tooltipHeight);
+            const mouseout = (event) => d3_utils.clearToolTip(boxG, event);
+            const click = (event) => d3_utils.drawToolTip(boxG, event, tooltipText, tooltipWidth, tooltipHeight);
 
             // Box
-            d3_utils.drawRect(g, {
+            d3_utils.drawRect(boxG, {
                 "class": "rect",      
                 "x": xScale(d.q[1]),
                 "y": boxYOffset,
@@ -181,22 +184,22 @@
 
             // Markers
             const markerStrokeWidth = 3;
-            d3_utils.drawLine(g, xScale(d.q[0]), boxYOffset, xScale(d.q[0]), boxYOffset + boxHeight, fillColor[type], markerStrokeWidth);
-            d3_utils.drawLine(g, xScale(d.q[4]), boxYOffset, xScale(d.q[4]), boxYOffset + boxHeight, fillColor[type], markerStrokeWidth);
+            d3_utils.drawLine(boxG, xScale(d.q[0]), boxYOffset, xScale(d.q[0]), boxYOffset + boxHeight, fillColor[type], markerStrokeWidth);
+            d3_utils.drawLine(boxG, xScale(d.q[4]), boxYOffset, xScale(d.q[4]), boxYOffset + boxHeight, fillColor[type], markerStrokeWidth);
 
             // Outliers
-            const outlierRadius = 4; 
+            const outlierRadius = 4;
             const outlierYOffset = 20;
-            let outliers = []
+            let outliers = [];
             for (let idx = 0; idx < d.outliers["values"].length; idx += 1) {
                 outliers.push({
                     x: xScale(d.outliers["values"][idx]),
                     value: d.outliers["values"][idx],
                     rank: d.outliers["ranks"][idx],
                     // dataset: d.dataset # TODO: pass dataset to differentiate.
-                })
+                });
             }
-            d3_utils.drawCircle(g, outliers, outlierRadius, outlierYOffset, fillColor[type]);
+            d3_utils.drawCircle(boxG, outliers, outlierRadius, outlierYOffset, fillColor[type]);
         }
         
         function visualize(tgtCallsites, bkgCallsites, idxMap) {
