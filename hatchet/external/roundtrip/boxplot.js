@@ -48,7 +48,7 @@
             console.error("Invalid boxplot type. Use either 'tgt' or 'bkg'")
         }
 
-        // Sanity check to see if the boxplotType is present in the callsites.
+        // Sanity check to see if the boxplotType (i.e., "tgt", "bkg") is present in the callsites.
         let _is_empty = false;
         Object.keys(callsites).map(function (key) {
             if (callsites[key][boxplotType] === undefined) {
@@ -189,17 +189,16 @@
 
             // Outliers
             const outlierRadius = 4;
-            const outlierYOffset = 20;
             let outliers = [];
             for (let idx = 0; idx < d.outliers["values"].length; idx += 1) {
                 outliers.push({
                     x: xScale(d.outliers["values"][idx]),
                     value: d.outliers["values"][idx],
                     rank: d.outliers["ranks"][idx],
-                    // dataset: d.dataset # TODO: pass dataset to differentiate.
+                    y: 10
                 });
             }
-            d3_utils.drawCircle(boxG, outliers, outlierRadius, outlierYOffset, fillColor[type]);
+            d3_utils.drawCircle(boxG, outliers, outlierRadius, fillColor[type]);
         }
 
         function visualize(callsites, tgtCallsites, bkgCallsites, idxMap) {
@@ -251,7 +250,7 @@
                 d3_utils.drawXAxis(g, xScale, 5, d3_utils.formatRuntime, 0, axisOffset, "black");
 
                 // Text for callsite name.
-                d3_utils.drawText(g, "callsite: " + callsite, 0, 0);
+                d3_utils.drawText(g, "Callsite: " + callsite, 0, 0, 0, "#000", "underline");
 
                 visualizeStats(g, tgt, "tgt", boxWidth);
                 if (bkg !== undefined) {

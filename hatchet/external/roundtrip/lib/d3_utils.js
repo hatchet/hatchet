@@ -126,14 +126,14 @@ define(function (require) {
         .attr("stroke", strokeColor)
 				.style("stroke-width", strokeWidth);
     },
-    drawCircle: (element, data, radius, yOffset, fillColor, click = () => { }, mouseover = () => { }, mouseout = () => { }) => {
+    drawCircle: (element, data, radius, fillColor, click = () => { }, mouseover = () => { }, mouseout = () => { }) => {
       return element
 				.selectAll(".circle")
 				.data(data)
 				.join("circle")
 				.attr("r", radius)
         .attr("cx", (d) => d.x)
-        .attr("cy", (d) => d.y + yOffset)
+        .attr("cy", (d) => d.y)
 				.attr("class", "circle")
 				.style("fill", fillColor)
 				.on("click", (d) => click(d))
