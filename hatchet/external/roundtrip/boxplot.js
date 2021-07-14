@@ -92,6 +92,7 @@
             "id": "boxplot-vis",
             "attributes": ["mean", "min", "max", "var", "imb", "kurt", "skew"],
             "sortOrders": ["desc", "inc"],
+            "topNCallsites": [5, 10, 25, 100, "all"],
         })
 
         // State for the module.
@@ -99,6 +100,7 @@
             selectedMetric: null,
             selectedAttribute: null,
             selectedSortOrder: 'desc',
+            selectedTopNCallsites: 5,
         };
         
         menu(data);
@@ -141,8 +143,7 @@
             };
             d3_utils.selectionDropDown(element, globals.attributes, attributeSelectId, attributeSelectTitle, attributeOnChange);
             
-            // Selection dropdown for sortrder.
-            if (state.selectedAttribute == null) state.selectedAttribute = globals.attributes[0];
+            // Selection dropdown for sortOrder.
             const sortOrderSelectTitle = "Sort order: ";
             const sortOrderSelectId = "sortingSelect";
             const sortOrderOnChange = (d) => { 
@@ -150,6 +151,15 @@
                 reset();
             };
             d3_utils.selectionDropDown(element, globals.sortOrders, sortOrderSelectId, sortOrderSelectTitle, sortOrderOnChange);
+
+            // Selection dropdown for topNCallsites.
+            const topNCallsitesSelectTitle = "Top N callsites: ";
+            const topNCallsitesSelectId = "topNCallsitesSelect";
+            const topNCallsitesOnChange = (d) => { 
+                state.selectedTopNCallsites = d.target.value;
+                reset();
+            };
+            d3_utils.selectionDropDown(element, globals.topNCallsites, topNCallsitesSelectId, topNCallsitesSelectTitle, topNCallsitesOnChange);
 
         }
 
@@ -235,24 +245,30 @@
         }
 
         function visualize(data) {
-            const { selectedAttribute, selectedMetric, selectedSortOrder } = state;
+            const { selectedAttribute, selectedMetric, selectedSortOrder, selectedTopNCallsites } = state;
             console.debug(`Selected metric: ${selectedAttribute}`);
             console.debug(`Selected Attribute: ${selectedMetric}`);
-            console.debug(`Selected Attribute: ${selectedSortOrder}`)
+            console.debug(`Selected SortOrder: ${selectedSortOrder}`)
+            console.debug(`Selected Top N callsites: ${selectedTopNCallsites}`)
 
             // Sort the callsites by the selected attribute and metric.
             const tgtCallsites = sortByAttribute(data, selectedMetric, selectedAttribute, selectedSortOrder, "tgt");
             const bkgCallsites = sortByAttribute(data, selectedMetric, selectedAttribute, selectedSortOrder, "bkg");
             
             const callsites = [...new Set([...Object.keys(tgtCallsites), ...Object.keys(bkgCallsites)])];
+            
+            let topNCallsites = callsites;
+            if(selectedTopNCallsites !== "all" && selectedTopNCallsites < callsites.length) {
+                topNCallsites = callsites.slice(0, selectedTopNCallsites);
+            }
 
             // Assign an index to the callsites. 
-            const idxToNameMap = Object.assign({}, callsites.map((callsite) => (callsite)));
+            const idxToNameMap = Object.assign({}, topNCallsites.map((callsite) => (callsite)));
             const nameToIdxMap = Object.entries(idxToNameMap).reduce((acc, [key, value]) => (acc[value] = key, acc), {});
 
             // Setup VIS area.
-            const margin = { top: 20, right: 20, bottom: 0, left: 20 },
-                containerHeight = 150 * Object.keys(callsites).length,
+            const margin = { top: 30, right: 0, bottom: 0, left: 0 },
+                containerHeight = 200 * Object.keys(topNCallsites).length + 2 * margin.top,
                 width = element.clientWidth - margin.right - margin.left,
                 height = containerHeight - margin.top - margin.bottom;
             const svgArea = d3_utils.prepareSvgArea(width, height, margin, globals.id);
@@ -261,7 +277,7 @@
             d3_utils.drawText(svg, "Total number of callsites: " + callsites.length, 0, 0, 0, "#000", "underline");
 
             const boxWidth = 0.6 * width;
-            for (let callsite of callsites) {
+            for (let callsite of topNCallsites) {
                 let tgt = null;
                 if (callsite in tgtCallsites) tgt = tgtCallsites[callsite];
 
@@ -294,7 +310,8 @@
                 d3_utils.drawXAxis(g, xScale, 5, d3_utils.formatRuntime, 0, axisOffset, "black");
 
                 // Text for callsite name.
-                d3_utils.drawText(g, "Callsite: " + callsite, 0, 0, 0, "#000", "underline");
+                const callsiteIndex = parseInt(idx) + 1
+                d3_utils.drawText(g, `(${callsiteIndex}) Callsite : ` + callsite, 0, 0, 0, "#000");
 
                 visualizeStats(g, tgt, "tgt", boxWidth);
                 if (bkg !== undefined) {
