@@ -242,7 +242,7 @@
                 outliers.push({
                     x: xScale(d.outliers["values"][idx]),
                     value: d.outliers["values"][idx],
-                    rank: d.outliers["ranks"][idx],
+                    // rank: d.outliers["ranks"][idx],
                     y: 10
                 });
             }
