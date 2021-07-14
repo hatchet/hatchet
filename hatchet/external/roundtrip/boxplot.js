@@ -83,17 +83,19 @@
         const data = JSON.parse(variableString);
         const callsites = Object.keys(data);
 
-        // Assign an index to the callsites. 
-        const idxToNameMap = Object.assign({}, callsites.map((callsite) => (callsite)));
-        const nameToIdxMap = Object.entries(idxToNameMap).reduce((acc, [key, value]) => (acc[value] = key, acc), {});
+        const globals = Object.freeze({
+            "id": "boxplot-vis",
+            "attributes": ["mean", "min", "max", "var", "imb", "kurt", "skew"]
+        })
+
+        // State for the module.
+        const state = {
+            selectedMetric: null,
+            selectedAttribute: null,
+        };
         
-        const { selectedAttribute, selectedMetric } = menu();
-
-        // Sort the callsites by the selected attribute and metric.
-        const sortedTgtCallsites = sortByAttribute(data, selectedMetric, selectedAttribute, "tgt");
-        const sortedBkgCallsites = sortByAttribute(data, selectedMetric, selectedAttribute, "bkg");
-
-        visualize(callsites, sortedTgtCallsites, sortedBkgCallsites, nameToIdxMap);
+        menu(data);
+        visualize(data);
 
         // --------------------------------------------------------------------------------
         // Visualization functions.
@@ -110,20 +112,27 @@
             };
         }
 
-        function menu() {
+        function menu(data) {
             // Selection dropdown for metrics.
             const metrics = Object.keys(data[callsites[0]]["tgt"]);
-            const selectedMetric = metrics[0]
+            if (state.selectedMetric == null) state.selectedMetric = metrics[0]
             const metricSelectTitle = "Metric: ";
-            d3_utils.selectionDropDown(element, metrics, "metricSelect", metricSelectTitle);
+            const metricSelectId = "metricSelect";
+            const metricOnChange = (d) => { 
+                state.selectedMetric = d.target.value; 
+                reset();
+            };
+            d3_utils.selectionDropDown(element, metrics, metricSelectId, metricSelectTitle, metricOnChange);
 
             // Selection dropdown for attributes.
-            const attributes = ["min", "max", "mean", "var", "imb", "kurt", "skew"];
-            const selectedAttribute = "mean";
+            if (state.selectedAttribute == null) state.selectedAttribute = globals.attributes[0];
             const attributeSelectTitle = "Sort by: ";
-            d3_utils.selectionDropDown(element, attributes, "attributeSelect", attributeSelectTitle);
-
-            return { selectedAttribute, selectedMetric }
+            const attributeSelectId = "attributeSelect";
+            const attributeOnChange = (d) => { 
+                state.selectedAttribute = d.target.value;
+                reset();
+            };
+            d3_utils.selectionDropDown(element, globals.attributes, attributeSelectId, attributeSelectTitle, attributeOnChange);
         }
 
         function visualizeStats(g, d, type, boxWidth) {
@@ -207,28 +216,36 @@
             d3_utils.drawCircle(boxG, outliers, outlierRadius, fillColor[type]);
         }
 
-        function visualize(callsites, tgtCallsites, bkgCallsites, idxMap) {
+        function visualize(data) {
+            const { selectedAttribute, selectedMetric } = state;
+            console.debug(`Selected metric: ${selectedAttribute}`);
+            console.debug(`Selected Attribute: ${selectedMetric}`);
+
+            // Sort the callsites by the selected attribute and metric.
+            const tgtCallsites = sortByAttribute(data, selectedMetric, selectedAttribute, "tgt");
+            const bkgCallsites = sortByAttribute(data, selectedMetric, selectedAttribute, "bkg");
+            
+            const callsites = [...new Set([...Object.keys(tgtCallsites), ...Object.keys(bkgCallsites)])];
+
+            // Assign an index to the callsites. 
+            const idxToNameMap = Object.assign({}, callsites.map((callsite) => (callsite)));
+            const nameToIdxMap = Object.entries(idxToNameMap).reduce((acc, [key, value]) => (acc[value] = key, acc), {});
+
             // Setup VIS area.
             const margin = { top: 20, right: 20, bottom: 0, left: 20 },
                 containerHeight = 150 * Object.keys(callsites).length,
                 width = element.clientWidth - margin.right - margin.left,
                 height = containerHeight - margin.top - margin.bottom;
-            const svgArea = d3_utils.prepareSvgArea(width, height, margin);
+            const svgArea = d3_utils.prepareSvgArea(width, height, margin, globals.id);
             const svg = d3_utils.prepareSvg(element, svgArea);
 
             const boxWidth = 0.6 * width;
-            const allCallsites = [...new Set([...Object.keys(tgtCallsites), ...Object.keys(bkgCallsites)])];
-
-            for (let callsite of allCallsites) {
+            for (let callsite of callsites) {
                 let tgt = null;
-                if (callsite in tgtCallsites) {
-                    tgt = tgtCallsites[callsite];
-                }
+                if (callsite in tgtCallsites) tgt = tgtCallsites[callsite];
 
                 let bkg = null;
-                if (callsite in bkgCallsites) {
-                    bkg = bkgCallsites[callsite];
-                }
+                if (callsite in bkgCallsites) bkg = bkgCallsites[callsite];
 
                 // Set the min and max for xScale.
                 let min = 0, max = 0;
@@ -244,7 +261,7 @@
                     .range([0.05 * boxWidth, boxWidth - 0.05 * boxWidth]);
 
                 // Set up a g container
-                const idx = idxMap[callsite];
+                const idx = nameToIdxMap[callsite];
                 const gId = "box-" + idx;
                 const gYOffset = 200;
                 const g = svg.append("g")
@@ -268,6 +285,11 @@
                     visualizeBoxplot(g, bkg, "bkg", xScale, false);
                 }
             }
+        }
+
+        function reset() {
+            d3_utils.clearSvg('svg');
+            visualize(data);
         }
     });
 })(element);

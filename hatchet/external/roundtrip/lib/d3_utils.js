@@ -7,15 +7,15 @@ define(function (require) {
     calcCellWidth: (width, colNames) => width / colNames.length,
     calcCellHeight: (height, rowNames) => height / rowNames.length,
     calcCellSize: (width, height, colNames, rowNames, widthMax, heightMax) => [Math.min(calcCellWidth(width, colNames), widthMax), Math.min(calcCellHeight(height, rowNames), heightMax)],
-    prepareSvgArea: (windowWidth, windowHeight, margin) => {
+    prepareSvgArea: (windowWidth, windowHeight, margin, id) => {
       return {
         width: windowWidth - margin.left - margin.right,
         height: windowHeight - margin.top - margin.bottom,
-        margin: margin
+        margin: margin,
+        id: id
       }
     },
     prepareSvg: (id, svgArea) => {
-      // d3.select(id).selectAll('*').remove();
       const svg = d3.select(id)
         .append('svg')
         .attr('width', svgArea.width + svgArea.margin.left + svgArea.margin.right)
@@ -25,6 +25,9 @@ define(function (require) {
           'translate(' + svgArea.margin.left + ',' + svgArea.margin.top + ')');
 
       return svg;
+    },
+    clearSvg: (id) => {
+      d3.select('svg').remove();
     },
     initSvgInfo: (targetView, margin) => {
       const sd = targetView.svgData;
@@ -71,16 +74,19 @@ define(function (require) {
     },
 
     // UI Components
-    selectionDropDown: (element, data, id, title) => {
+    selectionDropDown: (element, data, id, title, onChange) => {
       d3.select(element).append('label').attr('for', id).text(title);
-      d3.select(element).append("select")
+      const dropdown = d3.select(element).append("select")
         .attr("id", id)
         .style("margin", "10px 10px 10px 0px")
-        .selectAll('option')
+        .on('change', onChange);
+
+      const options = dropdown.selectAll('option')
         .data(data)
         .enter()
-        .append('option')
-        .text(d => d)
+        .append('option');
+
+      options.text(d => d)
         .attr('value', d => d);
     },
     
