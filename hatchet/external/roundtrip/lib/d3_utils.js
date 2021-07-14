@@ -7,6 +7,8 @@ define(function (require) {
     calcCellWidth: (width, colNames) => width / colNames.length,
     calcCellHeight: (height, rowNames) => height / rowNames.length,
     calcCellSize: (width, height, colNames, rowNames, widthMax, heightMax) => [Math.min(calcCellWidth(width, colNames), widthMax), Math.min(calcCellHeight(height, rowNames), heightMax)],
+    
+    // SVG init.
     prepareSvgArea: (windowWidth, windowHeight, margin, id) => {
       return {
         width: windowWidth - margin.left - margin.right,
@@ -18,6 +20,7 @@ define(function (require) {
     prepareSvg: (id, svgArea) => {
       const svg = d3.select(id)
         .append('svg')
+        .attr("id", svgArea.id)
         .attr('width', svgArea.width + svgArea.margin.left + svgArea.margin.right)
         .attr('height', svgArea.height + svgArea.margin.top + svgArea.margin.bottom)
         .append('g')
@@ -27,7 +30,7 @@ define(function (require) {
       return svg;
     },
     clearSvg: (id) => {
-      d3.select('svg').remove();
+      d3.selectAll("#" + id).remove();
     },
     initSvgInfo: (targetView, margin) => {
       const sd = targetView.svgData;

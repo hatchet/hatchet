@@ -88,11 +88,16 @@
         const data = JSON.parse(variableString);
         const callsites = Object.keys(data);
 
+        // We add a random number to avoid deleting an existing boxplot in the
+        // jupyter cell.
+        // TODO: use the parent's id instead of random number.
         const globals = Object.freeze({
-            "id": "boxplot-vis",
+            "id": "boxplot-vis-" + Math.ceil(Math.random() * 100), 
             "attributes": ["mean", "min", "max", "var", "imb", "kurt", "skew"],
             "sortOrders": ["desc", "inc"],
             "topNCallsites": [5, 10, 25, 100, "all"],
+            "tickCount": 5,
+            "boxContainerHeight": 200,
         })
 
         // State for the module.
@@ -268,7 +273,7 @@
 
             // Setup VIS area.
             const margin = { top: 30, right: 0, bottom: 0, left: 0 },
-                containerHeight = 200 * Object.keys(topNCallsites).length + 2 * margin.top,
+                containerHeight = globals.boxContainerHeight * Object.keys(topNCallsites).length + 2 * margin.top,
                 width = element.clientWidth - margin.right - margin.left,
                 height = containerHeight - margin.top - margin.bottom;
             const svgArea = d3_utils.prepareSvgArea(width, height, margin, globals.id);
@@ -307,7 +312,7 @@
                     .attr("transform", "translate(0, " + ((gYOffset * idx) + 30) + ")");
 
                 const axisOffset = gYOffset * 0.6;
-                d3_utils.drawXAxis(g, xScale, 5, d3_utils.formatRuntime, 0, axisOffset, "black");
+                d3_utils.drawXAxis(g, xScale, globals.tickCount, d3_utils.formatRuntime, 0, axisOffset, "black");
 
                 // Text for callsite name.
                 const callsiteIndex = parseInt(idx) + 1
@@ -326,7 +331,7 @@
         }
 
         function reset() {
-            d3_utils.clearSvg('svg');
+            d3_utils.clearSvg(globals.id);
             visualize(data);
         }
     });
