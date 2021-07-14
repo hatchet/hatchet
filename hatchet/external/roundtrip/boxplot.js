@@ -258,6 +258,8 @@
             const svgArea = d3_utils.prepareSvgArea(width, height, margin, globals.id);
             const svg = d3_utils.prepareSvg(element, svgArea);
 
+            d3_utils.drawText(svg, "Total number of callsites: " + callsites.length, 0, 0, 0, "#000", "underline");
+
             const boxWidth = 0.6 * width;
             for (let callsite of callsites) {
                 let tgt = null;
@@ -286,7 +288,7 @@
                 const g = svg.append("g")
                     .attr("id", gId)
                     .attr("width", boxWidth)
-                    .attr("transform", "translate(20, " + gYOffset * idx + ")");
+                    .attr("transform", "translate(0, " + ((gYOffset * idx) + 30) + ")");
 
                 const axisOffset = gYOffset * 0.6;
                 d3_utils.drawXAxis(g, xScale, 5, d3_utils.formatRuntime, 0, axisOffset, "black");
