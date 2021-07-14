@@ -43,7 +43,12 @@
      * @param {String} attribute - Attribute to sort by.
      * @param {String} boxplotType -  boxplot type - for options, refer BOXPLOT_TYPES.
      */
-    function sortByAttribute(callsites, metric, attribute, boxplotType) {
+    function sortByAttribute(callsites, metric, attribute, sortOrder, boxplotType) {
+        const SORT_MULTIPLIER = {
+            "inc": -1,
+            "desc": 1
+        }
+
         if (!BOXPLOT_TYPES.includes(boxplotType)) {
             console.error("Invalid boxplot type. Use either 'tgt' or 'bkg'")
         }
@@ -62,7 +67,7 @@
 
         if (!_is_empty) {
             items = items.sort((first, second) => {
-                return second[1][metric][attribute] - first[1][metric][attribute];
+                return SORT_MULTIPLIER[sortOrder] * (second[1][metric][attribute] - first[1][metric][attribute]);
             });
         }
 
@@ -85,13 +90,15 @@
 
         const globals = Object.freeze({
             "id": "boxplot-vis",
-            "attributes": ["mean", "min", "max", "var", "imb", "kurt", "skew"]
+            "attributes": ["mean", "min", "max", "var", "imb", "kurt", "skew"],
+            "sortOrders": ["desc", "inc"],
         })
 
         // State for the module.
         const state = {
             selectedMetric: null,
             selectedAttribute: null,
+            selectedSortOrder: 'desc',
         };
         
         menu(data);
@@ -129,10 +136,21 @@
             const attributeSelectTitle = "Sort by: ";
             const attributeSelectId = "attributeSelect";
             const attributeOnChange = (d) => { 
-                state.selectedAttribute = d.target.value;
+                state.selectedSortOrder = d.target.value;
                 reset();
             };
             d3_utils.selectionDropDown(element, globals.attributes, attributeSelectId, attributeSelectTitle, attributeOnChange);
+            
+            // Selection dropdown for sortrder.
+            if (state.selectedAttribute == null) state.selectedAttribute = globals.attributes[0];
+            const sortOrderSelectTitle = "Sort order: ";
+            const sortOrderSelectId = "sortingSelect";
+            const sortOrderOnChange = (d) => { 
+                state.selectedSortOrder = d.target.value;
+                reset();
+            };
+            d3_utils.selectionDropDown(element, globals.sortOrders, sortOrderSelectId, sortOrderSelectTitle, sortOrderOnChange);
+
         }
 
         function visualizeStats(g, d, type, boxWidth) {
@@ -217,13 +235,14 @@
         }
 
         function visualize(data) {
-            const { selectedAttribute, selectedMetric } = state;
+            const { selectedAttribute, selectedMetric, selectedSortOrder } = state;
             console.debug(`Selected metric: ${selectedAttribute}`);
             console.debug(`Selected Attribute: ${selectedMetric}`);
+            console.debug(`Selected Attribute: ${selectedSortOrder}`)
 
             // Sort the callsites by the selected attribute and metric.
-            const tgtCallsites = sortByAttribute(data, selectedMetric, selectedAttribute, "tgt");
-            const bkgCallsites = sortByAttribute(data, selectedMetric, selectedAttribute, "bkg");
+            const tgtCallsites = sortByAttribute(data, selectedMetric, selectedAttribute, selectedSortOrder, "tgt");
+            const bkgCallsites = sortByAttribute(data, selectedMetric, selectedAttribute, selectedSortOrder, "bkg");
             
             const callsites = [...new Set([...Object.keys(tgtCallsites), ...Object.keys(bkgCallsites)])];
 
