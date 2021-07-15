@@ -141,16 +141,16 @@
          */
         function dict_to_df(dict, boxplotType) {
             const callsites = Object.keys(dict);
-            const columns = "name,min,max,mean,var,imb,kurt,skew"
-            const stats = Object.keys(dict[callsites[0]][boxplotType]);
+            const stat_columns = ["min", "max", "mean", "var", "imb", "kurt", "skew"]
+            // const stats = Object.keys(dict[callsites[0]][boxplotType]);
             // let string = `name,` + stats.join(",") + ";";
-            let string = columns + ";";
+            let string = 'name,' + stat_columns.join(",") + ";";
 
             for (let callsite of callsites){
                 const d = dict[callsite][boxplotType];
 
                 let statsString = `${callsite},`;
-                for (let stat of stats) {
+                for (let stat of stat_columns) {
                     if (stat === "q") {
                         // statsString += "[" + d[stat].join(",") + "],";
                         continue;
@@ -162,7 +162,7 @@
                         statsString += d[stat] + ",";
                     }
                 }
-                string += statsString +  ";";
+                string += statsString.substring(0, statsString.length - 1) +  ";";
             }
             return string.substring(0, string.length - 1);
         }
@@ -379,7 +379,9 @@
 
         function reset() {
             d3_utils.clearSvg(globals.id);
-            visualize(data);
+            const variance_dict = visualize(data);
+            variance_df = "'" + dict_to_df(variance_dict, "tgt") + "'";
+
         }
     });
 })(element);
