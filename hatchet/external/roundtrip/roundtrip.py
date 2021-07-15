@@ -148,16 +148,16 @@ class Roundtrip(Magics):
         # Get command line args for loading the vis.
         args = line.split(" ")
         visType = self.cleanLineArgument(args[0])
-        dest = self.cleanLineArgument(args[1])
+        dest = args[1]
 
         hook = (
             """
-                var holder = '""" + str(VIS_TO_DATA[visType]) + """';
+                var holder = """ + VIS_TO_DATA[visType] + """;
                 holder = '"' + holder + '"';
                 IPython.notebook.kernel.execute('"""
                 + str(dest)
                 + """ = '+ eval(holder));
-                    //console.log('"""
+                    console.log('"""
                 + str(dest)
                 + """ = '+ holder);
             """

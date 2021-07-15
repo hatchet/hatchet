@@ -4,6 +4,7 @@
     const SORTORDER_TYPES = ["asc", "desc"];
     const [path, visType, variableString] = cleanInputs(argList);
 
+
     // Quit if visType is not boxplot. 
     if (visType !== "boxplot") {
         console.error("Incorrect visualization type passed.")
@@ -19,11 +20,13 @@
         paths: {
             d3src: 'https://d3js.org',
             lib: 'lib',
+            jsdelivr: 'https://cdn.jsdelivr.net/npm',
         },
         map: {
             '*': {
                 'd3': 'd3src/d3.v6.min',
                 'd3-utils': 'lib/d3_utils',
+                'data-forge': 'jsdelivr/data-forge@1.8.17/build/index.min'
             }
         }
     });
@@ -87,7 +90,7 @@
         }, {});
     }
 
-    require(['d3', 'd3-utils'], (d3, d3_utils) => {
+    require(['d3', 'd3-utils', 'data-forge'], (d3, d3_utils, dataForge) => {
         // --------------------------------------------------------------------------------
         // Main logic.
         // --------------------------------------------------------------------------------
@@ -115,7 +118,9 @@
         };
         
         menu(data);
-        visualize(data);
+        const variance_dict = visualize(data);
+        variance_df = dict_to_df(variance_dict, "tgt");
+        console.log(variance_df);
 
         // --------------------------------------------------------------------------------
         // Visualization functions.
@@ -130,6 +135,38 @@
                 "kurt": d3_utils.formatRuntime(d.kurt),
                 "skew": d3_utils.formatRuntime(d.skew),
             };
+        }
+
+        /**
+         * 
+         * @param {Object} dict 
+         * @return {dataForge.DataFrame}
+         */
+        function dict_to_df(dict, boxplotType) {
+            const callsites = Object.keys(dict);
+            const stats = Object.keys(dict[callsites[0]][boxplotType]);
+            let string = `name,` + stats.join(",");
+
+            for (let callsite of callsites){
+                const d = dict[callsite][boxplotType];
+
+                let statsString = `${callsite},`;
+                for (let stat of stats) {
+                    // console.log(stat, d[stat]);
+                    if (stat === "q") {
+                        statsString += "[" + d[stat].join(",") + "],";
+                    }
+                    else if (stat === "outliers") {
+                        statsString += " ,";
+                    }
+                    else {
+                        statsString += d[stat] + ",";
+                    }
+                }
+                string += statsString + "\n";
+            }
+
+            return string;
         }
 
         function menu(data) {
@@ -256,6 +293,8 @@
         }
 
         function visualize(data) {
+            const variance_dict = {}
+
             const { selectedAttribute, selectedMetric, selectedSortOrder, selectedTopNCallsites } = state;
             console.debug(`Selected metric: ${selectedAttribute}`);
             console.debug(`Selected Attribute: ${selectedMetric}`);
@@ -333,7 +372,11 @@
                 if (bkg !== undefined) {
                     visualizeBoxplot(g, bkg, "bkg", xScale, false);
                 }
+
+                variance_dict[callsite] = { tgt, bkg };
             }
+
+            return variance_dict
         }
 
         function reset() {
