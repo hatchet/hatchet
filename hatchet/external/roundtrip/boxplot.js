@@ -184,7 +184,7 @@
             const attributeSelectTitle = "Sort by: ";
             const attributeSelectId = "attributeSelect";
             const attributeOnChange = (d) => { 
-                state.selectedSortOrder = d.target.value;
+                state.selectedAttribute = d.target.value;
                 reset();
             };
             d3_utils.selectionDropDown(element, globals.attributes, attributeSelectId, attributeSelectTitle, attributeOnChange);

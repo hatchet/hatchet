@@ -158,7 +158,7 @@ class Roundtrip(Magics):
             """
                 var holder = variance_df;
                 holder = '"' + holder + '"';
-                console.log('"""
+                console.debug('"""
                 + str(dest)
                 + """ = '+ holder);
                 IPython.notebook.kernel.execute('""" 
