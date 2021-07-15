@@ -18,16 +18,21 @@ class Roundtrip(Magics):
     # Note to self: Custom magic classes MUST call parent's constructor
     def __init__(self, shell):
         super(Roundtrip, self).__init__(shell)
-        global VIS_TO_FILE, DATA_TO_VALIDATION
+        global VIS_TO_FILE, VIS_TO_VALIDATION, VIS_TO_DATA
 
         VIS_TO_FILE = {
             "literal_tree": "roundtripTree.js",
             "boxplot": "boxplot.js"
         }
-        DATA_TO_VALIDATION = {
+        VIS_TO_VALIDATION = {
             "literal_tree": self._validate_literal_tree,
             "boxplot": self._validate_boxplot
         }
+        VIS_TO_DATA = {
+            "literal_tree": "jsNodeSelected",
+            "boxplot": "variance_df"
+        }
+
         self.id_number = 0
         # Clean up namespace function
         display(
@@ -83,7 +88,7 @@ class Roundtrip(Magics):
         displayObj.update(Javascript('argList.push("' + str(visType) + '")'))
         displayObj.update(Javascript('argList.push("' + str(data) + '")'))
 
-        DATA_TO_VALIDATION[visType](data)
+        VIS_TO_VALIDATION[visType](data)
 
         # Get curent cell id.
         self.codeMap[name] = javascriptFile
@@ -137,20 +142,25 @@ class Roundtrip(Magics):
         display(HTML(header + javascriptFile + footer))
 
     @line_magic
-    def fetchData(self, dest):
+    def fetchData(self, line):
         # added eval() to 'execute' the JS list-as-string as a Python list
+
+        # Get command line args for loading the vis.
+        args = line.split(" ")
+        visType = self.cleanLineArgument(args[0])
+        dest = self.cleanLineArgument(args[1])
 
         hook = (
             """
-                var holder = jsNodeSelected;
+                var holder = '""" + str(VIS_TO_DATA[visType]) + """';
                 holder = '"' + holder + '"';
                 IPython.notebook.kernel.execute('"""
-            + str(dest)
-            + """ = '+ eval(holder));
-                //console.log('"""
-            + str(dest)
-            + """ = '+ holder);
-               """
+                + str(dest)
+                + """ = '+ eval(holder));
+                    //console.log('"""
+                + str(dest)
+                + """ = '+ holder);
+            """
         )
 
         display(Javascript(hook))

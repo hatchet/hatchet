@@ -1,6 +1,7 @@
 // TODO: Adopt MVC pattern for this module.
 (function (element) {
     const BOXPLOT_TYPES = ["tgt", "bkg"];
+    const SORTORDER_TYPES = ["asc", "desc"];
     const [path, visType, variableString] = cleanInputs(argList);
 
     // Quit if visType is not boxplot. 
@@ -41,16 +42,21 @@
      * @param {Array} callsites - Callsites as a list.
      * @param {Stirng} metric - Metric (e.g., time or time (inc)).
      * @param {String} attribute - Attribute to sort by.
+     * @param {String} sortOrder - Sorting order 
      * @param {String} boxplotType -  boxplot type - for options, refer BOXPLOT_TYPES.
      */
     function sortByAttribute(callsites, metric, attribute, sortOrder, boxplotType) {
         const SORT_MULTIPLIER = {
-            "inc": -1,
+            "asc": -1,
             "desc": 1
         }
 
+        if (!SORTORDER_TYPES.includes(sortOrder)) {
+            console.error("Invalid sortOrder. Use either 'asc' or 'desc'");
+        }
+
         if (!BOXPLOT_TYPES.includes(boxplotType)) {
-            console.error("Invalid boxplot type. Use either 'tgt' or 'bkg'")
+            console.error("Invalid boxplot type. Use either 'tgt' or 'bkg'");
         }
 
         // Sanity check to see if the boxplotType (i.e., "tgt", "bkg") is present in the callsites.
@@ -94,7 +100,7 @@
         const globals = Object.freeze({
             "id": "boxplot-vis-" + Math.ceil(Math.random() * 100), 
             "attributes": ["mean", "min", "max", "var", "imb", "kurt", "skew"],
-            "sortOrders": ["desc", "inc"],
+            "sortOrders": ["desc", "asc"],
             "topNCallsites": [5, 10, 25, 100, "all"],
             "tickCount": 5,
             "boxContainerHeight": 200,
