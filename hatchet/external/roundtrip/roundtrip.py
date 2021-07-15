@@ -98,7 +98,7 @@ class Roundtrip(Magics):
         elementTop = element.get(0);"""
         displayObj.update(Javascript(preRun))
 
-        self.runVis(name, javascriptFile)
+        self.runVis(name, javascriptFile, visType)
         self.id_number += 1
 
     def _validate_literal_tree(self, data):
@@ -123,7 +123,7 @@ class Roundtrip(Magics):
     def _validate_boxplot(self, data):
         pass
 
-    def runVis(self, name, javascriptFile):
+    def runVis(self, name, javascriptFile, visType):
         name = "roundtripTreeVis" + str(self.id_number)
         header = (
             """
@@ -137,6 +137,10 @@ class Roundtrip(Magics):
                   element = document.getElementById('"""
             + str(name)
             + """');"""
+            + """var """ 
+            + VIS_TO_DATA[visType]
+            + """ = {};"""
+
         )
         footer = """</script>"""
         display(HTML(header + javascriptFile + footer))
@@ -152,14 +156,15 @@ class Roundtrip(Magics):
 
         hook = (
             """
-                var holder = """ + VIS_TO_DATA[visType] + """;
+                var holder = variance_df;
                 holder = '"' + holder + '"';
-                IPython.notebook.kernel.execute('"""
-                + str(dest)
-                + """ = '+ eval(holder));
-                    console.log('"""
+                console.log('"""
                 + str(dest)
                 + """ = '+ holder);
+                IPython.notebook.kernel.execute('""" 
+                + str(dest)
+                + """ = '+ eval(holder));
+                
             """
         )
 

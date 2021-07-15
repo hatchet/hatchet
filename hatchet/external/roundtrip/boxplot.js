@@ -20,13 +20,11 @@
         paths: {
             d3src: 'https://d3js.org',
             lib: 'lib',
-            jsdelivr: 'https://cdn.jsdelivr.net/npm',
         },
         map: {
             '*': {
                 'd3': 'd3src/d3.v6.min',
                 'd3-utils': 'lib/d3_utils',
-                'data-forge': 'jsdelivr/data-forge@1.8.17/build/index.min'
             }
         }
     });
@@ -90,7 +88,7 @@
         }, {});
     }
 
-    require(['d3', 'd3-utils', 'data-forge'], (d3, d3_utils, dataForge) => {
+    require(['d3', 'd3-utils'], (d3, d3_utils) => {
         // --------------------------------------------------------------------------------
         // Main logic.
         // --------------------------------------------------------------------------------
@@ -119,8 +117,7 @@
         
         menu(data);
         const variance_dict = visualize(data);
-        variance_df = dict_to_df(variance_dict, "tgt");
-        console.log(variance_df);
+        variance_df = "'" + dict_to_df(variance_dict, "tgt") + "'";
 
         // --------------------------------------------------------------------------------
         // Visualization functions.
@@ -144,29 +141,30 @@
          */
         function dict_to_df(dict, boxplotType) {
             const callsites = Object.keys(dict);
+            const columns = "name,min,max,mean,var,imb,kurt,skew"
             const stats = Object.keys(dict[callsites[0]][boxplotType]);
-            let string = `name,` + stats.join(",");
+            // let string = `name,` + stats.join(",") + ";";
+            let string = columns + ";";
 
             for (let callsite of callsites){
                 const d = dict[callsite][boxplotType];
 
                 let statsString = `${callsite},`;
                 for (let stat of stats) {
-                    // console.log(stat, d[stat]);
                     if (stat === "q") {
-                        statsString += "[" + d[stat].join(",") + "],";
+                        // statsString += "[" + d[stat].join(",") + "],";
+                        continue;
                     }
                     else if (stat === "outliers") {
-                        statsString += " ,";
+                        continue;
                     }
                     else {
                         statsString += d[stat] + ",";
                     }
                 }
-                string += statsString + "\n";
+                string += statsString +  ";";
             }
-
-            return string;
+            return string.substring(0, string.length - 1);
         }
 
         function menu(data) {
