@@ -142,8 +142,6 @@
         function dict_to_df(dict, boxplotType) {
             const callsites = Object.keys(dict);
             const stat_columns = ["min", "max", "mean", "var", "imb", "kurt", "skew"]
-            // const stats = Object.keys(dict[callsites[0]][boxplotType]);
-            // let string = `name,` + stats.join(",") + ";";
             let string = 'name,' + stat_columns.join(",") + ";";
 
             for (let callsite of callsites){
@@ -151,20 +149,26 @@
 
                 let statsString = `${callsite},`;
                 for (let stat of stat_columns) {
-                    if (stat === "q") {
-                        // statsString += "[" + d[stat].join(",") + "],";
-                        continue;
-                    }
-                    else if (stat === "outliers") {
-                        continue;
-                    }
-                    else {
+                    if (Object.keys(d).includes(stat)) {
                         statsString += d[stat] + ",";
                     }
                 }
                 string += statsString.substring(0, statsString.length - 1) +  ";";
             }
-            return string.substring(0, string.length - 1);
+
+            const result = string.substring(0, string.length - 1)
+
+            // Assertions to check if the right number of columns are being
+            // passed.
+            for (let str of result.split(";")) {
+                if (str.split(",").length !== stat_columns.length + 1){
+                    console.error("Mismatch in the number of stats metrics and data");
+                    console.debug("Columns: ", result.split(";")[0]);
+                    console.debug("Data: ", str);
+                }
+            }
+            
+            return result;
         }
 
         function menu(data) {
