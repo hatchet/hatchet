@@ -102,6 +102,10 @@ class Roundtrip(Magics):
             <div id=\"{0}\">
             </div>
             <script>
+<<<<<<< HEAD
+=======
+                var jsNodeSelected = "";
+>>>>>>> Drawing bars, need to tidy up the tree after this tho.
                 elementTop.appendChild(document.getElementById('{1}'));
                 var element = document.getElementById('{1}');
                 {2}
