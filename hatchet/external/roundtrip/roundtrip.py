@@ -142,11 +142,11 @@ class Roundtrip(Magics):
                                     instance=data[cs][boxplotType][metric],
                                     schema=STATS_SCHEMA,
                                 )
-                    else:
-                        self._print_exception_boxplot()
-                        raise Exception(
-                            "Incorrect boxplot type key provided. Use 'tgt' or 'bgk'."
-                        )
+                        else:
+                            self._print_exception_boxplot()
+                            raise Exception(
+                                "Incorrect boxplot type key provided. Use 'tgt' or 'bgk'."
+                            )
                 else:
                     self._print_exception_boxplot()
                     raise Exception("Bad argument.")
@@ -154,7 +154,7 @@ class Roundtrip(Magics):
             self._print_exception_boxplot()
             raise Exception("Bad argument.")
 
-    def _print_exception_boxplot():
+    def _print_exception_boxplot(self):
         print(
             """The argument is not a valid boxplot dictionary. Please check that
             you have provided the data in the following form to
