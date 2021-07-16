@@ -14,25 +14,18 @@ import jsonschema
 
 @magics_class
 class Roundtrip(Magics):
-    
 
     # Note to self: Custom magic classes MUST call parent's constructor
     def __init__(self, shell):
         super(Roundtrip, self).__init__(shell)
         global VIS_TO_FILE, VIS_TO_VALIDATION, VIS_TO_DATA
 
-        VIS_TO_FILE = {
-            "literal_tree": "roundtripTree.js",
-            "boxplot": "boxplot.js"
-        }
+        VIS_TO_FILE = {"literal_tree": "roundtripTree.js", "boxplot": "boxplot.js"}
         VIS_TO_VALIDATION = {
             "literal_tree": self._validate_literal_tree,
-            "boxplot": self._validate_boxplot
+            "boxplot": self._validate_boxplot,
         }
-        VIS_TO_DATA = {
-            "literal_tree": "jsNodeSelected",
-            "boxplot": "variance_df"
-        }
+        VIS_TO_DATA = {"literal_tree": "jsNodeSelected", "boxplot": "variance_df"}
 
         self.id_number = 0
         # Clean up namespace function
@@ -59,7 +52,7 @@ class Roundtrip(Magics):
         else:
             # Path is a variable from the nb namespace
             return self.shell.user_ns[arg]
-        
+
     @line_magic
     def loadVisualization(self, line):
         # Get command line args for loading the vis.
@@ -70,11 +63,11 @@ class Roundtrip(Magics):
         data = self.shell.user_ns[args[2]]
 
         if visType not in VIS_TO_FILE.keys():
-            assert(f"Invalid visualization type provided. Valid types include {''.join(VIS_TO_FILE.keys())}")
+            assert f"Invalid visualization type provided. Valid types include {''.join(VIS_TO_FILE.keys())}"
 
         # Set a name to visualization cell.
         name = "roundtripTreeVis" + str(self.id_number)
-    
+
         # Read the appropriate JS file.
         fileAndPath = os.path.join(path, VIS_TO_FILE[visType])
         javascriptFile = open(fileAndPath).read()
@@ -134,7 +127,7 @@ class Roundtrip(Magics):
                 "skew": {"type": "number"},
                 "q": {"type": "array"},
                 "outliers": {"type": "object"},
-            }
+            },
         }
 
         if isinstance(data, dict):
@@ -145,10 +138,15 @@ class Roundtrip(Magics):
                     for boxplotType in boxplotTypes:
                         if boxplotType in ["tgt", "bgk"]:
                             for metric in data[cs][boxplotType]:
-                                jsonschema.validate(instance=data[cs][boxplotType][metric], schema=STATS_SCHEMA)
+                                jsonschema.validate(
+                                    instance=data[cs][boxplotType][metric],
+                                    schema=STATS_SCHEMA,
+                                )
                     else:
                         self._print_exception_boxplot()
-                        raise Exception("Incorrect boxplot type key provided. Use 'tgt' or 'bgk'.")
+                        raise Exception(
+                            "Incorrect boxplot type key provided. Use 'tgt' or 'bgk'."
+                        )
                 else:
                     self._print_exception_boxplot()
                     raise Exception("Bad argument.")
@@ -181,10 +179,9 @@ class Roundtrip(Magics):
                     }
                 },
                 "bkg": {
-                    // Refer "tgt" key. 
+                    // Refer "tgt" key.
                 }
             }
-            
         """
         )
 
@@ -202,10 +199,9 @@ class Roundtrip(Magics):
                   element = document.getElementById('"""
             + str(name)
             + """');"""
-            + """var """ 
+            + """var """
             + VIS_TO_DATA[visType]
             + """ = {};"""
-
         )
         footer = """</script>"""
         display(HTML(header + javascriptFile + footer))
@@ -221,15 +217,16 @@ class Roundtrip(Magics):
 
         hook = (
             """
-                var holder = """ + VIS_TO_DATA[visType] + """;
+                var holder = """
+            + VIS_TO_DATA[visType]
+            + """;
                 holder = '"' + holder + '"';
                 console.debug('"""
-                + str(dest)
-                + """ = '+ holder);
-                IPython.notebook.kernel.execute('""" 
-                + str(dest)
-                + """ = '+ eval(holder));
-                
+            + str(dest)
+            + """ = '+ holder);
+                IPython.notebook.kernel.execute('"""
+            + str(dest)
+            + """ = '+ eval(holder));
             """
         )
 
