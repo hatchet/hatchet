@@ -10,3 +10,4 @@ PyYAML
 cython
 multiprocess
 textX
+jsonschema

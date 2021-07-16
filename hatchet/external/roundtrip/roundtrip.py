@@ -2,6 +2,7 @@ from __future__ import print_function
 from IPython.core.magic import Magics, magics_class, line_magic
 from IPython.display import HTML, Javascript, display
 import os
+import jsonschema
 
 """
    File: roundtrip.py
@@ -121,7 +122,71 @@ class Roundtrip(Magics):
             raise Exception("Bad argument")
 
     def _validate_boxplot(self, data):
-        pass
+        STATS_SCHEMA = {
+            "type": "object",
+            "properties": {
+                "min": {"type": "number"},
+                "max": {"type": "number"},
+                "mean": {"type": "number"},
+                "imb": {"type": "number"},
+                "var": {"type": "number"},
+                "kurt": {"type": "number"},
+                "skew": {"type": "number"},
+                "q": {"type": "array"},
+                "outliers": {"type": "object"},
+            }
+        }
+
+        if isinstance(data, dict):
+            callsites = data.keys()
+            for cs in callsites:
+                if isinstance(data[cs], dict):
+                    boxplotTypes = data[cs].keys()
+                    for boxplotType in boxplotTypes:
+                        if boxplotType in ["tgt", "bgk"]:
+                            for metric in data[cs][boxplotType]:
+                                jsonschema.validate(instance=data[cs][boxplotType][metric], schema=STATS_SCHEMA)
+                    else:
+                        self._print_exception_boxplot()
+                        raise Exception("Incorrect boxplot type key provided. Use 'tgt' or 'bgk'.")
+                else:
+                    self._print_exception_boxplot()
+                    raise Exception("Bad argument.")
+        else:
+            self._print_exception_boxplot()
+            raise Exception("Bad argument.")
+
+    def _print_exception_boxplot():
+        print(
+            """The argument is not a valid boxplot dictionary. Please check that
+            you have provided the data in the following form to
+            loadVisualization:
+            boxplot = {
+                "tgt" : {
+                    "metric1": {
+                        "min": number,
+                        "max": number,
+                        "mean": number,
+                        "imb": number,
+                        "kurt": number,
+                        "skew": number,
+                        "q": [q0, q1, q2, q3, q4],
+                        "outliers: {
+                            "values": array,
+                            "keys": array
+                        }
+                    },
+                    "metric2": {
+                        ...
+                    }
+                },
+                "bkg": {
+                    // Refer "tgt" key. 
+                }
+            }
+            
+        """
+        )
 
     def runVis(self, name, javascriptFile, visType):
         name = "roundtripTreeVis" + str(self.id_number)
@@ -156,7 +221,7 @@ class Roundtrip(Magics):
 
         hook = (
             """
-                var holder = variance_df;
+                var holder = """ + VIS_TO_DATA[visType] + """;
                 holder = '"' + holder + '"';
                 console.debug('"""
                 + str(dest)
