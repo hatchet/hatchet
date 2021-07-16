@@ -4,7 +4,6 @@
     const SORTORDER_TYPES = ["asc", "desc"];
     const [path, visType, variableString] = cleanInputs(argList);
 
-
     // Quit if visType is not boxplot. 
     if (visType !== "boxplot") {
         console.error("Incorrect visualization type passed.")
@@ -33,6 +32,12 @@
     // Utility functions.
     // --------------------------------------------------------------------------------
     // TODO: Move this to a common utils folder.
+    /**
+     * Utility to remove single quotes.
+     * 
+     * @param {String} strings strings with single quotes.
+     * @returns {String} strings without single quotes.
+     */
     function cleanInputs(strings) {
         return strings.map((_) => _.replace(/'/g, '"'));
     }
@@ -41,10 +46,10 @@
      * Sort the callsite ordering based on the attribute.
      *
      * @param {Array} callsites - Callsites as a list.
-     * @param {Stirng} metric - Metric (e.g., time or time (inc)).
+     * @param {String} metric - Metric passed by user (e.g., time or time (inc)).
      * @param {String} attribute - Attribute to sort by.
-     * @param {String} sortOrder - Sorting order 
-     * @param {String} boxplotType -  boxplot type - for options, refer BOXPLOT_TYPES.
+     * @param {String} sortOrder - Sorting order - for options, refer SORTORDER_TYPES.
+     * @param {String} boxplotType - boxplot type - for options, refer BOXPLOT_TYPES.
      */
     function sortByAttribute(callsites, metric, attribute, sortOrder, boxplotType) {
         const SORT_MULTIPLIER = {
@@ -117,11 +122,18 @@
         
         menu(data);
         const variance_dict = visualize(data);
-        variance_df = "'" + dict_to_df(variance_dict, "tgt") + "'";
+        variance_df = "'" + dict_to_csv(variance_dict, "tgt") + "'";
 
         // --------------------------------------------------------------------------------
         // Visualization functions.
         // --------------------------------------------------------------------------------
+        /**
+         * Format the statistics runtime. We use the mantessa and exponent
+         * format. For more info, refer d3_utils.formatRuntime.
+         * 
+         * @param {Object} d Statistics object
+         * @returns {Object} Formatted statistics object.
+         */
         function _format(d) {
             return {
                 "min": d3_utils.formatRuntime(d.min),
@@ -135,11 +147,13 @@
         }
 
         /**
+         * Convert the stats dictionary to a csv.
          * 
-         * @param {Object} dict 
-         * @return {dataForge.DataFrame}
+         * @param {Object} dict Statistics Object
+         * @param {Object} boxplotType - boxplot type - for options, refer BOXPLOT_TYPES.
+         * @return {String} result dictionary reformatted as a string (csv format)
          */
-        function dict_to_df(dict, boxplotType) {
+        function dict_to_csv(dict, boxplotType) {
             const callsites = Object.keys(dict);
             const stat_columns = ["min", "max", "mean", "var", "imb", "kurt", "skew"]
             let string = 'name,' + stat_columns.join(",") + ";";
@@ -171,6 +185,12 @@
             return result;
         }
 
+        /**
+         * Renders menu view for selecting metric, attribute, sortOrder and
+         * callsites.
+         * 
+         * @param {Object} data 
+         */
         function menu(data) {
             // Selection dropdown for metrics.
             const metrics = Object.keys(data[callsites[0]]["tgt"]);
@@ -210,10 +230,19 @@
                 reset();
             };
             d3_utils.selectionDropDown(element, globals.topNCallsites, topNCallsitesSelectId, topNCallsitesSelectTitle, topNCallsitesOnChange);
-
         }
 
-        function visualizeStats(g, d, type, boxWidth) {
+        /**
+         * Renders the statistics as rows.
+         * 
+         * @param {svg.g} g HTML element.
+         * @param {Object} d Data 
+         * @param {String} boxplotType boxplot type - for options, refer BOXPLOT_TYPES.
+         * @param {Number} boxWidth Width of the boxplot view.
+         * 
+         * d - format : {"tgt": stats, "bkg": stats }
+         */
+        function visualizeStats(g, d, boxplotType, boxWidth) {
             const stats = _format(d);
             const TYPE_TEXTS = {
                 "tgt": "Target",
@@ -221,13 +250,13 @@
             };
 
             // Text fpr statistics title.
-            const xOffset = type === "tgt" ? 1.1 * boxWidth : 1.4 * boxWidth;
-            const textColor = type === "tgt" ? "#4DAF4A" : "#202020";
+            const xOffset = boxplotType === "tgt" ? 1.1 * boxWidth : 1.4 * boxWidth;
+            const textColor = boxplotType === "tgt" ? "#4DAF4A" : "#202020";
 
             const statsG = g.append("g")
                 .attr("class", "stats");
 
-            d3_utils.drawText(statsG, TYPE_TEXTS[type], xOffset, 15, 0, textColor, "underline");
+            d3_utils.drawText(statsG, TYPE_TEXTS[boxplotType], xOffset, 15, 0, textColor, "underline");
 
             // Text for statistics
             let statIdx = 1;
@@ -237,6 +266,15 @@
             }
         }
 
+        /**
+         * Renders boxplots for the callsites.
+         * 
+         * @param {svg.g} g HTML element.
+         * @param {Object} d Data
+         * @param {String} boxplotType boxplot type - for options, refer BOXPLOT_TYPES.
+         * @param {d3.scale} xScale Scale for layouting the boxplot.
+         * @param {Boolean} drawCenterLine draws center line, if true.
+         */
         function visualizeBoxplot(g, d, type, xScale, drawCenterLine) {
             const fillColor = {
                 "tgt": "#4DAF4A",
@@ -294,6 +332,39 @@
             d3_utils.drawCircle(boxG, outliers, outlierRadius, fillColor[type]);
         }
 
+        /**
+         * Renders the vis for the provided callsites object. 
+         * 
+         * @param {Object} data 
+         * @returns {Object} variance_dict = { "tgt": stats, "bkg": stats }
+         * 
+         * data = {
+         *  "callsite_name": {
+         *      "tgt": {
+         *          "metric1": stats,
+         *          "metric2": stats,
+         *      },
+         *      "bkg": {
+         *          "metric1": stats,
+         *          "metric2": stats,
+         *      }
+         *  }
+         * }
+         * 
+         * stats = {
+         *  "min": {float},
+         *  "max": {float},
+         *  "mean": {float},
+         *  "imb": {float},
+         *  "kurt": {float},
+         *  "skew": {float},
+         *  "q": {Array} = [q0, q1, q2, q3, q4],
+         *  "outliers": {Object} = {
+         *      "values": {Array},
+         *      "keys": {Array}
+         *  }
+         * }
+         */
         function visualize(data) {
             const variance_dict = {}
 
@@ -381,11 +452,14 @@
             return variance_dict
         }
 
+        /**
+         * Clears the view and resets the view. 
+         * 
+         */
         function reset() {
             d3_utils.clearSvg(globals.id);
             const variance_dict = visualize(data);
-            variance_df = "'" + dict_to_df(variance_dict, "tgt") + "'";
-
+            variance_df = "'" + dict_to_csv(variance_dict, "tgt") + "'"; 
         }
     });
 })(element);
