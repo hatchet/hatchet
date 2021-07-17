@@ -1244,9 +1244,9 @@
                         .attr("height", height);
 
             var _maxNodeRadius = 30;
-            var _treeDepthScale = d3.scaleLinear().range([0,element.clientWidth]).domain([0, model.data.maxHeight])
+            var _treeDepthScale = d3.scaleLinear().range([0,element.offsetWidth-50]).domain([0, model.data.maxHeight])
             var _nodeScale = d3.scaleLinear().range([5, _maxNodeRadius]).domain([model.data.forestMinMax[model.state.secondaryMetric].min, model.data.forestMinMax[model.state.secondaryMetric].max]);
-            var _barScale = d3.scaleLinear().range([0, 50]).domain([model.data.aggregateMinMax[model.state.primaryMetric].min, model.data.aggregateMinMax[model.state.primaryMetric].max]);
+            var _barScale = d3.scaleLinear().range([0, 25]).domain([model.data.aggregateMinMax[model.state.primaryMetric].min, model.data.aggregateMinMax[model.state.primaryMetric].max]);
             var _treeLayoutHeights = [];
 
             //layout variables            
@@ -1256,7 +1256,7 @@
             var chartOffset = _margin.top;
             var treeOffset = 0;
             var minmax = [];
-            var maxTreeCanvasHeight = 500;
+            var maxTreeCanvasHeight = 1000;
 
             //view specific data
             var nodes = [];
@@ -1342,8 +1342,8 @@
             }
 
             var mainG = svg.select("#mainG");
-            var tree = d3.tree().size([maxTreeCanvasHeight, width - _margin.left]);
-            // .nodeSize([_maxNodeRadius, _maxNodeRadius]);
+            var tree = d3.tree()//.size([maxTreeCanvasHeight, width - _margin.left]);
+            .nodeSize([_maxNodeRadius, _maxNodeRadius]);
             
 
           
@@ -1746,12 +1746,56 @@
                                     else if(d.children.length == 1){
                                         return "";
                                     }
-                                    else {
-                                        return d.data.name.slice(0,10) + "...";
+
+                                    // else {
+                                    //     return d.data.name.slice(0,10) + "...";
+                                    // }
+                                    return "";
+                                })
+                                .attr("transform", (d) => {
+                                    if(d.children){
+                                        return "rotate(-25)"
                                     }
                                 })
                                 .style("font", "12px monospace");
         
+                                  // commenting out text for now
+                            dNodeEnter.append("text")
+                                .attr("x", function (d) {
+                                    return 20;
+                                })
+                                .attr("dy", "2em")
+                                .attr("text-anchor", function (d) {
+                                    return "start";
+                                })
+                                .text(function (d) {
+                                    if (d.data.elided.length > 1){
+                                        return `Children of: ${d.parent.name}` ;
+                                    } 
+                                    else{
+                                        return `${d.data.name} Subtree`;
+                                    }
+                                })
+                                .style("font", "12px monospace");
+
+                            aggNodeEnter.append("text")
+                                .attr("x", function (d) {
+                                    return 20;
+                                })
+                                .attr("dy", "1em")
+                                .attr("text-anchor", function (d) {
+                                    return "start";
+                                })
+                                .text(function (d) {
+                                    if (d.data.elided.length > 1){
+                                        return `Children of: ${d.parent.name}` ;
+                                    } 
+                                    else{
+                                        return `${d.data.name} Subtree`;
+                                    }
+                                })
+                                .style("font", "12px monospace");
+
 
                         // links
                         var link = treeGroup.selectAll("path.link")
@@ -1898,9 +1942,10 @@
                                 else if(d.children.length == 1){
                                     return "";
                                 }
-                                else {
-                                    return d.data.name.slice(0,10) + "...";
-                                }
+                                // else {
+                                //     return d.data.name.slice(0,10) + "...";
+                                // }
+                                return "";
                             });
                         
                         dNodeUpdate
@@ -1909,6 +1954,10 @@
                             .attr("fill", "rgba(180,180,180)")
                             .style("stroke-width", ".5px")
                             .style("stroke", "rgba(100,100,100)")
+                            .attr("transform", function (d) {
+                                let scale = 3;
+                                return `scale(${scale})`;
+                            });
                         
                         dNodeUpdate
                             .selectAll(".dummyNode2")
@@ -1919,14 +1968,17 @@
                             .attr("transform", function (d) {
                                 return `translate(0, 1)`;
                             })
+                            .attr("transform", function (d) {
+                                let scale = 3;
+                                return `scale(${scale})`;
+                            });
                         
                         dNodeUpdate
                             .transition()
                             .duration(globals.duration)
                             .attr("transform", function (d) {
-                                    let scale = 3;
-                                    let h = this.getBBox().height*4;
-                                    return `translate(${_treeDepthScale(d.depth)-15}, ${_getLocalNodeX(d.x, treeIndex) - h/2}) scale(${scale})`;
+                                    let h = d3.select(this).select('path').node().getBBox().height;
+                                    return `translate(${_treeDepthScale(d.depth)-15}, ${_getLocalNodeX(d.x, treeIndex) - (h+1)/2})`;
                             });
 
                         aggNodeUpdate
@@ -1942,8 +1994,8 @@
                             .transition()
                             .duration(globals.duration)
                             .attr("transform", function (d) {
-                                    let h = this.getBBox().height;
-                                    let w = this.getBBox().width;
+                                    let h = d3.select(this).select('rect').node().getBBox().height;
+                                    let w = d3.select(this).select('rect').node().getBBox().width;
                                     return `translate(${_treeDepthScale(d.depth)-w/3}, ${_getLocalNodeX(d.x, treeIndex) - h/2})`;
                             });
                         
