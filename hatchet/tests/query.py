@@ -925,55 +925,55 @@ def test_construct_cypher_api():
     query3 = CypherQuery(path3)
     query4 = CypherQuery(path4)
 
-    assert query1.query_matcher.query_pattern[0][0] == "."
-    assert query1.query_matcher.query_pattern[0][1](mock_node_mpi)
-    assert not query1.query_matcher.query_pattern[0][1](mock_node_ibv)
-    assert not query1.query_matcher.query_pattern[0][1](mock_node_time_true)
-    assert query1.query_matcher.query_pattern[1][0] == "*"
-    assert query1.query_matcher.query_pattern[1][1](mock_node_mpi)
-    assert query1.query_matcher.query_pattern[1][1](mock_node_ibv)
-    assert query1.query_matcher.query_pattern[1][1](mock_node_time_true)
-    assert query1.query_matcher.query_pattern[1][1](mock_node_time_false)
-    assert query1.query_matcher.query_pattern[2][0] == "."
+    assert query1.query_pattern[0][0] == "."
+    assert query1.query_pattern[0][1](mock_node_mpi)
+    assert not query1.query_pattern[0][1](mock_node_ibv)
+    assert not query1.query_pattern[0][1](mock_node_time_true)
+    assert query1.query_pattern[1][0] == "*"
+    assert query1.query_pattern[1][1](mock_node_mpi)
+    assert query1.query_pattern[1][1](mock_node_ibv)
+    assert query1.query_pattern[1][1](mock_node_time_true)
+    assert query1.query_pattern[1][1](mock_node_time_false)
+    assert query1.query_pattern[2][0] == "."
 
-    assert query2.query_matcher.query_pattern[0][0] == "."
-    assert query2.query_matcher.query_pattern[1][0] == "."
-    assert query2.query_matcher.query_pattern[1][1](mock_node_mpi)
-    assert query2.query_matcher.query_pattern[1][1](mock_node_ibv)
-    assert query2.query_matcher.query_pattern[1][1](mock_node_time_true)
-    assert query2.query_matcher.query_pattern[1][1](mock_node_time_false)
-    assert query2.query_matcher.query_pattern[2][0] == "."
-    assert query2.query_matcher.query_pattern[2][1](mock_node_mpi)
-    assert query2.query_matcher.query_pattern[2][1](mock_node_ibv)
-    assert query2.query_matcher.query_pattern[2][1](mock_node_time_true)
-    assert query2.query_matcher.query_pattern[2][1](mock_node_time_false)
-    assert query2.query_matcher.query_pattern[3][0] == "."
+    assert query2.query_pattern[0][0] == "."
+    assert query2.query_pattern[1][0] == "."
+    assert query2.query_pattern[1][1](mock_node_mpi)
+    assert query2.query_pattern[1][1](mock_node_ibv)
+    assert query2.query_pattern[1][1](mock_node_time_true)
+    assert query2.query_pattern[1][1](mock_node_time_false)
+    assert query2.query_pattern[2][0] == "."
+    assert query2.query_pattern[2][1](mock_node_mpi)
+    assert query2.query_pattern[2][1](mock_node_ibv)
+    assert query2.query_pattern[2][1](mock_node_time_true)
+    assert query2.query_pattern[2][1](mock_node_time_false)
+    assert query2.query_pattern[3][0] == "."
 
-    assert query3.query_matcher.query_pattern[0][0] == "."
-    assert query3.query_matcher.query_pattern[1][0] == "+"
-    assert not query3.query_matcher.query_pattern[1][1](mock_node_mpi)
-    assert not query3.query_matcher.query_pattern[1][1](mock_node_ibv)
-    assert query3.query_matcher.query_pattern[1][1](mock_node_time_true)
-    assert not query3.query_matcher.query_pattern[1][1](mock_node_time_false)
-    assert query3.query_matcher.query_pattern[2][0] == "."
+    assert query3.query_pattern[0][0] == "."
+    assert query3.query_pattern[1][0] == "+"
+    assert not query3.query_pattern[1][1](mock_node_mpi)
+    assert not query3.query_pattern[1][1](mock_node_ibv)
+    assert query3.query_pattern[1][1](mock_node_time_true)
+    assert not query3.query_pattern[1][1](mock_node_time_false)
+    assert query3.query_pattern[2][0] == "."
 
-    assert query4.query_matcher.query_pattern[0][0] == "."
-    assert query4.query_matcher.query_pattern[1][0] == "."
-    assert not query4.query_matcher.query_pattern[1][1](mock_node_mpi)
-    assert not query4.query_matcher.query_pattern[1][1](mock_node_ibv)
-    assert query4.query_matcher.query_pattern[1][1](mock_node_time_true)
-    assert not query4.query_matcher.query_pattern[1][1](mock_node_time_false)
-    assert query4.query_matcher.query_pattern[2][0] == "."
-    assert not query4.query_matcher.query_pattern[2][1](mock_node_mpi)
-    assert not query4.query_matcher.query_pattern[2][1](mock_node_ibv)
-    assert query4.query_matcher.query_pattern[2][1](mock_node_time_true)
-    assert not query4.query_matcher.query_pattern[2][1](mock_node_time_false)
-    assert query4.query_matcher.query_pattern[3][0] == "."
-    assert not query4.query_matcher.query_pattern[3][1](mock_node_mpi)
-    assert not query4.query_matcher.query_pattern[3][1](mock_node_ibv)
-    assert query4.query_matcher.query_pattern[3][1](mock_node_time_true)
-    assert not query4.query_matcher.query_pattern[3][1](mock_node_time_false)
-    assert query4.query_matcher.query_pattern[4][0] == "."
+    assert query4.query_pattern[0][0] == "."
+    assert query4.query_pattern[1][0] == "."
+    assert not query4.query_pattern[1][1](mock_node_mpi)
+    assert not query4.query_pattern[1][1](mock_node_ibv)
+    assert query4.query_pattern[1][1](mock_node_time_true)
+    assert not query4.query_pattern[1][1](mock_node_time_false)
+    assert query4.query_pattern[2][0] == "."
+    assert not query4.query_pattern[2][1](mock_node_mpi)
+    assert not query4.query_pattern[2][1](mock_node_ibv)
+    assert query4.query_pattern[2][1](mock_node_time_true)
+    assert not query4.query_pattern[2][1](mock_node_time_false)
+    assert query4.query_pattern[3][0] == "."
+    assert not query4.query_pattern[3][1](mock_node_mpi)
+    assert not query4.query_pattern[3][1](mock_node_ibv)
+    assert query4.query_pattern[3][1](mock_node_time_true)
+    assert not query4.query_pattern[3][1](mock_node_time_false)
+    assert query4.query_pattern[4][0] == "."
 
     # invalid_path = [
     #     {"name": "MPI_[_a-zA-Z]*"},

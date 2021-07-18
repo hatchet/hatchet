@@ -755,8 +755,12 @@ def filter_check_types(type_check, df_row, filt_lambda):
         return False
 
 
-class CypherQuery(AbstractQuery):
+class CypherQuery(QueryMatcher):
     def __init__(self, cypher_query):
+        if sys.version_info[0] == 2:
+            super(CypherQuery, self).__init__()
+        else:
+            super().__init__()
         model = None
         try:
             model = mm.model_from_str(cypher_query)
@@ -774,13 +778,9 @@ class CypherQuery(AbstractQuery):
         self._parse_conditions(model.cond_expr)
         self.lambda_filters = [None for _ in self.wcards]
         self._build_lambdas()
-        self.query_matcher = self._build_query_matcher()
+        self._build_query()
 
-    def apply(self, gf):
-        return self.query_matcher.apply(gf)
-
-    def _build_query_matcher(self):
-        query = QueryMatcher()
+    def _build_query(self):
         for i in range(0, len(self.wcards)):
             wcard = self.wcards[i][0]
             # TODO Remove this when Python 2.7 support is dropped.
@@ -789,15 +789,14 @@ class CypherQuery(AbstractQuery):
             filt_str = self.lambda_filters[i]
             if filt_str is None:
                 if i == 0:
-                    query.match(wildcard_spec=wcard)
+                    self.match(wildcard_spec=wcard)
                 else:
-                    query.rel(wildcard_spec=wcard)
+                    self.rel(wildcard_spec=wcard)
             else:
                 if i == 0:
-                    query.match(wildcard_spec=wcard, filter_func=eval(filt_str))
+                    self.match(wildcard_spec=wcard, filter_func=eval(filt_str))
                 else:
-                    query.rel(wildcard_spec=wcard, filter_func=eval(filt_str))
-        return query
+                    self.rel(wildcard_spec=wcard, filter_func=eval(filt_str))
 
     def _build_lambdas(self):
         for i in range(0, len(self.wcards)):
