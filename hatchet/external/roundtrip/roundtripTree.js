@@ -1243,8 +1243,8 @@
                         .attr("width", width)
                         .attr("height", height);
 
-            var _maxNodeRadius = 30;
-            var _treeDepthScale = d3.scaleLinear().range([0,element.offsetWidth-50]).domain([0, model.data.maxHeight])
+            var _maxNodeRadius = 25;
+            var _treeDepthScale = d3.scaleLinear().range([0, element.offsetWidth-50]).domain([0, model.data.maxHeight])
             var _nodeScale = d3.scaleLinear().range([5, _maxNodeRadius]).domain([model.data.forestMinMax[model.state.secondaryMetric].min, model.data.forestMinMax[model.state.secondaryMetric].max]);
             var _barScale = d3.scaleLinear().range([0, 25]).domain([model.data.aggregateMinMax[model.state.primaryMetric].min, model.data.aggregateMinMax[model.state.primaryMetric].max]);
             var _treeLayoutHeights = [];
@@ -1256,7 +1256,7 @@
             var chartOffset = _margin.top;
             var treeOffset = 0;
             var minmax = [];
-            var maxTreeCanvasHeight = 1000;
+            var maxTreeCanvasHeight = 600;
 
             //view specific data
             var nodes = [];
@@ -1746,7 +1746,6 @@
                                     else if(d.children.length == 1){
                                         return "";
                                     }
-
                                     // else {
                                     //     return d.data.name.slice(0,10) + "...";
                                     // }
@@ -1762,9 +1761,9 @@
                                   // commenting out text for now
                             dNodeEnter.append("text")
                                 .attr("x", function (d) {
-                                    return 20;
+                                    return 30;
                                 })
-                                .attr("dy", "2em")
+                                .attr("dy", "1em")
                                 .attr("text-anchor", function (d) {
                                     return "start";
                                 })
@@ -1780,7 +1779,7 @@
 
                             aggNodeEnter.append("text")
                                 .attr("x", function (d) {
-                                    return 20;
+                                    return 25;
                                 })
                                 .attr("dy", "1em")
                                 .attr("text-anchor", function (d) {
@@ -1929,9 +1928,9 @@
                         
                         nodeUpdate.select("text")
                             .attr("x", function (d) {
-                                return d.children || model.state['collapsedNodes'].includes(d) ? -13 : 13;
+                                return d.children || model.state['collapsedNodes'].includes(d) ? -13 : _nodeScale(d.data.metrics[primaryMetric]) + 5;
                             })
-                            .attr("dy", ".75em")
+                            .attr("dy", ".5em")
                             .attr("text-anchor", function (d) {
                                 return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
                             })
