@@ -44,3 +44,16 @@ def test_read_calc_pi_database(calc_pi_callgrind_dot):
         root_names.append(root.frame.attrs["name"])
 
     assert all(rt in root_names for rt in roots)
+
+
+def test_groupby_aggregate_by_module(calc_pi_callgrind_dot):
+    gf = GraphFrame.from_gprof_dot(str(calc_pi_callgrind_dot))
+
+    modules = gf.dataframe["module"].unique()
+
+    groupby_column = "module"
+    agg_func = {"time": np.mean}
+    grouped_gf = gf.groupby_aggregate(groupby_column, agg_func)
+
+    assert all(m in grouped_gf.dataframe.name.values for m in modules)
+    assert len(grouped_gf.graph) == len(modules)
