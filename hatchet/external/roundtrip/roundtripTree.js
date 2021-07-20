@@ -283,7 +283,8 @@
                             "forestMinMax": [],
                             "aggregateMinMax": {},
                             "forestMetrics": [],
-                            "metricLists":[]
+                            "metricLists":[],
+                            "currentStrictness": 1.5
                         };
 
             var _state = {
@@ -325,7 +326,7 @@
                     _data.aggregateMinMax[metricName] = {min: Number.MAX_VALUE, max: Number.MIN_VALUE};
                 }
             }
-            console.log(_data.aggregateMinMax);
+
             // pick the first metric listed to color the nodes
             _state.primaryMetric = _data.metricColumns[0];
             _state.secondaryMetric = _data.metricColumns[1];
@@ -378,7 +379,7 @@
             }
 
             function _setOutlierFlags(h){
-                var outlierScalar = 1.5;
+                var outlierScalar = _data.currentStrictness;
                 var upperOutlierThreshold = Number.MAX_VALUE;
                 var lowerOutlierThreshold = Number.MIN_VALUE;
 
@@ -422,13 +423,31 @@
                 return agg;
             }
 
+            function _getSubTreeDescription(h){
+                let desc = {};
+
+                desc.height = h.height;
+                desc.size = h.count().value;
+                
+                return desc;
+            }
+
 
             function _visitor(root, condition){
                 if(root.children){
                     var dummyHolder = null;
                     var aggregateMetrics = {};
+                    var description = {
+                        maxHeight: 0,
+                        minHeight: Number.MAX_VALUE,
+                        size: 0,
+                        elidedSubtrees:0
+                    };
                     for(var childNdx = root.children.length-1; childNdx >= 0; childNdx--){
                         var child = root.children[childNdx];
+                        //clear dummy node codition so it
+                        // doesnt carry on between re-draws
+                        child.data.dummy = false;
 
                         //condition where we remove child
                         if(child.value < condition){
@@ -448,12 +467,14 @@
                         }
                     }
                     
+                    //some nodes were elided because they met the above
+                    // condition
                     if (root._children && root._children.length > 0){
-                        dummyHolder.data.elided = root._children;        
-                        dummyHolder.data.dummy = true;
-                        dummyHolder.data.aggregate = false;
+                        dummyHolder.elided = root._children;        
+                        dummyHolder.dummy = true;
+                        dummyHolder.aggregate = false;
                         dummyHolder.parent = root;
-                        dummyHolder.data.outlier = 0;
+                        dummyHolder.outlier = 0;
                         root.children.push(dummyHolder);
 
                         //initialize the aggregrate metrics for summing
@@ -461,17 +482,31 @@
                             aggregateMetrics[metric] = 0;
                         }
 
-                        for(elided of dummyHolder.data.elided){
+                        for(elided of dummyHolder.elided){
                             var aggMetsForChild = _getAggregateMetrics(elided)
+                            var descriptionOfChild = _getSubTreeDescription(elided);
+                            
                             for(metric of _data.metricColumns){
                                 aggregateMetrics[metric] += aggMetsForChild[metric];
                             }
+
+                            description.size += descriptionOfChild.size;
+
+                            if(descriptionOfChild.height > description.maxHeight){
+                                description.maxHeight = descriptionOfChild.height;
+                            }
+
+                            if(descriptionOfChild.height < description.minHeight){
+                                description.minHeight = descriptionOfChild.height;
+                            }
+
                         }
+
+                        description.elidedSubtrees = elided.length;
 
                         //get the overall min and max of aggregate metrics
                         // for scales
                         for(metric of _data.metricColumns){
-                            console.log(metric, _data.aggregateMinMax[metric]);
                             if (aggregateMetrics[metric] > _data.aggregateMinMax[metric].max){
                                 _data.aggregateMinMax[metric].max = aggregateMetrics[metric];
                             }
@@ -481,9 +516,12 @@
                         }
 
                         dummyHolder.data.aggregateMetrics = aggregateMetrics;
+                        dummyHolder.data.description = description;
 
+                        //more than sum 0 nodes were aggregrated
+                        // together
                         if(dummyHolder.data.aggregateMetrics[_state.primaryMetric] != 0){
-                            dummyHolder.data.aggregate = true;
+                            dummyHolder.aggregate = true;
                         }
                     }
 
@@ -498,25 +536,20 @@
                 }
             }
 
-
-            //problems with actively modifying the tree
-            // may need to build a custom each
-            function _pruneZerosFromTree(condition){
-                for(var i = 0; i < _data.numberOfTrees; i++){
-                    var h = _data.immutableHierarchy[i].copy().sum(d => d.metrics[_state.primaryMetric]);
-                    if (condition != 0){   
-                        _visitor(h, 1);
-                    }
-                    _data.hierarchy[i] = h;
-                }
-            }
-
             function _aggregateTreeData(){
+                //Holds the logic required for pruning
+                // away un-interesting nodes
                 for(var i = 0; i < _data.numberOfTrees; i++){
-                    var h = _data.hierarchy[i].copy().sum(d => d.outlier);
+                    var h = _data.immutableHierarchy[i].copy();
+
+                    _setOutlierFlags(h);
+
+                    //This sum ensures that we do not prune 
+                    //away parent nodes of identified outliers.
+                    h.sum(d => d.outlier);
+
                     _visitor(h, 1);
                     _data.hierarchy[i] = h;
-
                 }
             }
 
@@ -604,13 +637,13 @@
                 if (_data.immutableHierarchy[treeIndex].height > _data.maxHeight){
                     _data.maxHeight = _data.immutableHierarchy[treeIndex].height;
                 }
-                _setOutlierFlags(_data.immutableHierarchy[treeIndex]);
+               
             }
             _state.lastClicked = _data.hierarchy[0];
             
 
             // _pruneZerosFromTree(1);
-            _aggregateTreeData();
+            // _aggregateTreeData();
 
             //get the max and min metrics across the forest
             // and for each individual tree
@@ -664,8 +697,6 @@
             // Global min/max are the last entry of forestMetrics;
             _data.forestMinMax = _forestMinMax;
             _data.forestMetrics.push(_forestMinMax);
-
-
 
 
             /* Class object created from call to createModel */
@@ -749,9 +780,10 @@
                         _data["forestMinMax"] = _forestMinMax;
                 },
                 pruneTree: function(threshold){
-                    _pruneDefaultTree(threshold);
+                    _data.currentStrictness = threshold;
 
-                    _state.cachedThreshold = threshold;
+                    _aggregateTreeData();
+
                     _state.hierarchyUpdated = true;
 
                     _observers.notify();
@@ -823,7 +855,7 @@
                     _state["brushOn"] = -_state["brushOn"];
                     _observers.notify();
                 },
-                setBrushedPoints(selection, end){
+                setBrushedPoints: function(selection){
                     /**
                      * Calculates which nodes are in the brushing area.
                      * 
@@ -831,9 +863,6 @@
                      * @param {Boolean} end - A variable which tests if the brushing is over or not
                      *
                      */
-
-                    var brushedNodes = [];
-
                     if(selection){
                         //calculate brushed points
                         for(var i = 0; i < _data["numberOfTrees"]; i++){
@@ -887,9 +916,9 @@
                         _state.secondaryMetric = newMetric;
                     }
                     
-                    //need to cache last value of 
-                    // _pruneDefaultTree(_state.cachedThreshold);
-                    // _state.hierarchyUpdated = true;
+
+                    _aggregateTreeData();
+                    _state.hierarchyUpdated = true;
 
                     _observers.notify();
                 },
@@ -1042,21 +1071,32 @@
             // ----------------------------------------------
 
             
-            d3.select(elem).append('label').style('margin', '0 0 0 10px').attr('for', 'test_pruning').text(' Prune Less Than:');
-            d3.select(elem).append("select")
+            sliderText = d3.select(elem).append('label').style('margin', '0 0 0 10px').attr('for', 'test_pruning').text(' Pruning Strictness (1.5):');
+            d3.select(elem)
+                .append("div")
+                .attr("class", "slidecontainer")
+                .style("width", "150px")
+                .style("display", "inline-block")
+                .append("input")
                 .attr("id", "test_pruning")
-                .selectAll("option")
-                .data([0, 1, 60000, 100000])
-                .enter()
-                .append('option')
-                .text(d => d)
-                .attr("value", d=>(d));
+                .attr("type", "range")
+                .attr("step", ".25")
+                .attr("min", "0")
+                .attr("max", "2")
+                .attr("value", "1.5");
 
-            document.getElementById("test_pruning").style.margin = "10px 10px 10px 10px";
+            document.getElementById("test_pruning").style.marginLeft = "10px";
+        
 
 
             d3.select(elem).select('#test_pruning')
                 .on('change', function(){
+                    //This might be ok because it's pretty
+                    // small.
+                    sliderText.text(()=>{
+                        return ` Pruning Strictness (${this.value})`;
+                    });
+
                     _observers.notify({
                         type: globals.signals.MASSPRUNE,
                         threshold: this.value
@@ -1244,9 +1284,9 @@
                         .attr("height", height);
 
             var _maxNodeRadius = 25;
-            var _treeDepthScale = d3.scaleLinear().range([0, element.offsetWidth-50]).domain([0, model.data.maxHeight])
+            var _treeDepthScale = d3.scaleLinear().range([0, element.offsetWidth-200]).domain([0, model.data.maxHeight])
             var _nodeScale = d3.scaleLinear().range([5, _maxNodeRadius]).domain([model.data.forestMinMax[model.state.secondaryMetric].min, model.data.forestMinMax[model.state.secondaryMetric].max]);
-            var _barScale = d3.scaleLinear().range([0, 25]).domain([model.data.aggregateMinMax[model.state.primaryMetric].min, model.data.aggregateMinMax[model.state.primaryMetric].max]);
+            var _barScale = d3.scaleLinear().range([0, 25]).domain([model.data.aggregateMinMax[model.state.secondaryMetric].min, model.data.aggregateMinMax[model.state.secondaryMetric].max]);
             var _treeLayoutHeights = [];
 
             //layout variables            
@@ -1255,8 +1295,8 @@
             var maxHeight = 0;
             var chartOffset = _margin.top;
             var treeOffset = 0;
-            var minmax = [];
-            var maxTreeCanvasHeight = 600;
+            var _minmax = [];
+            var maxTreeCanvasHeight = 1000;
 
             //view specific data
             var nodes = [];
@@ -1282,6 +1322,10 @@
                 ${dy} ${dx}`
 
                 return path
+            }
+
+            function _getLocalNodeX(x, ti){
+                return x + treeOffset - _minmax[ti].min;
             }
 
             function _getMinxMaxxFromTree(root){
@@ -1342,7 +1386,7 @@
             }
 
             var mainG = svg.select("#mainG");
-            var tree = d3.tree()//.size([maxTreeCanvasHeight, width - _margin.left]);
+            var tree = d3.tree()//.size([maxTreeCanvasHeight, width - _margin.left - 200]);
             .nodeSize([_maxNodeRadius, _maxNodeRadius]);
             
 
@@ -1473,8 +1517,10 @@
                 aggregates.push([]);
                 links.push(treeLayout.descendants().slice(1));
                 
-                //X value where tree should start being drawn
-                treeOffset = 0 + legendOffset + _margin.top;
+
+                //storage
+                _treeLayoutHeights.push(currentLayoutHeight);
+                _minmax.push(currentMinMax);
 
                 //updates
                 // put this on the immutable tree
@@ -1493,6 +1539,8 @@
 
             } //end for-loop "add tree"
         
+            svg.attr("height", height);
+
               //setup Interactions
               var brush = d3.brush()
                 .extent([[0, 0], [2 * width, 2 * (height + globals.layout.margin.top + globals.layout.margin.bottom)]])
@@ -1520,7 +1568,10 @@
 
                     chartOffset = _margin.top;
                     height = _margin.top + _margin.bottom;
+
+                    //update scales
                     _nodeScale.domain([0, model.data.forestMinMax[model.state.secondaryMetric].max]);
+                    _barScale.domain([model.data.aggregateMinMax[model.state.secondaryMetric].min, model.data.aggregateMinMax[model.state.secondaryMetric].max]);
 
                      //add brush if there should be one
                      if(model.state.brushOn > 0){
@@ -1541,13 +1592,16 @@
                         // by cacheing tree between calls
                         if(model.state.hierarchyUpdated == true){
                             var treeLayout = tree(source);
-                            nodes[treeIndex] = treeLayout.descendants().filter(d=>{return !d.data.dummy});
-                            surrogates[treeIndex] = treeLayout.descendants().filter(d=>{return (d.data.dummy && !d.data.aggregate)});
-                            aggregates[treeIndex] = treeLayout.descendants().filter(d=>{return d.data.aggregate});
+                            nodes[treeIndex] = treeLayout.descendants().filter(d=>{return !d.dummy});
+                            surrogates[treeIndex] = treeLayout.descendants().filter(d=>{return (d.dummy && !d.aggregate)});
+                            aggregates[treeIndex] = treeLayout.descendants().filter(d=>{return d.aggregate});
                             links[treeIndex] = treeLayout.descendants().slice(1);
+                            
                             _calcNodePositions(nodes[treeIndex], treeIndex);
 
-                            console.log("Tree" + treeIndex, surrogates, aggregates);
+                            //recalculate layouts
+                            _treeLayoutHeights[treeIndex] = _getHeightFromTree(treeLayout);
+                            _minmax[treeIndex] = _getMinxMaxxFromTree(treeLayout);
 
                             //only update after last tree
                             if(treeIndex == model.data.numberOfTrees - 1){
@@ -1636,12 +1690,12 @@
 
                         var dNodeEnter = dummyNodes.enter().append('g')
                             .attr('class', 'fakeNode')
-                            .attr("transform", function (d) {
-                                if(!d.parent){
-                                    return "translate(0,0)";
-                                }
-                                return "translate(" + d.parent.y + "," + d.parent.x + ")";
-                            })
+                            // .attr("transform", function (d) {
+                            //     if(!d.parent){
+                            //         return "translate(0,0)";
+                            //     }
+                            //     return "translate(" + d.parent.y + "," + d.parent.x + ")";
+                            // })
                             .on("click", function(d){
                                 console.log(d);
                                 _observers.notify({
@@ -1660,10 +1714,7 @@
                         var aggNodeEnter = aggBars.enter().append('g')
                             .attr('class', 'aggBar')
                             .attr("transform", function (d) {
-                                if(!d.parent){
-                                    return "translate(0,0)"
-                                }
-                                return "translate(" + d.parent.y + "," + d.parent.x + ")";
+                                return `translate(${_treeDepthScale(d.depth)}, ${_getLocalNodeX(d.x, treeIndex)})`;
                             })
                             .on("click", function(d){
                                 console.log(d);
@@ -1678,20 +1729,14 @@
                                     node: d,
                                     tree: treeIndex
                                 })
-<<<<<<< HEAD
-                                .on("mouseout", function(d){
-                                    _observers.notify({
-                                        type: globals.signals.CLICK,
-                                        node: null
-                                    })
-                                });
-
-=======
+                            })
+                            .on("mouseout", function(d){
+                                _observers.notify({
+                                    type: globals.signals.CLICK,
+                                    node: null
+                                })
                             });
 
-                        
-            
->>>>>>> Drawing bars, need to tidy up the tree after this tho.
                         nodeEnter.append("circle")
                                 .attr('class', 'circleNode')
                                 .attr("r", 1e-6)
@@ -1719,7 +1764,7 @@
                         
                         aggNodeEnter.append("rect")
                                 .attr('class', 'bar')
-                                .attr('height', (d) => {return _barScale(d.data.aggregateMetrics[primaryMetric]);})
+                                .attr('height', (d) => {return _barScale(d.data.aggregateMetrics[secondaryMetric]);})
                                 .attr('width', 20)
                                 .attr("fill", "rgba(0,0,0)")
                                 .style("stroke-width", ".5px")
@@ -1751,11 +1796,6 @@
                                     // }
                                     return "";
                                 })
-                                .attr("transform", (d) => {
-                                    if(d.children){
-                                        return "rotate(-25)"
-                                    }
-                                })
                                 .style("font", "12px monospace");
         
                                   // commenting out text for now
@@ -1768,8 +1808,8 @@
                                     return "start";
                                 })
                                 .text(function (d) {
-                                    if (d.data.elided.length > 1){
-                                        return `Children of: ${d.parent.name}` ;
+                                    if (d.elided.length > 1){
+                                        return `Children of: ${d.parent.data.name}` ;
                                     } 
                                     else{
                                         return `${d.data.name} Subtree`;
@@ -1786,8 +1826,8 @@
                                     return "start";
                                 })
                                 .text(function (d) {
-                                    if (d.data.elided.length > 1){
-                                        return `Children of: ${d.parent.name}` ;
+                                    if (d.elided.length > 1){
+                                        return `Children of: ${d.parent.data.name}` ;
                                     } 
                                     else{
                                         return `${d.data.name} Subtree`;
@@ -1860,7 +1900,7 @@
                             .duration(globals.duration)
                             .text((d, i) => {
                                 if (metricColumns.includes(model.state["selectedMetric"])) {
-                                    return _colorManager.getLegendDomains(treeIndex)[6 - d - 1] + ' - ' + _colorManager.getLegendDomains(treeIndex)[6 - d];
+                                    return _colorManager.getLegendDomains(treeIndex)[6 - d - 1].toFixed(2) + ' - ' + _colorManager.getLegendDomains(treeIndex)[6 - d].toFixed(2);
                                 } else if (attributeColumns.includes(model.state["selectedMetric"])) {
                                     return _colorManager.getLegendDomains(treeIndex)[i];
                                 }
@@ -1928,7 +1968,7 @@
                         
                         nodeUpdate.select("text")
                             .attr("x", function (d) {
-                                return d.children || model.state['collapsedNodes'].includes(d) ? -13 : _nodeScale(d.data.metrics[primaryMetric]) + 5;
+                                return d.children || model.state['collapsedNodes'].includes(d) ? -13 : _nodeScale(d.data.metrics[secondaryMetric]) + 5;
                             })
                             .attr("dy", ".5em")
                             .attr("text-anchor", function (d) {
@@ -1982,6 +2022,7 @@
 
                         aggNodeUpdate
                             .select('rect')
+                            .attr('height', (d) => {return  _barScale(d.data.aggregateMetrics[secondaryMetric]);})
                             .style('fill', function (d) {
                                 if(model.state["legend"] == globals.UNIFIED){
                                     return _colorManager.calcColorScale(d.data.aggregateMetrics[primaryMetric], -1);
@@ -2004,10 +2045,10 @@
                         // ---------------------------------------------
                         // Transition exiting nodes to the parent's new position.
                         var nodeExit = node.exit().transition()
-                                .duration(globals.duration)
-                                .attr("transform", function (d) {
-                                    return "translate(" + lastClicked.y + "," + lastClicked.x + ")";
-                                })
+                                // .duration(globals.duration)
+                                // .attr("transform", function (d) {
+                                //     return "translate(" + d.parent.y + "," + d.parent.x + ")";
+                                // })
                                 .remove();
             
                         nodeExit.select("circle")
@@ -2018,11 +2059,18 @@
                                 .remove();
                         
                         var dNodeExit = dummyNodes.exit().transition()
-                                .duration(globals.duration)
-                                .attr("transform", function (d) {
-                                    return "translate(" + lastClicked.y + "," + lastClicked.x + ")";
-                                })
+                                // .duration(globals.duration)
+                                // .attr("transform", function (d) {
+                                //     return "translate(" + d.parent.y + "," + d.parent.x + ")";
+                                // })
                                 .remove();
+                        
+                        var dNodeExit = aggBars.exit().transition()
+                            // .duration(globals.duration)
+                            // .attr("transform", function (d) {
+                            //     return "translate(" + d.parent.y + "," + d.parent.x + ")";
+                            // })
+                            .remove();
             
                         // Transition exiting links to the parent's new position.
                         var linkExit = link.exit().transition()
@@ -2032,12 +2080,23 @@
                                     return diagonal(o, o);
                                 })
                                 .remove();
-
-                        chartOffset = treeLayoutHeights[treeIndex] + treeOffset + _margin.top;
+                        
+                        // make canvas always fit tree height
+                        // if(_treeLayoutHeights < maxTreeCanvasHeight){
+                            chartOffset += Math.min(_treeLayoutHeights[treeIndex], maxTreeCanvasHeight) + treeOffset + _margin.top;
+                        // } else{
+                        // chartOffset += _treeLayoutHeights[treeIndex] + treeOffset + _margin.top;
+                        // }
                         height += chartOffset;
                     }                    
 
-                    svg.attr("height", height);
+                    console.log(height);
+                    //hack: fix in future
+                    if(model.data.numberOfTrees > 1){
+                        svg.attr("height", height-treeOffset);
+                    } else{
+                        svg.attr("height", height);
+                    }
                 }
             }
             
