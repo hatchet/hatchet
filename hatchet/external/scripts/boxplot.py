@@ -48,14 +48,15 @@ class BoxPlot:
         if len(metrics) == 0:
             self.metrics = tgt_gf.inc_metrics + tgt_gf.exc_metrics
 
-        hatchet_cols = ["nid", "node"]
+        self.hatchet_cols = ["nid"]
+        # self.hatchet_cols = ["nid", "node"]
 
         tgt_gf.dataframe.reset_index(inplace=True)
-        tgt_dict = BoxPlot.df_groupby(tgt_gf.dataframe, groupby="name", cols=self.metrics + hatchet_cols + [self.cat_column])
+        tgt_dict = BoxPlot.df_groupby(tgt_gf.dataframe, groupby="name", cols=self.metrics + self.hatchet_cols + [self.cat_column])
         
         if bkg_gf is not None:
             bkg_gf.dataframe.reset_index(inplace=True)
-            bkg_dict = BoxPlot.df_groupby(bkg_gf.dataframe, groupby="name", cols=self.metrics + hatchet_cols + [self.cat_column])
+            bkg_dict = BoxPlot.df_groupby(bkg_gf.dataframe, groupby="name", cols=self.metrics + self.hatchet_cols + [self.cat_column])
                 
         self.result = {}
 
@@ -175,6 +176,9 @@ class BoxPlot:
                 "ks": (_kurt, _skew),
             }
 
+            for col in self.hatchet_cols:
+                ret[tk][col] = df[col].unique()[0]
+
         return ret
             
     def unpack(self):
@@ -220,5 +224,8 @@ class BoxPlot:
                         "kurt": box["ks"][0],
                         "skew": box["ks"][1],
                     }
-
+                
+                    for col in self.hatchet_cols:
+                        result[callsite][box_type][metric][col] = str(self.result[callsite][box_type][metric][col])
+ 
         return result

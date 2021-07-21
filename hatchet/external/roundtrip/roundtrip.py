@@ -126,7 +126,10 @@ class Roundtrip(Magics):
                 "kurt": {"type": "number"},
                 "skew": {"type": "number"},
                 "q": {"type": "array"},
-                "outliers": {"type": "object"},
+                "ocat": {"type": "array"},
+                "ometric": {"type": "array"},
+                "nid": {"type": "string"},
+                "node": {"type": "string"},
             },
         }
 

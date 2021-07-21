@@ -143,6 +143,8 @@
                 "imb": d3_utils.formatRuntime(d.imb),
                 "kurt": d3_utils.formatRuntime(d.kurt),
                 "skew": d3_utils.formatRuntime(d.skew),
+                "node": d.node,
+                "nid": d.nid
             };
         }
 
@@ -156,12 +158,14 @@
         function dict_to_csv(dict, boxplotType) {
             const callsites = Object.keys(dict);
             const stat_columns = ["min", "max", "mean", "var", "imb", "kurt", "skew"]
-            let string = 'name,' + stat_columns.join(",") + ";";
+            let string = 'name,node,nid,' + stat_columns.join(",") + ";";
 
             for (let callsite of callsites){
                 const d = dict[callsite][boxplotType];
+                const node = dict[callsite][boxplotType]["node"];
+                const nid = dict[callsite][boxplotType]["nid"];
 
-                let statsString = `${callsite},`;
+                let statsString = `${callsite},${node},${nid},`;
                 for (let stat of stat_columns) {
                     if (Object.keys(d).includes(stat)) {
                         statsString += d[stat] + ",";
