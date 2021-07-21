@@ -11,3 +11,4 @@ cython
 multiprocess
 textX
 jsonschema
+scipy

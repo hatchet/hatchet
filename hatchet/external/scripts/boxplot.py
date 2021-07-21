@@ -1,63 +1,41 @@
-import hatchet as ht
-import numpy as np
+import numpy as np 
 import pandas as pd
 from scipy import stats
-
+import hatchet as ht
 
 class BoxPlot:
     """
     Boxplot computation for a dataframe segment
     """
 
-    def __init__(
-        self,
-        tgt_gf,
-        bkg_gf=None,
-        callsites=[],
-        metrics=["time", "time (inc)"],
-        iqr_scale=1.5,
-    ):
+    def __init__(self, tgt_gf, bkg_gf=None, callsites=[], metrics=["time", "time (inc)"], column='rank', iqr_scale=1.5):
         """
-        Boxplot for callsite
-
-        :param tgt_gf: (ht.GraphFrame) Target GraphFrame
+        Boxplot for callsite 
+        
+        :param tgt_gf: (ht.GraphFrame) Target GraphFrame 
         :param bkg_gf: (ht.GraphFrame) Relative supergraph
-        :param callsites: (list) Callsite name
-        :param metrics: (list) Runtime metrics
+        :param callsite: (list) List of callsites
+        :param metrics: (list) List of metrics to compute.
         :param iqr_scale: (float) IQR range for outliers.
         """
         assert isinstance(tgt_gf, ht.GraphFrame)
         assert isinstance(callsites, list)
         assert isinstance(iqr_scale, float)
-
+        
         self.metrics = metrics
         self.iqr_scale = iqr_scale
         self.callsites = callsites
-
+                
         tgt_gf.dataframe.reset_index(inplace=True)
-        tgt_dict = BoxPlot.df_bi_level_group(
-            tgt_gf.dataframe,
-            "name",
-            None,
-            cols=metrics + ["nid"],
-            group_by=["rank"],
-            apply_func=lambda _: _.mean(),
-        )
-
+        tgt_dict = BoxPlot.df_bi_level_group(tgt_gf.dataframe, "name", None, cols=metrics + ["nid"], group_by=[column], apply_func=lambda _: _.mean())
+        
         if bkg_gf is not None:
             bkg_gf.dataframe.reset_index(inplace=True)
-            bkg_dict = BoxPlot.df_bi_level_group(
-                bkg_gf.dataframe,
-                "name",
-                None,
-                cols=metrics + ["nid"],
-                group_by=["rank"],
-                apply_func=lambda _: _.mean(),
-            )
-
+            bkg_dict = BoxPlot.df_bi_level_group(bkg_gf.dataframe, "name", None, cols=metrics + ["nid"], group_by=[column], apply_func=lambda _: _.mean())
+                
         self.result = {}
 
-        self.box_types = ["tgt"]
+        self.box_types = ["tgt"]        
         if bkg_gf is not None:
             self.box_types = ["tgt", "bkg"]
 
@@ -69,13 +47,11 @@ class BoxPlot:
             if bkg_gf is not None:
                 bkg_df = bkg_dict[callsite]
                 ret["bkg"] = self.compute(bkg_df)
-
+                
             self.result[callsite] = ret
-
+    
     @staticmethod
-    def df_bi_level_group(
-        df, frst_group_attr, scnd_group_attr, cols, group_by, apply_func, proxy={}
-    ):
+    def df_bi_level_group(df, frst_group_attr, scnd_group_attr, cols, group_by, apply_func, proxy={}):
         _cols = cols + group_by
 
         # If there is only one attribute to group by, we use the 1st index.
@@ -92,27 +68,21 @@ class BoxPlot:
         _df = df.set_index(_groups)
         _levels = _df.index.unique().tolist()
 
-        # If "rank" is present in the columns, we will group by "rank".
+        # If "rank" is present in the columns, group by "rank".
         if "rank" in _df.columns and len(df["rank"].unique().tolist()) > 1:
             if scnd_group_attr is not None:
                 if len(group_by) == 0:
                     _cols = _cols + ["rank"]
-                    return {_: _df.xs(_)[_cols] for (_, __) in _levels}
-                return {
-                    _: (_df.xs(_)[_cols].groupby(group_by).mean()).reset_index()
-                    for (_, __) in _levels
-                }
+                    return { _ : _df.xs(_)[_cols] for (_, __) in _levels }
+                return { _ : (_df.xs(_)[_cols].groupby(group_by).mean()).reset_index() for (_, __) in _levels }
             else:
                 if len(group_by) == 0:
                     _cols = _cols + ["rank"]
-                    return {_: _df.xs(_)[_cols] for _ in _levels}
-                return {
-                    _: (_df.xs(_)[_cols].groupby(group_by).mean()).reset_index()
-                    for _ in _levels
-                }
-        else:
-            return {_: _df.xs(_)[_cols] for _ in _levels}
-
+                    return { _ : _df.xs(_)[_cols] for _ in _levels }
+                return { _ : (_df.xs(_)[_cols].groupby(group_by).mean()).reset_index() for _ in _levels }
+        else: 
+            return { _ : _df.xs(_)[_cols] for _ in _levels}
+    
     @staticmethod
     def outliers(data, scale=1.5, side="both"):
         assert isinstance(data, (pd.Series, np.ndarray))
@@ -138,6 +108,7 @@ class BoxPlot:
         if side == "both":
             return np.logical_or(upper_outlier, lower_outlier)
 
+        
     def compute(self, df):
         """
         Compute boxplot related information.
@@ -152,11 +123,6 @@ class BoxPlot:
             mask = BoxPlot.outliers(df[tv], scale=self.iqr_scale)
             mask = np.where(mask)[0]
 
-            if "rank" in df.columns:
-                rank = df["rank"].to_numpy()[mask]
-            else:
-                rank = np.zeros(mask.shape[0], dtype=int)
-
             _data = df[tv].to_numpy()
             _min, _mean, _max = _data.min(), _data.mean(), _data.max()
             _var = _data.var() if _data.shape[0] > 0 else 0.0
@@ -167,18 +133,17 @@ class BoxPlot:
             ret[tk] = {
                 "q": q,
                 "oval": df[tv].to_numpy()[mask],
-                "orank": rank,
                 "d": _data,
                 "rng": (_min, _max),
                 "uv": (_mean, _var),
                 "imb": _imb,
                 "ks": (_kurt, _skew),
             }
-            if "dataset" in df.columns:
-                ret[tk]["odset"] = df["dataset"].to_numpy()[mask]
+            if 'dataset' in df.columns:
+                ret[tk]['odset'] = df['dataset'].to_numpy()[mask]
 
         return ret
-
+            
     def unpack(self):
         """
         Unpack the boxplot data into JSON format.
@@ -194,7 +159,6 @@ class BoxPlot:
                         "q": box["q"].tolist(),
                         "outliers": {
                             "values": box["oval"].tolist(),
-                            "ranks": box["orank"].tolist(),
                         },
                         "min": box["rng"][0],
                         "max": box["rng"][1],
@@ -205,9 +169,7 @@ class BoxPlot:
                         "skew": box["ks"][1],
                     }
 
-                    if "odset" in box:
-                        result[callsite][box_type][metric]["odset"] = box[
-                            "odset"
-                        ].tolist()
+                    if 'odset' in box:
+                        result[callsite][box_type][metric]['odset'] = box['odset'].tolist()
 
         return result
