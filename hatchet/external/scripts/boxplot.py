@@ -4,34 +4,47 @@ from scipy import stats
 import hatchet as ht
 
 class BoxPlot:
-    """
-    Boxplot computation for a dataframe segment
-    """
-
-    def __init__(self, tgt_gf, bkg_gf=None, callsites=[], metrics=["time", "time (inc)"], column='rank', iqr_scale=1.5):
+    def __init__(self, cat_column, tgt_gf, bkg_gf=None, callsites=[], metrics=["time", "time (inc)"], iqr_scale=1.5):
         """
-        Boxplot for callsite 
+        Boxplot computation for callsites. The data can be computed for two use
+        cases:
+        1. Examining runtime distributions of a single GraphFrame.
+        2. Comparing runtime distributions of a target GraphFrame against a
+           background GraphFrame. 
         
-        :param tgt_gf: (ht.GraphFrame) Target GraphFrame 
-        :param bkg_gf: (ht.GraphFrame) Relative supergraph
-        :param callsite: (list) List of callsites
+        :param cat_column: (string) Categorical column to aggregate the boxplot computation.
+        :param tgt_gf: (ht.GraphFrame) Target GraphFrame.
+        :param bkg_gf: (ht.GraphFrame) Background GraphFrame.
+        :param callsite: (list) List of callsites.
         :param metrics: (list) List of metrics to compute.
         :param iqr_scale: (float) IQR range for outliers.
         """
         assert isinstance(tgt_gf, ht.GraphFrame)
         assert isinstance(callsites, list)
+        assert isinstance(metrics, list)
         assert isinstance(iqr_scale, float)
+
+        if bkg_gf is not None:
+            assert isinstance(bkg_gf, ht.GraphFrame)
+            assert cat_column in bkg_gf.dataframe.column
+        
+        if cat_column not in tgt_gf.dataframe.columns:
+            raise Exception(f"{cat_column} not found in tgt_gf.")
+        
+        if cat_column not in bkg_gf.dataframe.columns:
+            raise Exception(f"{cat_column} not found in bkg_gf.")
         
         self.metrics = metrics
         self.iqr_scale = iqr_scale
         self.callsites = callsites
+        self.cat_column = cat_column
                 
         tgt_gf.dataframe.reset_index(inplace=True)
-        tgt_dict = BoxPlot.df_bi_level_group(tgt_gf.dataframe, "name", None, cols=metrics + ["nid"], group_by=[column], apply_func=lambda _: _.mean())
+        tgt_dict = BoxPlot.df_bi_level_group(tgt_gf.dataframe, "name", None, cols=metrics + ["nid"], group_by=[cat_column], apply_func=lambda _: _.mean())
         
         if bkg_gf is not None:
             bkg_gf.dataframe.reset_index(inplace=True)
-            bkg_dict = BoxPlot.df_bi_level_group(bkg_gf.dataframe, "name", None, cols=metrics + ["nid"], group_by=[column], apply_func=lambda _: _.mean())
+            bkg_dict = BoxPlot.df_bi_level_group(bkg_gf.dataframe, "name", None, cols=metrics + ["nid"], group_by=[cat_column], apply_func=lambda _: _.mean())
                 
         self.result = {}
 
@@ -51,7 +64,9 @@ class BoxPlot:
             self.result[callsite] = ret
     
     @staticmethod
-    def df_bi_level_group(df, frst_group_attr, scnd_group_attr, cols, group_by, apply_func, proxy={}):
+    def df_bi_level_group(df, frst_group_attr, scnd_group_attr, cols, group_by):
+        """
+        """
         _cols = cols + group_by
 
         # If there is only one attribute to group by, we use the 1st index.
@@ -85,6 +100,9 @@ class BoxPlot:
     
     @staticmethod
     def outliers(data, scale=1.5, side="both"):
+        """
+        
+        """
         assert isinstance(data, (pd.Series, np.ndarray))
         assert len(data.shape) == 1
         assert isinstance(scale, float)
@@ -108,7 +126,6 @@ class BoxPlot:
         if side == "both":
             return np.logical_or(upper_outlier, lower_outlier)
 
-        
     def compute(self, df):
         """
         Compute boxplot related information.
