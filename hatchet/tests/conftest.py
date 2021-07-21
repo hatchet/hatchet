@@ -185,7 +185,7 @@ def mock_graph_literal():
     graph_dict = [
         {
             "frame": {"name": "foo", "type": "function"},
-            "metrics": {"time (inc)": 130.0, "time": 0.0},
+            "metrics": {"time (inc)": 135.0, "time": 0.0},
             "children": [
                 {
                     "frame": {"name": "bar"},
@@ -264,11 +264,11 @@ def mock_graph_literal():
                 },
                 {
                     "frame": {"name": "waldo", "type": "function"},
-                    "metrics": {"time (inc)": 50.0, "time": 0.0},
+                    "metrics": {"time (inc)": 55.0, "time": 0.0},
                     "children": [
                         {
                             "frame": {"name": "fred", "type": "function"},
-                            "metrics": {"time (inc)": 35.0, "time": 5.0},
+                            "metrics": {"time (inc)": 40.0, "time": 5.0},
                             "children": [
                                 {
                                     "frame": {"name": "plugh", "type": "function"},
@@ -276,7 +276,7 @@ def mock_graph_literal():
                                 },
                                 {
                                     "frame": {"name": "xyzzy", "type": "function"},
-                                    "metrics": {"time (inc)": 25.0, "time": 5.0},
+                                    "metrics": {"time (inc)": 30.0, "time": 5.0},
                                     "children": [
                                         {
                                             "frame": {
