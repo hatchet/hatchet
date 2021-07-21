@@ -321,10 +321,10 @@
             // Outliers
             const outlierRadius = 4;
             let outliers = [];
-            for (let idx = 0; idx < d.outliers["values"].length; idx += 1) {
+            for (let idx = 0; idx < d.ometric.length; idx += 1) {
                 outliers.push({
-                    x: xScale(d.outliers["values"][idx]),
-                    value: d.outliers["values"][idx],
+                    x: xScale(d.ometric[idx]),
+                    value: d.ometric[idx],
                     // rank: d.outliers["ranks"][idx],
                     y: 10
                 });

@@ -4,7 +4,7 @@ from scipy import stats
 import hatchet as ht
 
 class BoxPlot:
-    def __init__(self, cat_column, tgt_gf, bkg_gf=None, callsites=[], metrics=["time", "time (inc)"], iqr_scale=1.5):
+    def __init__(self, cat_column, tgt_gf, bkg_gf=None, callsites=[], metrics=[], iqr_scale=1.5):
         """
         Boxplot computation for callsites. The data can be computed for two use
         cases:
@@ -12,12 +12,15 @@ class BoxPlot:
         2. Comparing runtime distributions of a target GraphFrame against a
            background GraphFrame. 
         
-        :param cat_column: (string) Categorical column to aggregate the boxplot computation.
-        :param tgt_gf: (ht.GraphFrame) Target GraphFrame.
-        :param bkg_gf: (ht.GraphFrame) Background GraphFrame.
-        :param callsite: (list) List of callsites.
-        :param metrics: (list) List of metrics to compute.
-        :param iqr_scale: (float) IQR range for outliers.
+        Arguments:
+            cat_column: (string) Categorical column to aggregate the boxplot computation.
+            tgt_gf: (ht.GraphFrame) Target GraphFrame.
+            bkg_gf: (ht.GraphFrame) Background GraphFrame.
+            callsite: (list) List of callsites.
+            metrics: (list) List of metrics to compute.
+            iqr_scale: (float) IQR range for outliers.
+
+        Return: None
         """
         assert isinstance(tgt_gf, ht.GraphFrame)
         assert isinstance(callsites, list)
@@ -27,24 +30,32 @@ class BoxPlot:
         if bkg_gf is not None:
             assert isinstance(bkg_gf, ht.GraphFrame)
             assert cat_column in bkg_gf.dataframe.column
-        
+
+        tgt_gf.dataframe = tgt_gf.dataframe.reset_index()
         if cat_column not in tgt_gf.dataframe.columns:
             raise Exception(f"{cat_column} not found in tgt_gf.")
-        
-        if cat_column not in bkg_gf.dataframe.columns:
-            raise Exception(f"{cat_column} not found in bkg_gf.")
+
+        if bkg_gf is not None:
+            bkg_gf.dataframe = bkg_gf.dataframe.reset_index()
+            if cat_column not in bkg_gf.dataframe.columns:
+                raise Exception(f"{cat_column} not found in bkg_gf.")
         
         self.metrics = metrics
         self.iqr_scale = iqr_scale
         self.callsites = callsites
         self.cat_column = cat_column
-                
+
+        if len(metrics) == 0:
+            self.metrics = tgt_gf.inc_metrics + tgt_gf.exc_metrics
+
+        hatchet_cols = ["nid", "node"]
+
         tgt_gf.dataframe.reset_index(inplace=True)
-        tgt_dict = BoxPlot.df_bi_level_group(tgt_gf.dataframe, "name", None, cols=metrics + ["nid"], group_by=[cat_column], apply_func=lambda _: _.mean())
+        tgt_dict = BoxPlot.df_groupby(tgt_gf.dataframe, groupby="name", cols=self.metrics + hatchet_cols + [self.cat_column])
         
         if bkg_gf is not None:
             bkg_gf.dataframe.reset_index(inplace=True)
-            bkg_dict = BoxPlot.df_bi_level_group(bkg_gf.dataframe, "name", None, cols=metrics + ["nid"], group_by=[cat_column], apply_func=lambda _: _.mean())
+            bkg_dict = BoxPlot.df_groupby(bkg_gf.dataframe, groupby="name", cols=self.metrics + hatchet_cols + [self.cat_column])
                 
         self.result = {}
 
@@ -64,44 +75,36 @@ class BoxPlot:
             self.result[callsite] = ret
     
     @staticmethod
-    def df_bi_level_group(df, frst_group_attr, scnd_group_attr, cols, group_by):
+    def df_groupby(df, groupby, cols):
         """
+        Group the dataframe by groupby column.
+
+        Arguments:
+            df (graphframe): self's graphframe
+            groupby: groupby columns on dataframe
+            cols: columns from the dataframe
+
+        Return:
+            (dict): A dictionary of dataframes (columns) keyed by groups.
         """
-        _cols = cols + group_by
-
-        # If there is only one attribute to group by, we use the 1st index.
-        if len(group_by) == 1:
-            group_by = group_by[0]
-
-        # Find the grouping
-        if scnd_group_attr is not None:
-            _groups = [frst_group_attr, scnd_group_attr]
-        else:
-            _groups = [frst_group_attr]
-
-        # Set the df.index as the _groups
-        _df = df.set_index(_groups)
+        _df = df.set_index([groupby])
         _levels = _df.index.unique().tolist()
 
-        # If "rank" is present in the columns, group by "rank".
-        if "rank" in _df.columns and len(df["rank"].unique().tolist()) > 1:
-            if scnd_group_attr is not None:
-                if len(group_by) == 0:
-                    _cols = _cols + ["rank"]
-                    return { _ : _df.xs(_)[_cols] for (_, __) in _levels }
-                return { _ : (_df.xs(_)[_cols].groupby(group_by).mean()).reset_index() for (_, __) in _levels }
-            else:
-                if len(group_by) == 0:
-                    _cols = _cols + ["rank"]
-                    return { _ : _df.xs(_)[_cols] for _ in _levels }
-                return { _ : (_df.xs(_)[_cols].groupby(group_by).mean()).reset_index() for _ in _levels }
-        else: 
-            return { _ : _df.xs(_)[_cols] for _ in _levels}
+        return { _ : _df.xs(_)[cols] for _ in _levels}
     
     @staticmethod
     def outliers(data, scale=1.5, side="both"):
         """
-        
+        Calculate outliers from the data.
+
+        Arguments:
+            data (np.ndarray or pd.Series): Array of values.
+            scale (float): IQR range for outliers.
+            side (str): directions for calculating the outliers, i.e., left,
+            right, both.
+
+        Return:
+            outliers (np.ndarray): Array of outlier values.
         """
         assert isinstance(data, (pd.Series, np.ndarray))
         assert len(data.shape) == 1
@@ -128,10 +131,24 @@ class BoxPlot:
 
     def compute(self, df):
         """
-        Compute boxplot related information.
+        Compute boxplot quartiles and statistics.
 
-        :param df: Dataframe to calculate the boxplot information.
-        :return:
+        Arguments:
+            df: Dataframe to calculate the boxplot information.
+        
+        Return:
+            ret (dict): {
+                "metric1": {
+                    "q": (array) quartiles (i.e., [q0, q1, q2, q3, q4]),
+                    "ometric": (array) outlier from metric,
+                    "ocat": (array) outlier from cat_column,
+                    "d": (array) metric values,
+                    "rng": (tuple) (min, max),
+                    "uv": (tuple) (mean, variance),
+                    "imb": (number) imbalance,
+                    "ks": (tuple) (kurtosis, skewness)
+                }
+            }
         """
 
         ret = {_: {} for _ in self.metrics}
@@ -149,21 +166,40 @@ class BoxPlot:
 
             ret[tk] = {
                 "q": q,
-                "oval": df[tv].to_numpy()[mask],
+                "ometric": df[tv].to_numpy()[mask],
+                "ocat": df[self.cat_column].to_numpy()[mask],
                 "d": _data,
                 "rng": (_min, _max),
                 "uv": (_mean, _var),
                 "imb": _imb,
                 "ks": (_kurt, _skew),
             }
-            if 'dataset' in df.columns:
-                ret[tk]['odset'] = df['dataset'].to_numpy()[mask]
 
         return ret
             
     def unpack(self):
         """
         Unpack the boxplot data into JSON format.
+
+        Arguments:
+
+        Return:
+            result (dict): {
+                "callsite1": {
+                    "metric1": {
+                        "q": (array) quartiles (i.e., [q0, q1, q2, q3, q4]),
+                        "ocat": (array) outlier from cat_column,
+                        "ometric": (array) outlier from metri,
+                        "min": (number) minimum,
+                        "max": (number) maximum,
+                        "mean": (number) mean,
+                        "var": (number) variance,
+                        "imb": (number) imbalance,
+                        "kurt": (number) kurtosis,
+                        "skew": (number) skewness,
+                    }, ...
+                }, ...
+            }
         """
         result = {}
         for callsite in self.callsites:
@@ -174,9 +210,8 @@ class BoxPlot:
                     box = self.result[callsite][box_type][metric]
                     result[callsite][box_type][metric] = {
                         "q": box["q"].tolist(),
-                        "outliers": {
-                            "values": box["oval"].tolist(),
-                        },
+                        "ocat":  box["ocat"].tolist(),
+                        "ometric": box["ometric"].tolist(),
                         "min": box["rng"][0],
                         "max": box["rng"][1],
                         "mean": box["uv"][0],
@@ -185,8 +220,5 @@ class BoxPlot:
                         "kurt": box["ks"][0],
                         "skew": box["ks"][1],
                     }
-
-                    if 'odset' in box:
-                        result[callsite][box_type][metric]['odset'] = box['odset'].tolist()
 
         return result
