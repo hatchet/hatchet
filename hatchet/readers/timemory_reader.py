@@ -68,6 +68,7 @@ class TimemoryReader:
         self.include_nid = True
         self.multiple_ranks = False
         self.multiple_threads = False
+        self.callpath_to_node_dicts = {}
         # the per_thread and per_rank settings make sure that
         # squashing doesn't collapse the threads/ranks
         self.per_thread = _kwargs["per_thread"] if "per_thread" in _kwargs else False
@@ -252,9 +253,7 @@ class TimemoryReader:
                 return f"{_obj}" if _expect_scalar else int(_obj)
             return None
 
-        def parse_node(
-            _key, _dict, _hparent, _rank, _parent_thread, _parent_callpath, node_dict
-        ):
+        def parse_node(_key, _dict, _hparent, _rank, _parent_thread, _parent_callpath):
             """Create node_dict for one node and then call the function
             recursively on all children.
             """
@@ -272,7 +271,6 @@ class TimemoryReader:
                             _rank,
                             _parent_thread,
                             _parent_callpath,
-                            node_dict,
                         )
                 return
 
@@ -340,9 +338,22 @@ class TimemoryReader:
             add_metrics(_inc_stats)
 
             # add an entry for the node
-            node_dict.append(
-                dict({"node": _hnode, **_keys}, **_extra, **_exc_stats, **_inc_stats)
-            )
+            # key of the call_path_to_node dictionary is a tuple: (callpath, rank, thread)
+            callpath_to_node_key = tuple((callpath, _rank, _tid_dict["thread"]))
+            node_dict = self.callpath_to_node_dicts.get(callpath_to_node_key)
+            # check if we saw this (callpath, rank, thread) before
+            if node_dict is None:
+                # if no, create a new dict
+                self.callpath_to_node_dicts[callpath_to_node_key] = dict(
+                    {"node": _hnode, **_keys}, **_extra, **_exc_stats, **_inc_stats
+                )
+            else:
+                # if yes, don't create a new dict, just add the new metrics
+                self.callpath_to_node_dicts[callpath_to_node_key].update(
+                    dict(
+                        {"node": _hnode, **_keys}, **_extra, **_exc_stats, **_inc_stats
+                    )
+                )
 
             # set the node as the root or as a child
             if is_root:
@@ -353,11 +364,9 @@ class TimemoryReader:
             # recursion
             if "children" in _dict:
                 for _child in _dict["children"]:
-                    parse_node(
-                        _key, _child, _hnode, _rank, _parent_thread, callpath, node_dict
-                    )
+                    parse_node(_key, _child, _hnode, _rank, _parent_thread, callpath)
 
-        def eval_graph(_key, _dict, _rank, node_dict):
+        def eval_graph(_key, _dict, _rank):
             """Evaluate the entry and determine if it has relevant data.
             If the hash is zero, that indicates that the node
             is a dummy for the root or is used for synchronizing data
@@ -376,16 +385,16 @@ class TimemoryReader:
                 # empty tuple represents the parent callpath for the root node
                 # get the first thread information
                 _thread = collapse_ids(_dict["node"]["tid"], self.per_thread)
-                parse_node(_key, _dict, None, _rank, _thread, tuple(), node_dict)
+                parse_node(_key, _dict, None, _rank, _thread, tuple())
             elif "children" in _dict:
                 # call for all children
                 for child in _dict["children"]:
                     # empty tuple represents the parent callpath for the root node
                     # get the first thread information
                     _thread = collapse_ids(child["node"]["tid"], self.per_thread)
-                    parse_node(_key, child, None, _rank, _thread, tuple(), node_dict)
+                    parse_node(_key, child, None, _rank, _thread, tuple())
 
-        def read_graph(_key, _itr, _offset, node_dict):
+        def read_graph(_key, _itr, _offset):
             """The layout of the graph at this stage
             is subject to slightly different structures
             based on whether distributed memory parallelism (DMP)
@@ -399,9 +408,9 @@ class TimemoryReader:
                 _idx = None if _offset is None else i + _offset
                 if isinstance(_dict, list):
                     for j in range(len(_dict)):
-                        eval_graph(_key, _dict[j], _idx, node_dict)
+                        eval_graph(_key, _dict[j], _idx)
                 else:
-                    eval_graph(_key, _dict, _idx, node_dict)
+                    eval_graph(_key, _dict, _idx)
             return _idx
 
         def read_properties(_dict, _key, _itr):
@@ -451,9 +460,7 @@ class TimemoryReader:
         # Create a dataframe for each metric and then merge them.
         # node_dict is a list of dicts that stores the dicts of a metric.
         # node_dicts is a list of dicts that stores the dicts of all metrics.
-        node_dicts = []
         for key, itr in graph_dict["timemory"].items():
-            node_dict = []
             # strip out the namespace if provided
             key = key.replace("tim::", "").replace("component::", "").lower()
             # check for selection
@@ -464,12 +471,12 @@ class TimemoryReader:
             # if no DMP supported
             if "graph" in itr:
                 print("Reading graph...")
-                read_graph(key, itr["graph"], None, node_dict)
+                read_graph(key, itr["graph"], None)
             else:
                 # read in MPI results
                 if "mpi" in itr:
                     # print("Reading MPI...")
-                    last_rank = read_graph(key, itr["mpi"], 0, node_dict)
+                    last_rank = read_graph(key, itr["mpi"], 0)
                     check_multiple_ranks(0, last_rank)
                 # if MPI and UPC++, report ranks
                 # offset by MPI_Comm_size
@@ -477,34 +484,31 @@ class TimemoryReader:
                 _offset = 0 if _offset is None else int(_offset)
                 if "upc" in itr:
                     print("Reading UPC...")
-                    last_rank = read_graph(key, itr["upc"], _offset, node_dict)
+                    last_rank = read_graph(key, itr["upc"], _offset)
                     check_multiple_ranks(_offset, last_rank)
                 elif "upcxx" in itr:
                     print("Reading UPC++...")
-                    last_rank = read_graph(key, itr["upcxx"], _offset, node_dict)
+                    last_rank = read_graph(key, itr["upcxx"], _offset)
                     check_multiple_ranks(_offset, last_rank)
-
-            node_dicts.append(node_dict)
 
         # find any columns where the entries are None or "null"
         non_null = {}
-        for node_dict_list in node_dicts:
-            for itr in node_dict_list:
-                for key, item in itr.items():
-                    if key not in non_null:
-                        non_null[key] = False
-                    if item is not None:
-                        if not isinstance(item, str):
-                            non_null[key] = True
-                        elif isinstance(item, str) and item != "null":
-                            non_null[key] = True
+        node_dicts = list(self.callpath_to_node_dicts.values())
+        for itr in node_dicts:
+            for key, item in itr.items():
+                if key not in non_null:
+                    non_null[key] = False
+                if item is not None:
+                    if not isinstance(item, str):
+                        non_null[key] = True
+                    elif isinstance(item, str) and item != "null":
+                        non_null[key] = True
 
         # find any columns where the entries are all "null"
-        for node_dict_list in node_dicts:
-            for itr in node_dict_list:
-                for key, item in non_null.items():
-                    if not item:
-                        del itr[key]
+        for itr in node_dicts:
+            for key, item in non_null.items():
+                if not item:
+                    del itr[key]
 
         # create the graph of the roots
         graph = Graph(list_roots)
@@ -538,66 +542,55 @@ class TimemoryReader:
         #    indices.append("nid")
         # if self.include_tid:
         #    indices.append("tid")
-        dataframes = []
-        for node_dict_list in node_dicts:
-            dataframes.append(pd.DataFrame(data=node_dict_list))
+
+        dataframe = pd.DataFrame(data=node_dicts)
 
         indices = []
-        for dataframe in dataframes:
-            # Set indices according to rank/thread numbers.
-            if self.multiple_ranks and self.multiple_threads:
-                indices = ["node", "rank", "thread"]
-            elif self.multiple_ranks:
-                dataframe.drop(columns=["thread"], inplace=True)
-                indices = ["node", "rank"]
-            elif self.multiple_threads:
-                dataframe.drop(columns=["rank"], inplace=True)
-                indices = ["node", "thread"]
-            else:
-                indices = ["node"]
+        # Set indices according to rank/thread numbers.
+        if self.multiple_ranks and self.multiple_threads:
+            indices = ["node", "rank", "thread"]
+        elif self.multiple_ranks:
+            dataframe.drop(columns=["thread"], inplace=True)
+            indices = ["node", "rank"]
+        elif self.multiple_threads:
+            dataframe.drop(columns=["rank"], inplace=True)
+            indices = ["node", "thread"]
+        else:
+            indices = ["node"]
 
-            dataframe.set_index(indices, inplace=True)
-            dataframe.sort_index(inplace=True)
+        dataframe.set_index(indices, inplace=True)
+        dataframe.sort_index(inplace=True)
 
-            # Fill the missing ranks
-            # After unstacking and iterating over rows, there
-            # will be "NaN" values for some ranks. Find the first
-            # rank that has notna value and use it for other rows/ranks
-            # of the multiindex.
-            # TODO: iterrows() is not the best way to iterate over rows.
-            if self.multiple_ranks or self.multiple_threads:
-                dataframe = dataframe.unstack()
-                for idx, row in dataframe.iterrows():
+        # Fill the missing ranks
+        # After unstacking and iterating over rows, there
+        # will be "NaN" values for some ranks. Find the first
+        # rank that has notna value and use it for other rows/ranks
+        # of the multiindex.
+        # TODO: iterrows() is not the best way to iterate over rows.
+        if self.multiple_ranks or self.multiple_threads:
+            dataframe = dataframe.unstack()
+            for idx, row in dataframe.iterrows():
 
-                    # There is always a valid name for an index.
-                    # Take that valid name and assign to other ranks/rows.
-                    name = row["name"][row["name"].first_valid_index()]
-                    dataframe.loc[idx, "name"] = name
+                # There is always a valid name for an index.
+                # Take that valid name and assign to other ranks/rows.
+                name = row["name"][row["name"].first_valid_index()]
+                dataframe.loc[idx, "name"] = name
 
-                    # Sometimes there is no file information.
-                    if row["file"].first_valid_index() is not None:
-                        file = row["file"][row["file"].first_valid_index()]
-                        dataframe.loc[idx, "file"] = file
+                # Sometimes there is no file information.
+                if row["file"].first_valid_index() is not None:
+                    file = row["file"][row["file"].first_valid_index()]
+                    dataframe.loc[idx, "file"] = file
 
-                    # Sometimes there is no file information.
-                    if row["type"].first_valid_index() is not None:
-                        file = row["type"][row["type"].first_valid_index()]
-                        dataframe.loc[idx, "type"] = file
+                # Sometimes there is no file information.
+                if row["type"].first_valid_index() is not None:
+                    file = row["type"][row["type"].first_valid_index()]
+                    dataframe.loc[idx, "type"] = file
 
-                    # Fill the rest with 0
-                    dataframe.fillna(0, inplace=True)
+                # Fill the rest with 0
+                dataframe.fillna(0, inplace=True)
 
-                # Stack the dataframe
-                dataframe = dataframe.stack()
-
-        dataframe = dataframes[0]
-        common_columns = indices
-        # Merge all dataframes each of which stores a particular metric value.
-        for df in dataframes[1:]:
-            common_columns.extend(
-                dataframe.columns.intersection(df.columns).values.tolist()
-            )
-            dataframe = dataframe.merge(df, how="outer", on=common_columns)
+            # Stack the dataframe
+            dataframe = dataframe.stack()
 
         return GraphFrame(
             graph, dataframe, exc_metrics, inc_metrics, self.default_metric
