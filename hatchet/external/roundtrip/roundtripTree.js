@@ -1032,7 +1032,7 @@
                     .attr('value', d => d);
             document.getElementById("primaryMetricSelect").style.margin = "10px 10px 10px 0px";
 
-            d3.select(elem).append('label').attr('for', 'secondaryMetricSelect').text('Radius:');
+            d3.select(elem).append('label').attr('for', 'secondaryMetricSelect').text('Size:');
             var metricInputRadius = d3.select(elem).append("select") //element
                     .attr("id", "secondaryMetricSelect")
                     .selectAll('option')
@@ -1284,7 +1284,7 @@
                         .attr("height", height);
 
             var _maxNodeRadius = 25;
-            var _treeDepthScale = d3.scaleLinear().range([0, element.offsetWidth-200]).domain([0, model.data.maxHeight])
+            var _treeDepthScale = d3.scaleLinear().range([0, element.offsetWidth-400]).domain([0, model.data.maxHeight])
             var _nodeScale = d3.scaleLinear().range([5, _maxNodeRadius]).domain([model.data.forestMinMax[model.state.secondaryMetric].min, model.data.forestMinMax[model.state.secondaryMetric].max]);
             var _barScale = d3.scaleLinear().range([0, 25]).domain([model.data.aggregateMinMax[model.state.secondaryMetric].min, model.data.aggregateMinMax[model.state.secondaryMetric].max]);
             var _treeLayoutHeights = [];
@@ -1296,7 +1296,7 @@
             var chartOffset = _margin.top;
             var treeOffset = 0;
             var _minmax = [];
-            var maxTreeCanvasHeight = 1000;
+            var maxTreeCanvasHeight = 600;
 
             //view specific data
             var nodes = [];
@@ -1386,8 +1386,8 @@
             }
 
             var mainG = svg.select("#mainG");
-            var tree = d3.tree()//.size([maxTreeCanvasHeight, width - _margin.left - 200]);
-            .nodeSize([_maxNodeRadius, _maxNodeRadius]);
+            var tree = d3.tree().size([maxTreeCanvasHeight, width - _margin.left - 200]);
+            // .nodeSize([_maxNodeRadius, _maxNodeRadius]);
             
 
           
