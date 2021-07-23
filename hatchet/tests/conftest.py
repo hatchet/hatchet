@@ -543,11 +543,11 @@ def mock_dag_literal_module():
     dag_ldict = [
         {
             "frame": {"name": "A", "type": "function"},
-            "metrics": {"time (inc)": 130.0, "time": 0.0, "module": "main"},
+            "metrics": {"time (inc)": 29.0, "time": 0.0, "module": "main"},
             "children": [
                 {
                     "frame": {"name": "B", "type": "function"},
-                    "metrics": {"time (inc)": 20.0, "time": 5.0, "module": "foo"},
+                    "metrics": {"time (inc)": 10.0, "time": 5.0, "module": "foo"},
                     "children": [
                         {
                             "frame": {"name": "C", "type": "function"},
@@ -561,12 +561,12 @@ def mock_dag_literal_module():
                 },
                 {
                     "frame": {"name": "E", "type": "function"},
-                    "metrics": {"time (inc)": 55.0, "time": 10.0, "module": "bar"},
+                    "metrics": {"time (inc)": 19.0, "time": 10.0, "module": "bar"},
                     "children": [
                         {
                             "frame": {"name": "F", "type": "function"},
                             "metrics": {
-                                "time (inc)": 1.0,
+                                "time (inc)": 9.0,
                                 "time": 9.0,
                                 "module": "baz",
                             },
@@ -586,16 +586,16 @@ def mock_dag_literal_module_complex():
     dag_ldict = [
         {
             "frame": {"name": "A", "type": "function"},
-            "metrics": {"time (inc)": 130.0, "time": 1.0, "module": "main"},
+            "metrics": {"time (inc)": 5.0, "time": 1.0, "module": "main"},
             "children": [
                 {
                     "frame": {"name": "B", "type": "function"},
-                    "metrics": {"time (inc)": 20.0, "time": 1.0, "module": "foo"},
+                    "metrics": {"time (inc)": 3.0, "time": 1.0, "module": "foo"},
                     "children": [
                         {
                             "frame": {"name": "C", "type": "function"},
                             "metrics": {
-                                "time (inc)": 6.0,
+                                "time (inc)": 2.0,
                                 "time": 1.0,
                                 "module": "graz",
                             },
@@ -614,7 +614,7 @@ def mock_dag_literal_module_complex():
                 },
                 {
                     "frame": {"name": "E", "type": "function"},
-                    "metrics": {"time (inc)": 55.0, "time": 1, "module": "bar"},
+                    "metrics": {"time (inc)": 1.0, "time": 1.0, "module": "bar"},
                 },
             ],
         }
@@ -629,16 +629,16 @@ def mock_dag_literal_module_more_complex():
     dag_ldict = [
         {
             "frame": {"name": "A", "type": "function"},
-            "metrics": {"time (inc)": 130.0, "time": 0.0, "module": "main"},
+            "metrics": {"time (inc)": 22.0, "time": 0.0, "module": "main"},
             "children": [
                 {
                     "frame": {"name": "B", "type": "function"},
-                    "metrics": {"time (inc)": 20.0, "time": 5.0, "module": "foo"},
+                    "metrics": {"time (inc)": 11.0, "time": 5.0, "module": "foo"},
                     "children": [
                         {
                             "frame": {"name": "C", "type": "function"},
                             "metrics": {
-                                "time (inc)": 5.0,
+                                "time (inc)": 6.0,
                                 "time": 5.0,
                                 "module": "graz",
                             },
@@ -646,7 +646,7 @@ def mock_dag_literal_module_more_complex():
                                 {
                                     "frame": {"name": "D", "type": "function"},
                                     "metrics": {
-                                        "time (inc)": 8.0,
+                                        "time (inc)": 1.0,
                                         "time": 1.0,
                                         "module": "graz",
                                     },
@@ -657,7 +657,7 @@ def mock_dag_literal_module_more_complex():
                 },
                 {
                     "frame": {"name": "E", "type": "function"},
-                    "metrics": {"time (inc)": 55.0, "time": 10.0, "module": "bar"},
+                    "metrics": {"time (inc)": 11.0, "time": 10.0, "module": "bar"},
                     "children": [
                         {
                             "frame": {"name": "F", "type": "function"},
