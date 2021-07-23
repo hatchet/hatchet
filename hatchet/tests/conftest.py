@@ -353,19 +353,19 @@ def mock_dag_literal1():
     dag_ldict = [
         {
             "frame": {"name": "A", "type": "function"},
-            "metrics": {"time (inc)": 130.0, "time": 0.0},
+            "metrics": {"time (inc)": 30.0, "time": 0.0},
             "children": [
                 {
                     "frame": {"name": "B", "type": "function"},
-                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "metrics": {"time (inc)": 11.0, "time": 5.0},
                     "children": [
                         {
                             "frame": {"name": "C", "type": "function"},
-                            "metrics": {"time (inc)": 5.0, "time": 5.0},
+                            "metrics": {"time (inc)": 6.0, "time": 5.0},
                             "children": [
                                 {
                                     "frame": {"name": "D", "type": "function"},
-                                    "metrics": {"time (inc)": 8.0, "time": 1.0},
+                                    "metrics": {"time (inc)": 1.0, "time": 1.0},
                                 }
                             ],
                         }
@@ -373,11 +373,11 @@ def mock_dag_literal1():
                 },
                 {
                     "frame": {"name": "E", "type": "function"},
-                    "metrics": {"time (inc)": 55.0, "time": 10.0},
+                    "metrics": {"time (inc)": 19.0, "time": 10.0},
                     "children": [
                         {
                             "frame": {"name": "F", "type": "function"},
-                            "metrics": {"time (inc)": 1.0, "time": 9.0},
+                            "metrics": {"time (inc)": 9.0, "time": 9.0},
                         }
                     ],
                 },
@@ -394,19 +394,19 @@ def mock_dag_literal2():
     dag_ldict = [
         {
             "frame": {"name": "A", "type": "function"},
-            "metrics": {"time (inc)": 130.0, "time": 0.0},
+            "metrics": {"time (inc)": 30.0, "time": 0.0},
             "children": [
                 {
                     "frame": {"name": "B", "type": "function"},
-                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "metrics": {"time (inc)": 11.0, "time": 5.0},
                     "children": [
                         {
                             "frame": {"name": "C", "type": "function"},
-                            "metrics": {"time (inc)": 5.0, "time": 5.0},
+                            "metrics": {"time (inc)": 6.0, "time": 5.0},
                             "children": [
                                 {
                                     "frame": {"name": "D", "type": "function"},
-                                    "metrics": {"time (inc)": 8.0, "time": 1.0},
+                                    "metrics": {"time (inc)": 1.0, "time": 1.0},
                                 }
                             ],
                         }
@@ -414,11 +414,11 @@ def mock_dag_literal2():
                 },
                 {
                     "frame": {"name": "E", "type": "function"},
-                    "metrics": {"time (inc)": 55.0, "time": 10.0},
+                    "metrics": {"time (inc)": 19.0, "time": 10.0},
                     "children": [
                         {
                             "frame": {"name": "H", "type": "function"},
-                            "metrics": {"time (inc)": 1.0, "time": 9.0},
+                            "metrics": {"time (inc)": 9.0, "time": 9.0},
                         }
                     ],
                 },
@@ -434,11 +434,11 @@ def small_mock1():
     ldict = [
         {
             "frame": {"name": "A", "type": "function"},
-            "metrics": {"time (inc)": 130.0, "time": 0.0},
+            "metrics": {"time (inc)": 39.0, "time": 0.0},
             "children": [
                 {
                     "frame": {"name": "B", "type": "function"},
-                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "metrics": {"time (inc)": 10.0, "time": 5.0},
                     "children": [
                         {
                             "frame": {"name": "C", "type": "function"},
@@ -448,17 +448,17 @@ def small_mock1():
                 },
                 {
                     "frame": {"name": "E", "type": "function"},
-                    "metrics": {"time (inc)": 55.0, "time": 10.0},
+                    "metrics": {"time (inc)": 19.0, "time": 10.0},
                     "children": [
                         {
                             "frame": {"name": "F", "type": "function"},
-                            "metrics": {"time (inc)": 1.0, "time": 9.0},
+                            "metrics": {"time (inc)": 9.0, "time": 9.0},
                         }
                     ],
                 },
                 {
                     "frame": {"name": "H", "type": "function"},
-                    "metrics": {"time (inc)": 55.0, "time": 10.0},
+                    "metrics": {"time (inc)": 10.0, "time": 10.0},
                 },
             ],
         }
@@ -472,11 +472,11 @@ def small_mock2():
     ldict = [
         {
             "frame": {"name": "A", "type": "function"},
-            "metrics": {"time (inc)": 130.0, "time": 0.0},
+            "metrics": {"time (inc)": 38.0, "time": 0.0},
             "children": [
                 {
                     "frame": {"name": "B", "type": "function"},
-                    "metrics": {"time (inc)": 20.0, "time": 0.0},
+                    "metrics": {"time (inc)": 10.0, "time": 0.0},
                     "children": [
                         {
                             "frame": {"name": "C", "type": "function"},
@@ -490,15 +490,15 @@ def small_mock2():
                 },
                 {
                     "frame": {"name": "E", "type": "function"},
-                    "metrics": {"time (inc)": 55.0, "time": 10.0},
+                    "metrics": {"time (inc)": 28.0, "time": 10.0},
                     "children": [
                         {
                             "frame": {"name": "F", "type": "function"},
-                            "metrics": {"time (inc)": 1.0, "time": 9.0},
+                            "metrics": {"time (inc)": 9.0, "time": 9.0},
                         },
                         {
                             "frame": {"name": "G", "type": "function"},
-                            "metrics": {"time (inc)": 1.0, "time": 9.0},
+                            "metrics": {"time (inc)": 9.0, "time": 9.0},
                         },
                     ],
                 },
@@ -514,19 +514,19 @@ def small_mock3():
     ldict = [
         {
             "frame": {"name": "A", "type": "function"},
-            "metrics": {"time (inc)": 130.0, "time": 0.0},
+            "metrics": {"time (inc)": 24.0, "time": 0.0},
             "children": [
                 {
                     "frame": {"name": "B", "type": "function"},
-                    "metrics": {"time (inc)": 20.0, "time": 5.0},
+                    "metrics": {"time (inc)": 5.0, "time": 5.0},
                 },
                 {
                     "frame": {"name": "E", "type": "function"},
-                    "metrics": {"time (inc)": 55.0, "time": 10.0},
+                    "metrics": {"time (inc)": 19.0, "time": 10.0},
                     "children": [
                         {
                             "frame": {"name": "F", "type": "function"},
-                            "metrics": {"time (inc)": 1.0, "time": 9.0},
+                            "metrics": {"time (inc)": 9.0, "time": 9.0},
                         }
                     ],
                 },
@@ -682,7 +682,7 @@ def mock_graph_literal_duplicates():
     graph_dict = [
         {
             "frame": {"name": "a", "type": "function"},
-            "metrics": {"time (inc)": 130.0, "time": 0.0, "_hatchet_nid": 0},
+            "metrics": {"time (inc)": 35.0, "time": 0.0, "_hatchet_nid": 0},
             "children": [
                 {
                     "frame": {"name": "b", "type": "function"},
@@ -691,7 +691,7 @@ def mock_graph_literal_duplicates():
                         {
                             "frame": {"name": "d", "type": "function"},
                             "metrics": {
-                                "time (inc)": 20.0,
+                                "time (inc)": 5.0,
                                 "time": 5.0,
                                 "_hatchet_nid": 2,
                             },
@@ -699,7 +699,7 @@ def mock_graph_literal_duplicates():
                                 {
                                     "frame": {"name": "e", "type": "function"},
                                     "metrics": {
-                                        "time (inc)": 20.0,
+                                        "time (inc)": 5.0,
                                         "time": 5.0,
                                         "_hatchet_nid": 3,
                                     },
@@ -707,7 +707,7 @@ def mock_graph_literal_duplicates():
                                 {
                                     "frame": {"name": "f", "type": "function"},
                                     "metrics": {
-                                        "time (inc)": 20.0,
+                                        "time (inc)": 5.0,
                                         "time": 5.0,
                                         "_hatchet_nid": 4,
                                     },
@@ -718,12 +718,12 @@ def mock_graph_literal_duplicates():
                 },
                 {
                     "frame": {"name": "c", "type": "function"},
-                    "metrics": {"time (inc)": 20.0, "time": 5.0, "_hatchet_nid": 5},
+                    "metrics": {"time (inc)": 15.0, "time": 5.0, "_hatchet_nid": 5},
                     "children": [
                         {
                             "frame": {"name": "a", "type": "function"},
                             "metrics": {
-                                "time (inc)": 130.0,
+                                "time (inc)": 5.0,
                                 "time": 5.0,
                                 "_hatchet_nid": 0,
                             },
@@ -731,7 +731,7 @@ def mock_graph_literal_duplicates():
                         {
                             "frame": {"name": "d", "type": "function"},
                             "metrics": {
-                                "time (inc)": 20.0,
+                                "time (inc)": 5.0,
                                 "time": 5.0,
                                 "_hatchet_nid": 2,
                             },
@@ -752,7 +752,7 @@ def mock_graph_literal_duplicate_first():
     graph_dict = [
         {
             "frame": {"name": "a", "type": "function"},
-            "metrics": {"time (inc)": 130.0, "time": 0.0, "_hatchet_nid": 0},
+            "metrics": {"time (inc)": 35.0, "time": 0.0, "_hatchet_nid": 0},
             "children": [
                 {
                     "frame": {"name": "b", "type": "function"},
@@ -761,7 +761,7 @@ def mock_graph_literal_duplicate_first():
                         {
                             "frame": {"name": "d", "type": "function"},
                             "metrics": {
-                                "time (inc)": 20.0,
+                                "time (inc)": 15.0,
                                 "time": 5.0,
                                 "_hatchet_nid": 2,
                             },
@@ -769,7 +769,7 @@ def mock_graph_literal_duplicate_first():
                                 {
                                     "frame": {"name": "e", "type": "function"},
                                     "metrics": {
-                                        "time (inc)": 20.0,
+                                        "time (inc)": 5.0,
                                         "time": 5.0,
                                         "_hatchet_nid": 3,
                                     },
@@ -777,7 +777,7 @@ def mock_graph_literal_duplicate_first():
                                 {
                                     "frame": {"name": "f", "type": "function"},
                                     "metrics": {
-                                        "time (inc)": 20.0,
+                                        "time (inc)": 5.0,
                                         "time": 5.0,
                                         "_hatchet_nid": 4,
                                     },
@@ -788,12 +788,12 @@ def mock_graph_literal_duplicate_first():
                 },
                 {
                     "frame": {"name": "c", "type": "function"},
-                    "metrics": {"time (inc)": 20.0, "time": 5.0, "_hatchet_nid": 5},
+                    "metrics": {"time (inc)": 15.0, "time": 5.0, "_hatchet_nid": 5},
                     "children": [
                         {
                             "frame": {"name": "a", "type": "function"},
                             "metrics": {
-                                "time (inc)": 130.0,
+                                "time (inc)": 5.0,
                                 "time": 5.0,
                                 "_hatchet_nid": 0,
                             },
@@ -801,7 +801,7 @@ def mock_graph_literal_duplicate_first():
                         {
                             "frame": {"name": "d", "type": "function"},
                             "metrics": {
-                                "time (inc)": 20.0,
+                                "time (inc)": 5.0,
                                 "time": 5.0,
                                 "_hatchet_nid": 2,
                             },
