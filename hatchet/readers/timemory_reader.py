@@ -328,9 +328,9 @@ class TimemoryReader:
             if _md:
                 _suffix = get_md_suffix(_labels)
                 _exc_stats = get_md_entries(_exc_stats, _suffix, "")
-                _inc_stats = get_md_entries(_inc_stats, _suffix, ".inc")
+                _inc_stats = get_md_entries(_inc_stats, _suffix, " (inc)")
             else:
-                _inc_stats = patch_keys(_inc_stats, ".inc", _key)
+                _inc_stats = patch_keys(_inc_stats, " (inc)", _key)
                 _exc_stats = patch_keys(_exc_stats, "", _key)
 
             # add the inclusive and exclusive columns to the list of relevant column names
