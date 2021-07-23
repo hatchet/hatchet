@@ -1,17 +1,20 @@
-import numpy as np 
+import numpy as np
 import pandas as pd
 from scipy import stats
 import hatchet as ht
 
+
 class BoxPlot:
-    def __init__(self, cat_column, tgt_gf, bkg_gf=None, callsites=[], metrics=[], iqr_scale=1.5):
+    def __init__(
+        self, cat_column, tgt_gf, bkg_gf=None, callsites=[], metrics=[], iqr_scale=1.5
+    ):
         """
         Boxplot computation for callsites. The data can be computed for two use
         cases:
         1. Examining runtime distributions of a single GraphFrame.
         2. Comparing runtime distributions of a target GraphFrame against a
-           background GraphFrame. 
-        
+           background GraphFrame.
+
         Arguments:
             cat_column: (string) Categorical column to aggregate the boxplot computation.
             tgt_gf: (ht.GraphFrame) Target GraphFrame.
@@ -39,7 +42,7 @@ class BoxPlot:
             bkg_gf.dataframe = bkg_gf.dataframe.reset_index()
             if cat_column not in bkg_gf.dataframe.columns:
                 raise Exception(f"{cat_column} not found in bkg_gf.")
-        
+
         self.metrics = metrics
         self.iqr_scale = iqr_scale
         self.callsites = callsites
@@ -52,15 +55,23 @@ class BoxPlot:
         # self.hatchet_cols = ["nid", "node"]
 
         tgt_gf.dataframe.reset_index(inplace=True)
-        tgt_dict = BoxPlot.df_groupby(tgt_gf.dataframe, groupby="name", cols=self.metrics + self.hatchet_cols + [self.cat_column])
-        
+        tgt_dict = BoxPlot.df_groupby(
+            tgt_gf.dataframe,
+            groupby="name",
+            cols=self.metrics + self.hatchet_cols + [self.cat_column],
+        )
+
         if bkg_gf is not None:
             bkg_gf.dataframe.reset_index(inplace=True)
-            bkg_dict = BoxPlot.df_groupby(bkg_gf.dataframe, groupby="name", cols=self.metrics + self.hatchet_cols + [self.cat_column])
-                
+            bkg_dict = BoxPlot.df_groupby(
+                bkg_gf.dataframe,
+                groupby="name",
+                cols=self.metrics + self.hatchet_cols + [self.cat_column],
+            )
+
         self.result = {}
 
-        self.box_types = ["tgt"]        
+        self.box_types = ["tgt"]
         if bkg_gf is not None:
             self.box_types = ["tgt", "bkg"]
 
@@ -72,9 +83,9 @@ class BoxPlot:
             if bkg_gf is not None:
                 bkg_df = bkg_dict[callsite]
                 ret["bkg"] = self.compute(bkg_df)
-                
+
             self.result[callsite] = ret
-    
+
     @staticmethod
     def df_groupby(df, groupby, cols):
         """
@@ -91,8 +102,8 @@ class BoxPlot:
         _df = df.set_index([groupby])
         _levels = _df.index.unique().tolist()
 
-        return { _ : _df.xs(_)[cols] for _ in _levels}
-    
+        return {_: _df.xs(_)[cols] for _ in _levels}
+
     @staticmethod
     def outliers(data, scale=1.5, side="both"):
         """
@@ -136,7 +147,7 @@ class BoxPlot:
 
         Arguments:
             df: Dataframe to calculate the boxplot information.
-        
+
         Return:
             ret (dict): {
                 "metric1": {
@@ -180,7 +191,7 @@ class BoxPlot:
                 ret[tk][col] = df[col].unique()[0]
 
         return ret
-            
+
     def unpack(self):
         """
         Unpack the boxplot data into JSON format.
@@ -214,7 +225,7 @@ class BoxPlot:
                     box = self.result[callsite][box_type][metric]
                     result[callsite][box_type][metric] = {
                         "q": box["q"].tolist(),
-                        "ocat":  box["ocat"].tolist(),
+                        "ocat": box["ocat"].tolist(),
                         "ometric": box["ometric"].tolist(),
                         "min": box["rng"][0],
                         "max": box["rng"][1],
@@ -224,8 +235,10 @@ class BoxPlot:
                         "kurt": box["ks"][0],
                         "skew": box["ks"][1],
                     }
-                
+
                     for col in self.hatchet_cols:
-                        result[callsite][box_type][metric][col] = str(self.result[callsite][box_type][metric][col])
- 
+                        result[callsite][box_type][metric][col] = str(
+                            self.result[callsite][box_type][metric][col]
+                        )
+
         return result
