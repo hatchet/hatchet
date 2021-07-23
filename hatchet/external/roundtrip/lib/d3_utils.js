@@ -7,7 +7,7 @@ define(function (require) {
     calcCellWidth: (width, colNames) => width / colNames.length,
     calcCellHeight: (height, rowNames) => height / rowNames.length,
     calcCellSize: (width, height, colNames, rowNames, widthMax, heightMax) => [Math.min(calcCellWidth(width, colNames), widthMax), Math.min(calcCellHeight(height, rowNames), heightMax)],
-    
+
     // SVG init.
     prepareSvgArea: (windowWidth, windowHeight, margin, id) => {
       return {
@@ -92,7 +92,7 @@ define(function (require) {
       options.text(d => d)
         .attr('value', d => d);
     },
-    
+
 
     // Formatting numbers
     formatRuntime: (val) => {
@@ -128,28 +128,28 @@ define(function (require) {
     },
     drawLine: (element, x1, y1, x2, y2, strokeColor, strokeWidth) => {
       return element
-				.append("line")
-				.attr("class", "line")
-				.attr("x1", x1)
+        .append("line")
+        .attr("class", "line")
+        .attr("x1", x1)
         .attr("y1", y1)
         .attr("x2", x2)
         .attr("y2", y2)
         .attr("stroke", strokeColor)
-				.style("stroke-width", strokeWidth);
+        .style("stroke-width", strokeWidth);
     },
     drawCircle: (element, data, radius, fillColor, click = () => { }, mouseover = () => { }, mouseout = () => { }) => {
       return element
-				.selectAll(".circle")
-				.data(data)
-				.join("circle")
-				.attr("r", radius)
+        .selectAll(".circle")
+        .data(data)
+        .join("circle")
+        .attr("r", radius)
         .attr("cx", (d) => d.x)
         .attr("cy", (d) => d.y)
-				.attr("class", "circle")
-				.style("fill", fillColor)
-				.on("click", (d) => click(d))
-				.on("mouseover", (d) => mouseover(d))
-				.on("mouseout", (d) => mouseout(d));
+        .attr("class", "circle")
+        .style("fill", fillColor)
+        .on("click", (d) => click(d))
+        .on("mouseover", (d) => mouseover(d))
+        .on("mouseout", (d) => mouseout(d));
     },
     drawXAxis: (element, xScale, numOfTicks, tickFormatFn, xOffset, yOffset, strokeColor) => {
       const axis = d3.axisBottom(xScale)
@@ -160,26 +160,26 @@ define(function (require) {
         .attr("class", "xAxis")
         .attr("transform", `translate(${xOffset}, ${yOffset})`)
         .call(axis);
-      
+
       line.selectAll("path")
-				.style("fill", "none")
-				.style("stroke", strokeColor)
-				.style("stroke-width", "1px");
+        .style("fill", "none")
+        .style("stroke", strokeColor)
+        .style("stroke-width", "1px");
 
-			line.selectAll("line")
-				.style("fill", "none")
-				.style("stroke", strokeColor)
-				.style("stroke-width", "1px");
+      line.selectAll("line")
+        .style("fill", "none")
+        .style("stroke", strokeColor)
+        .style("stroke-width", "1px");
 
-			line.selectAll("text")
-				.style("font-size", "12px")
-				.style("font-family", "sans-serif")
-				.style("font-weight", "lighter");
-      
+      line.selectAll("text")
+        .style("font-size", "12px")
+        .style("font-family", "sans-serif")
+        .style("font-weight", "lighter");
+
       return line;
     },
     drawToolTip: (element, event, text, width, height) => {
-      const [ mousePosX, mousePosY] = d3.pointer(event, element.node());
+      const [mousePosX, mousePosY] = d3.pointer(event, element.node());
       const toolTipG = element
         .append("g")
         .attr("class", "tooltip")
@@ -194,8 +194,8 @@ define(function (require) {
 
       toolTipG.append("text")
         .attr("class", "tooltip-content")
-				.style("font-family", "sans-serif")
-				.style("font-size", "12px")
+        .style("font-family", "sans-serif")
+        .style("font-size", "12px")
         .attr("fill", "#000")
         .text(text);
     },
