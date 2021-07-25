@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
+import pandas as pd
 
 
 class PerformanceAnalyzer:
@@ -29,7 +30,7 @@ class PerformanceAnalyzer:
 
         return grouped_dataframe
 
-    # Outputs the max to avg values for user specified column
+    # Outputs the max to avg values for user specified column.
     # TODO: drop other metric columns and inplace?
     def find_load_imbalance(self, graphframe, metric_column="time", inplace=False):
         # Create a copy of the GraphFrame.
@@ -81,12 +82,14 @@ class PerformanceAnalyzer:
                     else:
                         parent_value = dataframe.at[(node, rank, thread), metric_column]
                         child_value = dataframe.at[(child, rank, thread), metric_column]
+
                     callpath.append(child)
                     if child_value < (threshold * parent_value):
                         _check_hot_nodes(dataframe, child, hot_nodes, callpath)
                     else:
                         hot_nodes.append((child, [node for node in callpath]))
                         callpath.pop()
+
             callpath.pop()
 
         if "inc" not in metric_column:
@@ -139,7 +142,7 @@ class PerformanceAnalyzer:
                 )
 
         if graphframes_pes:
-            # Sort the graphframes by their pes before the division operation
+            # Sort the graphframes by their pes before the division operation.
             graphframes_pes = sorted(graphframes_pes, key=lambda x: x[1])
             graphframe1 = graphframes_pes[0][0].deepcopy()
             graphframe2 = graphframes_pes[1][0].deepcopy()
@@ -170,3 +173,39 @@ class PerformanceAnalyzer:
                 )
 
             return graphframe_spdup_efc
+        else:
+            raise ValueError(
+                "graphframes_pes cannot be empty. It "
+                + "should be list of two tuples: [(graphframe, <num_pes>), (...)]"
+            )
+
+    def multirun_analysis(
+        self, graphframes_pes=[], index="pes", columns="name", values="time"
+    ):
+        if graphframes_pes:
+            # sort the graphframes by their pes.
+            graphframes_pes = sorted(graphframes_pes, key=lambda x: x[1])
+
+            multirun_dataframes = []
+            for graphframe_pe in graphframes_pes:
+                graphframe = graphframe_pe[0].deepcopy()
+
+                # TODO: optional?
+                graphframe.drop_index_levels()
+
+                # add pes to each dataframe
+                graphframe.dataframe[index] = graphframe_pe[1]
+                multirun_dataframes.append(graphframe.dataframe)
+
+            result = pd.concat(multirun_dataframes)
+
+            pivot_dataframe = result.pivot_table(
+                index=index, columns=columns, values=values
+            )
+
+            return pivot_dataframe
+        else:
+            raise ValueError(
+                "graphframes_pes cannot be empty. It "
+                + "should be list of tuples: [(graphframe, <num_pes>), ...]"
+            )
