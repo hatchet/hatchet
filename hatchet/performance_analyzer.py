@@ -4,8 +4,6 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
-import pandas as pd
-import matplotlib.pyplot as plt
 
 
 class PerformanceAnalyzer:
@@ -66,10 +64,7 @@ class PerformanceAnalyzer:
         metric_column="time (inc)",
         threshold=0.5,
     ):
-        """Identifies hot paths for a given metric and a threshold.
-        If drop_ranks=False, rank can't be None.
-        If drop_threads=False, thread can't be None.
-        """
+        """Identifies hot paths for a given metric and a threshold."""
 
         def _check_hot_nodes(dataframe, node, hot_nodes, callpath):
             if node.children:
@@ -112,3 +107,66 @@ class PerformanceAnalyzer:
             )
 
         return hot_nodes_paths
+
+    def calculate_speedup_efficiency(
+        self, graphframes_pes=[], metric_columns=["time", "time (inc)"], inplace=False
+    ):
+        def _calculate(graphframe1, graphframe2, pe1, pe2):
+            """Calculates speedup and efficiency.
+            Creates a new graphframe and adds <metric>-<spdup/efc>(pe1xpe2)
+            columns to its dataframe.
+            """
+            graphframe_spdup_efc = graphframe1 / graphframe2
+
+            for metric in metric_columns:
+                graphframe_spdup_efc.dataframe[
+                    "{}-{}({}x{})".format(metric, "efc", pe1, pe2)
+                ] = (graphframe_spdup_efc.dataframe[metric] / pe2)
+
+                graphframe_spdup_efc.dataframe = graphframe_spdup_efc.dataframe.rename(
+                    columns={metric: "{}-{}({}x{})".format(metric, "spdup", pe1, pe2)}
+                )
+            return graphframe_spdup_efc
+
+        def _merge_columns(graphframe_from, graphframes_to, columns):
+            """Merge two dataframes. This function is used only if
+            inplace=True. Adds speedup and efficiency columns to the original
+            graphframe without ading/removing any index (how=left).
+            """
+            for graphframe in graphframes_to:
+                graphframe.dataframe = graphframe.dataframe.join(
+                    graphframe_from.dataframe[columns], how="left"
+                )
+
+        if graphframes_pes:
+            # Sort the graphframes by their pes before the division operation
+            graphframes_pes = sorted(graphframes_pes, key=lambda x: x[1])
+            graphframe1 = graphframes_pes[0][0].deepcopy()
+            graphframe2 = graphframes_pes[1][0].deepcopy()
+            graphframe1_pe = graphframes_pes[0][1]
+            graphframe2_pe = graphframes_pes[1][1]
+
+            # Original graph structures won't be changed even when inplace=True.
+            graphframe_spdup_efc = _calculate(
+                graphframe1,
+                graphframe2,
+                graphframe1_pe,
+                graphframe2_pe,
+            )
+
+            # add speedup and efficiency columns to original graphframes.
+            # we don't change the graph structure, just adding columns to the
+            # dataframe.
+            if inplace:
+                merge_metric_columns = []
+                for metric_column in graphframe_spdup_efc.dataframe.columns:
+                    if "spdup" in metric_column or "efc" in metric_column:
+                        merge_metric_columns.append(metric_column)
+
+                _merge_columns(
+                    graphframe_spdup_efc,
+                    [graphframes_pes[0][0], graphframes_pes[1][0]],
+                    merge_metric_columns,
+                )
+
+            return graphframe_spdup_efc
