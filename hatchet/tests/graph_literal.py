@@ -41,19 +41,7 @@ def test_with_duplicate_in_first_node(mock_graph_literal_duplicate_first):
     assert mock_graph_literal_duplicate_first.sort() == graph_literal.sort()
 
 
-def test_inclusive_time_calculation(
-    mock_graph_literal,
-    small_mock1,
-    small_mock2,
-    small_mock3,
-    mock_dag_literal1,
-    mock_dag_literal2,
-    mock_dag_literal_module,
-    mock_dag_literal_module_complex,
-    mock_dag_literal_module_more_complex,
-    mock_graph_literal_duplicates,
-    mock_graph_literal_duplicate_first,
-):
+def test_inclusive_time_calculation_mock_graph(mock_graph_literal):
     """Validate update_inclusive_columns() on known dataset."""
     gf = GraphFrame.from_literal(mock_graph_literal)
 
@@ -68,6 +56,10 @@ def test_inclusive_time_calculation(
         gf.dataframe["time (inc)"].values == gf.dataframe["orig_inc_time"].values
     )
 
+
+def test_inclusive_time_calculation_small_mock_graphs(
+    small_mock1, small_mock2, small_mock3
+):
     gf1 = GraphFrame.from_literal(small_mock1)
     gf1.dataframe["orig_inc_time"] = gf1.dataframe["time (inc)"]
     del gf1.dataframe["time (inc)"]
@@ -92,6 +84,11 @@ def test_inclusive_time_calculation(
         gf3.dataframe["time (inc)"].values == gf3.dataframe["orig_inc_time"].values
     )
 
+
+def test_inclusive_time_calculation_mock_dag_graphs(
+    mock_dag_literal1,
+    mock_dag_literal2,
+):
     gf4 = GraphFrame.from_literal(mock_dag_literal1)
     gf4.dataframe["orig_inc_time"] = gf4.dataframe["time (inc)"]
     del gf4.dataframe["time (inc)"]
@@ -108,6 +105,12 @@ def test_inclusive_time_calculation(
         gf5.dataframe["time (inc)"].values == gf5.dataframe["orig_inc_time"].values
     )
 
+
+def test_inclusive_time_calculation_mock_dag_modules(
+    mock_dag_literal_module,
+    mock_dag_literal_module_complex,
+    mock_dag_literal_module_more_complex,
+):
     gf6 = GraphFrame.from_literal(mock_dag_literal_module)
     gf6.dataframe["orig_inc_time"] = gf6.dataframe["time (inc)"]
     del gf6.dataframe["time (inc)"]
@@ -130,20 +133,4 @@ def test_inclusive_time_calculation(
     gf8.update_inclusive_columns()
     assert all(
         gf8.dataframe["time (inc)"].values == gf8.dataframe["orig_inc_time"].values
-    )
-
-    gf9 = GraphFrame.from_literal(mock_graph_literal_duplicates)
-    gf9.dataframe["orig_inc_time"] = gf9.dataframe["time (inc)"]
-    del gf9.dataframe["time (inc)"]
-    gf9.update_inclusive_columns()
-    assert all(
-        gf9.dataframe["time (inc)"].values == gf9.dataframe["orig_inc_time"].values
-    )
-
-    gf10 = GraphFrame.from_literal(mock_graph_literal_duplicate_first)
-    gf10.dataframe["orig_inc_time"] = gf10.dataframe["time (inc)"]
-    del gf10.dataframe["time (inc)"]
-    gf10.update_inclusive_columns()
-    assert all(
-        gf10.dataframe["time (inc)"].values == gf10.dataframe["orig_inc_time"].values
     )
