@@ -57,6 +57,13 @@ class TAUReader:
 
     def create_graph(self):
         def _get_name_file_module(is_parent, node_info, symbol):
+            """This function gets the name, file and module information
+            for a node using the corresponding line in the output file.
+            Example line: [UNWIND] <file> [@] <name> [{<file_or_module>} {<line>}]
+            There are several line formats in TAU and this function gets
+            the node information considering all these formats for which
+            examples are given below.
+            """
             name, file, module = None, None, None
             # There are several different formats in TAU outputs.
             # There might be file, line, and module information.
@@ -71,14 +78,14 @@ class TAUReader:
                     if "[{" in node_info[1]:
                         # Sometimes we see file and module information inside of [{}]
                         # Example: [UNWIND] <file> [@] <name> [{<file_or_module>} {<line>}]
-                        name_module = node_info[1].split(" [{")
-                        module = name_module[1].split()[0].strip("}")
+                        name_and_module = node_info[1].split(" [{")
+                        module = name_and_module[1].split()[0].strip("}")
                     else:
                         # Example: [UNWIND] <file> [@] <name> <module>
-                        name_module = node_info[1].split()
-                        module = name_module[1]
+                        name_and_module = node_info[1].split()
+                        module = name_and_module[1]
 
-                    # If check if module is in file.
+                    # Check if module is in file.
                     # Assign None to file if it's .so.
                     # Assign None to module if it's .c.
                     if module in file:
@@ -86,7 +93,7 @@ class TAUReader:
                             file = None
                         if ".c" in module:
                             module = None
-                    name = "[UNWIND] " + name_module[0]
+                    name = "[UNWIND] " + name_and_module[0]
                 else:
                     # We just need to take name if it is a parent
                     name = "[UNWIND] " + node_info[1].split()[0]
@@ -152,16 +159,15 @@ class TAUReader:
 
         def _create_parent(child_node, parent_callpath):
             """In TAU output, sometimes we see a node as a parent
-            in the callpath even though we haven't seen it before
-            as a child. In this case, we need to create a parent node
-            for the child.
+            in the callpath before we see it as a leaf node. In
+            this case, we need to create a hatchet node for the parent.
 
             We can't create a node_dict for the parent because we don't
             know its metric values when we first see it in a callpath.
 
             Example: a => b => c "<c_metric_values>"
-            Here if we don't see b before, we should create it when we create
-            c.
+            Here, if we haven't seen 'b' before, we should create it when we
+            create 'c'.
 
             This function recursively creates parent nodes in a callpath
             until it reaches the already existing parent in that callpath.
@@ -234,12 +240,12 @@ class TAUReader:
         # files -> returns filenames in a directory, list
         profile_filenames = []
         for dirpath, dirnames, files in os.walk(self.dirname):
-            profiles_in_foler = glob.glob(dirpath + "/profile.*")
-            if profiles_in_foler:
-                profile_filenames.append(profiles_in_foler)
+            profiles_in_dir = glob.glob(dirpath + "/profile.*")
+            if profiles_in_dir:
+                profile_filenames.append(profiles_in_dir)
 
         # Store all files in a list of tuples.
-        # Each tuple stores every metric file of a rank.
+        # Each tuple stores all the metric files of a rank.
         # We process one rank at a time.
         # Example: [(metric1/profile.x.0.0, metric2/profile.x.0.0), ...]
         profile_filenames = list(zip(*profile_filenames))
@@ -336,7 +342,7 @@ class TAUReader:
                         for name in callpath_line_regex.group(1).split("=>")
                     ]
 
-                    # Example dst_name: StrToInt [{lulesh-util.cc} {13,1}-{29,1}]
+                    # Example leaf_name: StrToInt [{lulesh-util.cc} {13,1}-{29,1}]
                     leaf_name = callpath[-1]
                     callpath = tuple(callpath)
                     parent_callpath = callpath[:-1]
@@ -469,7 +475,6 @@ class TAUReader:
         if self.multiple_ranks or self.multiple_threads:
             dataframe = dataframe.unstack()
             for idx, row in dataframe.iterrows():
-
                 # There is always a valid name for an index.
                 # Take that valid name and assign to other ranks/rows.
                 name = row["name"][row["name"].first_valid_index()]
