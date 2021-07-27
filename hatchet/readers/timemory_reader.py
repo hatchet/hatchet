@@ -44,12 +44,13 @@ class TimemoryReader:
         if isinstance(input, dict):
             self.graph_dict = input
         elif os.path.isdir(input):
-            # check ifa directory is given as input
+            # check if a directory is given as input
             for file in os.listdir(input):
                 if file.endswith(".tree.json"):
-                    # read all files that ends with .tree.json
+                    # read all files that ends with .tree.json.
                     with open(input + "/" + file, "r") as f:
-                        # combine files in a single dict
+                        # combine files in a single dict if timemory creates
+                        # a separate file for each metric.
                         self.graph_dict["timemory"].update(json.load(f)["timemory"])
         elif isinstance(input, str) and input.endswith("json"):
             with open(input, "r") as f:
@@ -68,7 +69,7 @@ class TimemoryReader:
         self.include_nid = True
         self.multiple_ranks = False
         self.multiple_threads = False
-        self.callpath_to_node_dicts = {}
+        self.callpath_to_node_dict = {}
         # the per_thread and per_rank settings make sure that
         # squashing doesn't collapse the threads/ranks
         self.per_thread = _kwargs["per_thread"] if "per_thread" in _kwargs else False
@@ -306,17 +307,19 @@ class TimemoryReader:
             _md = True if not isinstance(_labels, str) else False
 
             callpath = _parent_callpath + (_keys["name"],)
-            is_root = False
-            is_found = True
 
-            # check if node already exits
+            # check if the node already exits.
             _hnode = callpath_to_node.get(callpath)
             if _hnode is None:
-                is_found = False
+                # adding the parent during the node creation.
                 _hnode = Node(Frame(_keys), _hparent)
                 callpath_to_node[callpath] = _hnode
                 if _hparent is None:
-                    is_root = True
+                    # if parent is none that should be a root node.
+                    list_roots.append(_hnode)
+                else:
+                    # add as a child if the parent is not node.
+                    _hparent.add_child(_hnode)
 
             # remove some spurious data from inclusive/exclusive stats
             _remove = ["cereal_class_version", "count"]
@@ -324,42 +327,46 @@ class TimemoryReader:
             _exc_stats = remove_keys(_dict["node"]["exclusive"]["stats"], _remove)
 
             # if multi-dimensions, create alternative "sum.<...>", etc. labels + data
-            # add ".inc" to the end of every column that represents an inclusive stat
+            # add " (inc)" to the end of every column that represents an inclusive stat
+            # TODO: we might want to change ' (inc)' to '.inc'.
             if _md:
+                # Example of a multi-dimensional output: if we have 3 papi events
+                # PAPI_TOT_CYC, PAPI_TOT_INS, PAPI_L2_TCM:
+                # suffix: ["Total_cycles", "Instr_completed", "L2_cache_misses"]
+                # "sum": [8301.0, 4910.0, 275.0],
                 _suffix = get_md_suffix(_labels)
                 _exc_stats = get_md_entries(_exc_stats, _suffix, "")
                 _inc_stats = get_md_entries(_inc_stats, _suffix, " (inc)")
             else:
+                # add metric name and type.
+                # Example: sum -> sum.wall_clock (inc)
                 _inc_stats = patch_keys(_inc_stats, " (inc)", _key)
+                # Example: sum -> sum.wallclock
                 _exc_stats = patch_keys(_exc_stats, "", _key)
 
             # add the inclusive and exclusive columns to the list of relevant column names
             add_metrics(_exc_stats)
             add_metrics(_inc_stats)
 
-            # add an entry for the node
+            # add an entry for the node.
             # key of the call_path_to_node dictionary is a tuple: (callpath, rank, thread)
             callpath_to_node_key = tuple((callpath, _rank, _tid_dict["thread"]))
-            node_dict = self.callpath_to_node_dicts.get(callpath_to_node_key)
+            node_dict = self.callpath_to_node_dict.get(callpath_to_node_key)
             # check if we saw this (callpath, rank, thread) before
             if node_dict is None:
-                # if no, create a new dict
-                self.callpath_to_node_dicts[callpath_to_node_key] = dict(
+                # if no, create a new dict.
+                self.callpath_to_node_dict[callpath_to_node_key] = dict(
                     {"node": _hnode, **_keys}, **_extra, **_exc_stats, **_inc_stats
                 )
             else:
-                # if yes, don't create a new dict, just add the new metrics
-                self.callpath_to_node_dicts[callpath_to_node_key].update(
+                # if yes, don't create a new dict, just add the new metrics to
+                # the existing node_dict using update().
+                # we are doing this to combine different metrics on a single dataframe.
+                self.callpath_to_node_dict[callpath_to_node_key].update(
                     dict(
                         {"node": _hnode, **_keys}, **_extra, **_exc_stats, **_inc_stats
                     )
                 )
-
-            # set the node as the root or as a child
-            if is_root:
-                list_roots.append(_hnode)
-            if _hparent is not None and not is_found:
-                _hparent.add_child(_hnode)
 
             # recursion
             if "children" in _dict:
@@ -382,16 +389,18 @@ class TimemoryReader:
             #    print("Adding {}...".format(_key))
 
             if _dict["node"]["hash"] > 0:
-                # empty tuple represents the parent callpath for the root node
                 # get the first thread information
                 _thread = collapse_ids(_dict["node"]["tid"], self.per_thread)
+                # empty tuple represents the parent callpath for the root node.
+                # third parameter is the parent node. It's none for the root node.
                 parse_node(_key, _dict, None, _rank, _thread, tuple())
             elif "children" in _dict:
                 # call for all children
                 for child in _dict["children"]:
-                    # empty tuple represents the parent callpath for the root node
                     # get the first thread information
                     _thread = collapse_ids(child["node"]["tid"], self.per_thread)
+                    # empty tuple represents the parent callpath for the root node
+                    # third parameter is the parent node. It's none for the root node.
                     parse_node(_key, child, None, _rank, _thread, tuple())
 
         def read_graph(_key, _itr, _offset):
@@ -456,10 +465,8 @@ class TimemoryReader:
             if first_rank != last_rank:
                 self.multiple_ranks = True
 
-        # Store a node_dict for each metric.
-        # Create a dataframe for each metric and then merge them.
-        # node_dict is a list of dicts that stores the dicts of a metric.
-        # node_dicts is a list of dicts that stores the dicts of all metrics.
+        # graph_dict[timemory] stores all metric data.
+        # each metric data is another item in this dict.
         for key, itr in graph_dict["timemory"].items():
             # strip out the namespace if provided
             key = key.replace("tim::", "").replace("component::", "").lower()
@@ -471,6 +478,9 @@ class TimemoryReader:
             # if no DMP supported
             if "graph" in itr:
                 print("Reading graph...")
+                # we create callpath_to_node_dict in read_graph()
+                # and this dict stores all the data to create the
+                # dataframe.
                 read_graph(key, itr["graph"], None)
             else:
                 # read in MPI results
@@ -491,9 +501,11 @@ class TimemoryReader:
                     last_rank = read_graph(key, itr["upcxx"], _offset)
                     check_multiple_ranks(_offset, last_rank)
 
-        # find any columns where the entries are None or "null"
         non_null = {}
-        node_dicts = list(self.callpath_to_node_dicts.values())
+        # get all the values in callpath_to_node_dict. this gives
+        # us all the node dictionaries.
+        node_dicts = list(self.callpath_to_node_dict.values())
+        # find any columns where the entries are None or "null"
         for itr in node_dicts:
             for key, item in itr.items():
                 if key not in non_null:
@@ -518,7 +530,7 @@ class TimemoryReader:
         exc_metrics = []
         inc_metrics = []
         for column in self.metric_cols:
-            if column.endswith(".inc"):
+            if column.endswith(" (inc)"):
                 inc_metrics.append(column)
             else:
                 exc_metrics.append(column)
