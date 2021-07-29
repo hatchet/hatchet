@@ -1,0 +1,16 @@
+cff-version: 1.1.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Bhatele
+    given-names: Abhinav
+    orcid: https://orcid.org/0000-0003-3069-3701
+  - family-names: Gamblin
+    given-names: Todd
+    orcid: https://orcid.org/0000-0002-7857-2805
+  - family-names: Stephanie
+    given-names: Brink
+    orcid: https://orcid.org/0000-0002-1458-8453
+title: "Hatchet: Pruning the Overgrowth in Parallel Profiles"
+version: develop
+doi: 10.1145/3295500.3356219
+date-released: 2019-11-17
