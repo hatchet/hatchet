@@ -25,55 +25,40 @@
 
 
         var makeColorManager = function(model){
-            
-            var _regularColors = [['#006d2c', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#edf8e9'], //green
-                ['#a50f15', '#de2d26', '#fb6a4a', '#fc9272', '#fcbba1', '#fee5d9'], //red
-                ['#08519c', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#eff3ff'], //blue
-                ['#54278f', '#756bb1', '#9e9ac8', '#bcbddc', '#dadaeb', '#f2f0f7'], //purple
-                ['#a63603', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#feedde'], //orange
-                ['#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7']]; //black
 
-            var _invertColors = [['#edf8e9', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c'], //green
-                ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#de2d26', '#a50f15'], //red
-                ['#eff3ff', '#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08519c'], //blue
-                ['#f2f0f7', '#dadaeb', '#bcbddc', '#9e9ac8', '#756bb1', '#54278f'], //purple
-                ['#feedde', '#fdd0a2', '#fdae6b', '#fd8d3c', '#e6550d', '#a63603'], //orange
-                ['#f7f7f7', '#d9d9d9', '#bdbdbd', '#969696', '#636363', '#252525']];  //black
+            // Possibly this can reside in a separate `colorUtils` later.
+            const REGULAR_COLORS = [['#006d2c', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#edf8e9'], //green
+                            ['#a50f15', '#de2d26', '#fb6a4a', '#fc9272', '#fcbba1', '#fee5d9'], //red
+                            ['#08519c', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#eff3ff'], //blue
+                            ['#54278f', '#756bb1', '#9e9ac8', '#bcbddc', '#dadaeb', '#f2f0f7'], //purple
+                            ['#a63603', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#feedde'], //orange
+                            ['#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7']]
             
-        
-            var _allTreesColors = ['#d73027', '#fc8d59', '#fee090', '#e0f3f8', '#91bfdb', '#4575b4'];
-            var _invertedAllTreesColors = ['#4575b4', '#91bfdb', '#e0f3f8', '#fee090', '#fc8d59', '#d73027'];
+
+            const CAT_COLORS = ["#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", "#0099c6", "#dd4477", "#66aa00", "#b82e2e", "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc", "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"];
+
+            const _regularColors = {
+                0: REGULAR_COLORS,
+                1: REGULAR_COLORS.map((colorArr) => [].concat(colorArr).reverse()),
+                2: CAT_COLORS,
+            }
+
+            const ALL_COLORS = ['#d73027', '#fc8d59', '#fee090', '#e0f3f8', '#91bfdb', '#4575b4']
+
+            const _allTreesColors = {
+                0: ALL_COLORS,
+                1: [].concat(ALL_COLORS).reverse(),
+                2: CAT_COLORS,
+            }
 
             let _state = model.state;
             let _forestMinMax = model.data["forestMinMax"];
             let _forestMetrics = model.data["forestMetrics"];
 
             return {
-                setColors: function(treeIndex){
-                    /**
-                     * Sets the color pallet per tree to be either inverse or regular or unified/divergent
-                     * 
-                     * @param {Int} treeIndex - The index of the current tree's colors being set
-                     */
-
-                    var colorSchemeUsed;
-    
-                    if (treeIndex == -1) { //all trees are displayed
-                        if (_state["colorScheme"] == 0) {
-                            colorSchemeUsed = _allTreesColors;
-                        } else {
-                            colorSchemeUsed = _invertedAllTreesColors;
-                        }
-                    } 
-                    else { //single tree is displayed
-                        if (_state["colorScheme"] == 0) {
-                            colorSchemeUsed = _regularColors[treeIndex];
-                        } else {
-                            colorSchemeUsed = _invertColors[treeIndex];
-                        }
-                    }
-    
-                    return colorSchemeUsed;
+                setColors: function (treeIndex) {
+                    if (treeIndex == -1) return _allTreesColors[_state["colorScheme"]]
+                    else return _regularColors[_state["colorScheme"]]
                 },
                 getLegendDomains: function(treeIndex){
                     /**
@@ -82,26 +67,30 @@
                      * @param {Int} treeIndex - The index of the current tree's legend being set
                      */
 
-                    var colorScaleDomain;
-                    var metric_range;
-                    var curMetric = _state["selectedMetric"];
+                    let colorScaleDomain;
+                    let metric_range;
+                    const curMetric = _state["selectedMetric"];
+                    const curColorScheme = _state["colorScheme"];
                     
                     // so hacky: need to fix later
                     if (model.data["legends"][_state["legend"]].includes("Unified")) {
                         treeIndex = -1;
                     }
 
-                    if (treeIndex == -1) { //unified color legend
-                        metric_range = _forestMinMax[curMetric].max - _forestMinMax[curMetric].min;
+                    if (treeIndex === -1) { //unified color legend
+                        _data = _forestMinMax[curMetric]
+                    } else { // individual color legend
+                        _data = _forestMetrics[treeIndex][curMetric]
+                    }
+
+                    if (curColorScheme == 0 || curColorScheme == 1) {
+                        metric_range = _data.max - _data.min;
                         colorScaleDomain = [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1].map(function (x) {
-                            return x * metric_range + _forestMinMax[curMetric].min;
+                            return x * metric_range + _data.min;
                         });
                     } 
-                    else{
-                        metric_range = _forestMetrics[treeIndex][curMetric].max - _forestMetrics[treeIndex][curMetric].min;
-                        colorScaleDomain = [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1].map(function (x) {
-                            return x * metric_range + _forestMetrics[treeIndex][curMetric].min;
-                        });
+                    else if (curColorScheme == 2) {
+                        
                     }
 
                     return colorScaleDomain;
@@ -118,13 +107,7 @@
                         treeIndex = -1;
                     }
 
-                    if (treeIndex == -1) { //unified color legend
-                        var colorSchemeUsed = this.setColors(treeIndex);
-    
-                    } else {
-                        var colorSchemeUsed = this.setColors(treeIndex);
-                    }
-                    return colorSchemeUsed;
+                    return this.setColors(treeIndex);
                 },
                 calcColorScale: function(nodeMetric, treeIndex) {
                     /**
@@ -134,18 +117,19 @@
                      * @param {Int} treeIndex - The index of the current tree's legend being set
                      */
 
-                    var curMetric = d3.select(element).select('#metricSelect').property('value');
-                    var colorSchemeUsed = this.setColors(treeIndex);
+                    const curMetric = d3.select(element).select('#metricSelect').property('value');
+                    const colorSchemeUsed = this.setColors(treeIndex);
+                    let metric_range, proportion_of_total;
                     
                     if (treeIndex == -1) {
-                        var metric_range = _forestMinMax[curMetric].max - _forestMinMax[curMetric].min;
-                        var proportion_of_total = (nodeMetric - _forestMinMax[curMetric].min) / metric_range;
+                        metric_range = _forestMinMax[curMetric].max - _forestMinMax[curMetric].min;
+                        proportion_of_total = (nodeMetric - _forestMinMax[curMetric].min) / metric_range;
                     } else {
-                        var metric_range = _forestMetrics[treeIndex][curMetric].max - _forestMetrics[treeIndex][curMetric].min;
-                        var proportion_of_total = nodeMetric / 1;
+                        metric_range = _forestMetrics[treeIndex][curMetric].max - _forestMetrics[treeIndex][curMetric].min;
+                        proportion_of_total = nodeMetric / 1;
     
                         if (metric_range != 0) {
-                            proportion_of_total = (nodeMetric - forestMetrics[treeIndex][curMetric].min) / metric_range;
+                            proportion_of_total = (nodeMetric - _forestMetrics[treeIndex][curMetric].min) / metric_range;
                         }
                     }
     
@@ -167,7 +151,6 @@
                         return colorSchemeUsed[5];
                     }
                 }
-
             }
         }
         
@@ -240,8 +223,8 @@
             //initialize default data and state
             var _data = {
                             "trees":[],
-                            "legends": ["Unified", "Indiv."],
-                            "colors": ["Default", "Inverted"],
+                            "legends": ["Unified", "Indiv." ],
+                            "colors": ["Default", "Inverted", "Categor."],
                             "forestData": null,
                             "rootNodeNames": [],
                             "numberOfTrees": 0,
@@ -659,7 +642,7 @@
             var metricColumns = model.data["metricColumns"];
             var brushOn = model.state["brushOn"];
             var curColor = model.state["colorScheme"];
-            var colors = model.data["colors"];        
+            var colors = model.data["colors"];
             var curLegend = model.state["legend"];
             var legends = model.data["legends"];
 
@@ -1255,7 +1238,12 @@
                                 .transition()
                                 .duration(globals.duration)
                                 .text((d, i) => {
-                                    return _colorManager.getLegendDomains(treeIndex)[6 - d - 1] + ' - ' + _colorManager.getLegendDomains(treeIndex)[6 - d];
+                                    if (model.state.colorScheme === 0 || model.state.colorScheme === 1) {
+                                        return _colorManager.getLegendDomains(treeIndex)[6 - d - 1] + ' - ' + _colorManager.getLegendDomains(treeIndex)[6 - d];                                    
+                                    }
+                                    else {
+                                        return '';
+                                    }
                                 });
 
                         // Transition links to their new position.
