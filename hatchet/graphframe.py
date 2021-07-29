@@ -743,8 +743,35 @@ class GraphFrame:
             for hnode in root.traverse():
                 callpath = hnode.path()
                 for i in range(0, len(callpath) - 1):
-                    folded_stack = folded_stack + callpath[i].attrs[name] + "; "
-                folded_stack = folded_stack + callpath[-1].attrs[name] + " "
+                    if (
+                        "rank" in self.dataframe.index.names
+                        and "thread" in self.dataframe.index.names
+                    ):
+                        df_index = (callpath[i], rank, thread)
+                    elif "rank" in self.dataframe.index.names:
+                        df_index = (callpath[i], rank)
+                    elif "thread" in self.dataframe.index.names:
+                        df_index = (callpath[i], thread)
+                    else:
+                        df_index = callpath[i]
+                    folded_stack = (
+                        folded_stack + str(self.dataframe.loc[df_index, "name"]) + "; "
+                    )
+
+                if (
+                    "rank" in self.dataframe.index.names
+                    and "thread" in self.dataframe.index.names
+                ):
+                    df_index = (callpath[-1], rank, thread)
+                elif "rank" in self.dataframe.index.names:
+                    df_index = (callpath[-1], rank)
+                elif "thread" in self.dataframe.index.names:
+                    df_index = (callpath[-1], thread)
+                else:
+                    df_index = callpath[-1]
+                folded_stack = (
+                    folded_stack + str(self.dataframe.loc[df_index, "name"]) + " "
+                )
 
                 # set dataframe index based on if rank and thread are part of the index
                 if (
