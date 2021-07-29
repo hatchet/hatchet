@@ -97,21 +97,22 @@ class Roundtrip(Magics):
 
     def runVis(self, name, javascriptFile, path):
         name = "roundtripTreeVis" + str(self.id_number)
-
-        javascriptExport = """
-            <div id=\"{0}\">
-            </div>
-            <script type=module>
-                import Test from './{1}test.js'
-                elementTop.appendChild(document.getElementById('{2}'));
-                var element = document.getElementById('{2}');
-                {3}
-            </script>
-        """.format(
-            name, path, str(name), javascriptFile
+        header = (
+            """
+                  <div id=\""""
+            + name
+            + """\"></div>
+                  <script>
+                  elementTop.appendChild(document.getElementById('"""
+            + str(name)
+            + """'));
+                  element = document.getElementById('"""
+            + str(name)
+            + """');"""
+            + """var jsNodeSelected;"""
         )
-
-        display(HTML(javascriptExport))
+        footer = """</script>"""
+        display(HTML(header + javascriptFile + footer))
 
     @line_magic
     def fetchData(self, dest):

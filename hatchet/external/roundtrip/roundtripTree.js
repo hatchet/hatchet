@@ -20,7 +20,8 @@
                 margin: {top: 20, right: 20, bottom: 20, left: 20},
             },
             duration: 750,
-            treeHeight: 300
+            treeHeight: 300,
+            legendGroupCount: 6 // Number of legend ranges in the color.
         });
 
 
@@ -40,7 +41,6 @@
             const _regularColors = {
                 0: REGULAR_COLORS,
                 1: REGULAR_COLORS.map((colorArr) => [].concat(colorArr).reverse()),
-                2: CAT_COLORS,
             }
 
             const ALL_COLORS = ['#d73027', '#fc8d59', '#fee090', '#e0f3f8', '#91bfdb', '#4575b4']
@@ -48,17 +48,23 @@
             const _allTreesColors = {
                 0: ALL_COLORS,
                 1: [].concat(ALL_COLORS).reverse(),
-                2: CAT_COLORS,
             }
 
-            let _state = model.state;
-            let _forestMinMax = model.data["forestMinMax"];
-            let _forestMetrics = model.data["forestMetrics"];
+            const _state = model.state;
+            const _forestMinMax = model.data["forestMinMax"];
+            const _forestMetrics = model.data["forestMetrics"];
 
             return {
                 setColors: function (treeIndex) {
-                    if (treeIndex == -1) return _allTreesColors[_state["colorScheme"]]
-                    else return _regularColors[_state["colorScheme"]]
+                    const _selectedMetric = _state["selectedMetric"];
+
+                    if (_selectedMetric === "module") {
+                        return CAT_COLORS;
+                    } 
+                    else {
+                        if (treeIndex == -1) return _allTreesColors[_state["colorScheme"]];
+                        else return _regularColors[_state["colorScheme"]];
+                    }
                 },
                 getLegendDomains: function(treeIndex){
                     /**
@@ -69,8 +75,7 @@
 
                     let colorScaleDomain;
                     let metric_range;
-                    const curMetric = _state["selectedMetric"];
-                    const curColorScheme = _state["colorScheme"];
+                    const _selectedMetric = _state["selectedMetric"];
                     
                     // so hacky: need to fix later
                     // Suraj: Cant really understand why this needs to be done.!!!
@@ -79,19 +84,19 @@
                     }
 
                     if (treeIndex === -1) { //unified color legend
-                        _data = _forestMinMax[curMetric]
+                        _data = _forestMinMax[_selectedMetric]
                     } else { // individual color legend
-                        _data = _forestMetrics[treeIndex][curMetric]
+                        _data = _forestMetrics[treeIndex][_selectedMetric]
                     }
 
-                    if (curColorScheme == 0 || curColorScheme == 1) {
+                    if (_selectedMetric !== "module") {
                         metric_range = _data.max - _data.min;
                         colorScaleDomain = [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1].map(function (x) {
                             return x * metric_range + _data.min;
                         });
                     } 
-                    else if (curColorScheme == 2) {
-                        
+                    else {
+                        colorScaleDomain = _data;
                     }
 
                     return colorScaleDomain;
@@ -118,39 +123,55 @@
                      * @param {Int} treeIndex - The index of the current tree's legend being set
                      */
 
-                    const curMetric = d3.select(element).select('#metricSelect').property('value');
+                    // Fetch the selected metric from state.
+                    const _selectedMetric = _state["selectedMetric"];
+
+                    // Decide the color scheme for the settings.
                     const colorSchemeUsed = this.setColors(treeIndex);
-                    let metric_range, proportion_of_total;
-                    
+
+                    // Get the suitable data based on the Legend settings.
+                    let _d;
                     if (treeIndex == -1) {
-                        metric_range = _forestMinMax[curMetric].max - _forestMinMax[curMetric].min;
-                        proportion_of_total = (nodeMetric - _forestMinMax[curMetric].min) / metric_range;
+                        _d = _forestMinMax[_selectedMetric];
                     } else {
-                        metric_range = _forestMetrics[treeIndex][curMetric].max - _forestMetrics[treeIndex][curMetric].min;
-                        proportion_of_total = nodeMetric / 1;
-    
+                        _d = _forestMetrics[treeIndex][_selectedMetric];
+                    }
+
+                    // Calculate the range of min/max.
+                    const metric_range = _d.max - _d.min;
+
+                    if (_selectedMetric === "module") {
+                        const indexOfMetric = _d.indexOf(nodeMetric);
+                        return colorSchemeUsed[indexOfMetric];
+                    } else {
+                        // Set colorMap for runtime metrics.
+                        let proportion_of_total = nodeMetric / 1;;
+                        
+                        // If min !== max, we can split the runtime into bins. 
                         if (metric_range != 0) {
-                            proportion_of_total = (nodeMetric - _forestMetrics[treeIndex][curMetric].min) / metric_range;
+                            proportion_of_total = (nodeMetric - _d.min) / metric_range;
+                        }
+
+                        // TODO: Generalize to any bin size.
+                        if (proportion_of_total > 0.9) {
+                            return colorSchemeUsed[0];
+                        }
+                        if (proportion_of_total > 0.7) {
+                            return colorSchemeUsed[1];
+                        }
+                        if (proportion_of_total > 0.5) {
+                            return colorSchemeUsed[2];
+                        }
+                        if (proportion_of_total > 0.3) {
+                            return colorSchemeUsed[3];
+                        }
+                        if (proportion_of_total > 0.1) {
+                            return colorSchemeUsed[4];
+                        } else {
+                            return colorSchemeUsed[5];
                         }
                     }
-    
-                    if (proportion_of_total > 0.9) {
-                        return colorSchemeUsed[0];
-                    }
-                    if (proportion_of_total > 0.7) {
-                        return colorSchemeUsed[1];
-                    }
-                    if (proportion_of_total > 0.5) {
-                        return colorSchemeUsed[2];
-                    }
-                    if (proportion_of_total > 0.3) {
-                        return colorSchemeUsed[3];
-                    }
-                    if (proportion_of_total > 0.1) {
-                        return colorSchemeUsed[4];
-                    } else {
-                        return colorSchemeUsed[5];
-                    }
+                    
                 }
             }
         }
@@ -225,7 +246,7 @@
             var _data = {
                             "trees":[],
                             "legends": ["Unified", "Indiv." ],
-                            "colors": ["Default", "Inverted", "Categor."],
+                            "colors": ["Default", "Inverted"],
                             "forestData": null,
                             "rootNodeNames": [],
                             "numberOfTrees": 0,
@@ -448,7 +469,6 @@
                                 _forestMetrics[index][metric].max = Math.max(_forestMetrics[index][metric].max, d.data.metrics[metric]);
                                 _forestMinMax[metric].min = Math.min(_forestMinMax[metric].min, d.data.metrics[metric]);
                                 _forestMinMax[metric].max = Math.max(_forestMinMax[metric].max, d.data.metrics[metric]);
-
                             }
                         }
                     });
@@ -899,8 +919,6 @@
             var treeOffset = 0;
             var minmax = [];
 
-
-            
             function diagonal(s, d) {
                 /**
                  * Creates a curved diagonal path from parent to child nodes
@@ -1004,7 +1022,7 @@
                 .attr('transform', 'translate(-20, 0)');
 
                 const legendGroups = legGroup.selectAll("g")
-                        .data([0, 1, 2, 3, 4, 5])
+                        .data(Array.from(Array(globals.legendGroupCount).keys()))
                         .enter()
                         .append('g')
                         .attr('class', 'legend legend' + treeIndex)
@@ -1247,11 +1265,11 @@
                                 .transition()
                                 .duration(globals.duration)
                                 .text((d, i) => {
-                                    if (model.state.colorScheme === 0 || model.state.colorScheme === 1) {
+                                    if (model.state["selectedMetric"] !== "module") {
                                         return _colorManager.getLegendDomains(treeIndex)[6 - d - 1] + ' - ' + _colorManager.getLegendDomains(treeIndex)[6 - d];                                    
                                     }
                                     else {
-                                        return '';
+                                        return _colorManager.getLegendDomains(treeIndex)[i];
                                     }
                                 });
 
