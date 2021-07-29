@@ -73,6 +73,7 @@
                     const curColorScheme = _state["colorScheme"];
                     
                     // so hacky: need to fix later
+                    // Suraj: Cant really understand why this needs to be done.!!!
                     if (model.data["legends"][_state["legend"]].includes("Unified")) {
                         treeIndex = -1;
                     }
@@ -268,18 +269,27 @@
                 var thisTreeMetrics = {};
 
                 // init the min/max for all trees' metricColumns
-                for (var j = 0; j < _data["metricColumns"].length; j++) {
-                    thisTreeMetrics[_data["metricColumns"][j]] = {};
-                    thisTreeMetrics[_data["metricColumns"][j]]["min"] = Number.MAX_VALUE;
-                    thisTreeMetrics[_data["metricColumns"][j]]["max"] = 0;
+                for (let metric of _data["metricColumns"]) {
+                    let _d;
+                    if (metric === "module") {
+                        _d = [];
+                    }
+                    else {
+                        _d = { "min": Number.MAX_VALUE, "max": 0 }
+                    }
+                    thisTreeMetrics[metric] = _d;
                 }
 
                 _forestMetrics.push(thisTreeMetrics);
             }
-            for (var j = 0; j < _data["metricColumns"].length; j++) {
-                _forestMinMax[_data["metricColumns"][j]] = {};
-                _forestMinMax[_data["metricColumns"][j]]["min"] = Number.MAX_VALUE;
-                _forestMinMax[_data["metricColumns"][j]]["max"] = 0;
+            for (let metric of _data["metricColumns"]) {
+                if (metric === "module") {
+                    _d = [];
+                }
+                else {
+                    _d = { "min": Number.MAX_VALUE, "max": 0 }
+                }
+                _forestMinMax[metric] = _d;
             }
 
             _data["forestMinMax"] = _forestMinMax;
@@ -427,19 +437,18 @@
                      * @param {Number} index - The index of the tree we are updating
                      */
                     _data['trees'][index].descendants().forEach(function (d) {
-                        for (var i = 0; i < _data["metricColumns"].length; i++) {
-                            var tempMetric = _data["metricColumns"][i];
-                            if (d.data.metrics[tempMetric] > _forestMetrics[index][tempMetric].max) {
-                                _forestMetrics[index][tempMetric].max = d.data.metrics[tempMetric];
-                            }
-                            if (d.data.metrics[tempMetric] < _forestMetrics[index][tempMetric].min) {
-                                _forestMetrics[index][tempMetric].min = d.data.metrics[tempMetric];
-                            }
-                            if (d.data.metrics[tempMetric] > _forestMinMax[tempMetric].max) {
-                                _forestMinMax[tempMetric].max = d.data.metrics[tempMetric];
-                            }
-                            if (d.data.metrics[tempMetric] < _forestMinMax[tempMetric].min) {
-                                _forestMinMax[tempMetric].min = d.data.metrics[tempMetric];
+                        for (let metric of _data["metricColumns"]) {
+                            if (metric === "module") {
+                                if (!_forestMetrics[index][metric].includes(d.data.metrics[metric])) {
+                                    _forestMetrics[index][metric].push(d.data.metrics[metric]);  
+                                    _forestMinMax[metric].push(d.data.metrics[metric]);                 
+                                }
+                            } else {
+                                _forestMetrics[index][metric].min = Math.min(_forestMetrics[index][metric].min, d.data.metrics[metric]);
+                                _forestMetrics[index][metric].max = Math.max(_forestMetrics[index][metric].max, d.data.metrics[metric]);
+                                _forestMinMax[metric].min = Math.min(_forestMinMax[metric].min, d.data.metrics[metric]);
+                                _forestMinMax[metric].max = Math.max(_forestMinMax[metric].max, d.data.metrics[metric]);
+
                             }
                         }
                     });
