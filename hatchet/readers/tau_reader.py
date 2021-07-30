@@ -444,6 +444,7 @@ class TAUReader:
         """Read the TAU profile file to extract the calling context tree."""
         # Add all nodes and roots.
         roots = self.create_graph()
+        print(roots)
         # Create a graph object once all nodes have been added.
         graph = Graph(roots)
         graph.enumerate_traverse()
