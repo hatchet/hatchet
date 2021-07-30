@@ -261,6 +261,20 @@ class TAUReader:
             rank, thread = int(file_info[-3]), int(file_info[-1])
             self.multiple_ranks = True if rank != prev_rank else False
             self.multiple_threads = True if thread != prev_thread else False
+            print("file info:")
+            print(file_info)
+            print("rank: ")
+            print(rank)
+            print("prev_rank: ")
+            print(prev_rank)
+            print("thread: ")
+            print(thread)
+            print("prev_thread: ")
+            print(prev_thread)
+            print("multiple ranks: ")
+            print(self.multiple_ranks)
+            print("multiple threads: ")
+            print(self.multiple_threads)
 
             # Load all files represent a different metric for a rank or a thread.
             # If there are 2 metrics, load metric1\profile.x.0.0 and metric2\profile.x.0.0
@@ -467,10 +481,6 @@ class TAUReader:
 
         dataframe.set_index(indices, inplace=True)
         dataframe.sort_index(inplace=True)
-        print("multiple ranks: ")
-        print(self.multiple_ranks)
-        print("multiple threads: ")
-        print(self.multiple_threads)
         print("indices: ")
         print(indices)
         # Fill the missing ranks
