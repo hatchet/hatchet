@@ -242,7 +242,8 @@ class TAUReader:
         for dirpath, dirnames, files in os.walk(self.dirname):
             profiles_in_dir = glob.glob(dirpath + "/profile.*")
             if profiles_in_dir:
-                profile_filenames.append(profiles_in_dir)
+                # sort input files on each directory in the same order
+                profile_filenames.append(sorted(profiles_in_dir))
 
         # Store all files in a list of tuples.
         # Each tuple stores all the metric files of a rank.
@@ -263,20 +264,6 @@ class TAUReader:
                 self.multiple_ranks = True if rank != prev_rank else False
             if not self.multiple_threads:
                 self.multiple_threads = True if thread != prev_thread else False
-            print("file info:")
-            print(file_info)
-            print("rank: ")
-            print(rank)
-            print("prev_rank: ")
-            print(prev_rank)
-            print("thread: ")
-            print(thread)
-            print("prev_thread: ")
-            print(prev_thread)
-            print("multiple ranks: ")
-            print(self.multiple_ranks)
-            print("multiple threads: ")
-            print(self.multiple_threads)
 
             # Load all files represent a different metric for a rank or a thread.
             # If there are 2 metrics, load metric1\profile.x.0.0 and metric2\profile.x.0.0
@@ -460,8 +447,6 @@ class TAUReader:
         """Read the TAU profile file to extract the calling context tree."""
         # Add all nodes and roots.
         roots = self.create_graph()
-        print("Roots: ")
-        print(roots)
         # Create a graph object once all nodes have been added.
         graph = Graph(roots)
         graph.enumerate_traverse()
@@ -483,8 +468,6 @@ class TAUReader:
 
         dataframe.set_index(indices, inplace=True)
         dataframe.sort_index(inplace=True)
-        print("indices: ")
-        print(indices)
         # Fill the missing ranks
         # After unstacking and iterating over rows, there
         # will be "NaN" values for some ranks. Find the first
@@ -516,8 +499,7 @@ class TAUReader:
             dataframe = dataframe.stack()
 
         default_metric = "time (inc)"
-        print("dataframe: ")
-        print(dataframe)
+
         return hatchet.graphframe.GraphFrame(
             graph, dataframe, self.exc_metrics, self.inc_metrics, default_metric
         )
