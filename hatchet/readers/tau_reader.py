@@ -259,8 +259,10 @@ class TAUReader:
         for filenames_per_rank in profile_filenames:
             file_info = filenames_per_rank[0].split(".")
             rank, thread = int(file_info[-3]), int(file_info[-1])
-            self.multiple_ranks = True if rank != prev_rank else False
-            self.multiple_threads = True if thread != prev_thread else False
+            if not self.multiple_ranks:
+                self.multiple_ranks = True if rank != prev_rank else False
+            if not self.multiple_threads:
+                self.multiple_threads = True if thread != prev_thread else False
             print("file info:")
             print(file_info)
             print("rank: ")
