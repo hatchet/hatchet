@@ -444,6 +444,7 @@ class TAUReader:
         """Read the TAU profile file to extract the calling context tree."""
         # Add all nodes and roots.
         roots = self.create_graph()
+        print("Roots: ")
         print(roots)
         # Create a graph object once all nodes have been added.
         graph = Graph(roots)
@@ -498,7 +499,8 @@ class TAUReader:
             dataframe = dataframe.stack()
 
         default_metric = "time (inc)"
-
+        print("dataframe")
+        print(dataframe)
         return hatchet.graphframe.GraphFrame(
             graph, dataframe, self.exc_metrics, self.inc_metrics, default_metric
         )
