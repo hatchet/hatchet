@@ -202,8 +202,7 @@ class ConsoleRenderer:
                 df_index = (node, self.thread)
             else:
                 df_index = node
-            print("df_index")
-            print(df_index)
+
             node_metric = dataframe.loc[df_index, self.primary_metric]
 
             metric_precision = "{:." + str(self.precision) + "f}"
