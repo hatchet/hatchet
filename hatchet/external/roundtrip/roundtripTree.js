@@ -22,29 +22,7 @@
             },
             duration: 750,
             treeHeight: 300
-        })
-
-
-        // Returns a function, that, as long as it continues to be invoked, will not
-        // be triggered. The function will be called after it stops being called for
-        // N milliseconds. If `immediate` is passed, trigger the function on the
-        // leading edge, instead of the trailing.
-        // Taken from: https://davidwalsh.name/javascript-debounce-function
-        function debounce(func, wait, immediate) {
-            var timeout;
-            return function() {
-                var context = this, args = arguments;
-                var later = function() {
-                    timeout = null;
-                    if (!immediate) func.apply(context, args);
-                };
-                var callNow = immediate && !timeout;
-                clearTimeout(timeout);
-                timeout = setTimeout(later, wait);
-                if (callNow) func.apply(context, args);
-            };
-        };
-
+        });
 
         var makeColorManager = function(model){
             
@@ -760,6 +738,7 @@
             // var treemap = d3.tree().size([(2000), width - margin.left]);
             var treemap = d3.tree().size([(globals.treeHeight), width - _margin.left]);
 
+            // Denotes the number of nodes in tallest path from the root to leaf
             var maxHeight = 0;
 
             // Find the tallest tree for layout purposes (used to set a uniform spreadFactor)
@@ -923,9 +902,7 @@
                         // Enter any new nodes at the parent's previous position.
                         var nodeEnter = node.enter().append('g')
                                 .attr('class', 'node')
-                                .attr("transform", function (d) {
-                                    return "translate(" + lastClicked.y + "," + lastClicked.x + ")";
-                                })
+                                .attr("transform", () => {return "translate(" + lastClicked.y + "," + lastClicked.x + ")"})
                                 .on("click", function(d){
                                     _observers.notify({
                                         type: globals.signals.CLICK,
@@ -952,22 +929,6 @@
                                 .style('stroke-width', '1px')
                                 .style('stroke', 'black');
             
-                        // commenting out text for now
-                        // nodeEnter.append("text")
-                        //         .attr("x", function (d) {
-                        //             return d.children || model.state['collapsedNodes'].includes(d) ? -13 : 13;
-                        //         })
-                        //         .attr("dy", ".75em")
-                        //         .attr("text-anchor", function (d) {
-                        //             return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
-                        //         })
-                        //         .text(function (d) {
-                        //             return d.data.name;
-                        //         })
-                        //         .attr('transform', 'rotate( -15)')
-                        //         .style("stroke-width", "3px")
-                        //         .style("font", "12px monospace");
-        
 
                         // links
                         var link = tree.selectAll("path.link")
