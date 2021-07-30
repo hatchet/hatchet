@@ -228,7 +228,7 @@
                             _model.updateSelected([evt.node]);
                             break;
                         case (globals.signals.DBLCLICK):
-                            _model.handleDoubleClick(evt.node,evt.tree);
+                            _model.handleDoubleClick(evt.node);
                             break;
                         case(globals.signals.TOGGLEBRUSH):
                             _model.toggleBrush();
@@ -403,16 +403,21 @@
                         node.data.outlier = 0;
                     }
                 })
-
             }
 
-            //Model support functions
+
             function _getAggregateMetrics(h){
                 let agg = {};
                 
                 for(metric of _data.metricColumns){
                     if(!metric.includes("(inc)")){
-                        h.sum(d=>d.metrics[metric]);
+                        h.sum(d=>{
+                            if(d.aggregateMetrics){
+                                return d.aggregateMetrics[metric];
+                            } else{
+                                return d.metrics[metric];
+                            }
+                        });
                         agg[metric] = h.value;
                     }
                     else{
@@ -432,17 +437,85 @@
                 return desc;
             }
 
+            function _buildDummyHolder(protoype, parent, elided){
+                var dummyHolder = null;
+                var aggregateMetrics = {};
+                var description = {
+                    maxHeight: 0,
+                    minHeight: Number.MAX_VALUE,
+                    size: 0,
+                    elidedSubtrees:0
+                };
+
+
+                dummyHolder = protoype.copy();
+                dummyHolder.depth = protoype.depth;
+                dummyHolder.height = protoype.height;
+                dummyHolder.children = null;
+
+                //need a better way to make elided happen
+                // pass in as arg makes sense
+                dummyHolder.elided = elided;
+                dummyHolder.dummy = true;
+                dummyHolder.aggregate = false;
+                dummyHolder.parent = parent;
+                dummyHolder.outlier = 0;
+                
+
+                //initialize the aggregrate metrics for summing
+                for(metric of _data.metricColumns){
+                    aggregateMetrics[metric] = 0;
+                }
+
+                for(elided of dummyHolder.elided){
+                    var aggMetsForChild = _getAggregateMetrics(elided);
+                    var descriptionOfChild = _getSubTreeDescription(elided);
+                    
+                    for(metric of _data.metricColumns){
+                        aggregateMetrics[metric] += aggMetsForChild[metric];
+                    }
+
+                    description.size += descriptionOfChild.size;
+
+                    if(descriptionOfChild.height > description.maxHeight){
+                        description.maxHeight = descriptionOfChild.height;
+                    }
+
+                    if(descriptionOfChild.height < description.minHeight){
+                        description.minHeight = descriptionOfChild.height;
+                    }
+
+                }
+
+                description.elidedSubtrees = elided.length;
+
+                //get the overall min and max of aggregate metrics
+                // for scales
+                for(metric of _data.metricColumns){
+                    if (aggregateMetrics[metric] > _data.aggregateMinMax[metric].max){
+                        _data.aggregateMinMax[metric].max = aggregateMetrics[metric];
+                    }
+                    if(aggregateMetrics[metric] < _data.aggregateMinMax[metric].min){
+                        _data.aggregateMinMax[metric].min = aggregateMetrics[metric];
+                    }
+                }
+
+                dummyHolder.data.aggregateMetrics = aggregateMetrics;
+                dummyHolder.data.description = description;
+
+                //more than sum 0 nodes were aggregrated
+                // together
+                if(dummyHolder.data.aggregateMetrics[_state.primaryMetric] != 0){
+                    dummyHolder.aggregate = true;
+                }
+
+                return dummyHolder;
+            }
 
             function _visitor(root, condition){
                 if(root.children){
                     var dummyHolder = null;
-                    var aggregateMetrics = {};
-                    var description = {
-                        maxHeight: 0,
-                        minHeight: Number.MAX_VALUE,
-                        size: 0,
-                        elidedSubtrees:0
-                    };
+                   
                     for(var childNdx = root.children.length-1; childNdx >= 0; childNdx--){
                         var child = root.children[childNdx];
                         //clear dummy node codition so it
@@ -455,13 +528,6 @@
                                 root._children = [];
                             }
 
-                            if(!dummyHolder){
-                                dummyHolder = child.copy();
-                                dummyHolder.depth = child.depth;
-                                dummyHolder.height = child.height;
-                                dummyHolder.children = null;
-                            }
-
                             root._children.push(child);
                             root.children.splice(childNdx, 1);
                         }
@@ -470,61 +536,9 @@
                     //some nodes were elided because they met the above
                     // condition
                     if (root._children && root._children.length > 0){
-                        dummyHolder.elided = root._children;        
-                        dummyHolder.dummy = true;
-                        dummyHolder.aggregate = false;
-                        dummyHolder.parent = root;
-                        dummyHolder.outlier = 0;
+                        dummyHolder = _buildDummyHolder(root._children[0], root, root._children);
                         root.children.push(dummyHolder);
-
-                        //initialize the aggregrate metrics for summing
-                        for(metric of _data.metricColumns){
-                            aggregateMetrics[metric] = 0;
-                        }
-
-                        for(elided of dummyHolder.elided){
-                            var aggMetsForChild = _getAggregateMetrics(elided)
-                            var descriptionOfChild = _getSubTreeDescription(elided);
-                            
-                            for(metric of _data.metricColumns){
-                                aggregateMetrics[metric] += aggMetsForChild[metric];
-                            }
-
-                            description.size += descriptionOfChild.size;
-
-                            if(descriptionOfChild.height > description.maxHeight){
-                                description.maxHeight = descriptionOfChild.height;
-                            }
-
-                            if(descriptionOfChild.height < description.minHeight){
-                                description.minHeight = descriptionOfChild.height;
-                            }
-
-                        }
-
-                        description.elidedSubtrees = elided.length;
-
-                        //get the overall min and max of aggregate metrics
-                        // for scales
-                        for(metric of _data.metricColumns){
-                            if (aggregateMetrics[metric] > _data.aggregateMinMax[metric].max){
-                                _data.aggregateMinMax[metric].max = aggregateMetrics[metric];
-                            }
-                            if(aggregateMetrics[metric] < _data.aggregateMinMax[metric].min){
-                                _data.aggregateMinMax[metric].min = aggregateMetrics[metric];
-                            }
-                        }
-
-                        dummyHolder.data.aggregateMetrics = aggregateMetrics;
-                        dummyHolder.data.description = description;
-
-                        //more than sum 0 nodes were aggregrated
-                        // together
-                        if(dummyHolder.data.aggregateMetrics[_state.primaryMetric] != 0){
-                            dummyHolder.aggregate = true;
-                        }
                     }
-
 
                     for(var child of root.children){
                         _visitor(child, condition);
@@ -813,37 +827,51 @@
                     _observers.notify();
                 },
                 handleDoubleClick: function(d){
-                    /**
+                      /**
                      * Handles the model functionlaity of hiding and un-hiding subtrees
                      * on double click
                      *
                      * @param {Object} d - The node which was double clicked
                      */
 
-                    // if the node is not already collapsed
-                    // keep track of collapsed nodes
-                    if (! _state["collapsedNodes"].includes(d) ){
-                        _state["collapsedNodes"].push(d);
-                    }
-                    else{
-                        var index = _state["collapsedNodes"].indexOf(d);
-                        _state["collapsedNodes"].splice(index, 1);
-                    }
-
                     //this is kind of a hack for this paradigm
                     // but it updates the passed data directly
                     // and hides children nodes triggering update
                     // when view is re-rendered
-                    if (d.children) {
-                        d._children = d.children;
-                        d.children = null;
-                    } else {
-                        d.children = d._children;
-                        d._children = null;
+                    // if (d.children) {
+                    //     d._children = d.children;
+                    //     d.children = null;
+                    // } else {
+                    //     d.children = d._children;
+                    //     d._children = null;
+                    // }
+
+                    if(!d.dummy){
+                        if(d.parent){
+                            if(!d.parent._children){
+                                d.parent._children = [];
+                            }
+
+                            d.parent._children.push(d);
+                            d.parent.children = d.parent.children.filter(child => child !== d);
+                            dummy = _buildDummyHolder(d, d.parent, [d]);
+
+                            d.parent.children.push(dummy);
+                        }
+                    } 
+                    //clicked on a dummy node
+                    else{
+                        for(elided of d.elided){
+                            d.parent._children.filter(child => child !== elided);
+                            d.parent.children.push(elided);
+                        }
+
+                        d.parent.children = d.parent.children.filter(child => child !== d);
                     }
 
                     _state["lastClicked"] = d;
-                    
+
+                    _state.hierarchyUpdated = true;
                     _observers.notify();
                 },
                 toggleBrush: function(){
@@ -1286,7 +1314,7 @@
             var _maxNodeRadius = 25;
             var _treeDepthScale = d3.scaleLinear().range([0, element.offsetWidth-400]).domain([0, model.data.maxHeight])
             var _nodeScale = d3.scaleLinear().range([5, _maxNodeRadius]).domain([model.data.forestMinMax[model.state.secondaryMetric].min, model.data.forestMinMax[model.state.secondaryMetric].max]);
-            var _barScale = d3.scaleLinear().range([0, 25]).domain([model.data.aggregateMinMax[model.state.secondaryMetric].min, model.data.aggregateMinMax[model.state.secondaryMetric].max]);
+            var _barScale = d3.scaleLinear().range([5, 25]).domain([model.data.aggregateMinMax[model.state.secondaryMetric].min, model.data.aggregateMinMax[model.state.secondaryMetric].max]);
             var _treeLayoutHeights = [];
 
             //layout variables            
@@ -1296,7 +1324,7 @@
             var chartOffset = _margin.top;
             var treeOffset = 0;
             var _minmax = [];
-            var maxTreeCanvasHeight = 600;
+            var maxTreeCanvasHeight = 500;
 
             //view specific data
             var nodes = [];
@@ -1706,8 +1734,7 @@
                             .on('dblclick', function (d) {
                                 _observers.notify({
                                     type: globals.signals.DBLCLICK,
-                                    node: d,
-                                    tree: treeIndex
+                                    node: d
                                 })
                             });
                         
@@ -1726,8 +1753,7 @@
                             .on('dblclick', function (d) {
                                 _observers.notify({
                                     type: globals.signals.DBLCLICK,
-                                    node: d,
-                                    tree: treeIndex
+                                    node: d
                                 })
                             })
                             .on("mouseout", function(d){
@@ -1846,8 +1872,7 @@
                         var linkEnter = link.enter().insert("path", "g")
                                 .attr("class", "link")
                                 .attr("d", function (d) {
-                                    var o = {x: nodes[0].x, y: nodes[0].y};
-                                    return diagonal(o, o);
+                                    return diagonal(d.parent, d.parent, treeIndex);
                                 })
                                 .attr('fill', 'none')
                                 .attr('stroke', '#ccc')
@@ -2045,10 +2070,10 @@
                         // ---------------------------------------------
                         // Transition exiting nodes to the parent's new position.
                         var nodeExit = node.exit().transition()
-                                // .duration(globals.duration)
-                                // .attr("transform", function (d) {
-                                //     return "translate(" + d.parent.y + "," + d.parent.x + ")";
-                                // })
+                                .duration(globals.duration)
+                                .attr("transform", function (d) {
+                                    return "translate(" + _treeDepthScale(d.parent.depth) + "," + _getLocalNodeX(d.parent.x, treeIndex) + ")";
+                                })
                                 .remove();
             
                         nodeExit.select("circle")
@@ -2076,21 +2101,19 @@
                         var linkExit = link.exit().transition()
                                 .duration(globals.duration)
                                 .attr("d", function (d) {
-                                    var o = {x: source.x, y: source.y};
-                                    return diagonal(o, o);
+                                    return diagonal(d.parent, d.parent, treeIndex);
                                 })
                                 .remove();
                         
                         // make canvas always fit tree height
                         // if(_treeLayoutHeights < maxTreeCanvasHeight){
-                            chartOffset += Math.min(_treeLayoutHeights[treeIndex], maxTreeCanvasHeight) + treeOffset + _margin.top;
+                        chartOffset += Math.min(_treeLayoutHeights[treeIndex], maxTreeCanvasHeight) + treeOffset + _margin.top;
                         // } else{
                         // chartOffset += _treeLayoutHeights[treeIndex] + treeOffset + _margin.top;
                         // }
                         height += chartOffset;
                     }                    
 
-                    console.log(height);
                     //hack: fix in future
                     if(model.data.numberOfTrees > 1){
                         svg.attr("height", height-treeOffset);
