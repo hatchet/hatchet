@@ -68,8 +68,9 @@
             var _allTreesColors = ['#d73027', '#fc8d59', '#fee090', '#e0f3f8', '#91bfdb', '#4575b4'];
             var _invertedAllTreesColors = ['#4575b4', '#91bfdb', '#e0f3f8', '#fee090', '#fc8d59', '#d73027'];
 
-            var _state = model.state;
-            var forestMinMax = model.data["forestMinMax"];
+            let _state = model.state;
+            let _forestMinMax = model.data["forestMinMax"];
+            let _modelForestStats = model.data["forestStats"];
 
             return {
                 setColors: function(treeIndex){
@@ -106,7 +107,7 @@
                      */
 
                     var colorScaleDomain;
-                    var metric_range;
+                    var metricRange;
                     var curMetric = _state["selectedMetric"];
                     
                     // so hacky: need to fix later
@@ -115,15 +116,15 @@
                     }
 
                     if (treeIndex == -1) { //unified color legend
-                        metric_range = forestMinMax[curMetric].max - forestMinMax[curMetric].min;
+                        metricRange = _forestMinMax[curMetric].max - _forestMinMax[curMetric].min;
                         colorScaleDomain = [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1].map(function (x) {
-                            return x * metric_range + forestMinMax[curMetric].min;
+                            return x * metricRange + _forestMinMax[curMetric].min;
                         });
                     } 
                     else{
-                        metric_range = forestMetrics[treeIndex][curMetric].max - forestMetrics[treeIndex][curMetric].min;
+                        metricRange = _modelForestStats[treeIndex][curMetric].max - _modelForestStats[treeIndex][curMetric].min;
                         colorScaleDomain = [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1].map(function (x) {
-                            return x * metric_range + forestMetrics[treeIndex][curMetric].min;
+                            return x * metricRange + _modelForestStats[treeIndex][curMetric].min;
                         });
                     }
 
@@ -164,11 +165,11 @@
                         var metric_range = forestMinMax[curMetric].max - forestMinMax[curMetric].min;
                         var proportion_of_total = (nodeMetric - forestMinMax[curMetric].min) / metric_range;
                     } else {
-                        var metric_range = forestMetrics[treeIndex][curMetric].max - forestMetrics[treeIndex][curMetric].min;
-                        var proportion_of_total = nodeMetric;
+                        var metric_range = _modelForestStats[treeIndex][curMetric].max - _modelForestStats[treeIndex][curMetric].min;
+                        var proportion_of_total = nodeMetric / 1;
     
                         if (metric_range != 0) {
-                            proportion_of_total = (nodeMetric - forestMetrics[treeIndex][curMetric].min) / metric_range;
+                            proportion_of_total = (nodeMetric - _modelForestStats[treeIndex][curMetric].min) / metric_range;
                         }
                     }
     
@@ -270,7 +271,7 @@
                             "numberOfTrees": 0,
                             "metricColumns": [],
                             "forestMinMax": [],
-                            "forestMetrics": []
+                            "forestStats": []
                         };
 
             var _state = {
@@ -296,9 +297,11 @@
             _state["selectedMetric"] = _data["metricColumns"][0];
             _state["lastClicked"] = d3.hierarchy(_data["forestData"][0], d => d.children)
             _state["activeTree"] = "Show all trees";
-
-            var forestMetrics = [];
-            var forestMinMax = {}; 
+            
+            //forest stats holds statistical descriptions of
+            // the metrics on each tree in our forest
+            var _forestStats = [];
+            var _forestMinMax = {}; 
             for (var i = 0; i < _data["numberOfTrees"]; i++) {
                 var thisTree = _data["forestData"][i];
 
@@ -314,7 +317,7 @@
                     thisTreeMetrics[_data["metricColumns"][j]]["max"] = 0;
                 }
 
-                forestMetrics.push(thisTreeMetrics);
+                _forestStats.push(thisTreeMetrics);
             }
             for (var j = 0; j < _data["metricColumns"].length; j++) {
                 forestMinMax[_data["metricColumns"][j]] = {};
@@ -322,8 +325,8 @@
                 forestMinMax[_data["metricColumns"][j]]["max"] = 0;
             }
 
-            _data["forestMinMax"] = forestMinMax;
-            _data["forestMetrics"] = forestMetrics;
+            _data["forestMinMax"] = _forestMinMax;
+            _data["forestStats"] = _forestStats;
 
             // HELPER FUNCTION DEFINTIONS
             function _printNodeData(nodeList) {
@@ -459,7 +462,7 @@
                      */
                     f(_data['trees'][index].descendants());
                 },
-                updateForestMetrics: function(index){
+                updateforestStats: function(index){
                     /**
                      * Updates the global metrics for a single tree in our forest and stores
                      * them in the model.
@@ -469,11 +472,11 @@
                     _data['trees'][index].descendants().forEach(function (d) {
                         for (var i = 0; i < _data["metricColumns"].length; i++) {
                             var tempMetric = _data["metricColumns"][i];
-                            if (d.data.metrics[tempMetric] > _forestMetrics[index][tempMetric].max) {
-                                _forestMetrics[index][tempMetric].max = d.data.metrics[tempMetric];
+                            if (d.data.metrics[tempMetric] > _forestStats[index][tempMetric].max) {
+                                _forestStats[index][tempMetric].max = d.data.metrics[tempMetric];
                             }
-                            if (d.data.metrics[tempMetric] < _forestMetrics[index][tempMetric].min) {
-                                _forestMetrics[index][tempMetric].min = d.data.metrics[tempMetric];
+                            if (d.data.metrics[tempMetric] < _forestStats[index][tempMetric].min) {
+                                _forestStats[index][tempMetric].min = d.data.metrics[tempMetric];
                             }
                             if (d.data.metrics[tempMetric] > _forestMinMax[tempMetric].max) {
                                 _forestMinMax[tempMetric].max = d.data.metrics[tempMetric];
@@ -484,11 +487,11 @@
                         }
                     });
 
-                    _data["forestMetrics"] = _forestMetrics;
+                    _data["forestStats"] = _forestStats;
 
-                    // Global min/max are the last entry of forestMetrics;
+                    // Global min/max are the last entry of forestStats;
                     _data["forestMinMax"] = _forestMinMax;
-                    _data["forestMetrics"].push(_forestMinMax);
+                    _data["forestStats"].push(_forestMinMax);
                 },
                 updateSelected: function(nodes){
                     /**
@@ -1011,11 +1014,9 @@
 
             // Add a group and tree for each tree in our forest
             for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
-                var forestMetrics = model.data["forestMetrics"];
-                var forestMinMax = model.data["forestMinMax"];
-
-                var currentTreeMap = model.getTreeMap(treeIndex);
-
+                model.updateforestStats(treeIndex);
+                
+                var currentTree = model.getTree(treeIndex);
                 var newg = mainG.append("g")
                         .attr('class', 'group-' + treeIndex + ' subchart')
                         .attr('tree_id', treeIndex)
