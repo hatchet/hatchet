@@ -467,7 +467,12 @@ class TAUReader:
 
         dataframe.set_index(indices, inplace=True)
         dataframe.sort_index(inplace=True)
-
+        print("multiple ranks: ")
+        print(self.multiple_ranks)
+        print("multiple threads: ")
+        print(self.multiple_threads)
+        print("indices: ")
+        print(indices)
         # Fill the missing ranks
         # After unstacking and iterating over rows, there
         # will be "NaN" values for some ranks. Find the first
@@ -499,7 +504,7 @@ class TAUReader:
             dataframe = dataframe.stack()
 
         default_metric = "time (inc)"
-        print("dataframe")
+        print("dataframe: ")
         print(dataframe)
         return hatchet.graphframe.GraphFrame(
             graph, dataframe, self.exc_metrics, self.inc_metrics, default_metric
