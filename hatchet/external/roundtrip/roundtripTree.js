@@ -229,7 +229,7 @@
                             _model.updateLegends();
                             break;
                         case(globals.signals.ZOOM):
-                            _model.updateNodeLocations(evt.index, evt.transformation);
+                            // _model.updateNodeLocations(evt.index, evt.transformation);
                             break;
                         default:
                             console.log('Unknown event type', evt.type);
@@ -281,11 +281,19 @@
 
             var _forestMetrics = [];
             var _forestMinMax = {}; 
+            console.log(_data["numberOfTrees"]);
             for (var i = 0; i < _data["numberOfTrees"]; i++) {
                 var thisTree = _data["forestData"][i];
 
+                let name = "";
+                if(!thisTree.frame["name"]) {
+                    name = thisTree.frame.file;
+                } else {
+                    name = thisTree.frame.name;
+                }
+
                 // Get tree names for the display select options
-                _data["rootNodeNames"].push(thisTree.frame.name);
+                _data["rootNodeNames"].push(name);
 
                 var thisTreeMetrics = {};
 
@@ -695,6 +703,8 @@
                     .attr('value', d => d);
             document.getElementById("metricSelect").style.margin = "10px 10px 10px 0px";
 
+            console.log(rootNodeNames);
+
             d3.select(elem).append('label').style('margin', '0 0 0 10px').attr('for', 'treeRootSelect').text(' Display:');
             var treeRootInput = d3.select(elem).append("select") //element
                     .attr("id", "treeRootSelect")
@@ -702,7 +712,10 @@
                     .data(rootNodeNames)
                     .enter()
                     .append('option')
-                    .attr('selected', d => d.includes('Show all trees') ? "selected" : null)
+                    .attr('selected', d => {
+                        console.log(d);
+                        return d.includes('Show all trees') ? "selected" : null;
+                    })
                     .text(d => d)
                     .attr('value', (d, i) => i + "|" + d);
 

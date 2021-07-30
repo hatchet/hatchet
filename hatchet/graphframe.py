@@ -777,7 +777,7 @@ class GraphFrame:
                 df_index = hnode
 
             metrics_dict = {}
-            for m in sorted(self.inc_metrics + self.exc_metrics):
+            for m in sorted(self.inc_metrics + self.exc_metrics + ['module']):
                 node_metric_val = self.dataframe.loc[df_index, m]
                 metrics_dict[m] = node_metric_val
 
