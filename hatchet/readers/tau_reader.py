@@ -242,7 +242,7 @@ class TAUReader:
         for dirpath, dirnames, files in os.walk(self.dirname):
             profiles_in_dir = glob.glob(dirpath + "/profile.*")
             if profiles_in_dir:
-                # sort input files on each directory in the same order
+                # sort input files in each directory in the same order
                 profile_filenames.append(sorted(profiles_in_dir))
 
         # Store all files in a list of tuples.
@@ -468,6 +468,7 @@ class TAUReader:
 
         dataframe.set_index(indices, inplace=True)
         dataframe.sort_index(inplace=True)
+
         # Fill the missing ranks
         # After unstacking and iterating over rows, there
         # will be "NaN" values for some ranks. Find the first
