@@ -213,8 +213,9 @@ class ConsoleRenderer:
             )
 
             if self.second_metric is not None:
-                metric_str += u" {c.faint}{second_metric}{c.end}".format(
+                metric_str += u" {c.faint}{second_metric:.{precision}f}{c.end}".format(
                     second_metric=dataframe.loc[df_index, self.second_metric],
+                    precision=self.precision,
                     c=self.colors,
                 )
 
