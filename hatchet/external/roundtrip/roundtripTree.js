@@ -791,10 +791,9 @@
                     }
                 });
                     
-                const legGroup = newg
+                const legGroup = mainG
                 .append('g')
-                .attr('class', 'legend-grp-' + treeIndex)
-                .attr('transform', 'translate(-20, 0)');
+                .attr('class', 'legend-grp-' + treeIndex);
 
                 const legendGroups = legGroup.selectAll("g")
                         .data([0, 1, 2, 3, 4, 5])
@@ -838,7 +837,6 @@
                 newg.append('g')
                     .attr('class', 'chart')
                     .attr('chart-id', treeIndex)
-                    .append('rect')
                     .attr('height', globals.treeHeight)
                     .attr('width', width)
                     .attr('fill', 'rgba(0,0,0,0)');
@@ -887,8 +885,8 @@
                         var selectedMetric = model.state["selectedMetric"];
                         var nodes = model.getNodesFromMap(treeIndex);
                         var links = model.getLinksFromMap(treeIndex);
-                        var chart = svg.selectAll('.group-' + treeIndex);
-                        var tree = chart.selectAll('.chart');
+                        var chartArea = svg.selectAll('.group-' + treeIndex);
+                        var tree = chartArea.selectAll('.chart');
 
 
                         //ENTER 
@@ -929,6 +927,28 @@
                                 .style('stroke-width', '1px')
                                 .style('stroke', 'black');
             
+                        //re add text
+                        nodeEnter.append("text")
+                            .attr("x", function (d) {
+                                return d.children || model.state['collapsedNodes'].includes(d) ? -13 : 13;
+                            })
+                            .attr("dy", ".75em")
+                            .attr("text-anchor", function (d) {
+                                return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
+                            })
+                            .text(function (d) {
+                                if(!d.children){
+                                    return d.data.name;
+                                }
+                                else if(d.children.length == 1){
+                                    return "";
+                                }
+                                else {
+                                    return d.data.name.slice(0,5) + "...";
+                                }
+                            })
+                            .style("font", "12px monospace");
+
 
                         // links
                         var link = tree.selectAll("path.link")
@@ -953,7 +973,7 @@
                         var linkUpdate = linkEnter.merge(link);
                 
                         // Chart updates
-                        chart
+                        chartArea
                         .transition()
                         .duration(globals.duration)
                         .attr("transform", function(){
@@ -977,7 +997,7 @@
                         });
 
                         //legend updates
-                        chart.selectAll(".legend rect")
+                        svg.selectAll(".legend rect")
                                 .transition()
                                 .duration(globals.duration)
                                 .attr('fill', function (d, i) {
@@ -985,7 +1005,7 @@
                                 })
                                 .attr('stroke', 'black');
 
-                        chart.selectAll('.legend text')
+                        svg.selectAll('.legend text')
                                 .transition()
                                 .duration(globals.duration)
                                 .text((d, i) => {
