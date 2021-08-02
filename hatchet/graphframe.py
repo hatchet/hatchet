@@ -166,7 +166,8 @@ class GraphFrame:
                 2. Open file stream to one of these files
                 3. Dictionary from timemory JSON tree
 
-                    Currently, timemory supports two JSON layouts: flat and tree.
+
+                Currently, timemory supports two JSON layouts: flat and tree.
                 The former is a 1D-array representation of the hierarchy which
                 represents the hierarchy via indentation schemes in the labels
                 and is not compatible with hatchet. The latter is a hierarchical
@@ -174,40 +175,45 @@ class GraphFrame:
                 using hatchet. Timemory JSON tree files typically have the
                 extension ".tree.json".
 
-                If input is None, this assumes that timemory has been
-                recording data within the application that is using hatchet.
-                In this situation, this method will attempt to import the
-                data directly from timemory.
-                    At the time of this writing, the direct data import will:
+                If input is None, this assumes that timemory has been recording
+                data within the application that is using hatchet. In this
+                situation, this method will attempt to import the data directly
+                from timemory.
+
+                At the time of this writing, the direct data import will:
 
                 1. Stop any currently collecting components
                 2. Aggregate child thread data of the calling thread
                 3. Clear all data on the child threads
                 4. Aggregate the data from any MPI and/or UPC++ ranks.
 
+
                 Thus, if MPI or UPC++ is used, every rank must call this routine.
-                The zeroth rank will have the aggregation and all the other non-zero
-                ranks will only have the rank-specific data.
-                    Whether or not the per-thread and per-rank data itself is
-                combined is controlled by the `collapse_threads` and `collapse_processes`
-                attributes in the `timemory.settings` submodule.
-                    In the C++ API, it is possible for only #1 to be applied and data
-                can be obtained for an individual thread and/or rank without aggregation.
-                This is not currently available to Python, however, it can be made
-                available upon request via a GitHub Issue.
+                The zeroth rank will have the aggregation and all the other
+                non-zero ranks will only have the rank-specific data.
+
+                Whether or not the per-thread and per-rank data itself is
+                combined is controlled by the `collapse_threads` and
+                `collapse_processes` attributes in the `timemory.settings`
+                submodule.
+
+                In the C++ API, it is possible for only #1 to be applied and data
+                can be obtained for an individual thread and/or rank without
+                aggregation. This is not currently available to Python, however,
+                it can be made available upon request via a GitHub Issue.
 
             select (list of str):
                 A list of strings which match the component enumeration names, e.g. ["cpu_clock"].
 
             per_thread (boolean):
                 Ensures that when applying filters to the graphframe, frames with
-                identical name/file/line/etc. info but from different threads are not
-                combined
+                identical name/file/line/etc. info but from different threads are
+                not combined
 
             per_rank (boolean):
                 Ensures that when applying filters to the graphframe, frames with
-                identical name/file/line/etc. info but from different ranks are not
-                combined
+                identical name/file/line/etc. info but from different ranks are
+                not combined
 
         """
         from .readers.timemory_reader import TimemoryReader
