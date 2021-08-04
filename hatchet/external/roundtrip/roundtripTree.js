@@ -938,26 +938,13 @@
                         })
                         .text(function (d) {
                             if(!d.children){
-                                if(d.data.frame.type.includes("function")){
-                                    return d.data.frame.name;
-                                }
-                                else if(d.data.frame.type.includes("statement")){
-                                    return d.data.frame.file;
-                                } 
-                                return "";
+                                return d.data.name;
                             }
                             else if(d.children.length == 1){
                                 return "";
                             }
                             else {
-                                if(d.data.frame.type.includes("function")){
-                                    return d.data.frame.name.slice(0,5) + "...";
-                                } 
-                                else if(d.data.frame.type.includes("statement")){
-                                    return d.data.frame.file.slice(0,5) + "...";
-                                }
-                                return "";
-                                
+                                return d.data.name.slice(0,5) + "...";
                             }
                         })
                         .style("font", "12px monospace");
