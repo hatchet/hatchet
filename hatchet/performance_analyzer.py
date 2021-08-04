@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: MIT
 
 import numpy as np
-import pandas as pd
 
 
 class PerformanceAnalyzer:
@@ -31,8 +30,7 @@ class PerformanceAnalyzer:
         return grouped_dataframe
 
     # Outputs the max to avg values for user specified column.
-    # TODO: drop other metric columns and inplace?
-    def find_load_imbalance(self, graphframe, metric_column="time", inplace=False):
+    def find_load_imbalance(self, graphframe, metric_columns=["time"]):
         # Create a copy of the GraphFrame.
         graphframe2 = graphframe.deepcopy()
         graphframe3 = graphframe.deepcopy()
@@ -45,167 +43,16 @@ class PerformanceAnalyzer:
         # time computing the max time spent in each node.
         graphframe3.drop_index_levels(function=np.max)
 
-        # Compute the imbalance by dividing the 'time' column in the max DataFrame
-        # (i.e., gf3) by the average DataFrame (i.e., gf2). This creates a new column
-        # called 'imbalance' in gf2's DataFrame.
-        graphframe2.dataframe["imbalance"] = graphframe3.dataframe[metric_column].div(
-            graphframe2.dataframe[metric_column]
-        )
-        graphframe2.default_metric = "imbalance"
+        for column in metric_columns:
+            graphframe2.dataframe[column + ".mean"] = graphframe2.dataframe[column]
+            graphframe2.dataframe[column + ".max"] = graphframe3.dataframe[column]
+            # Compute the imbalance by dividing the 'time' column in the max DataFrame
+            # (i.e., gf3) by the average DataFrame (i.e., gf2). This creates a new column
+            # called 'imbalance' in gf2's DataFrame.
+            graphframe2.dataframe[column + ".imbalance"] = graphframe3.dataframe[
+                column
+            ].div(graphframe2.dataframe[column])
 
+        graphframe2.dataframe.drop(columns=metric_columns, inplace=True)
+        graphframe2.default_metric = metric_columns[0] + ".imbalance"
         return graphframe2
-
-    def find_hot_paths(
-        self,
-        graphframe,
-        drop_ranks=False,
-        drop_threads=False,
-        rank=None,
-        thread=None,
-        metric_column="time (inc)",
-        threshold=0.5,
-    ):
-        """Identifies hot paths for a given metric and a threshold."""
-
-        def _check_hot_nodes(dataframe, node, hot_nodes, callpath):
-            if node.children:
-                for child in node.children:
-                    if rank is None and thread is None:
-                        parent_value = dataframe.at[(node), metric_column]
-                        child_value = dataframe.at[(child), metric_column]
-                    elif rank is None:
-                        parent_value = dataframe.at[(node, thread), metric_column]
-                        child_value = dataframe.at[(child, thread), metric_column]
-                    elif thread is None:
-                        parent_value = dataframe.at[(node, rank), metric_column]
-                        child_value = dataframe.at[(child, rank), metric_column]
-                    else:
-                        parent_value = dataframe.at[(node, rank, thread), metric_column]
-                        child_value = dataframe.at[(child, rank, thread), metric_column]
-
-                    callpath.append(child)
-                    if child_value < (threshold * parent_value):
-                        _check_hot_nodes(dataframe, child, hot_nodes, callpath)
-                    else:
-                        hot_nodes.append((child, [node for node in callpath]))
-                        callpath.pop()
-
-            callpath.pop()
-
-        if "inc" not in metric_column:
-            raise ValueError("Only inclusive metrics can be used.")
-
-        hot_nodes_paths = []
-        # TODO: drop only ranks or thread
-        """if drop_ranks or drop_threads:
-            graphframe2 = graphframe.deepcopy()
-            if drop_ranks:
-                drop_ranks
-            if drop_threads:
-                drop_threads"""
-
-        for root in graphframe.graph.roots:
-            _check_hot_nodes(
-                graphframe.dataframe, root, hot_nodes_paths, callpath=[root]
-            )
-
-        return hot_nodes_paths
-
-    def calculate_speedup_efficiency(
-        self, graphframes_pes=[], metric_columns=["time", "time (inc)"], inplace=False
-    ):
-        def _calculate(graphframe1, graphframe2, pe1, pe2):
-            """Calculates speedup and efficiency.
-            Creates a new graphframe and adds <metric>-<spdup/efc>(pe1xpe2)
-            columns to its dataframe.
-            """
-            graphframe_spdup_efc = graphframe1 / graphframe2
-
-            for metric in metric_columns:
-                graphframe_spdup_efc.dataframe[
-                    "{}-{}({}x{})".format(metric, "efc", pe1, pe2)
-                ] = (graphframe_spdup_efc.dataframe[metric] / pe2)
-
-                graphframe_spdup_efc.dataframe = graphframe_spdup_efc.dataframe.rename(
-                    columns={metric: "{}-{}({}x{})".format(metric, "spdup", pe1, pe2)}
-                )
-            return graphframe_spdup_efc
-
-        def _merge_columns(graphframe_from, graphframes_to, columns):
-            """Merge two dataframes. This function is used only if
-            inplace=True. Adds speedup and efficiency columns to the original
-            graphframe without ading/removing any index (how=left).
-            """
-            for graphframe in graphframes_to:
-                graphframe.dataframe = graphframe.dataframe.join(
-                    graphframe_from.dataframe[columns], how="left"
-                )
-
-        if graphframes_pes:
-            # Sort the graphframes by their pes before the division operation.
-            graphframes_pes = sorted(graphframes_pes, key=lambda x: x[1])
-            graphframe1 = graphframes_pes[0][0].deepcopy()
-            graphframe2 = graphframes_pes[1][0].deepcopy()
-            graphframe1_pe = graphframes_pes[0][1]
-            graphframe2_pe = graphframes_pes[1][1]
-
-            # Original graph structures won't be changed even when inplace=True.
-            graphframe_spdup_efc = _calculate(
-                graphframe1,
-                graphframe2,
-                graphframe1_pe,
-                graphframe2_pe,
-            )
-
-            # add speedup and efficiency columns to original graphframes.
-            # we don't change the graph structure, just adding columns to the
-            # dataframe.
-            if inplace:
-                merge_metric_columns = []
-                for metric_column in graphframe_spdup_efc.dataframe.columns:
-                    if "spdup" in metric_column or "efc" in metric_column:
-                        merge_metric_columns.append(metric_column)
-
-                _merge_columns(
-                    graphframe_spdup_efc,
-                    [graphframes_pes[0][0], graphframes_pes[1][0]],
-                    merge_metric_columns,
-                )
-
-            return graphframe_spdup_efc
-        else:
-            raise ValueError(
-                "graphframes_pes cannot be empty. It "
-                + "should be list of two tuples: [(graphframe, <num_pes>), (...)]"
-            )
-
-    def multirun_analysis(
-        self, graphframes_pes=[], index="pes", columns="name", values="time"
-    ):
-        if graphframes_pes:
-            # sort the graphframes by their pes.
-            graphframes_pes = sorted(graphframes_pes, key=lambda x: x[1])
-
-            multirun_dataframes = []
-            for graphframe_pe in graphframes_pes:
-                graphframe = graphframe_pe[0].deepcopy()
-
-                # TODO: optional?
-                graphframe.drop_index_levels()
-
-                # add pes to each dataframe
-                graphframe.dataframe[index] = graphframe_pe[1]
-                multirun_dataframes.append(graphframe.dataframe)
-
-            result = pd.concat(multirun_dataframes)
-
-            pivot_dataframe = result.pivot_table(
-                index=index, columns=columns, values=values
-            )
-
-            return pivot_dataframe
-        else:
-            raise ValueError(
-                "graphframes_pes cannot be empty. It "
-                + "should be list of tuples: [(graphframe, <num_pes>), ...]"
-            )
