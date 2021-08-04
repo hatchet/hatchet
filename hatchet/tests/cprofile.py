@@ -42,8 +42,8 @@ def test_tree(hatchet_cycle_pstats):
         thread=0,
         depth=10000,
         highlight_name=False,
+        colormap="RdYlGn",
         invert_colormap=False,
-        color_map="RdYlGn",
     )
     assert "g pstats_reader_test.py" in output
     assert "<method 'disable' ...Profiler' objects> ~" in output
@@ -60,8 +60,8 @@ def test_tree(hatchet_cycle_pstats):
         thread=0,
         depth=10000,
         highlight_name=False,
+        colormap="RdYlGn",
         invert_colormap=False,
-        color_map="RdYlGn",
     )
     assert "f pstats_reader_test.py" in output
     assert re.match("(.|\n)*recursive(.|\n)*recursive", output)

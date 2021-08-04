@@ -172,8 +172,8 @@ def test_tree(lulesh_caliper_json):
         thread=0,
         depth=10000,
         highlight_name=False,
+        colormap="RdYlGn",
         invert_colormap=False,
-        color_map="RdYlGn",
     )
     assert "121489.000 main" in output
     assert "663.000 LagrangeElements" in output
@@ -191,8 +191,8 @@ def test_tree(lulesh_caliper_json):
         thread=0,
         depth=10000,
         highlight_name=False,
+        colormap="RdYlGn",
         invert_colormap=False,
-        color_map="RdYlGn",
     )
     assert "662712.000 EvalEOSForElems" in output
     assert "2895319.000 LagrangeNodal" in output
