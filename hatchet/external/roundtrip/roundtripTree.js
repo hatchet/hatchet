@@ -927,27 +927,28 @@
                                 .style('stroke-width', '1px')
                                 .style('stroke', 'black');
             
-                        //re add text
-                        nodeEnter.append("text")
-                            .attr("x", function (d) {
-                                return d.children || model.state['collapsedNodes'].includes(d) ? -13 : 13;
-                            })
-                            .attr("dy", ".75em")
-                            .attr("text-anchor", function (d) {
-                                return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
-                            })
-                            .text(function (d) {
-                                if(!d.children){
-                                    return d.data.name;
-                                }
-                                else if(d.children.length == 1){
-                                    return "";
-                                }
-                                else {
-                                    return d.data.name.slice(0,5) + "...";
-                                }
-                            })
-                            .style("font", "12px monospace");
+                        //Text
+                       nodeEnter.append("text")
+                       .attr("x", function (d) {
+                           return d.children || model.state['collapsedNodes'].includes(d) ? -13 : 13;
+                       })
+                       .attr("dy", ".75em")
+                       .attr("text-anchor", function (d) {
+                           return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
+                       })
+                       .text(function (d) {
+                           if(!d.children){
+                               return d.data.frame.name;
+                           }
+                           else if(d.children.length == 1){
+                               return "";
+                           }
+                           else {
+                               return d.data.frame.name.slice(0,5) + "...";
+                           }
+                       })
+                       .style("font", "12px monospace");
+
 
 
                         // links
