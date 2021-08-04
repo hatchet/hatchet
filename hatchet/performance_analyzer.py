@@ -20,7 +20,7 @@ class PerformanceAnalyzer:
     ):
         graphframe2 = graphframe.deepcopy()
 
-        # TODO: optional (drop on ranks or threads)
+        # TODO: change drop_index_levels(). Drop only ranks or threads.
         graphframe2.drop_index_levels()
 
         grouped_dataframe = graphframe2.dataframe.groupby(groupby_column).agg(
@@ -43,16 +43,22 @@ class PerformanceAnalyzer:
         # time computing the max time spent in each node.
         graphframe3.drop_index_levels(function=np.max)
 
-        for column in metric_columns:
-            graphframe2.dataframe[column + ".mean"] = graphframe2.dataframe[column]
-            graphframe2.dataframe[column + ".max"] = graphframe3.dataframe[column]
-            # Compute the imbalance by dividing the 'time' column in the max DataFrame
-            # (i.e., gf3) by the average DataFrame (i.e., gf2). This creates a new column
-            # called 'imbalance' in gf2's DataFrame.
-            graphframe2.dataframe[column + ".imbalance"] = graphframe3.dataframe[
-                column
-            ].div(graphframe2.dataframe[column])
+        for column in graphframe3.dataframe.columns:
+            # don't rename or create if column is not in inc/exc metrics.
+            if column in graphframe3.inc_metrics or column in graphframe3.exc_metrics:
+                # rename columns: '<metric>.mean'
+                graphframe2.dataframe.rename(
+                    columns={column: column + ".mean"}, inplace=True
+                )
+                # create columns: '<metric>.max'
+                graphframe2.dataframe[column + ".max"] = graphframe3.dataframe[column]
 
-        graphframe2.dataframe.drop(columns=metric_columns, inplace=True)
+            if column in metric_columns:
+                # divide metric columns: max/min
+                graphframe2.dataframe[column + ".imbalance"] = graphframe2.dataframe[
+                    column + ".max"
+                ].div(graphframe2.dataframe[column + ".mean"])
+
+        # default metric will be imbalance when user print the tree
         graphframe2.default_metric = metric_columns[0] + ".imbalance"
         return graphframe2
