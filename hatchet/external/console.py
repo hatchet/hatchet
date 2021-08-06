@@ -34,7 +34,7 @@ from ..version import __version__
 import pandas as pd
 import numpy as np
 import warnings
-from ..util.colormaps import get_colors
+from ..util.colormaps import ColorMaps
 
 
 class ConsoleRenderer:
@@ -59,14 +59,15 @@ class ConsoleRenderer:
         self.thread = kwargs["thread"]
         self.depth = kwargs["depth"]
         self.highlight = kwargs["highlight_name"]
-        # know the user input for colormap
         self.colormap = kwargs["colormap"]
         self.invert_colormap = kwargs["invert_colormap"]
 
         if self.color:
             self.colors = self.colors_enabled
-            # returning the colormap based on user input
-            get_colors(self)
+            # set the colormap based on user input
+            self.colors.colormap = ColorMaps().get_colors(
+                self.colormap, self.invert_colormap
+            )
         else:
             self.colors = self.colors_disabled
 
