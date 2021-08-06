@@ -5,7 +5,7 @@ import hatchet as ht
 
 if __name__ == "__main__":
     # Path to HPCToolkit database directory.
-    dirname = "../../../hatchet/tests/data/hpctoolkit-cpi-database"
+    dirname = "../../../hatchet/tests/data/hpctoolkit-quicksilver-database"
 
     # Use hatchet's ``from_hpctoolkit`` API to read in the HPCToolkit database.
     # The result is stored into Hatchet's GraphFrame.
@@ -16,4 +16,4 @@ if __name__ == "__main__":
 
     # Printout the graph component of the GraphFrame.
     # Use "time (inc)" as the metric column to be displayed
-    print(gf.tree(metric_column="time (inc)"))
+    # print(gf.tree(metric_column="time (inc)"))

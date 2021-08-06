@@ -210,4 +210,3 @@ def test_graphframe_to_literal_with_threads(data_dir, osu_allgather_hpct_db):
     gf2 = GraphFrame.from_literal(graph_literal)
 
     assert len(gf.graph) == len(gf2.graph)
-
