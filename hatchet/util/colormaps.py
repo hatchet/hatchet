@@ -99,9 +99,8 @@ class ColorMaps:
         self.colors = []
 
     def get_colors(self, colormap, invert_colormap):
-        """ This function is used for returing different color schemes for
-        colormaps if the user decided to choose a color scheme other than the
-        default colormap.
+        """Returns a list of colors based on the colormap and invert_colormap
+        arguments.
         """
 
         if colormap == "RdYlGn":
