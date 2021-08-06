@@ -701,6 +701,7 @@ class GraphFrame:
         thread=0,
         depth=10000,
         highlight_name=False,
+        colormap="RdYlGn",
         invert_colormap=False,
     ):
         """Format this graphframe as a tree and return the resulting string."""
@@ -737,6 +738,7 @@ class GraphFrame:
             thread=thread,
             depth=depth,
             highlight_name=highlight_name,
+            colormap=colormap,
             invert_colormap=invert_colormap,
         )
 

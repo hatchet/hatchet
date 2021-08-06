@@ -41,6 +41,7 @@ def test_tree(tau_profile_dir):
         thread=0,
         depth=10000,
         highlight_name=False,
+        colormap="RdYlGn",
         invert_colormap=False,
     )
     assert "449.000 .TAU application" in output
@@ -60,6 +61,7 @@ def test_tree(tau_profile_dir):
         thread=0,
         depth=10000,
         highlight_name=False,
+        colormap="RdYlGn",
         invert_colormap=False,
     )
     assert "419.000 .TAU application" in output

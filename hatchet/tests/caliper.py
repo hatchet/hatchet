@@ -172,6 +172,7 @@ def test_tree(lulesh_caliper_json):
         thread=0,
         depth=10000,
         highlight_name=False,
+        colormap="RdYlGn",
         invert_colormap=False,
     )
     assert "121489.000 main" in output
@@ -190,6 +191,7 @@ def test_tree(lulesh_caliper_json):
         thread=0,
         depth=10000,
         highlight_name=False,
+        colormap="RdYlGn",
         invert_colormap=False,
     )
     assert "662712.000 EvalEOSForElems" in output

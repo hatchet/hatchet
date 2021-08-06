@@ -57,6 +57,7 @@ def test_tree(timemory_json_data):
         thread=0,
         depth=10000,
         highlight_name=False,
+        colormap="RdYlGn",
         invert_colormap=False,
     )
 
@@ -74,6 +75,7 @@ def test_tree(timemory_json_data):
         thread=0,
         depth=10000,
         highlight_name=False,
+        colormap="RdYlGn",
         invert_colormap=False,
     )
 
