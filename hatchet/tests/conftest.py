@@ -87,18 +87,6 @@ def osu_allgather_hpct_db(data_dir, tmpdir):
 
 
 @pytest.fixture
-def quicksilver_hpct_db(data_dir, tmpdir):
-    """Builds a temporary directory containing the calc-pi database."""
-    hpct_db_dir = os.path.join(data_dir, "hpctoolkit-quicksilver-database")
-
-    for f in glob(os.path.join(str(hpct_db_dir), "*.metric-db")):
-        shutil.copy(f, str(tmpdir))
-    shutil.copy(os.path.join(hpct_db_dir, "experiment.xml"), str(tmpdir))
-
-    return tmpdir
-
-
-@pytest.fixture
 def hatchet_cycle_pstats(data_dir, tmpdir):
     """Builds a temporary directory containing the pstats from a profile of the hpctoolkit_reader function."""
     cprof_pstats_dir = os.path.join(data_dir, "cprofile-hatchet-pstats")

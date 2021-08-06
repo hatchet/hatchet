@@ -211,18 +211,3 @@ def test_graphframe_to_literal_with_threads(data_dir, osu_allgather_hpct_db):
 
     assert len(gf.graph) == len(gf2.graph)
 
-
-def test_quicksilver_graphframe(data_dir, quicksilver_hpct_db):
-    gf = GraphFrame.from_hpctoolkit(str(quicksilver_hpct_db))
-    gf_copy = gf.copy()
-
-    gf_copy.dataframe.reset_index(level=["thread"])
-    assert len(gf_copy.dataframe.groupby("thread")) == 8
-
-    for col in gf.dataframe.columns:
-        if col in ("time (inc)", "time"):
-            assert gf.dataframe[col].dtype == np.float64
-        elif col in ("nid", "rank", "line", "thread"):
-            assert gf.dataframe[col].dtype == np.int64
-        elif col in ("name", "type", "file", "module", "node"):
-            assert gf.dataframe[col].dtype == np.object
