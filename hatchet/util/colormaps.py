@@ -95,7 +95,7 @@ class ColorMaps:
         "\033[38;5;26m",  # Dark Blue
     ]
 
-    def __init():
+    def __init(self):
         self.colors = []
 
     def get_colors(self, colormap, invert_colormap):
