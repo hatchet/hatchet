@@ -195,9 +195,11 @@ class ConsoleRenderer:
 
     def render_frame(self, node, dataframe, indent=u"", child_indent=u""):
         node_depth = node._depth
-        if node_depth < self.depth:
-            # set dataframe index based on whether rank and thread are part of
-            # the MultiIndex
+        subtree_info = {"descendants": 0, "sum_metric": 0, "levels": self.depth}
+
+        # Helper function to set dataframe index based on whether rank and
+        # thread are part of the MultiIndex
+        def _set_df_index(node):
             if "rank" in dataframe.index.names and "thread" in dataframe.index.names:
                 df_index = (node, self.rank, self.thread)
             elif "rank" in dataframe.index.names:
@@ -206,7 +208,10 @@ class ConsoleRenderer:
                 df_index = (node, self.thread)
             else:
                 df_index = node
+            return df_index
 
+        if node_depth < self.depth:
+            df_index = _set_df_index(node)
             node_metric = dataframe.loc[df_index, self.primary_metric]
 
             metric_precision = "{:." + str(self.precision) + "f}"
@@ -283,9 +288,69 @@ class ConsoleRenderer:
                         child, dataframe, indent=c_indent, child_indent=cc_indent
                     )
         else:
-            result = ""
-            indents = {"├": u"", "│": u"", "└": u"", " ": u""}
+            df_index = _set_df_index(node)
+            node_metric = dataframe.loc[df_index, self.primary_metric]
 
+            # This helper function will find the number of descendents, levels and total metric values
+            # in the subtree of the tree whose depth reaches the maximum depth entered by the user
+            def _subtree(node, subtree_info):
+                for child in node.children:
+                    subtree_info["descendants"] += 1
+                    child_index = _set_df_index(child)
+                    if "(inc)" not in self.primary_metric:
+                        subtree_info["sum_metric"] += dataframe.loc[
+                            child_index, self.primary_metric
+                        ]
+                    if child._depth > subtree_info["levels"]:
+                        subtree_info["levels"] = child._depth
+                    if len(child.children) != 0:
+                        _subtree(child, subtree_info)
+
+            if "(inc)" in self.primary_metric:
+                for child in node.children:
+                    child_index = _set_df_index(child)
+                    subtree_info["sum_metric"] += dataframe.loc[
+                        child_index, self.primary_metric
+                    ]
+
+            _subtree(node, subtree_info)
+
+            metric_precision = "{:." + str(self.precision) + "f}"
+            metric_str = (
+                self._ansi_color_for_metric(node_metric)
+                + metric_precision.format(node_metric)
+                + self.colors.end
+            )
+
+            node_name = dataframe.loc[df_index, self.name]
+            if self.expand is False:
+                if len(node_name) > 39:
+                    node_name = (
+                        node_name[:18] + "..." + node_name[(len(node_name) - 18) :]
+                    )
+            name_str = (
+                self._ansi_color_for_name(node_name) + node_name + self.colors.end
+            )
+
+            if len(node.children) == 0:
+                result = u"{indent}{metric_str} {name_str}\n".format(
+                    indent=indent, metric_str=metric_str, name_str=name_str
+                )
+            else:
+                result = (
+                    u"{indent}{metric_str} {name_str}".format(
+                        indent=indent, metric_str=metric_str, name_str=name_str
+                    )
+                    + "\n{child_indent}└─".format(child_indent=child_indent)
+                    + u"\u2B24"
+                    + "  Subtree Info (Total Metric: "
+                    + str(subtree_info["sum_metric"])
+                    + ", # Descendants: "
+                    + str(subtree_info["descendants"])
+                    + ", # Remaining Levels: "
+                    + str(subtree_info["levels"] - node_depth)
+                    + ")\n"
+                )
         return result
 
     def _ansi_color_for_metric(self, metric):
