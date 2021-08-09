@@ -827,13 +827,9 @@ def timemory_json_data():
 
     # disable automatic output during finalization
     timemory.settings.auto_output = False
-    # timemory.settings.json_output = False
-    # timemory.settings.tree_output = True
 
     # enable flat collection because of the coverage exe
     timemory.settings.flat_profile = True
-    ProfilerConfig.include_line = False
-    ProfilerConfig.only_filenames = ["timemory_func.py", "_methods.py"]
 
     with marker(components, key="main"):
         nx = 10
@@ -845,15 +841,14 @@ def timemory_json_data():
 
         # restrict the scope of the profiler
         ProfilerConfig.only_filenames = ["timemory_func.py", "_methods.py"]
+        ProfilerConfig.include_line = False
         prof_func(profl_arr, tol)
 
         # restrict the scope of the tracer
         TracerConfig.only_filenames = ["timemory_func.py"]
         trace_func(trace_arr, tol)
 
-    # TODO: cannot combine if there are multiple metrics in the same json
-    data = timemory.get(hierarchy=True)
-    return data
+    return timemory.get(hierarchy=True)
 
 
 @pytest.fixture

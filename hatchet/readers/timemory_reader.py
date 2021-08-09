@@ -7,7 +7,7 @@
 import json
 import pandas as pd
 import os
-
+import glob
 from hatchet.graphframe import GraphFrame
 from ..node import Node
 from ..graph import Graph
@@ -41,27 +41,8 @@ class TimemoryReader:
             combined
         """
         self.graph_dict = {"timemory": {}}
-        if isinstance(input, dict):
-            self.graph_dict = input
-        elif os.path.isdir(input):
-            # check if a directory is given as input
-            for file in os.listdir(input):
-                if file.endswith(".tree.json"):
-                    # read all files that ends with .tree.json.
-                    with open(input + "/" + file, "r") as f:
-                        # combine files in a single dict if timemory creates
-                        # a separate file for each metric.
-                        self.graph_dict["timemory"].update(json.load(f)["timemory"])
-        elif isinstance(input, str) and input.endswith("json"):
-            with open(input, "r") as f:
-                self.graph_dict = json.load(f)
-        elif not isinstance(input, str):
-            self.graph_dict = json.loads(input.read())
-        else:
-            raise TypeError("input must be dict, json file, or string")
+        self.input = input
         self.default_metric = None
-        self.name_to_hnode = {}
-        self.name_to_dict = {}
         self.timer = Timer()
         self.metric_cols = []
         self.properties = {}
@@ -69,7 +50,10 @@ class TimemoryReader:
         self.include_nid = True
         self.multiple_ranks = False
         self.multiple_threads = False
+        # (callpath, rank, thread): <node_dict>
         self.callpath_to_node_dict = {}
+        # (callpath): <node>
+        self.callpath_to_node = {}
         # the per_thread and per_rank settings make sure that
         # squashing doesn't collapse the threads/ranks
         self.per_thread = _kwargs["per_thread"] if "per_thread" in _kwargs else False
@@ -99,9 +83,6 @@ class TimemoryReader:
         """Create graph and dataframe"""
 
         list_roots = []
-        node_dicts = []
-        graph_dict = self.graph_dict
-        callpath_to_node = {}
 
         def remove_keys(_dict, _keys):
             """Remove keys from dictionary"""
@@ -112,13 +93,6 @@ class TimemoryReader:
                 for _key in _keys:
                     _dict = remove_keys(_dict, _key)
             return _dict
-
-        def patch_keys(_dict, _extra, metric_name):
-            """Add a suffix to dictionary keys"""
-            _tmp = {}
-            for key, itr in _dict.items():
-                _tmp["{}.{}{}".format(key, metric_name, _extra)] = itr
-            return _tmp
 
         def add_metrics(_dict):
             """Add any keys to metric_cols which don't already exist"""
@@ -139,7 +113,7 @@ class TimemoryReader:
                         pass
             return _tmp if _tmp else None
 
-        def perform_regex(_itr):
+        def perform_regex(_prefix):
             """Performs a search for standard configurations of function + file + line"""
             import re
 
@@ -158,12 +132,12 @@ class TimemoryReader:
                 # func:line/tail
                 r"(?P<func>\S+):(?P<line>[0-9]+)([/]*)(?P<tail>.*)",
             ]:
-                _tmp = process_regex(re.search(_pattern, _itr))
+                _tmp = process_regex(re.search(_pattern, _prefix))
                 if _tmp:
                     break
             return _tmp if _tmp else None
 
-        def get_keys(_prefix):
+        def get_name_line_file(_prefix):
             """Get the standard set of dictionary entries.
             Also, parses the prefix for func-file-line info
             which is typically in the form:
@@ -193,29 +167,33 @@ class TimemoryReader:
                         _keys["name"] = "{}/{}".format(_keys["name"], _pdict["tail"])
             return (_keys, _extra)
 
-        def get_md_suffix(_obj):
+        def format_labels(_labels):
             """Gets a multi-dimensional suffix"""
             _ret = []
-            if isinstance(_obj, str):
-                _ret = [_obj]
-            elif isinstance(_obj, dict):
-                for _key, _item in _obj.items():
+            if isinstance(_labels, str):
+                _ret = [_labels]
+            elif isinstance(_labels, dict):
+                for _key, _item in _labels.items():
                     _ret.append(_key.strip().replace(" ", "-").replace("_", "-"))
-            elif isinstance(_obj, list) or isinstance(_obj, tuple):
-                for _item in _obj:
+            elif isinstance(_labels, list) or isinstance(_labels, tuple):
+                for _item in _labels:
                     _ret.append(_item.strip().replace(" ", "-").replace("_", "-"))
             return _ret
 
-        def get_md_entries(_obj, _suffix, _extra):
+        def match_labels_and_values(_metric_stats, _metric_label, _metric_type):
             """Gets a multi-dimensional entries"""
             _ret = {}
-            for _key, _item in _obj.items():
+            for _key, _item in _metric_stats.items():
                 if isinstance(_item, dict):
                     for i, (k, v) in enumerate(_item.items()):
-                        _ret["{}.{}{}".format(_key, _suffix[i], _extra)] = v
-                else:
+                        _ret["{}.{}{}".format(_key, _metric_label[i], _metric_type)] = v
+                elif isinstance(_item, list):
                     for i in range(len(_item)):
-                        _ret["{}.{}{}".format(_key, _suffix[i], _extra)] = _item[i]
+                        _ret[
+                            "{}.{}{}".format(_key, _metric_label[i], _metric_type)
+                        ] = _item[i]
+                else:
+                    _ret["{}.{}{}".format(_key, _metric_label, _metric_type)] = _item
             return _ret
 
         def collapse_ids(_obj, _expect_scalar=False):
@@ -254,35 +232,50 @@ class TimemoryReader:
                 return f"{_obj}" if _expect_scalar else int(_obj)
             return None
 
-        def parse_node(_key, _dict, _hparent, _rank, _parent_thread, _parent_callpath):
-            """Create node_dict for one node and then call the function
+        def parse_node(_metric_name, _node_data, _hparent, _rank, _parent_callpath):
+            """Create callpath_to_node_dict for one node and then call the function
             recursively on all children.
             """
 
             # If the hash is zero, that indicates that the node
             # is a dummy for the root or is used for synchronizing data
             # between multiple threads
-            if _dict["node"]["hash"] == 0:
-                if "children" in _dict:
-                    for _child in _dict["children"]:
+            # TODO: do we have some intermediate nodes that have hash = 0?
+            if _node_data["node"]["hash"] == 0:
+                if "children" in _node_data:
+                    for _child in _node_data["children"]:
                         parse_node(
-                            _key,
+                            _metric_name,
                             _child,
                             _hparent,
                             _rank,
-                            _parent_thread,
                             _parent_callpath,
                         )
                 return
 
-            _prop = self.properties[_key]
-            _keys, _extra = get_keys(_dict["node"]["prefix"])
+            _prop = self.properties[_metric_name]
+            _frame_attrs, _extra = get_name_line_file(_node_data["node"]["prefix"])
 
-            # by placing the thread-id or rank-id in _keys, the hash
+            callpath = _parent_callpath + (_frame_attrs["name"],)
+
+            # check if the node already exits.
+            _hnode = self.callpath_to_node.get(callpath)
+            if _hnode is None:
+                # adding the parent during the node creation.
+                _hnode = Node(Frame(_frame_attrs), _hparent)
+                self.callpath_to_node[callpath] = _hnode
+                if _hparent is None:
+                    # if parent is none that should be a root node.
+                    list_roots.append(_hnode)
+                else:
+                    # add as a child if the parent is not node.
+                    _hparent.add_child(_hnode)
+
+            # by placing the thread-id or rank-id in _frame_attrs, the hash
             # for the Frame(_keys) effectively circumvent Hatchet's
             # default behavior of combining similar thread/rank entries
-            _tid_dict = _keys if self.per_thread else _extra
-            _rank_dict = _keys if self.per_rank else _extra
+            _tid_dict = _frame_attrs if self.per_thread else _extra
+            _rank_dict = _frame_attrs if self.per_rank else _extra
 
             # handle the rank
             _rank_dict["rank"] = collapse_ids(_rank, self.per_rank)
@@ -291,119 +284,80 @@ class TimemoryReader:
                 self.include_nid = False
 
             # extract some relevant data
-            _tid_dict["thread"] = collapse_ids(_dict["node"]["tid"], self.per_thread)
-            _extra["pid"] = collapse_ids(_dict["node"]["pid"], False)
-            _extra["count"] = _dict["node"]["inclusive"]["entry"]["laps"]
+            _tid_dict["thread"] = collapse_ids(
+                _node_data["node"]["tid"], self.per_thread
+            )
+            _extra["pid"] = collapse_ids(_node_data["node"]["pid"], False)
+            _extra["count"] = _node_data["node"]["inclusive"]["entry"]["laps"]
 
-            # check if the we see that thread before.
-            # if parent thread is different, there are multiple threads
+            # check if there are multiple threads
+            # TODO: move this outside if don't have per thread data in timemory
             if not self.multiple_threads:
-                if _parent_thread != _tid_dict["thread"]:
+                if _tid_dict["thread"] != 0:
                     self.multiple_threads = True
 
             # this is the name for the metrics
             _labels = None if "type" not in _prop else _prop["type"]
             # if the labels are not a single string, they are multi-dimensional
-            _md = True if not isinstance(_labels, str) else False
-
-            callpath = _parent_callpath + (_keys["name"],)
-
-            # check if the node already exits.
-            _hnode = callpath_to_node.get(callpath)
-            if _hnode is None:
-                # adding the parent during the node creation.
-                _hnode = Node(Frame(_keys), _hparent)
-                callpath_to_node[callpath] = _hnode
-                if _hparent is None:
-                    # if parent is none that should be a root node.
-                    list_roots.append(_hnode)
-                else:
-                    # add as a child if the parent is not node.
-                    _hparent.add_child(_hnode)
-
+            _metrics_in_vector = True if not isinstance(_labels, str) else False
             # remove some spurious data from inclusive/exclusive stats
             _remove = ["cereal_class_version", "count"]
-            _inc_stats = remove_keys(_dict["node"]["inclusive"]["stats"], _remove)
-            _exc_stats = remove_keys(_dict["node"]["exclusive"]["stats"], _remove)
+            _inc_stats = remove_keys(_node_data["node"]["inclusive"]["stats"], _remove)
+            _exc_stats = remove_keys(_node_data["node"]["exclusive"]["stats"], _remove)
 
             # if multi-dimensions, create alternative "sum.<...>", etc. labels + data
             # add " (inc)" to the end of every column that represents an inclusive stat
             # TODO: we might want to change ' (inc)' to '.inc'.
-            if _md:
+            if _metrics_in_vector:
                 # Example of a multi-dimensional output: if we have 3 papi events
                 # PAPI_TOT_CYC, PAPI_TOT_INS, PAPI_L2_TCM:
-                # suffix: ["Total_cycles", "Instr_completed", "L2_cache_misses"]
-                # "sum": [8301.0, 4910.0, 275.0],
-                _suffix = get_md_suffix(_labels)
-                _exc_stats = get_md_entries(_exc_stats, _suffix, "")
-                _inc_stats = get_md_entries(_inc_stats, _suffix, " (inc)")
+                # _metric_labels: ["Total_cycles", "Instr_completed", "L2_cache_misses"]
+                # _exc_stats -> "sum": [8301.0, 4910.0, 275.0],
+                _metric_labels = format_labels(_labels)
+                _exc_stats = match_labels_and_values(_exc_stats, _metric_labels, "")
+                _inc_stats = match_labels_and_values(
+                    _inc_stats, _metric_labels, " (inc)"
+                )
             else:
                 # add metric name and type.
                 # Example: sum -> sum.wall_clock (inc)
-                _inc_stats = patch_keys(_inc_stats, " (inc)", _key)
+                _inc_stats = match_labels_and_values(_inc_stats, _metric_name, " (inc)")
                 # Example: sum -> sum.wallclock
-                _exc_stats = patch_keys(_exc_stats, "", _key)
+                _exc_stats = match_labels_and_values(_exc_stats, _metric_name, "")
 
             # add the inclusive and exclusive columns to the list of relevant column names
             add_metrics(_exc_stats)
             add_metrics(_inc_stats)
 
-            # add an entry for the node.
-            # key of the call_path_to_node dictionary is a tuple: (callpath, rank, thread)
-            callpath_to_node_key = tuple((callpath, _rank, _tid_dict["thread"]))
-            node_dict = self.callpath_to_node_dict.get(callpath_to_node_key)
+            # we use callpath_to_node_dict instead of directly
+            # using node_dicts to be able to merge metrics.
+            # We use its values later as node_dicts.
+            # (callpath, rank, thread): <node_dict>
+            callpath_rank_thread = tuple((callpath, _rank, _tid_dict["thread"]))
+            node_dict = self.callpath_to_node_dict.get(callpath_rank_thread)
             # check if we saw this (callpath, rank, thread) before
             if node_dict is None:
                 # if no, create a new dict.
-                self.callpath_to_node_dict[callpath_to_node_key] = dict(
-                    {"node": _hnode, **_keys}, **_extra, **_exc_stats, **_inc_stats
+                self.callpath_to_node_dict[callpath_rank_thread] = dict(
+                    {"node": _hnode, **_frame_attrs},
+                    **_extra,
+                    **_exc_stats,
+                    **_inc_stats
                 )
             else:
                 # if yes, don't create a new dict, just add the new metrics to
                 # the existing node_dict using update().
                 # we are doing this to combine different metrics on a single dataframe.
-                self.callpath_to_node_dict[callpath_to_node_key].update(
-                    dict(
-                        {"node": _hnode, **_keys}, **_extra, **_exc_stats, **_inc_stats
-                    )
+                self.callpath_to_node_dict[callpath_rank_thread].update(
+                    dict(**_exc_stats, **_inc_stats)
                 )
 
             # recursion
-            if "children" in _dict:
-                for _child in _dict["children"]:
-                    parse_node(_key, _child, _hnode, _rank, _parent_thread, callpath)
+            if "children" in _node_data:
+                for _child in _node_data["children"]:
+                    parse_node(_metric_name, _child, _hnode, _rank, callpath)
 
-        def eval_graph(_key, _dict, _rank):
-            """Evaluate the entry and determine if it has relevant data.
-            If the hash is zero, that indicates that the node
-            is a dummy for the root or is used for synchronizing data
-            between multiple threads
-            """
-            _nchild = len(_dict["children"])
-            if _nchild == 0:
-                print("Skipping {}...".format(_key))
-                return
-            # if _rank is not None:
-            #    print("Adding {} for rank {}...".format(_key, _rank))
-            # else:
-            #    print("Adding {}...".format(_key))
-
-            if _dict["node"]["hash"] > 0:
-                # get the first thread information
-                _thread = collapse_ids(_dict["node"]["tid"], self.per_thread)
-                # empty tuple represents the parent callpath for the root node.
-                # third parameter is the parent node. It's none for the root node.
-                parse_node(_key, _dict, None, _rank, _thread, tuple())
-            elif "children" in _dict:
-                # call for all children
-                for child in _dict["children"]:
-                    # get the first thread information
-                    _thread = collapse_ids(child["node"]["tid"], self.per_thread)
-                    # empty tuple represents the parent callpath for the root node
-                    # third parameter is the parent node. It's none for the root node.
-                    parse_node(_key, child, None, _rank, _thread, tuple())
-
-        def read_graph(_key, _itr, _offset):
+        def read_graph(_metric_name, ranks_data, _rank):
             """The layout of the graph at this stage
             is subject to slightly different structures
             based on whether distributed memory parallelism (DMP)
@@ -411,18 +365,38 @@ class TimemoryReader:
 
             Returns the last rank (_idx).
             """
-            _idx = None
-            for i in range(len(_itr)):
-                _dict = _itr[i]
-                _idx = None if _offset is None else i + _offset
-                if isinstance(_dict, list):
-                    for j in range(len(_dict)):
-                        eval_graph(_key, _dict[j], _idx)
-                else:
-                    eval_graph(_key, _dict, _idx)
-            return _idx
 
-        def read_properties(_dict, _key, _itr):
+            rank = None
+            total_ranks = len(ranks_data)
+
+            for i in range(total_ranks):
+                # rank_data stores all the graph/cct data of a rank
+                # starting from the first node in the cct
+                rank_data = ranks_data[i]
+                rank = None if _rank is None else i + _rank
+                if isinstance(rank_data, list):
+                    for data in rank_data:
+                        if len(data["children"]) != 0:
+                            # empty tuple represents the parent callpath for the root node.
+                            # third parameter is the parent node. It's none for the root node.
+                            parse_node(
+                                _metric_name,
+                                data,
+                                None,
+                                rank,
+                                tuple(),
+                            )
+                else:
+                    if len(rank_data["children"]) != 0:
+                        # empty tuple represents the parent callpath for the root node.
+                        # third parameter is the parent node. It's none for the root node.
+                        parse_node(_metric_name, rank_data, None, rank, tuple())
+
+            if total_ranks > 0:
+                return True
+            return False
+
+        def read_properties(properties, _metric_name, _metric_data):
             """Read in the properties for a component. This
             contains information on the type of the component,
             a description, a unit_value relative to the
@@ -432,15 +406,15 @@ class TimemoryReader:
             both UPC++ and MPI), the number of threads in
             the application, and the total number of processes
             """
-            if _key not in _dict:
-                _dict[_key] = {}
+            if _metric_name not in properties:
+                properties[_metric_name] = {}
             try:
-                _dict[_key]["properties"] = remove_keys(
-                    itr["properties"], "cereal_class_version"
+                properties[_metric_name]["properties"] = remove_keys(
+                    _metric_data["properties"], "cereal_class_version"
                 )
             except KeyError:
                 pass
-            for k in (
+            for p in (
                 "type",
                 "description",
                 "unit_value",
@@ -451,76 +425,46 @@ class TimemoryReader:
                 "thread_count",
                 "process_count",
             ):
-                if k not in _dict[_key] or _dict[_key][k] is None:
-                    if k in itr:
-                        _dict[_key][k] = itr[k]
+                if (
+                    p not in properties[_metric_name]
+                    or properties[_metric_name][p] is None
+                ):
+                    if p in _metric_data:
+                        properties[_metric_name][p] = _metric_data[p]
                     else:
-                        _dict[_key][k] = None
-
-        def check_multiple_ranks(first_rank, last_rank):
-            """Check if there are multiple ranks.
-            _idx variable in read_graph() function corresponds to
-            rank information.
-            """
-            if first_rank != last_rank:
-                self.multiple_ranks = True
+                        properties[_metric_name][p] = None
 
         # graph_dict[timemory] stores all metric data.
         # each metric data is another item in this dict.
-        for key, itr in graph_dict["timemory"].items():
+        for metric_name, metric_data in self.graph_dict["timemory"].items():
             # strip out the namespace if provided
-            key = key.replace("tim::", "").replace("component::", "").lower()
+            metric_name = (
+                metric_name.replace("tim::", "").replace("component::", "").lower()
+            )
             # check for selection
-            if self.select is not None and key not in self.select:
+            if self.select is not None and metric_name not in self.select:
                 continue
             # read in properties
-            read_properties(self.properties, key, itr)
+            read_properties(self.properties, metric_name, metric_data)
             # if no DMP supported
-            if "graph" in itr:
-                print("Reading graph...")
-                # we create callpath_to_node_dict in read_graph()
-                # and this dict stores all the data to create the
-                # dataframe.
-                read_graph(key, itr["graph"], None)
+            if "graph" in metric_data:
+                read_graph(metric_name, metric_data["graph"], None)
             else:
                 # read in MPI results
-                if "mpi" in itr:
-                    # print("Reading MPI...")
-                    last_rank = read_graph(key, itr["mpi"], 0)
-                    check_multiple_ranks(0, last_rank)
+                if "mpi" in metric_data:
+                    self.multiple_ranks = read_graph(metric_name, metric_data["mpi"], 0)
                 # if MPI and UPC++, report ranks
                 # offset by MPI_Comm_size
-                _offset = self.properties[key]["mpi_size"]
-                _offset = 0 if _offset is None else int(_offset)
-                if "upc" in itr:
-                    print("Reading UPC...")
-                    last_rank = read_graph(key, itr["upc"], _offset)
-                    check_multiple_ranks(_offset, last_rank)
-                elif "upcxx" in itr:
-                    print("Reading UPC++...")
-                    last_rank = read_graph(key, itr["upcxx"], _offset)
-                    check_multiple_ranks(_offset, last_rank)
-
-        non_null = {}
-        # get all the values in callpath_to_node_dict. this gives
-        # us all the node dictionaries.
-        node_dicts = list(self.callpath_to_node_dict.values())
-        # find any columns where the entries are None or "null"
-        for itr in node_dicts:
-            for key, item in itr.items():
-                if key not in non_null:
-                    non_null[key] = False
-                if item is not None:
-                    if not isinstance(item, str):
-                        non_null[key] = True
-                    elif isinstance(item, str) and item != "null":
-                        non_null[key] = True
-
-        # find any columns where the entries are all "null"
-        for itr in node_dicts:
-            for key, item in non_null.items():
-                if not item:
-                    del itr[key]
+                _rank = self.properties[metric_name]["mpi_size"]
+                _rank = 0 if _rank is None else int(_rank)
+                if "upc" in metric_data:
+                    self.multiple_ranks = read_graph(
+                        metric_name, metric_data["upc"], _rank
+                    )
+                elif "upcxx" in metric_data:
+                    self.multiple_ranks = read_graph(
+                        metric_name, metric_data["upcxx"], _rank
+                    )
 
         # create the graph of the roots
         graph = Graph(list_roots)
@@ -549,12 +493,7 @@ class TimemoryReader:
             else:
                 self.default_metric = "sum"
 
-        # this attempt at MultiIndex does not work
-        # if self.include_nid:
-        #    indices.append("nid")
-        # if self.include_tid:
-        #    indices.append("tid")
-
+        node_dicts = list(self.callpath_to_node_dict.values())
         dataframe = pd.DataFrame(data=node_dicts)
 
         indices = []
@@ -610,4 +549,25 @@ class TimemoryReader:
 
     def read(self):
         """Read timemory json."""
+
+        if isinstance(self.input, dict):
+            self.graph_dict = self.input
+        elif os.path.isdir(self.input):
+            # check if a directory is given as input
+            tree_files = glob.glob(self.input + "/*.tree.json")
+            for file in tree_files:
+                # read all files that ends with .tree.json.
+                with open(file, "r") as f:
+                    # adds new metrics to the same dict if timemory creates
+                    # a separate file for each metric.
+                    self.graph_dict["timemory"].update(json.load(f)["timemory"])
+
+        elif isinstance(self.input, str) and self.input.endswith("json"):
+            with open(self.input, "r") as f:
+                self.graph_dict = json.load(f)
+        elif not isinstance(self.input, str):
+            self.graph_dict = json.loads(self.input.read())
+        else:
+            raise TypeError("input must be dict, json file, or string")
+
         return self.create_graph()
