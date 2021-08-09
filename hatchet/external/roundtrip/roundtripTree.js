@@ -489,14 +489,8 @@
         var createMenuView = function(elem, model){
             //setup menu view
             let _observers = makeSignaller();
-            var _colorManager = makeColorManager(model);
-
             var rootNodeNames = model.data["rootNodeNames"];
-            var numberOfTrees = model.data["numberOfTrees"];
             var metricColumns = model.data["metricColumns"];
-            var forestData = model.data["forestData"];
-            
-            var selectedMetric = model.state["selectedMetric"];
             var brushOn = model.state["brushOn"];
 
                  
@@ -879,8 +873,6 @@
                     //render for any number of trees
                     for(var treeIndex = 0; treeIndex < model.data["numberOfTrees"]; treeIndex++){
 
-                        let lastClicked = model.state["lastClicked"];
-
                         var source = d3.hierarchy(model.data["forestData"][treeIndex], d => d.children);
                         var selectedMetric = model.state["selectedMetric"];
                         var nodes = model.getNodesFromMap(treeIndex);
@@ -888,6 +880,7 @@
                         var chartArea = svg.selectAll('.group-' + treeIndex);
                         var tree = chartArea.selectAll('.chart');
 
+                        let lastClicked = nodes[0];
 
                         //ENTER 
                         // Update the nodes…
@@ -961,7 +954,7 @@
                         var linkEnter = link.enter().insert("path", "g")
                                 .attr("class", "link")
                                 .attr("d", function (d) {
-                                    var o = {x: source.x0, y: source.y0};
+                                    var o = {x: nodes[0].x, y: nodes[0].y};
                                     return diagonal(o, o);
                                 })
                                 .attr('fill', 'none')
@@ -1061,7 +1054,27 @@
                                     }
                                     return _colorManager.calcColorScale(d.data.metrics[selectedMetric], treeIndex);
 
-                                });
+                                })
+                    nodeUpdate.select('text')
+                                .attr("x", function (d) {
+                                    return d.children || model.state['collapsedNodes'].includes(d) ? -13 : 13;
+                                })
+                                .attr("dy", ".75em")
+                                .attr("text-anchor", function (d) {
+                                    return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
+                                })
+                                .text(function (d) {
+                                    if(!d.children){
+                                        return d.data.name;
+                                    }
+                                    else if(d.children.length == 1){
+                                        return "";
+                                    }
+                                    else {
+                                        return d.data.name.slice(0,5) + "...";
+                                    }
+                                })
+                                .style("font", "12px monospace");;
 
 
                                 
