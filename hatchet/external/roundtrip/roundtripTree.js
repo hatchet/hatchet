@@ -1139,7 +1139,7 @@
         //views
         var menu = createMenuView(element, model);
         var tooltip = createTooltipView(element, model);
-        var chart = createChartView(d3.select('.canvas'), model);
+        var chart = createChartView(d3.select(element).select('.canvas'), model);
         
         //render all views one time
         menu.render();
