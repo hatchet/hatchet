@@ -2,6 +2,8 @@
 (function (element) {
     require(['https://d3js.org/d3.v4.min.js'], function (d3) {
 
+        d3.select(element).attr('width', '100%');
+
         const globals = Object.freeze({
             UNIFIED: 0,
             DEFAULT: 0,
@@ -16,8 +18,8 @@
                 COLORCLICK: "COLORCLICK",
                 LEGENDCLICK: "LEGENDCLICK",
                 ZOOM: "ZOOM",
-                STOREINITIALLAYOUTOFFSETS: "STORE",
-                MASSPRUNE: "MASSPRUNE",
+                ENABLEMASSPRUNE: "ENABLEMASSPRUNE",
+                REQUESTMASSPRUNE: "REQUESTMASSPRUNE",
                 RESETVIEW: "RESET"
             },
             layout: {
@@ -251,17 +253,17 @@
                         case(globals.signals.ZOOM):
                             _model.updateNodeLocations(evt.index, evt.transformation);
                             break;
-                        case(globals.signals.STOREINITIALLAYOUTOFFSETS):
-                            _model.storeXOffsets(evt.index, evt.globalXOffset, evt.localXOffset);
+                        case(globals.signals.ENABLEMASSPRUNE):
+                            _model.enablePruneTree(evt.checked, evt.threshold);
                             break;
-                        case(globals.signals.MASSPRUNE):
+                        case(globals.signals.REQUESTMASSPRUNE):
                             _model.pruneTree(evt.threshold);
                             break;
                         case(globals.signals.RESETVIEW):
                             _model.resetView();
                             break;
                         default:
-                            console.log('Unknown event type', evt.type);
+                            console.warn('Unknown event type', evt.type);
                     }
                 }
             };
@@ -515,6 +517,8 @@
             function _visitor(root, condition){
                 if(root.children){
                     var dummyHolder = null;
+                    var lastChildNdx = null;
+                    var elided = [];
                    
                     for(var childNdx = root.children.length-1; childNdx >= 0; childNdx--){
                         var child = root.children[childNdx];
@@ -525,18 +529,29 @@
                         //condition where we remove child
                         if(child.value < condition){
                             if(!root._children){
-                                root._children = [];
+                                root._children = new Array(root.children.length);
+                                for(let i = 0; i < root.children.length; i++){
+                                    root._children[i] = root.children[i];
+                                }
                             }
 
-                            root._children.push(child);
-                            root.children.splice(childNdx, 1);
+                            elided.push(child);
                         }
-                    }
+                    } 
                     
-                    //some nodes were elided because they met the above
-                    // condition
-                    if (root._children && root._children.length > 0){
-                        dummyHolder = _buildDummyHolder(root._children[0], root, root._children);
+                    
+                    if (elided.length == 1){
+                        dummyHolder = _buildDummyHolder(elided[0], root, elided);
+                        swapNdx = root.children.indexOf(elid);
+                        root.children[swapIndex] = dummyHolder;
+                    }
+
+                    else if (root._children && root._children.length > 1){
+                        for(elid of elided){
+                            cutIndex = root._children.indexOf(elid);
+                            root.children.splice(cutIndex, 1);
+                        }
+                        dummyHolder = _buildDummyHolder(elided[0], root, elided);
                         root.children.push(dummyHolder);
                     }
 
@@ -555,15 +570,19 @@
                 // away un-interesting nodes
                 for(var i = 0; i < _data.numberOfTrees; i++){
                     var h = _data.immutableHierarchy[i].copy();
+                    console.log(h);
+                    if(_data.currentStrictness > -1){
+                        //The sum ensures that we do not prune 
+                        //away parent nodes of identified outliers.
+                        _setOutlierFlags(h);
+                        h.sum(d => d.outlier);
+                        _visitor(h, 1);
 
-                    _setOutlierFlags(h);
+                        console.log(h);
+                    }
 
-                    //This sum ensures that we do not prune 
-                    //away parent nodes of identified outliers.
-                    h.sum(d => d.outlier);
-
-                    _visitor(h, 1);
                     _data.hierarchy[i] = h;
+                    console.log(_data.hierarchy[i]);
                 }
             }
 
@@ -654,10 +673,6 @@
                
             }
             _state.lastClicked = _data.hierarchy[0];
-            
-
-            // _pruneZerosFromTree(1);
-            // _aggregateTreeData();
 
             //get the max and min metrics across the forest
             // and for each individual tree
@@ -725,73 +740,20 @@
                      */
                     _observers.add(s);
                 },
-                addTree: function(tm){
-                    /**
-                     * Pushes a tree into the model.
-                     * 
-                     * @param {Object} tm - A d3 tree constructed from a d3 hierarchy
-                     */
-
-                    _data['trees'].push(tm);
-                },
-                getTree: function(index){
-                    /**
-                     * Retrieves a tree from the model.
-                     * 
-                     * @param {Number} index - The index of the tree we want to get
-                     */
-                    return _data['trees'][index];
-                },
-                getNodesFromMap: function(index){
-                    /**
-                     * Retrieves tree nodes from the model
-                     * 
-                     * @param {Number} index - The index of the tree nodes we want to get
-                     */
-                    return _data['trees'][index].descendants();
-                },
-                getLinksFromMap: function(index){
-                    /**
-                     * Retrieves tree links from the model
-                     * 
-                     * @param {Number} index - The index of the tree links we want to get
-                     */
-                    return _data['trees'][index].descendants().slice(1);
-                },
-                updateNodes: function(index, f){
-                    /**
-                     * Updates the nodes in the model according to the passed in callback function.
-                     *
-                     * @param {Number} index - The index of the tree we are updating
-                     * @param {Function} f - The callback function being applied to the nodes
-                     */
-                    f(_data['trees'][index].descendants());
-                },
-                updateforestStats: function(index){
-                    /**
-                     * Updates the local maximum and minimum metrics for a single tree in the forest. 
-                     * Updates the global maximum and minimum metrics across all trees in our forest.
-                     * Stores these values in the model.
-                     *
-                     * @param {Number} index - The index of the tree we are updating
-                     */
-
-                    var curTreeData = _forestStats[index];
-                    for(let metric of  _data["metricColumns"]) {
-                        // get local minimum and maximum for our current tree
-                        // for each metric
-                        _data['trees'][index].descendants().forEach(function (d) {
-                            curTreeData[metric].max = Math.max(curTreeData[metric].max, d.data.metrics[metric]);
-                            curTreeData[metric].min = Math.min(curTreeData[metric].min, d.data.metrics[metric]);
-                        });
-
-                        //Update global minimum and maximum per metric
-                        _forestMinMax[metric].max = Math.max(_forestMinMax[metric].max, curTreeData[metric].max);
-                        _forestMinMax[metric].min = Math.min(_forestMinMax[metric].min, curTreeData[metric].min);
+                enablePruneTree: function(enabled, threshold){
+                    if (enabled){
+                        _state.pruneEnabled = true;
+                        _data.currentStrictness = threshold;
+                        _aggregateTreeData();
+                        _state.hierarchyUpdated = true;
+                    } 
+                    else{
+                        _state.pruneEnabled = false;
+                        // threshold = -1;
                     }
-
-                        _data["forestStats"] = _forestStats;
-                        _data["forestMinMax"] = _forestMinMax;
+                    
+                    _observers.notify();
+                    
                 },
                 pruneTree: function(threshold){
                     _data.currentStrictness = threshold;
@@ -838,35 +800,36 @@
                     // but it updates the passed data directly
                     // and hides children nodes triggering update
                     // when view is re-rendered
-                    // if (d.children) {
-                    //     d._children = d.children;
-                    //     d.children = null;
-                    // } else {
-                    //     d.children = d._children;
-                    //     d._children = null;
-                    // }
 
+                    //hiding a subtree
                     if(!d.dummy){
                         if(d.parent){
+                            //main manipulation is in parent scope
+                            let children = d.parent.children;
+
                             if(!d.parent._children){
-                                d.parent._children = [];
+                                d.parent._children = new Array(d.parent.children.length);
+                                for(let i = 0; i < d.parent.children.length; i++){
+                                    d.parent._children[i] = d.parent.children[i];
+                                }
                             }
 
-                            d.parent._children.push(d);
-                            d.parent.children = d.parent.children.filter(child => child !== d);
+                            swapIndex = children.indexOf(d);
+                            d.parent._children[swapIndex] = d;
                             dummy = _buildDummyHolder(d, d.parent, [d]);
 
-                            d.parent.children.push(dummy);
+                            children[swapIndex] = dummy;
                         }
                     } 
-                    //clicked on a dummy node
+
+                    //Expanding a dummy node
                     else{
                         for(elided of d.elided){
-                            d.parent._children.filter(child => child !== elided);
-                            d.parent.children.push(elided);
+                            swapIndex = d.parent._children.indexOf(elided);
+                            //optimization opporunity -> store dummies
+                            d.parent.children[swapIndex] = elided;
                         }
-
-                        d.parent.children = d.parent.children.filter(child => child !== d);
+                        // d.parent.children = d.parent.children.filter(child => child !== d);
                     }
 
                     _state["lastClicked"] = d;
@@ -944,10 +907,10 @@
                         _state.secondaryMetric = newMetric;
                     }
                     
-
-                    _aggregateTreeData();
-                    _state.hierarchyUpdated = true;
-
+                    if(_state.pruneEnabled){
+                        _aggregateTreeData();
+                        _state.hierarchyUpdated = true;
+                    }
                     _observers.notify();
                 },
                 changeColorScheme: function(){
@@ -1098,26 +1061,41 @@
             // Create SVG and SVG-based interactables
             // ----------------------------------------------
 
-            
-            sliderText = d3.select(elem).append('label').style('margin', '0 0 0 10px').attr('for', 'test_pruning').text(' Pruning Strictness (1.5):');
+            d3.select(elem).append('label').style('margin', '0 0 0 10px').attr('for', 'enable-pruning').text(' Enable Automatic Pruning:');
             d3.select(elem)
                 .append("div")
-                .attr("class", "slidecontainer")
-                .style("width", "150px")
                 .style("display", "inline-block")
+                .append('input')
+                .attr('id', 'enable-pruning')
+                .attr('type', 'checkbox')
+                .style('margin-left', '10px')
+                .on('click', function(){
+                    _observers.notify({
+                        type: globals.signals.ENABLEMASSPRUNE,
+                        checked: d3.select(this).property('checked'),
+                        threshold: d3.select(elem).select('#pruning-slider').attr('value')
+                    })
+                });
+            
+            
+            sliderText = d3.select(elem).append('label').style('margin', '0 0 0 10px').attr('for', 'pruning-slider').text(' Pruning Strictness (1.5):');
+            d3.select(elem)
+                .append("div")
+                .attr("class", "slide-container")
+                .style("width", "150px")
                 .append("input")
-                .attr("id", "test_pruning")
+                .attr("id", "pruning-slider")
                 .attr("type", "range")
                 .attr("step", ".25")
                 .attr("min", "0")
                 .attr("max", "2")
                 .attr("value", "1.5");
 
-            document.getElementById("test_pruning").style.marginLeft = "10px";
+            document.getElementById("pruning-slider").style.marginLeft = "10px";
         
 
 
-            d3.select(elem).select('#test_pruning')
+            d3.select(elem).select('#pruning-slider')
                 .on('change', function(){
                     //This might be ok because it's pretty
                     // small.
@@ -1126,8 +1104,8 @@
                     });
 
                     _observers.notify({
-                        type: globals.signals.MASSPRUNE,
-                        threshold: this.value
+                        type: globals.signals.REQUESTMASSPRUNE,
+                        threshold: parseFloat(this.value)
                     });
                 })
 
@@ -1243,7 +1221,8 @@
                     curLegend = model.state["legend"];
                     legends = model.data["legends"];
 
-                    //Remove brush and reset if active
+                    var pruneEnabled = model.state["pruneEnabled"];
+
                     d3.selectAll('.brush').remove();
 
                     //updates
@@ -1278,16 +1257,36 @@
                     colorButtonText
                     .text(function(){
                         return `Colors: ${colors[curColor]}`;
-                    })
+                    });
 
                     legendText
                     .text(function(){
                         return `Legends: ${legends[curLegend]}`;
-                    })
+                    });
 
                     colorButton.attr('width', colorButtonText.node().getBBox().width + 10);
                     unifyLegends.attr('width', legendText.node().getBBox().width + 10);
                     
+                    sliderText
+                        .style('visibility', ()=>{
+                            if(pruneEnabled){
+                                return 'visible';
+                            }
+                            else{
+                                return 'hidden';
+                            }
+                        });
+                    d3.select('.slide-container')
+                        .style('visibility', ()=>{
+                            if(pruneEnabled){
+                                return 'visible';
+                            }
+                            else{
+                                return 'hidden';
+                            }
+                        })
+                        .style('display', 'inline-block');
+
                 }
             }
         }
@@ -1665,17 +1664,17 @@
                         var i = 0;
                         var node = treeGroup.selectAll("g.node")
                                 .data(nodes[treeIndex], function (d) {
-                                    return d.id || (d.id = ++i);
+                                    return d.data.metrics._hatchet_nid || d.id;
                                 });
                         
                         var dummyNodes = treeGroup.selectAll("g.fakeNode")
                             .data(surrogates[treeIndex], function (d) {
-                                return d.id || (d.id = ++i);
+                                return d.data.metrics._hatchet_nid || d.id;
                             });
 
                         var aggBars = treeGroup.selectAll("g.aggBar")
                             .data(aggregates[treeIndex], function (d) {
-                                return d.id || (d.id = ++i);
+                                return d.data.metrics._hatchet_nid || d.id;
                             });
                         
                         // Enter any new nodes at the parent's previous position.
@@ -1688,7 +1687,6 @@
                                     return "translate(" + d.parent.y + "," + d.parent.x + ")";
                                 })
                                 .on("click", function(d){
-
                                     console.log(d);
                                     _observers.notify({
                                         type: globals.signals.CLICK,
@@ -1702,28 +1700,10 @@
                                         tree: treeIndex
                                     })
                                 });
-                                // .on("mouseover", function(d){
-                                //     _observers.notify({
-                                //         type: globals.signals.CLICK,
-                                //         node: d
-                                //     })
-                                // })
-                                // .on("mouseout", function(d){
-                                //     _observers.notify({
-                                //         type: globals.signals.CLICK,
-                                //         node: null
-                                //     })
-                                // });
 
 
                         var dNodeEnter = dummyNodes.enter().append('g')
                             .attr('class', 'fakeNode')
-                            // .attr("transform", function (d) {
-                            //     if(!d.parent){
-                            //         return "translate(0,0)";
-                            //     }
-                            //     return "translate(" + d.parent.y + "," + d.parent.x + ")";
-                            // })
                             .on("click", function(d){
                                 console.log(d);
                                 _observers.notify({
@@ -1865,7 +1845,7 @@
                         // links
                         var link = treeGroup.selectAll("path.link")
                         .data(links[treeIndex], function (d) {
-                            return d.id;
+                            return d.data.metrics._hatchet_nid || d.id;
                         });
         
                         // Enter any new links at the parent's previous position.
@@ -2003,12 +1983,6 @@
                                 if(!d.children || d.children.length == 0){
                                     return d.data.name;
                                 }
-                                else if(d.children.length == 1){
-                                    return "";
-                                }
-                                // else {
-                                //     return d.data.name.slice(0,10) + "...";
-                                // }
                                 return "";
                             });
                         
@@ -2169,11 +2143,6 @@
         var tooltip = createTooltipView(element, model);
         var chart = createChartView(element, model);
         
-        //render all views one time
-        menu.render();
-        tooltip.render();
-        chart.render();
-        
         //register signallers with each class
         // tooltip is not interactive so 
         // it does not need a signaller yet
@@ -2183,6 +2152,12 @@
         model.register(menu.render);
         model.register(chart.render);
         model.register(tooltip.render);
+
+
+        //render all views one time
+        menu.render();
+        tooltip.render();
+        chart.render();
 
     });
 

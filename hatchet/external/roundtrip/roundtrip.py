@@ -62,10 +62,10 @@ class Roundtrip(Magics):
 
         displayObj = display(HTML(argList), display_id=True)
 
-        if isinstance(self.shell.user_ns[args[1]], object):
-            args[1] = self.shell.user_ns[args[1]].to_literal()
-        else:
+        if isinstance(self.shell.user_ns[args[1]], list):
             args[1] = self.shell.user_ns[args[1]]
+        elif isinstance(self.shell.user_ns[args[1]], object):
+            args[1] = self.shell.user_ns[args[1]].to_literal()
 
         displayObj.update(Javascript('argList.push("{}")'.format(str(args[1]))))
 
