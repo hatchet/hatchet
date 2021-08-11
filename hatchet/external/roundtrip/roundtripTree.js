@@ -14,14 +14,17 @@
                 METRICCHANGE: "METRICCHANGE",
                 TREECHANGE: "TREECHANGE",
                 COLORCLICK: "COLORCLICK",
-                LEGENDCLICK: "LEGENDCLICK"
+                LEGENDCLICK: "LEGENDCLICK",
+                ZOOM: "ZOOM"
             },
             layout: {
                 margin: {top: 20, right: 20, bottom: 80, left: 20},
             },
             duration: 750,
             treeHeight: 300
-        })
+        });
+
+        jsNodeSelected = "['*']";
 
         var makeColorManager = function(model){
             
@@ -196,6 +199,9 @@
                         case(globals.signals.LEGENDCLICK):
                             _model.updateLegends();
                             break;
+                        case(globals.signals.ZOOM):
+                            _model.updateNodeLocations(evt.index, evt.transformation);
+                            break;
                         default:
                             console.log('Unknown event type', evt.type);
                     }
@@ -342,7 +348,6 @@
             }
 
 
-
             /* Class object created from call to createModel */
             return{
                 data: _data,
@@ -429,7 +434,6 @@
                             //call update selected
                             this.updateSelected(brushedNodes);
                         }
-
                     }
                     else{
                         this.updateSelected([]);
@@ -468,22 +472,27 @@
                 updateActiveTrees: function(activeTree){
                     _state["activeTree"] = activeTree;
                     _observers.notify();
+                },
+                updateNodeLocations: function(index, transformation){
+                    _data["treemaps"][index].descendants().forEach(function(d, i) {
+                        // This function gets the absolute location for each point based on the relative
+                        // locations of the points based on transformations
+                        // the margins were being added into the .e and .f values so they have to be subtracted
+                        // I think they come from the margins being added into the "main group" when it is created
+                        // We can brush regardless of zoom or pan
+                        // Adapted from: https://stackoverflow.com/questions/18554224/getting-screen-positions-of-d3-nodes-after-transform
+                        d.yMainG = transformation.e + d.y0*transformation.d + d.x0*transformation.c - globals.layout.margin.left;
+                        d.xMainG = transformation.f + d.y0*transformation.b + d.x0*transformation.a - globals.layout.margin.top;
+                    });
                 }
-
             }
         }
 
         var createMenuView = function(elem, model){
             //setup menu view
             let _observers = makeSignaller();
-            var _colorManager = makeColorManager(model);
-
             var rootNodeNames = model.data["rootNodeNames"];
-            var numberOfTrees = model.data["numberOfTrees"];
             var metricColumns = model.data["metricColumns"];
-            var forestData = model.data["forestData"];
-            
-            var selectedMetric = model.state["selectedMetric"];
             var brushOn = model.state["brushOn"];
 
                  
@@ -725,6 +734,7 @@
             // var treemap = d3.tree().size([(2000), width - margin.left]);
             var treemap = d3.tree().size([(globals.treeHeight), width - _margin.left]);
 
+            // Denotes the number of nodes in tallest path from the root to leaf
             var maxHeight = 0;
 
             // Find the tallest tree for layout purposes (used to set a uniform spreadFactor)
@@ -742,6 +752,10 @@
 
                 model.addTreeMap(currentTreeMap);
             }
+            
+            //layout variables            
+            var spreadFactor = width / (maxHeight + 1);
+            var legendOffset = 30;
 
             // Add a group and tree for each forestData[i]
             for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
@@ -773,10 +787,9 @@
                     }
                 });
                     
-                const legGroup = newg
+                const legGroup = mainG
                 .append('g')
-                .attr('class', 'legend-grp-' + treeIndex)
-                .attr('transform', 'translate(-20, 0)');
+                .attr('class', 'legend-grp-' + treeIndex);
 
                 const legendGroups = legGroup.selectAll("g")
                         .data([0, 1, 2, 3, 4, 5])
@@ -802,31 +815,39 @@
                         .style('font-family', 'monospace')
                         .style('font-size', '12px');
 
+
+                var zoom = d3.zoom().on("zoom", function (){
+                    zoomObj = d3.select(this).selectAll(".chart");
+
+                    zoomObj.attr("transform", d3.event.transform);
+
+                    //update for scale view
+                    _observers.notify({
+                        type: globals.signals.ZOOM,
+                        index: zoomObj.attr("chart-id"),
+                        transformation: zoomObj.node().getCTM()
+                    })
+                });
+
                 //put tree itself into a group
                 newg.append('g')
                     .attr('class', 'chart')
-                    .attr('chart-id', treeIndex);
+                    .attr('chart-id', treeIndex)
+                    .attr('height', globals.treeHeight)
+                    .attr('width', width)
+                    .attr('fill', 'rgba(0,0,0,0)');
 
-                
-                var spreadFactor = width / (maxHeight + 1);
-                var legendOffset = 30;
+                newg.call(zoom)
+                    .on("dblclick.zoom", null);
+                    
 
                 model.updateNodes(treeIndex,
                     function(n){
                         // Normalize for fixed-depth.
                         n.forEach(function (d) {
-                            d.x = d.x + legendOffset ;
-                            d.y = d.depth * spreadFactor;
-                            d.treeIndex = treeIndex;
-                        });
-                    }
-                );
+                            d.x = d.x + legendOffset;
+                            d.y = (d.depth * spreadFactor);
 
-                model.updateNodes(treeIndex,
-                    function(n){
-                        // Stash the old positions for transition and
-                        // stash absolute positions (absolute in mainG)
-                        n.forEach(function (d) {
                             d.x0 = d.x;
                             d.y0 = d.y;
 
@@ -836,6 +857,7 @@
                         });
                     }
                 );
+
 
                 newg.style("display", "inline-block");
             } //end for-loop "add tree"
@@ -849,24 +871,23 @@
                     _observers.add(s);
                 },
                 render: function(){
+
                     //render for any number of trees
                     for(var treeIndex = 0; treeIndex < model.data["numberOfTrees"]; treeIndex++){
-
-                        let lastClicked = model.state["lastClicked"];
 
                         var source = d3.hierarchy(model.data["forestData"][treeIndex], d => d.children);
                         var selectedMetric = model.state["selectedMetric"];
                         var nodes = model.getNodesFromMap(treeIndex);
                         var links = model.getLinksFromMap(treeIndex);
-                        var chart = svg.selectAll('.group-' + treeIndex);
+                        var chartArea = svg.selectAll('.group-' + treeIndex);
+                        var tree = chartArea.selectAll('.chart');
 
-
-
+                        let lastClicked = nodes[0];
 
                         //ENTER 
                         // Update the nodes…
                         var i = 0;
-                        var node = chart.selectAll("g.node")
+                        var node = tree.selectAll("g.node")
                                 .data(nodes, function (d) {
                                     return d.id || (d.id = ++i);
                                 });
@@ -874,10 +895,7 @@
                         // Enter any new nodes at the parent's previous position.
                         var nodeEnter = node.enter().append('g')
                                 .attr('class', 'node')
-                                .attr("transform", function (d) {
-                                    return "translate(" + lastClicked.y + "," + lastClicked.x + ")";
-                                })
-                                // .on("click", click)
+                                .attr("transform", () => {return "translate(" + lastClicked.y + "," + lastClicked.x + ")"})
                                 .on("click", function(d){
                                     _observers.notify({
                                         type: globals.signals.CLICK,
@@ -890,7 +908,6 @@
                                         node: d,
                                         tree: treeIndex
                                     })
-                                    // doubleclick(d, treeData, g);
                                 });
             
                         nodeEnter.append("circle")
@@ -905,25 +922,32 @@
                                 .style('stroke-width', '1px')
                                 .style('stroke', 'black');
             
-                        // commenting out text for now
-                        // nodeEnter.append("text")
-                        //         .attr("x", function (d) {
-                        //             return d.children || model.state['collapsedNodes'].includes(d) ? -13 : 13;
-                        //         })
-                        //         .attr("dy", ".75em")
-                        //         .attr("text-anchor", function (d) {
-                        //             return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
-                        //         })
-                        //         .text(function (d) {
-                        //             return d.data.name;
-                        //         })
-                        //         .attr('transform', 'rotate( -15)')
-                        //         .style("stroke-width", "3px")
-                        //         .style("font", "12px monospace");
-        
+                        //Append text to nodes
+                        nodeEnter.append("text")
+                        .attr("x", function (d) {
+                            return d.children || model.state['collapsedNodes'].includes(d) ? -13 : 13;
+                        })
+                        .attr("dy", ".75em")
+                        .attr("text-anchor", function (d) {
+                            return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
+                        })
+                        .text(function (d) {
+                            if(!d.children){
+                                return d.data.name;
+                            }
+                            else if(d.children.length == 1){
+                                return "";
+                            }
+                            else {
+                                return d.data.name.slice(0,5) + "...";
+                            }
+                        })
+                        .style("font", "12px monospace");
+
+
 
                         // links
-                        var link = chart.selectAll("path.link")
+                        var link = tree.selectAll("path.link")
                         .data(links, function (d) {
                             return d.id;
                         });
@@ -932,14 +956,12 @@
                         var linkEnter = link.enter().insert("path", "g")
                                 .attr("class", "link")
                                 .attr("d", function (d) {
-                                    var o = {x: source.x0, y: source.y0};
+                                    var o = {x: nodes[0].x, y: nodes[0].y};
                                     return diagonal(o, o);
                                 })
                                 .attr('fill', 'none')
                                 .attr('stroke', '#ccc')
                                 .attr('stroke-width', '2px');
-        
-
 
         
                         //UPDATES
@@ -947,7 +969,7 @@
                         var linkUpdate = linkEnter.merge(link);
                 
                         // Chart updates
-                        chart
+                        chartArea
                         .transition()
                         .duration(globals.duration)
                         .attr("transform", function(){
@@ -970,9 +992,8 @@
                             }
                         });
 
-
                         //legend updates
-                        chart.selectAll(".legend rect")
+                        svg.selectAll(".legend rect")
                                 .transition()
                                 .duration(globals.duration)
                                 .attr('fill', function (d, i) {
@@ -980,7 +1001,7 @@
                                 })
                                 .attr('stroke', 'black');
 
-                        chart.selectAll('.legend text')
+                        svg.selectAll('.legend text')
                                 .transition()
                                 .duration(globals.duration)
                                 .text((d, i) => {
@@ -999,7 +1020,7 @@
                         nodeUpdate.transition()
                                 .duration(globals.duration)
                                 .attr("transform", function (d) {
-                                    return "translate(" + d.y + "," + d.x + ")";
+                                    return `translate(${d.y}, ${d.x})`;
                                 });
 
                         nodeUpdate.select('circle.circleNode')
@@ -1035,7 +1056,27 @@
                                     }
                                     return _colorManager.calcColorScale(d.data.metrics[selectedMetric], treeIndex);
 
-                                });
+                                })
+                    nodeUpdate.select('text')
+                                .attr("x", function (d) {
+                                    return d.children || model.state['collapsedNodes'].includes(d) ? -13 : 13;
+                                })
+                                .attr("dy", ".75em")
+                                .attr("text-anchor", function (d) {
+                                    return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
+                                })
+                                .text(function (d) {
+                                    if(!d.children){
+                                        return d.data.name;
+                                    }
+                                    else if(d.children.length == 1){
+                                        return "";
+                                    }
+                                    else {
+                                        return d.data.name.slice(0,5) + "...";
+                                    }
+                                })
+                                .style("font", "12px monospace");;
 
 
                                 
@@ -1100,7 +1141,7 @@
         //views
         var menu = createMenuView(element, model);
         var tooltip = createTooltipView(element, model);
-        var chart = createChartView(d3.select('.canvas'), model);
+        var chart = createChartView(d3.select(element).select('.canvas'), model);
         
         //render all views one time
         menu.render();
