@@ -353,10 +353,20 @@
             }
 
             function _asc(arr){
+                /**
+                 *  Sorts an array in ascending order.
+                 */
+                
                 return arr.sort((a,b) => a[_state.primaryMetric]-b[_state.primaryMetric])
             }
             
             function _quantile(arr, q){
+                /**
+                 * Gets a particular quantile from an array of numbers
+                 * 
+                 * @param {Array} arr - An array of floats
+                 * @param {Number} q - An float between [0-1] represening the quantile we want 
+                 */
                 const sorted = _asc(arr);
                 const pos = (sorted.length - 1) * q;
                 const base = Math.floor(pos);
@@ -369,6 +379,9 @@
             }
 
             function _getIQR(arr){
+                /**
+                 * Returns the interquartile range for a an array of numbers
+                 */
                 if(arr.length != 0){
                     var q25 = _quantile(arr, .25);
                     var q75 = _quantile(arr, .75);
@@ -381,6 +394,14 @@
             }
 
             function _setOutlierFlags(h){
+                /**
+                 * Sets outlier flags on a d3 hierarchy of call sites.
+                 * An outlier is defined as outside of the range between
+                 * the IQR*(a user defined scalar) + 75th quantile and
+                 * 25th quantile - IQR*(scalar). 
+                 * 
+                 * @param {Hierarchy} h - A d3 hierarchy containg metric values
+                 */
                 var outlierScalar = _data.currentStrictness;
                 var upperOutlierThreshold = Number.MAX_VALUE;
                 var lowerOutlierThreshold = Number.MIN_VALUE;
@@ -409,6 +430,12 @@
 
 
             function _getAggregateMetrics(h){
+                /**
+                 * Utility function which gets aggregrate metrics for
+                 * a subtree.
+                 * 
+                 * @param {Hierarchy} h - A d3 hierarchy containing metrics
+                 */
                 let agg = {};
                 
                 for(metric of _data.metricColumns){
@@ -431,6 +458,13 @@
             }
 
             function _getSubTreeDescription(h){
+                /**
+                 * A utility function which returns a description of a subtree in terms
+                 * height, and number of nodes.
+                 * **TODO** - Add other descriptive details
+                 *
+                 * @param {Hierarchy} h - A d3 hierarchy containing metrics
+                 */
                 let desc = {};
 
                 desc.height = h.height;
@@ -440,6 +474,16 @@
             }
 
             function _buildDummyHolder(protoype, parent, elided){
+                /**
+                 * A function that builds a surrogate node from a
+                 * prototype node and the parent associated with that
+                 * prototype.
+                 * 
+                 * @param {Node} prototype - A node which are going to replace with the resulting surrogate node
+                 *      A prototype is used here to preserve the descriptive stats of the removed node
+                 * @param {Node} parent - A node we are linking the new surrogate node to
+                 * @param {Node} elided - A list of sibling nodes which this surrogate is eliding from view
+                 */
                 var dummyHolder = null;
                 var aggregateMetrics = {};
                 var description = {
@@ -515,6 +559,9 @@
             }
 
             function _visitor(root, condition){
+                /**
+                 * A visit
+                 */
                 if(root.children){
                     var dummyHolder = null;
                     var lastChildNdx = null;
