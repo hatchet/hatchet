@@ -529,28 +529,17 @@
                         //condition where we remove child
                         if(child.value < condition){
                             if(!root._children){
-                                root._children = new Array(root.children.length);
-                                for(let i = 0; i < root.children.length; i++){
-                                    root._children[i] = root.children[i];
-                                }
+                                root._children = [];
                             }
 
                             elided.push(child);
+                            root._children.push(child);
+                            root.children.splice(childNdx, 1);
                         }
                     } 
                     
                     
-                    if (elided.length == 1){
-                        dummyHolder = _buildDummyHolder(elided[0], root, elided);
-                        swapNdx = root.children.indexOf(elid);
-                        root.children[swapIndex] = dummyHolder;
-                    }
-
-                    else if (root._children && root._children.length > 1){
-                        for(elid of elided){
-                            cutIndex = root._children.indexOf(elid);
-                            root.children.splice(cutIndex, 1);
-                        }
+                    if (root._children && root._children.length > 0){
                         dummyHolder = _buildDummyHolder(elided[0], root, elided);
                         root.children.push(dummyHolder);
                     }
@@ -808,28 +797,33 @@
                             let children = d.parent.children;
 
                             if(!d.parent._children){
-                                d.parent._children = new Array(d.parent.children.length);
-                                for(let i = 0; i < d.parent.children.length; i++){
-                                    d.parent._children[i] = d.parent.children[i];
-                                }
+                                d.parent._children = [];
                             }
 
-                            swapIndex = children.indexOf(d);
-                            d.parent._children[swapIndex] = d;
+                            d.parent._children.push(d);
                             dummy = _buildDummyHolder(d, d.parent, [d]);
-
+                            swapIndex = d.parent.children.indexOf(d);
                             children[swapIndex] = dummy;
                         }
                     } 
 
                     //Expanding a dummy node
+                    // Replaces a node if one was elided
+                    // Appends if multiple were elided
                     else{
-                        for(elided of d.elided){
-                            swapIndex = d.parent._children.indexOf(elided);
-                            //optimization opporunity -> store dummies
-                            d.parent.children[swapIndex] = elided;
+                        delIndex = d.parent._children.indexOf(elided);
+                        d.parent._children.splice(delIndex, 1);
+                        
+                        if(d.elided.length == 1){
+                            insIndex = d.parent.children.indexOf(d);
+                            d.parent.children[insIndex] = d.elided[0];
                         }
-                        // d.parent.children = d.parent.children.filter(child => child !== d);
+                        else{
+                            for(elided of d.elided){
+                                d.parent.children.push(elided)
+                            }
+                            d.parent.children = d.parent.children.filter(child => child !== d);
+                        }
                     }
 
                     _state["lastClicked"] = d;
@@ -1073,7 +1067,7 @@
                     _observers.notify({
                         type: globals.signals.ENABLEMASSPRUNE,
                         checked: d3.select(this).property('checked'),
-                        threshold: d3.select(elem).select('#pruning-slider').attr('value')
+                        threshold: d3.select(elem).select('#pruning-slider').node().value
                     })
                 });
             
@@ -1761,12 +1755,6 @@
                                 .attr("fill", "rgba(0,0,0, .4)")
                                 .style("stroke-width", ".5px")
                                 .style("stroke", "rgba(100,100,100)");
-                        dNodeEnter.append("path")
-                                .attr('class', 'dummyNode2')
-                                .attr("d", "M 6 2 C 6 2 5 2 5 3 S 6 4 6 4 S 7 4 7 3 S 6 2 6 2 Z M 6 3 S 6 3 6 3 Z M 8 0 C 8 0 7 0 7 1 C 7 1 7 2 8 2 C 8 2 9 2 9 1 C 9 0 8 0 8 0 M 9 5 C 9 4 8 4 8 4 S 7 4 7 5 S 8 6 8 6 S 9 6 9 5")
-                                .attr("fill", "rgba(0,0,0, .4)")
-                                .style("stroke-width", ".5px")
-                                .style("stroke", "rgba(100,100,100)");
                         
                         aggNodeEnter.append("rect")
                                 .attr('class', 'bar')
@@ -1788,58 +1776,51 @@
                                     return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
                                 })
                                 .text(function (d) {
-                                    // if(d.data.name.includes("mv2_increment")){
-                                    //     return d.data.frame.name;
-                                    // }
                                     if(!d.children){
                                         return d.data.name;
                                     }
                                     else if(d.children.length == 1){
                                         return "";
                                     }
-                                    // else {
-                                    //     return d.data.name.slice(0,10) + "...";
-                                    // }
                                     return "";
                                 })
                                 .style("font", "12px monospace");
         
-                                  // commenting out text for now
-                            dNodeEnter.append("text")
-                                .attr("x", function (d) {
-                                    return 30;
-                                })
-                                .attr("dy", "1em")
-                                .attr("text-anchor", function (d) {
-                                    return "start";
-                                })
-                                .text(function (d) {
-                                    if (d.elided.length > 1){
-                                        return `Children of: ${d.parent.data.name}` ;
-                                    } 
-                                    else{
-                                        return `${d.data.name} Subtree`;
-                                    }
-                                })
-                                .style("font", "12px monospace");
+                        dNodeEnter.append("text")
+                            .attr("x", function (d) {
+                                return 30;
+                            })
+                            .attr("dy", "1em")
+                            .attr("text-anchor", function (d) {
+                                return "start";
+                            })
+                            .text(function (d) {
+                                if (d.elided.length > 1){
+                                    return `Children of: ${d.parent.data.name}` ;
+                                } 
+                                else{
+                                    return `${d.data.name} Subtree`;
+                                }
+                            })
+                            .style("font", "12px monospace");
 
-                            aggNodeEnter.append("text")
-                                .attr("x", function (d) {
-                                    return 25;
-                                })
-                                .attr("dy", "1em")
-                                .attr("text-anchor", function (d) {
-                                    return "start";
-                                })
-                                .text(function (d) {
-                                    if (d.elided.length > 1){
-                                        return `Children of: ${d.parent.data.name}` ;
-                                    } 
-                                    else{
-                                        return `${d.data.name} Subtree`;
-                                    }
-                                })
-                                .style("font", "12px monospace");
+                        aggNodeEnter.append("text")
+                            .attr("x", function (d) {
+                                return 25;
+                            })
+                            .attr("dy", "1em")
+                            .attr("text-anchor", function (d) {
+                                return "start";
+                            })
+                            .text(function (d) {
+                                if (d.elided.length > 1){
+                                    return `Children of: ${d.parent.data.name}` ;
+                                } 
+                                else{
+                                    return `${d.data.name} Subtree`;
+                                }
+                            })
+                            .style("font", "12px monospace");
 
 
                         // links
@@ -1992,20 +1973,6 @@
                             .attr("fill", "rgba(180,180,180)")
                             .style("stroke-width", ".5px")
                             .style("stroke", "rgba(100,100,100)")
-                            .attr("transform", function (d) {
-                                let scale = 3;
-                                return `scale(${scale})`;
-                            });
-                        
-                        dNodeUpdate
-                            .selectAll(".dummyNode2")
-                            .attr("d", "M 6 2 C 6 2 5 2 5 3 S 6 4 6 4 S 7 4 7 3 S 6 2 6 2 Z M 6 3 S 6 3 6 3 Z M 8 0 C 8 0 7 0 7 1 C 7 1 7 2 8 2 C 8 2 9 2 9 1 C 9 0 8 0 8 0 M 9 5 C 9 4 8 4 8 4 S 7 4 7 5 S 8 6 8 6 S 9 6 9 5")
-                            .attr("fill", "rgba(180,180,180)")
-                            .style("stroke-width", ".5px")
-                            .style("stroke", "rgba(100,100,100)")
-                            .attr("transform", function (d) {
-                                return `translate(0, 1)`;
-                            })
                             .attr("transform", function (d) {
                                 let scale = 3;
                                 return `scale(${scale})`;
