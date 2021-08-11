@@ -24,6 +24,8 @@
             treeHeight: 300
         });
 
+        jsNodeSelected = "['*']";
+
         var makeColorManager = function(model){
             
             var _regularColors = [['#006d2c', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#edf8e9'], //green
