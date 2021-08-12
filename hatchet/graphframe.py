@@ -10,6 +10,8 @@ from collections import defaultdict
 
 import pandas as pd
 import numpy as np
+import os
+import mimetypes
 import multiprocess as mp
 
 from .node import Node
@@ -41,7 +43,7 @@ def parallel_apply(filter_function, dataframe, queue):
 
 
 # TODO Move into global configuration when Connor's PR is merged
-_format_extensions = {
+_custom_format_extensions = {
     ".hdf5": "hdf",
     ".hdf": "hdf",
     ".h5": "hdf",
@@ -55,6 +57,13 @@ _format_extensions = {
     ".odt": "excel",
     ".pkl": "pickle",
     ".pickle": "pickle",
+    ".json": "json",
+}
+
+
+_mime_type_mapping = {
+    "text/csv": "csv",
+    "application/json": "json",
 }
 
 
@@ -278,78 +287,121 @@ class GraphFrame:
 
     @staticmethod
     def load(filename, fileformat=None, **kwargs):
-        format_priority = ["hdf", "pickle", "csv", "excel"]
         fformat = fileformat
         if fformat is None:
-            for ext in _format_extensions.keys():
-                if filename.endswith(ext):
-                    fformat = _format_extensions[ext]
-                    break
-        if fformat is not None and fformat in format_priority:
-            format_priority.remove(fformat)
+            mtype, _ = mimetypes.guess_type(filename)
+            if mtype in _mime_type_mapping.keys():
+                fformat = _mime_type_mapping[mtype]
+            else:
+                _, extension = os.path.splitext(filename)
+                if extension in _custom_format_extensions.keys():
+                    fformat = _custom_format_extensions[extension]
+        if fformat is not None:
             try:
-                gf = _load_func_dict[fformat](filename, **kwargs)
-                print("Successfully loaded to {}".format(fformat))
+                gf = _load_func_dict[fformat](filename **kwargs)
+                print("Successfully loaded from {}".format(fformat))
                 return gf
             except ImportError:
-                print(
-                    "Could not load from {} format. Trying alternatives.".format(
+                raise IOError(
+                    "Could not load from {} format. Ensure you have the correct optional dependencies available.".format(
                         fformat
                     )
                 )
-        for form in format_priority:
-            print("Trying {}".format(form))
-            try:
-                gf = _load_func_dict[form](filename, **kwargs)
-                print("Sucessfully loaded from {}".format(form))
-                return gf
-            except ImportError:
-                print("Could not load from {} format.".format(form))
-        raise IOError(
-            "Could not parse {} with the available formats. Make sure you have the necessary dependencies installed.".format(
-                filename
-            )
-        )
+        raise ValueError("File format was not provided and could not be automatically determined.")
+#
+#         format_priority = ["hdf", "pickle", "csv", "excel"]
+#         fformat = fileformat
+#         if fformat is None:
+#             for ext in _custom_format_extensions.keys():
+#                 if filename.endswith(ext):
+#                     fformat = _custom_format_extensions[ext]
+#                     break
+#         if fformat is not None and fformat in format_priority:
+#             format_priority.remove(fformat)
+#             try:
+#                 gf = _load_func_dict[fformat](filename, **kwargs)
+#                 print("Successfully loaded to {}".format(fformat))
+#                 return gf
+#             except ImportError:
+#                 print(
+#                     "Could not load from {} format. Trying alternatives.".format(
+#                         fformat
+#                     )
+#                 )
+#         for form in format_priority:
+#             print("Trying {}".format(form))
+#             try:
+#                 gf = _load_func_dict[form](filename, **kwargs)
+#                 print("Sucessfully loaded from {}".format(form))
+#                 return gf
+#             except ImportError:
+#                 print("Could not load from {} format.".format(form))
+#         raise IOError(
+#             "Could not parse {} with the available formats. Make sure you have the necessary dependencies installed.".format(
+#                 filename
+#             )
+#         )
 
     def save(self, filename, fileformat=None, **kwargs):
-        format_priority = ["hdf", "pickle", "csv", "excel"]
         fformat = fileformat
         if fformat is None:
-            # TODO
-            # for ext in self._format_extensions.keys():
-            for ext in _format_extensions.keys():
-                if filename.endswith(ext):
-                    # TODO
-                    # fformat = self._format_extensions[ext]
-                    fformat = _format_extensions[ext]
-                    break
-        if fformat is not None and fformat in format_priority:
-            format_priority.remove(fformat)
+            mtype, _ = mimetypes.guess_type(filename)
+            if mtype in _mime_type_mapping.keys():
+                fformat = _mime_type_mapping[mtype]
+            else:
+                _, extension = os.path.splitext(filename)
+                if extension in _custom_format_extensions.keys():
+                    fformat = _custom_format_extensions[extension]
+        if fformat is not None:
             try:
-                # TODO
-                # self._save_func_dict[fformat](self, filename, **kwargs)
-                _save_func_dict[fformat](self, filename, **kwargs)
+                _save_func_dict[fformat](self, filename **kwargs)
                 print("Successfully saved to {}".format(fformat))
                 return
             except ImportError:
-                print(
-                    "Could not save to {} format. Trying alternatives.".format(fformat)
+                raise IOError(
+                    "Could not save to {} format. Ensure you have the correct optional dependencies available.".format(
+                        fformat
+                    )
                 )
-        for form in format_priority:
-            print("Trying {}".format(form))
-            try:
-                # TODO
-                # self._save_func_dict[form](self, filename, **kwargs)
-                _save_func_dict[form](self, filename, **kwargs)
-                print("Successfully saved to {}".format(form))
-                return
-            except ImportError:
-                print("Could not save to {} format.".format(form))
-        raise IOError(
-            "Could not save {} with the available formats. Make sure you have the necessary dependencies installed.".format(
-                filename
-            )
-        )
+        raise ValueError("File format was not provided and could not be automatically determined.")
+        # format_priority = ["hdf", "pickle", "csv", "excel"]
+        # fformat = fileformat
+        # if fformat is None:
+        #     # TODO
+        #     # for ext in self._custom_format_extensions.keys():
+        #     for ext in _custom_format_extensions.keys():
+        #         if filename.endswith(ext):
+        #             # TODO
+        #             # fformat = self._custom_format_extensions[ext]
+        #             fformat = _custom_format_extensions[ext]
+        #             break
+        # if fformat is not None and fformat in format_priority:
+        #     format_priority.remove(fformat)
+        #     try:
+        #         # TODO
+        #         # self._save_func_dict[fformat](self, filename, **kwargs)
+        #         _save_func_dict[fformat](self, filename, **kwargs)
+        #         print("Successfully saved to {}".format(fformat))
+        #         return
+        #     except ImportError:
+        #         print(
+        #             "Could not save to {} format. Trying alternatives.".format(fformat)
+        #         )
+        # for form in format_priority:
+        #     print("Trying {}".format(form))
+        #     try:
+        #         # TODO
+        #         # self._save_func_dict[form](self, filename, **kwargs)
+        #         _save_func_dict[form](self, filename, **kwargs)
+        #         print("Successfully saved to {}".format(form))
+        #         return
+        #     except ImportError:
+        #         print("Could not save to {} format.".format(form))
+        # raise IOError(
+        #     "Could not save {} with the available formats. Make sure you have the necessary dependencies installed.".format(
+        #         filename
+        #     )
+        # )
 
     @staticmethod
     def from_hdf(filename, key=None, **kwargs):
@@ -385,6 +437,17 @@ class GraphFrame:
         from .writers.csv_writer import CSVWriter
 
         CSVWriter(filename).write(self, **kwargs)
+
+    @staticmethod
+    def from_json(filename, **kwargs):
+        from .readers.json_reader import JsonReader
+
+        return JsonReader(filename).read(**kwargs)
+
+    def to_json(self, filename, **kwargs):
+        from .writers.json_writer import JsonWriter
+
+        JsonWriter(filename).write(self, **kwargs)
 
     @staticmethod
     def from_excel(filename, **kwargs):
@@ -1389,12 +1452,14 @@ _load_func_dict = {
     "csv": GraphFrame.from_csv,
     "excel": GraphFrame.from_excel,
     "pickle": GraphFrame.from_pickle,
+    "json": GraphFrame.from_json,
 }
 _save_func_dict = {
     "hdf": GraphFrame.to_hdf,
     "csv": GraphFrame.to_csv,
     "excel": GraphFrame.to_excel,
     "pickle": GraphFrame.to_pickle,
+    "json": GraphFrame.to_json,
 }
 
 
