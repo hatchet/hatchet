@@ -9,16 +9,18 @@ import sys
 
 from .dataframe_writer import DataframeWriter
 
+
 def jsonify_series_nodes(pd_series):
     jsonified_list = []
     for node in pd_series:
         jsonified_node = {
             "depth": node._depth,
             "hatchet_nid": node._hatchet_nid,
-            "frame": self.frame.attrs,
+            "frame": node.frame.attrs,
         }
         jsonified_list.append(jsonified_node)
     return pd.Series(jsonified_list)
+
 
 class JsonWriter(DataframeWriter):
     def __init__(self, filename):

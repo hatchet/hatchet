@@ -11,17 +11,15 @@ from ..frame import Frame
 from ..node import Node
 from .dataframe_reader import DataframeReader
 
+
 def unjsonify_series_nodes(pd_series):
     unjsonified_list = []
     for json_node in pd_series:
         frame = Frame(attrs=json_node["frame"])
-        node = Node(
-            frame,
-            hnid=json_node["hatchet_nid"],
-            depth=json_node["depth"]
-        )
+        node = Node(frame, hnid=json_node["hatchet_nid"], depth=json_node["depth"])
         unjsonified_list.append(node)
     return pd.Series(unjsonified_list)
+
 
 class JsonReader(DataframeReader):
     def __init__(self, filename):
