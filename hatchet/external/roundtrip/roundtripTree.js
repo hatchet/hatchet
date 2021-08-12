@@ -558,9 +558,18 @@
                 return dummyHolder;
             }
 
-            function _visitor(root, condition){
+            function _pruningVisitor(root, condition){
                 /**
-                 * A visit
+                 * A recursive function that scans nodes for
+                 *  the existance of an outlier flag and manages the
+                 *  removal of non-outlier nodes in addition to the 
+                 *  creation of surrogate nodes that hold aggregated
+                 *  data.
+                 * 
+                 *  Note - The processing is done on the children of root primarily.
+                 *  
+                 *  @param {Hierarchy} root - Or current root node in our recursive scanning and modification of trees.
+                 *  @param {Number} condition - The comparision condition which our node value is compared against
                  */
                 if(root.children){
                     var dummyHolder = null;
@@ -592,7 +601,7 @@
                     }
 
                     for(var child of root.children){
-                        _visitor(child, condition);
+                        _pruningVisitor(child, condition);
                     }
 
                     if(root.children.length == 0){
@@ -602,27 +611,30 @@
             }
 
             function _aggregateTreeData(){
-                //Holds the logic required for pruning
-                // away un-interesting nodes
+                /**
+                 * Helper function which drives the outlier
+                 * detection and pruning of a fresh tree.
+                 * This function creates a fresh hierarchy when called and
+                 * overwrites the current tree in the view.
+                 */
                 for(var i = 0; i < _data.numberOfTrees; i++){
                     var h = _data.immutableHierarchy[i].copy();
-                    console.log(h);
                     if(_data.currentStrictness > -1){
                         //The sum ensures that we do not prune 
                         //away parent nodes of identified outliers.
                         _setOutlierFlags(h);
                         h.sum(d => d.outlier);
-                        _visitor(h, 1);
-
-                        console.log(h);
+                        _pruningVisitor(h, 1);
                     }
 
                     _data.hierarchy[i] = h;
-                    console.log(_data.hierarchy[i]);
                 }
             }
 
-            // HELPER FUNCTION DEFINTIONS
+            // --------------------------------------------
+            // Node selection helper functions
+            // --------------------------------------------
+
             function _printNodeData(nodeList) {
                 /**
                   * To pretty print the node data as a IPython table
@@ -699,7 +711,10 @@
             }
 
 
-            //Do processing required for model setup
+            //-------------------------------------------
+            // Model Setup Processing
+            //-------------------------------------------
+
             for (var treeIndex = 0; treeIndex < _forestData.length; treeIndex++) {
                 _data.immutableHierarchy.push(d3.hierarchy(_forestData[treeIndex], d => d.children));
                 _data.hierarchy.push(d3.hierarchy(_forestData[treeIndex], d => d.children));
@@ -763,8 +778,6 @@
             _data.forestMinMax = _forestMinMax;
             _data.forestMetrics.push(_forestMinMax);
 
-
-            /* Class object created from call to createModel */
             return{
                 data: _data,
                 state: _state,
@@ -777,6 +790,15 @@
                     _observers.add(s);
                 },
                 enablePruneTree: function(enabled, threshold){
+                    /**
+                     * Enables/disables the mass prune tree functionality.
+                     * Prunes tree on click based on current slider position.
+                     * 1.5 by default from view.
+                     * 
+                     * @param {bool} enabled - Switch bool that guides if we disable or enable mass pruning
+                     * @param {float} threshold - User defined strictness of pruning. Used as the multiplier in set outlier flags.
+                     *      On first click this will be 1.5.
+                     */
                     if (enabled){
                         _state.pruneEnabled = true;
                         _data.currentStrictness = threshold;
@@ -792,19 +814,17 @@
                     
                 },
                 pruneTree: function(threshold){
+                    /**
+                     * Interface to the private tree aggregation functions.
+                     *  Calls when user adjusts automatic pruning slider.
+                     * 
+                     * @param {float} threshold - User defined strictness of pruning. Used as the multiplier in set outlier flags.
+                     */
                     _data.currentStrictness = threshold;
-
                     _aggregateTreeData();
-
                     _state.hierarchyUpdated = true;
 
                     _observers.notify();
-                },
-                storeXOffsets: function(index, globalOffset, localOffset){
-                    var obj = {
-                        global: globalOffset,
-                        local: localOffset
-                    }
                 },
                 updateSelected: function(nodes){
                     /**
@@ -812,7 +832,6 @@
                      *
                      * @param {Array} nodes - A list of selected nodes
                      */
-
                     _state['selectedNodes'] = nodes;
                     this.updateTooltip(nodes);
 
@@ -825,18 +844,13 @@
                     _observers.notify();
                 },
                 handleDoubleClick: function(d){
-                      /**
-                     * Handles the model functionlaity of hiding and un-hiding subtrees
-                     * on double click
-                     *
-                     * @param {Object} d - The node which was double clicked
+                    /**
+                     * Manages the collapsing and expanding of subtrees
+                     *  when a user is manually pruning or exploring a tree.
+                     * 
+                     * @param {node} d - The node the user just double clicked.
+                     *      Can be a surrogate or real node.
                      */
-
-                    //this is kind of a hack for this paradigm
-                    // but it updates the passed data directly
-                    // and hides children nodes triggering update
-                    // when view is re-rendered
-
                     //hiding a subtree
                     if(!d.dummy){
                         if(d.parent){
@@ -981,7 +995,11 @@
                     _state["activeTree"] = activeTree;
                     _observers.notify();
                 },
-                resetView: function(){
+                resetView(){
+                    /**
+                     * Function that sets a flag which causes the 
+                     * view to reset all trees to their original layouts.
+                     */
                     _state.resetView = true;
                     _observers.notify();
                 }
@@ -1021,8 +1039,14 @@
 
 
             function _addNewMenuButton(id, text, click){
-                //refactor to remove repeated code and make it easier to add buttons
-                // with a more dynamic offset from the right
+                /**
+                 * Function created to remove some repeated code blocks and make it
+                 *  easier to add SVG buttons with a more dynamic left offset.
+                 * 
+                 * @param {string} id - The HTML id which will be affixed to the newly created button
+                 * @param {string} text - The text to be displayed on the button itself
+                 * @param {function} click - Callback function to be called on click of button.
+                 */
                 var buttonPad = 5;
                 var textPad = 3;
                 var button = _svg.append('g')
@@ -1049,12 +1073,12 @@
                 _svgButtonOffset += width + buttonPad;
             }
 
-
+            //---------------------------------
+            // HTML Interactables
+            //---------------------------------
 
             htmlInputs.append('label').attr('for', 'primaryMetricSelect').text('Color by:');
-            var metricInput = htmlInputs.append("select") //element
-                    .attr("id", "primaryMetricSelect")
-            var metricInput = d3.select(elem).append("select") //element
+            var metricInput = d3.select(elem).append("select") 
                     .attr("id", "primaryMetricSelect")
                     .selectAll('option')
                     .data(metricColumns)
@@ -1065,7 +1089,7 @@
             document.getElementById("primaryMetricSelect").style.margin = "10px 10px 10px 0px";
 
             d3.select(elem).append('label').attr('for', 'secondaryMetricSelect').text('Size:');
-            var metricInputRadius = d3.select(elem).append("select") //element
+            var metricInputRadius = d3.select(elem).append("select") 
                     .attr("id", "secondaryMetricSelect")
                     .selectAll('option')
                     .data(metricColumns)
@@ -1134,12 +1158,9 @@
 
             document.getElementById("pruning-slider").style.marginLeft = "10px";
         
-
-
             d3.select(elem).select('#pruning-slider')
                 .on('change', function(){
-                    //This might be ok because it's pretty
-                    // small.
+                    // Does not conform fully to MVC model
                     sliderText.text(()=>{
                         return ` Pruning Strictness (${this.value})`;
                     });
@@ -1150,7 +1171,6 @@
                     });
                 })
 
-
             //make an svg in the scope of our current
             // element/drawing space
             var _svg = d3.select(element).append("svg") //element
@@ -1158,6 +1178,9 @@
                 .attr("width", width + globals.layout.margin.right + globals.layout.margin.left)
                 .attr("height", height + globals.layout.margin.top + globals.layout.margin.bottom);
 
+            //-----------------------------------
+            // SVG Interactables
+            //-----------------------------------
 
             _addNewMenuButton('selectButton', 'Select nodes',  
                 function () {
@@ -1247,7 +1270,6 @@
             var brushButtonText = brushButton.select('text');
             var colorButtonText = colorButton.select('text');
             var legendText = unifyLegends.select('text');
-
 
             
 
@@ -1351,14 +1373,12 @@
                         .attr("width", width)
                         .attr("height", height);
 
+            //layout variables
+            var _margin = globals.layout.margin;     
+            var width = element.clientWidth - _margin.right - _margin.left;
+            var height = _margin.top + _margin.bottom;
             var _maxNodeRadius = 25;
-            var _treeDepthScale = d3.scaleLinear().range([0, element.offsetWidth-400]).domain([0, model.data.maxHeight])
-            var _nodeScale = d3.scaleLinear().range([5, _maxNodeRadius]).domain([model.data.forestMinMax[model.state.secondaryMetric].min, model.data.forestMinMax[model.state.secondaryMetric].max]);
-            var _barScale = d3.scaleLinear().range([5, 25]).domain([model.data.aggregateMinMax[model.state.secondaryMetric].min, model.data.aggregateMinMax[model.state.secondaryMetric].max]);
             var _treeLayoutHeights = [];
-
-            //layout variables            
-            var spreadFactor = 0;
             var legendOffset = 0;
             var maxHeight = 0;
             var chartOffset = _margin.top;
@@ -1366,14 +1386,23 @@
             var _minmax = [];
             var maxTreeCanvasHeight = 500;
 
-            //view specific data
+            //scales
+            var _treeDepthScale = d3.scaleLinear().range([0, element.offsetWidth-400]).domain([0, model.data.maxHeight])
+            var _nodeScale = d3.scaleLinear().range([5, _maxNodeRadius]).domain([model.data.forestMinMax[model.state.secondaryMetric].min, model.data.forestMinMax[model.state.secondaryMetric].max]);
+            var _barScale = d3.scaleLinear().range([5, 25]).domain([model.data.aggregateMinMax[model.state.secondaryMetric].min, model.data.aggregateMinMax[model.state.secondaryMetric].max]);
+
+            //view specific data stores
             var nodes = [];
             var surrogates = [];
             var aggregates = [];
             var links = [];
 
+            //-----------------------------------
+            // Function Definitions
+            //-----------------------------------
+
             function diagonal(s, d, ti) {
-                              /**
+                /**
                  * Creates a curved diagonal path from parent to child nodes
                  * 
                  * @param {Object} s - parent node
@@ -1393,6 +1422,13 @@
             }
 
             function _getLocalNodeX(x, ti){
+                /**
+                 * Returns the local node x offset based on the current
+                 * tree layout.
+                 * 
+                 * @param {float} x - X offset of a node from d3.tree
+                 * @param {Number} ti - The current tree index
+                 */
                 return x + treeOffset - _minmax[ti].min;
             }
 
@@ -1431,6 +1467,25 @@
 
                 return max - min;
             }
+            
+            function _getSelectedNodes(selection){
+                /**
+                 * Function which calculates the collison of which nodes were brushed
+                 * 
+                 * @param {Array} selection - A 2d array containing the svg coordinates of the top left and bottom right
+                 *  points of a brushed bounding box
+                 */
+                let brushedNodes = [];
+                if (selection){
+                    for(var i = 0; i < model.data["numberOfTrees"]; i++){
+                        nodes[i].forEach(function(d){
+                            if(selection[0][0] <= d.yMainG && selection[1][0] >= d.yMainG 
+                                && selection[0][1] <= d.xMainG && selection[1][1] >= d.xMainG){
+                                brushedNodes.push(d);
+                            }
+                        })
+                    }
+                }
 
             // --------------------------------------------------------------
             // Initialize layout before first render
@@ -1441,6 +1496,13 @@
                             .attr("transform", "translate(" + globals.layout.margin.left + "," + 0 + ")");
 
             function _calcNodePositions(nodes, treeIndex){
+                /**
+                 * Calculates the local and gloabal node positions for each tree in
+                 *  our forest.
+                 * 
+                 * @param {Array} nodes - An array of all nodes in a tree
+                 * @param {Number} treeIndex - An integer of the current tree index
+                 */
                 nodes.forEach(
                     function (d) {
                             d.x0 = _getLocalNodeX(d.x, treeIndex);
@@ -1453,11 +1515,14 @@
                 );
             }
 
+            //------------------------------
+            // Pre-Proecssing
+            //------------------------------
+
             var mainG = svg.select("#mainG");
             var tree = d3.tree().size([maxTreeCanvasHeight, width - _margin.left - 200]);
             // .nodeSize([_maxNodeRadius, _maxNodeRadius]);
             
-
           
             var zoom = d3.zoom()
                 .on("zoom", function (){
@@ -1469,13 +1534,15 @@
                      let index = zoomObj.attr("chart-id");
                      let transformation = zoomObj.node().getCTM();
      
-                     nodes[index].forEach(function(d, i) {
-                         // This function gets the absolute location for each point based on the relative
-                         // locations of the points based on transformations
-                         // the margins were being added into the .e and .f values so they have to be subtracted
-                         // I think they come from the margins being added into the "main group" when it is created
-                         // We can brush regardless of zoom or pan
-                         // Adapted from: https://stackoverflow.com/questions/18554224/getting-screen-positions-of-d3-nodes-after-transform
+                     nodes[index].forEach(function(d) {
+                         /**
+                          * This function gets the absolute location for each point based on the relative
+                          * locations of the points based on transformations
+                          * the margins were being added into the .e and .f values so they have to be subtracted
+                          * Adapted from: https://stackoverflow.com/questions/18554224/getting-screen-positions-of-d3-nodes-after-transform
+                          * 
+                          */
+                         
                          d.yMainG = transformation.e + d.y0*transformation.d + d.x0*transformation.c - globals.layout.margin.left;
                          d.xMainG = transformation.f + d.y0*transformation.b + d.x0*transformation.a - globals.layout.margin.top;
                      });
@@ -1487,28 +1554,6 @@
                 var currentRoot = tree(model.data.hierarchy[treeIndex]);
                 var currentLayoutHeight = _getHeightFromTree(currentRoot);
                 var currentMinMax = _getMinxMaxxFromTree(currentRoot);
-
-                currentRoot.x0 = height;
-                currentRoot.y0 = _margin.left;
-
-                var currentTree = tree(currentRoot);
-
-                if (currentTree.height > maxHeight) {
-                    maxHeight = currentTree.height;
-                }
-
-                model.addTree(currentTree);
-
-                treeLayoutHeights.push(_getHeightFromTree(currentRoot));
-                minmax.push(_getMinxMaxxFromTree(currentRoot))
-            }
-
-            //layout variables            
-            spreadFactor = width / (maxHeight + 1);
-
-            // Add a group and tree for each tree in the current forest
-            for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
-                model.updateforestStats(treeIndex);
                 
                 var currentTree = model.getTree(treeIndex);
                 var newg = mainG.append("g")
@@ -1585,7 +1630,6 @@
                 aggregates.push([]);
                 links.push(treeLayout.descendants().slice(1));
                 
-
                 //storage
                 _treeLayoutHeights.push(currentLayoutHeight);
                 _minmax.push(currentMinMax);
@@ -1594,33 +1638,30 @@
                 // put this on the immutable tree
                 _calcNodePositions(nodes[treeIndex], treeIndex);
 
-                newg.style("display", "inline-block");
-
-                
-                //updates
-                chartOffset += treeLayoutHeights[treeIndex] + treeOffset + _margin.top;
+                chartOffset = Math.min(_treeLayoutHeights[treeIndex], maxTreeCanvasHeight) + treeOffset + _margin.top;
                 height += chartOffset;
 
 
                 newg.call(zoom)
                     .on("dblclick.zoom", null);
 
-            } //end for-loop "add tree"
-        
+            }
+            
+            //Update the height
             svg.attr("height", height);
 
-              //setup Interactions
-              var brush = d3.brush()
-                .extent([[0, 0], [2 * width, 2 * (height + globals.layout.margin.top + globals.layout.margin.bottom)]])
-                .on('brush', function(){
+            //setup Interactions
+            var brush = d3.brush()
+            .extent([[0, 0], [2 * width, 2 * (height + globals.layout.margin.top + globals.layout.margin.bottom)]])
+            .on('brush', function(){
+            })
+            .on('end', function(){
+                var selection = _getSelectedNodes(d3.event.selection);
+                _observers.notify({
+                    type: globals.signals.BRUSH,
+                    selection: selection
                 })
-                .on('end', function(){
-                    var selection = _getSelectedNodes(d3.event.selection);
-                    _observers.notify({
-                        type: globals.signals.BRUSH,
-                        selection: selection
-                    })
-                });
+            });
             
             //return object        
             return{
@@ -2071,18 +2112,10 @@
                                 .style("fill-opacity", 1)
                                 .remove();
                         
-                        var dNodeExit = dummyNodes.exit().transition()
-                                // .duration(globals.duration)
-                                // .attr("transform", function (d) {
-                                //     return "translate(" + d.parent.y + "," + d.parent.x + ")";
-                                // })
+                        var dNodeExit = dummyNodes.exit()
                                 .remove();
                         
-                        var dNodeExit = aggBars.exit().transition()
-                            // .duration(globals.duration)
-                            // .attr("transform", function (d) {
-                            //     return "translate(" + d.parent.y + "," + d.parent.x + ")";
-                            // })
+                        var dNodeExit = aggBars.exit()
                             .remove();
             
                         // Transition exiting links to the parent's new position.
@@ -2094,20 +2127,11 @@
                                 .remove();
                         
                         // make canvas always fit tree height
-                        // if(_treeLayoutHeights < maxTreeCanvasHeight){
-                        chartOffset += Math.min(_treeLayoutHeights[treeIndex], maxTreeCanvasHeight) + treeOffset + _margin.top;
-                        // } else{
-                        // chartOffset += _treeLayoutHeights[treeIndex] + treeOffset + _margin.top;
-                        // }
+                        chartOffset = Math.min(_treeLayoutHeights[treeIndex], maxTreeCanvasHeight) + treeOffset + _margin.top;
                         height += chartOffset;
                     }                    
 
-                    //hack: fix in future
-                    if(model.data.numberOfTrees > 1){
-                        svg.attr("height", height-treeOffset);
-                    } else{
-                        svg.attr("height", height);
-                    }
+                    svg.attr("height", height);
                 }
             }
             
@@ -2157,9 +2181,7 @@
         var tooltip = createTooltipView(element, model);
         var chart = createChartView(element, model);
         
-        //register signallers with each class
-        // tooltip is not interactive so 
-        // it does not need a signaller yet
+        //register signallers 
         menu.register(controller.dispatch);
         chart.register(controller.dispatch);
 
