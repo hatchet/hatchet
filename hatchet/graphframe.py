@@ -281,21 +281,15 @@ class GraphFrame:
         format_priority = ["hdf", "pickle", "csv", "excel"]
         fformat = fileformat
         if fformat is None:
-            # TODO
-            # for ext in self._format_extensions.keys():
             for ext in _format_extensions.keys():
                 if filename.endswith(ext):
-                    # TODO
-                    # fformat = self._format_extensions[ext]
                     fformat = _format_extensions[ext]
                     break
         if fformat is not None and fformat in format_priority:
             format_priority.remove(fformat)
             try:
-                # TODO
-                # gf = self._load_func_dict[fformat](filename, **kwargs)
                 gf = _load_func_dict[fformat](filename, **kwargs)
-                print("Successfully saved to {}".format(fformat))
+                print("Successfully loaded to {}".format(fformat))
                 return gf
             except ImportError:
                 print(
@@ -306,8 +300,6 @@ class GraphFrame:
         for form in format_priority:
             print("Trying {}".format(form))
             try:
-                # TODO
-                # gf = self._load_func_dict[form](filename, **kwargs)
                 gf = _load_func_dict[form](filename, **kwargs)
                 print("Sucessfully loaded from {}".format(form))
                 return gf
