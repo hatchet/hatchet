@@ -1205,8 +1205,8 @@ def test_json_load_store(mock_graph_literal):
     if os.path.exists("test_gframe.json"):
         os.remove("test_gframe.json")
     gf_orig = GraphFrame.from_literal(mock_graph_literal)
-    gf_orig.to_csv("test_gframe.json")
-    gf_loaded = GraphFrame.from_csv("test_gframe.json")
+    gf_orig.to_json("test_gframe.json")
+    gf_loaded = GraphFrame.from_json("test_gframe.json")
 
     assert gf_orig.dataframe.equals(gf_loaded.dataframe)
     assert gf_orig.graph == gf_loaded.graph
