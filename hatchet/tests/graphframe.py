@@ -1201,6 +1201,20 @@ def test_csv_load_store(mock_graph_literal):
         os.remove("test_gframe.csv")
 
 
+def test_json_load_store(mock_graph_literal):
+    if os.path.exists("test_gframe.json"):
+        os.remove("test_gframe.json")
+    gf_orig = GraphFrame.from_literal(mock_graph_literal)
+    gf_orig.to_csv("test_gframe.json")
+    gf_loaded = GraphFrame.from_csv("test_gframe.json")
+
+    assert gf_orig.dataframe.equals(gf_loaded.dataframe)
+    assert gf_orig.graph == gf_loaded.graph
+
+    if os.path.exists("test_gframe.json"):
+        os.remove("test_gframe.json")
+
+
 def test_excel_load_store(mock_graph_literal):
     if os.path.exists("test_gframe.xls"):
         os.remove("test_gframe.xls")
@@ -1285,8 +1299,8 @@ def test_load_func_w_manual_format(mock_graph_literal):
         os.remove(fname)
 
 
-def test_save_load_func_w_guessing_format(mock_graph_literal):
-    fname = "test_gframe"
+def test_save_load_mime(mock_graph_literal):
+    fname = "test_gframe.csv"
     if os.path.exists(fname):
         os.remove(fname)
     gf_orig = GraphFrame.from_literal(mock_graph_literal)
