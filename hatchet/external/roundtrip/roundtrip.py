@@ -107,7 +107,7 @@ class Roundtrip(Magics):
         """.format(
             name, str(name), javascriptFile
         )
-        display(javascriptExport)
+        display(HTML(javascriptExport))
 
     @line_magic
     def fetchData(self, dest):
