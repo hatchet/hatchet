@@ -207,7 +207,7 @@ class ConsoleRenderer:
                 df_index = node
             return df_index
 
-        # Helper function to find the number of descendents, levels and total metric values
+        # Helper function to find the number of descendants, levels and total metric values
         # in the subtree of the tree whose depth reaches the maximum depth entered by the user
         def _get_subtree_info(node, subtree_info):
             for child in node.children:
@@ -215,16 +215,16 @@ class ConsoleRenderer:
                 subtree_info["descendants"] += 1
                 child_index = _set_dataframe_index(child)
 
-                # If the metric is incusive, then we will add all the inclusive
-                # metric values of the immediate children as the sum of metric values
-                if "(inc)" in self.primary_metric and node_depth == self.depth:
-                    subtree_info["sum_metric"] += dataframe.loc[
-                        child_index, self.primary_metric
-                    ]
-
-                # If the metric is exclusive, then we calculate the sum of metric values
-                # by adding the exclusive metric value of each descendant in the subtree
-                if "(inc)" not in self.primary_metric:
+                # If the metric is inclusive, then we will add all the inclusive
+                # metric values of the immediate children as the total sum of metric values
+                if "(inc)" in self.primary_metric:
+                    if node_depth == self.depth:
+                        subtree_info["sum_metric"] += dataframe.loc[
+                            child_index, self.primary_metric
+                        ]
+                else:
+                    # If the metric is exclusive, then we calculate the sum of metric values
+                    # by adding the exclusive metric value of each descendant in the subtree
                     subtree_info["sum_metric"] += dataframe.loc[
                         child_index, self.primary_metric
                     ]
@@ -236,9 +236,10 @@ class ConsoleRenderer:
                 if len(child.children) != 0:
                     _get_subtree_info(child, subtree_info)
 
-        node_depth = node._depth
+        # This dictionary stores the subtree information that includes their no. of
+        # descendants, total metric value and their maximum level.
         subtree_info = {"descendants": 0, "sum_metric": 0, "levels": self.depth}
-
+        node_depth = node._depth
         df_index = _set_dataframe_index(node)
         node_metric = dataframe.loc[df_index, self.primary_metric]
 
@@ -262,6 +263,8 @@ class ConsoleRenderer:
                 node_name = node_name[:18] + "..." + node_name[(len(node_name) - 18) :]
         name_str = self._ansi_color_for_name(node_name) + node_name + self.colors.end
 
+        # Print the graph based on the depth of a node and check if its
+        # below the default or user specified depth.
         if node_depth < self.depth:
             # 0 is "", 1 is "L", and 2 is "R"
             if "_missing_node" in dataframe.columns:
@@ -319,7 +322,6 @@ class ConsoleRenderer:
                 )
             else:
                 _get_subtree_info(node, subtree_info)
-
                 result = (
                     u"{indent}{metric_str} {name_str}".format(
                         indent=indent, metric_str=metric_str, name_str=name_str
