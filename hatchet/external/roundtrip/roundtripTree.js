@@ -28,14 +28,16 @@
 
         var makeColorManager = function(model){
             
-            var _regularColors = [['#006d2c', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#edf8e9'], //green
+            var _regularColors = [
+                ['#006d2c', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#edf8e9'], //green
                 ['#a50f15', '#de2d26', '#fb6a4a', '#fc9272', '#fcbba1', '#fee5d9'], //red
                 ['#08519c', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#eff3ff'], //blue
                 ['#54278f', '#756bb1', '#9e9ac8', '#bcbddc', '#dadaeb', '#f2f0f7'], //purple
                 ['#a63603', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#feedde'], //orange
                 ['#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7']]; //black
 
-            var _invertColors = [['#edf8e9', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c'], //green
+            var _invertColors = [
+                ['#edf8e9', '#c7e9c0', '#a1d99b', '#74c476', '#31a354', '#006d2c'], //green
                 ['#fee5d9', '#fcbba1', '#fc9272', '#fb6a4a', '#de2d26', '#a50f15'], //red
                 ['#eff3ff', '#c6dbef', '#9ecae1', '#6baed6', '#3182bd', '#08519c'], //blue
                 ['#f2f0f7', '#dadaeb', '#bcbddc', '#9e9ac8', '#756bb1', '#54278f'], //purple
@@ -53,7 +55,7 @@
             return {
                 setColors: function(treeIndex){
                     /**
-                     * Sets the color pallet per tree to be either inverse or regular or unified/divergent
+                     * Sets the color pallet per tree to be either inverse or regular or unified/unique to each tree
                      * 
                      * @param {Int} treeIndex - The index of the current tree's colors being set
                      */
@@ -79,7 +81,7 @@
                 },
                 getLegendDomains: function(treeIndex){
                     /**
-                     * Sets the min and max of our legend. 
+                     * Sets the min and max of the legend. 
                      * 
                      * @param {Int} treeIndex - The index of the current tree's legend being set
                      */
@@ -110,7 +112,7 @@
                 },
                 getColorLegend: function(treeIndex) {
                     /**
-                     * Gets the color scheme used for a legend contigent on divergent or unified color schemes.
+                     * Gets the color scheme used for a legend, contigent on individual tree-specific schemes or one unified color scheme.
                      * 
                      * @param {Int} treeIndex - The index of the current tree's legend being set
                      */
@@ -130,9 +132,9 @@
                 },
                 calcColorScale: function(nodeMetric, treeIndex) {
                     /**
-                     * Calcaultes the bins for our color scheme based on the domain of our metrics.
+                     * Calculates the bins for the color scheme based on the current, user-selected metric.
                      * 
-                     * @param {String} nodeMetric - the name of our current metric being mapped to a color range
+                     * @param {String} nodeMetric - the name of the current metric being mapped to a color range
                      * @param {Int} treeIndex - The index of the current tree's legend being set
                      */
 
@@ -267,7 +269,6 @@
             
             _data["forestData"] = JSON.parse(cleanTree);
             _data["rootNodeNames"].push("Show all trees");
-
             _data["numberOfTrees"] = _data["forestData"].length;
             _data["metricColumns"] = d3.keys(_data["forestData"][0].metrics);
 
@@ -277,7 +278,7 @@
             _state["activeTree"] = "Show all trees";
             
             //forest stats holds statistical descriptions of
-            // the metrics on each tree in our forest
+            // the metrics on each tree in the forest
             var _forestStats = [];
             var _forestMinMax = {}; 
             for (var i = 0; i < _data["numberOfTrees"]; i++) {
@@ -289,18 +290,21 @@
                 var thisTreeMetrics = {};
 
                 // init the min/max for all trees' metricColumns
-                for (var j = 0; j < _data["metricColumns"].length; j++) {
-                    thisTreeMetrics[_data["metricColumns"][j]] = {};
-                    thisTreeMetrics[_data["metricColumns"][j]]["min"] = Number.MAX_VALUE;
-                    thisTreeMetrics[_data["metricColumns"][j]]["max"] = 0;
+                for(let d of _data["metricColumns"]){
+                    thisTreeMetrics[d] = {
+                        "min": Number.MAX_VALUE,
+                        "max": Number.MIN_VALUE
+                    }
                 }
 
                 _forestStats.push(thisTreeMetrics);
             }
-            for (var j = 0; j < _data["metricColumns"].length; j++) {
-                _forestMinMax[_data["metricColumns"][j]] = {};
-                _forestMinMax[_data["metricColumns"][j]]["min"] = Number.MAX_VALUE;
-                _forestMinMax[_data["metricColumns"][j]]["max"] = 0;
+
+            for(let d of _data["metricColumns"]) {
+                _forestMinMax[d] = {
+                "min": Number.MAX_VALUE,
+                "max": Number.MIN_VALUE
+                }
             }
 
             _data["forestMinMax"] = _forestMinMax;
@@ -342,7 +346,7 @@
 
             function _printQuery(nodeList) {
                 /**
-                  * Prints out our selected nodes as a query string which can be used in the GraphFrame.filter() function.
+                  * Prints out user selected nodes as a query string which can be used in the GraphFrame.filter() function.
                   * 
                   * @param {Array} nodeList - An array of selected nodes for formatting
                   */
@@ -400,7 +404,7 @@
                 },
                 addTree: function(tm){
                     /**
-                     * Pushes a tree into our model.
+                     * Pushes a tree into the model.
                      * 
                      * @param {Object} tm - A d3 tree constructed from a d3 hierarchy
                      */
@@ -409,7 +413,7 @@
                 },
                 getTree: function(index){
                     /**
-                     * Retrieves a tree from our model.
+                     * Retrieves a tree from the model.
                      * 
                      * @param {Number} index - The index of the tree we want to get
                      */
@@ -417,7 +421,7 @@
                 },
                 getNodesFromMap: function(index){
                     /**
-                     * Retrieves tree nodes from our model
+                     * Retrieves tree nodes from the model
                      * 
                      * @param {Number} index - The index of the tree nodes we want to get
                      */
@@ -425,7 +429,7 @@
                 },
                 getLinksFromMap: function(index){
                     /**
-                     * Retrieves tree links from our model
+                     * Retrieves tree links from the model
                      * 
                      * @param {Number} index - The index of the tree links we want to get
                      */
@@ -433,7 +437,7 @@
                 },
                 updateNodes: function(index, f){
                     /**
-                     * Updates the nodes in our model according to the passed in callback function.
+                     * Updates the nodes in the model according to the passed in callback function.
                      *
                      * @param {Number} index - The index of the tree we are updating
                      * @param {Function} f - The callback function being applied to the nodes
@@ -442,34 +446,29 @@
                 },
                 updateforestStats: function(index){
                     /**
-                     * Updates the global metrics for a single tree in our forest and stores
-                     * them in the model.
+                     * Updates the local maximum and minimum metrics for a single tree in the forest. 
+                     * Updates the global maximum and minimum metrics across all trees in our forest.
+                     * Stores these values in the model.
                      *
                      * @param {Number} index - The index of the tree we are updating
                      */
-                    _data['trees'][index].descendants().forEach(function (d) {
-                        for (var i = 0; i < _data["metricColumns"].length; i++) {
-                            var tempMetric = _data["metricColumns"][i];
-                            if (d.data.metrics[tempMetric] > _forestStats[index][tempMetric].max) {
-                                _forestStats[index][tempMetric].max = d.data.metrics[tempMetric];
-                            }
-                            if (d.data.metrics[tempMetric] < _forestStats[index][tempMetric].min) {
-                                _forestStats[index][tempMetric].min = d.data.metrics[tempMetric];
-                            }
-                            if (d.data.metrics[tempMetric] > _forestMinMax[tempMetric].max) {
-                                _forestMinMax[tempMetric].max = d.data.metrics[tempMetric];
-                            }
-                            if (d.data.metrics[tempMetric] < _forestMinMax[tempMetric].min) {
-                                _forestMinMax[tempMetric].min = d.data.metrics[tempMetric];
-                            }
-                        }
-                    });
+
+                    var curTreeData = _forestStats[index];
+                    for(let metric of  _data["metricColumns"]) {
+                        //get local minimum and maximum for our current tree
+                        // for each metric
+                        _data['trees'][index].descendants().forEach(function (d) {
+                            curTreeData[metric].max = Math.max(curTreeData[metric].max, d.data.metrics[metric]);
+                            curTreeData[metric].min = Math.min(curTreeData[metric].min, d.data.metrics[metric]);
+                        });
+
+                        //Update global minimum and maximum per metric
+                        _forestMinMax[metric].max = Math.max(_forestMinMax[metric].max, curTreeData[metric].max);
+                        _forestMinMax[metric].min = Math.min(_forestMinMax[metric].min, curTreeData[metric].min);
+                    }
 
                     _data["forestStats"] = _forestStats;
-
-                    // Global min/max are the last entry of forestStats;
                     _data["forestMinMax"] = _forestMinMax;
-                    _data["forestStats"].push(_forestMinMax);
                 },
                 updateSelected: function(nodes){
                     /**
@@ -498,7 +497,7 @@
                      */
 
                     // if the node is not already collapsed
-                    // keep track of our collapsed nodes
+                    // keep track of collapsed nodes
                     if (! _state["collapsedNodes"].includes(d) ){
                         _state["collapsedNodes"].push(d);
                     }
@@ -651,10 +650,10 @@
 
         var createMenuView = function(elem, model){
             /**
-             * View class for the menu portion of our visualization
+             * View class for the menu portion of the visualization
              * 
-             * @param {DOMElement} elem - The current cell of our jupyter notebook
-             * @param {Model} model - The model object for our MVC pattern
+             * @param {DOMElement} elem - The current cell of the calling jupyter notebook
+             * @param {Model} model - The model object
              */
 
             let _observers = makeSignaller();
@@ -670,10 +669,7 @@
             // ----------------------------------------------
             // Create HTML interactables
             // ----------------------------------------------
-
-
-
-            htmlInputs = d3.select(elem).insert('div', '.canvas').attr('class','html-inputs');
+            const htmlInputs = d3.select(elem).insert('div', '.canvas').attr('class','html-inputs');
 
             htmlInputs.append('label').attr('for', 'metricSelect').text('Color by:');
             var metricInput = htmlInputs.append("select") //element
@@ -711,7 +707,7 @@
             // Create SVG and SVG-based interactables
             // ----------------------------------------------
 
-            //make an svg in the scope of our current
+            //make an svg in the scope of the current
             // element/drawing space
             var _svg = d3.select(elem).append('svg').attr('class','inputCanvas');
 
@@ -897,9 +893,9 @@
 
             var svg = d3.select(elem)
                         .append('svg')
-                            .attr("class", "canvas")
-                            .attr("width", width)
-                            .attr("height", height);
+                        .attr("class", "canvas")
+                        .attr("width", width)
+                        .attr("height", height);
 
             //layout variables            
             var spreadFactor = 0;
@@ -933,19 +929,15 @@
                  * Get the minimum x value and maximum x value from a tree layout
                  * Used for calculating canvas offsets before drawing
                  * 
-                 * @param {Object} root - The root node of our tree
+                 * @param {Object} root - The root node of the working tree
                  */
 
                 var obj = {}
                 var min = Infinity;
                 var max = -Infinity;
                 root.descendants().forEach(function(d){
-                    if(d.x > max){
-                        max = d.x;
-                    }
-                    else if(d.x < min){
-                        min = d.x;
-                    }
+                    max = Math.max(d.x, max);
+                    min = Math.min(d.x, min);
                 })
 
                 obj.min = min;
@@ -959,7 +951,7 @@
                  * Get the vertical space required to draw the tree
                  * by subtracting the min x value from the maximum
                  * 
-                 * @param {Object} root - The root node of our tree
+                 * @param {Object} root - The root node of the working tree
                  */
                 let minmax = _getMinxMaxxFromTree(root);
                 let min = minmax["min"];
@@ -977,7 +969,6 @@
                             .attr("transform", "translate(" + globals.layout.margin.left + "," + 0 + ")");
 
             var tree = d3.tree().nodeSize([_nodeRadius, _nodeRadius]);
-            // .size([treeHeight, width - _margin.left]);
 
             // Find the tallest tree for layout purposes (used to set a uniform spreadFactor)
             for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
@@ -1000,9 +991,9 @@
             }
 
             //layout variables            
-            var spreadFactor = width / (maxHeight + 1);
+            spreadFactor = width / (maxHeight + 1);
 
-            // Add a group and tree for each tree in our forest
+            // Add a group and tree for each tree in the current forest
             for (var treeIndex = 0; treeIndex < forestData.length; treeIndex++) {
                 model.updateforestStats(treeIndex);
                 
@@ -1254,9 +1245,7 @@
                         chart.selectAll('.legend text')
                             .transition()
                             .duration(globals.duration)
-                            .text((d, i) => {
-                                return _colorManager.getLegendDomains(treeIndex)[6 - d - 1] + ' - ' + _colorManager.getLegendDomains(treeIndex)[6 - d];
-                            });
+                            .text((d) => { return _colorManager.getLegendDomains(treeIndex)[6 - d - 1] + ' - ' + _colorManager.getLegendDomains(treeIndex)[6 - d]; });
 
 
                         // Transition links to their new position.
@@ -1373,8 +1362,8 @@
             /**
              * Class that instantiates the view for the tooltip that appears with selected nodes.
              * 
-             * @param {DOM Element} elem - The current cell of our Jupyter notebook
-             * @param {Model} model - The model from our MVC pattern
+             * @param {DOM Element} elem - The current cell of the calling Jupyter notebook
+             * @param {Model} model - The model object containg data for the view
              */
             var _observers = makeSignaller();
             var _tooltip = d3.select(elem).append("div")
