@@ -286,7 +286,8 @@
                             "aggregateMinMax": {},
                             "forestMetrics": [],
                             "metricLists":[],
-                            "currentStrictness": 1.5
+                            "currentStrictness": 1.5,
+                            "treeSizes": []
                         };
 
             var _state = {
@@ -300,7 +301,8 @@
                             "brushOn": -1,
                             "hierarchyUpdated": true,
                             "cachedThreshold": 0,
-                            "outlierThreshold": 0
+                            "outlierThreshold": 0,
+                            "pruneEnabled": false
                         };
 
             //setup model
@@ -334,7 +336,23 @@
             _state.secondaryMetric = _data.metricColumns[1];
             _state.activeTree = "Show all trees";
             _state.treeXOffsets = [];
+            
+            for (let treeIndex = 0; treeIndex < _forestData.length; treeIndex++) {
+                hierarchy = d3.hierarchy(_forestData[treeIndex], d => d.children);
+                hierarchy.size = hierarchy.descendants().length;
 
+                _data.immutableHierarchy.push(hierarchy);
+                _data.hierarchy.push(hierarchy);
+                if (_data.immutableHierarchy[treeIndex].height > _data.maxHeight){
+                    _data.maxHeight = _data.immutableHierarchy[treeIndex].height;
+                }
+            }
+
+            //sort in descending order
+            _data.immutableHierarchy.sort((a,b) => b.size - a.size);
+            _data.hierarchy.sort((a,b) => b.size - a.size);
+
+            _state.lastClicked = _data.hierarchy[0];
 
             //Stats functions
             function _getListOfMetrics(h){
@@ -625,6 +643,10 @@
                         _setOutlierFlags(h);
                         h.sum(d => d.outlier);
                         _pruningVisitor(h, 1);
+
+                        //update size of subtrees on the nodes
+                        h.size = h.descendants().length;
+                        
                     }
 
                     _data.hierarchy[i] = h;
@@ -715,15 +737,6 @@
             // Model Setup Processing
             //-------------------------------------------
 
-            for (var treeIndex = 0; treeIndex < _forestData.length; treeIndex++) {
-                _data.immutableHierarchy.push(d3.hierarchy(_forestData[treeIndex], d => d.children));
-                _data.hierarchy.push(d3.hierarchy(_forestData[treeIndex], d => d.children));
-                if (_data.immutableHierarchy[treeIndex].height > _data.maxHeight){
-                    _data.maxHeight = _data.immutableHierarchy[treeIndex].height;
-                }
-               
-            }
-            _state.lastClicked = _data.hierarchy[0];
 
             //get the max and min metrics across the forest
             // and for each individual tree
@@ -872,8 +885,6 @@
                     // Replaces a node if one was elided
                     // Appends if multiple were elided
                     else{
-                        delIndex = d.parent._children.indexOf(elided);
-                        d.parent._children.splice(delIndex, 1);
                         
                         if(d.elided.length == 1){
                             insIndex = d.parent.children.indexOf(d);
@@ -881,7 +892,10 @@
                         }
                         else{
                             for(elided of d.elided){
-                                d.parent.children.push(elided)
+                                delIndex = d.parent._children.indexOf(elided);
+                                d.parent._children.splice(delIndex, 1);
+
+                                d.parent.children.push(elided);
                             }
                             d.parent.children = d.parent.children.filter(child => child !== d);
                         }
@@ -1339,16 +1353,17 @@
                                 return 'hidden';
                             }
                         });
-                    d3.select('.slide-container')
-                        .style('visibility', ()=>{
+
+                    d3.select(element).select('.slide-container')
+                        .style('display', () =>{
+                            console.log(pruneEnabled);
                             if(pruneEnabled){
-                                return 'visible';
+                                return 'inline-block';
                             }
                             else{
-                                return 'hidden';
+                                return 'none';
                             }
-                        })
-                        .style('display', 'inline-block');
+                        });
 
                 }
             }
@@ -1377,16 +1392,16 @@
             var _margin = globals.layout.margin;     
             var width = element.clientWidth - _margin.right - _margin.left;
             var height = _margin.top + _margin.bottom;
-            var _maxNodeRadius = 25;
+            var _maxNodeRadius = 20;
             var _treeLayoutHeights = [];
             var legendOffset = 0;
             var maxHeight = 0;
             var chartOffset = _margin.top;
             var treeOffset = 0;
             var _minmax = [];
-            var maxTreeCanvasHeight = 500;
 
             //scales
+            var _treeCanvasHeightScale = d3.scaleQuantize().range([250, 1000, 1250, 1500]).domain([1, 300]);
             var _treeDepthScale = d3.scaleLinear().range([0, element.offsetWidth-400]).domain([0, model.data.maxHeight])
             var _nodeScale = d3.scaleLinear().range([5, _maxNodeRadius]).domain([model.data.forestMinMax[model.state.secondaryMetric].min, model.data.forestMinMax[model.state.secondaryMetric].max]);
             var _barScale = d3.scaleLinear().range([5, 25]).domain([model.data.aggregateMinMax[model.state.secondaryMetric].min, model.data.aggregateMinMax[model.state.secondaryMetric].max]);
@@ -1520,7 +1535,7 @@
             //------------------------------
 
             var mainG = svg.select("#mainG");
-            var tree = d3.tree().size([maxTreeCanvasHeight, width - _margin.left - 200]);
+            
             // .nodeSize([_maxNodeRadius, _maxNodeRadius]);
             
           
@@ -1551,9 +1566,10 @@
 
             // Add a group and tree for each forestData[i]
             for (var treeIndex = 0; treeIndex < model.data.numberOfTrees; treeIndex++) {
-                var currentRoot = tree(model.data.hierarchy[treeIndex]);
-                var currentLayoutHeight = _getHeightFromTree(currentRoot);
-                var currentMinMax = _getMinxMaxxFromTree(currentRoot);
+                let tree = d3.tree().size([_treeCanvasHeightScale(model.data.hierarchy[treeIndex].size), width - _margin.left - 200]);
+                let currentRoot = tree(model.data.hierarchy[treeIndex]);
+                let currentLayoutHeight = _getHeightFromTree(currentRoot);
+                let currentMinMax = _getMinxMaxxFromTree(currentRoot);
                 
                 var currentTree = model.getTree(treeIndex);
                 var newg = mainG.append("g")
@@ -1638,7 +1654,7 @@
                 // put this on the immutable tree
                 _calcNodePositions(nodes[treeIndex], treeIndex);
 
-                chartOffset = Math.min(_treeLayoutHeights[treeIndex], maxTreeCanvasHeight) + treeOffset + _margin.top;
+                chartOffset = _treeLayoutHeights[treeIndex] + treeOffset + _margin.top;
                 height += chartOffset;
 
 
@@ -1700,6 +1716,8 @@
                         //will need to optimize this redrawing
                         // by cacheing tree between calls
                         if(model.state.hierarchyUpdated == true){
+                            console.log(model.data.hierarchy[treeIndex].size, _treeCanvasHeightScale(model.data.hierarchy[treeIndex].size));
+                            let tree = d3.tree().size([_treeCanvasHeightScale(model.data.hierarchy[treeIndex].size), width - _margin.left - 200]);
                             var treeLayout = tree(source);
                             nodes[treeIndex] = treeLayout.descendants().filter(d=>{return !d.dummy});
                             surrogates[treeIndex] = treeLayout.descendants().filter(d=>{return (d.dummy && !d.aggregate)});
@@ -2127,7 +2145,7 @@
                                 .remove();
                         
                         // make canvas always fit tree height
-                        chartOffset = Math.min(_treeLayoutHeights[treeIndex], maxTreeCanvasHeight) + treeOffset + _margin.top;
+                        chartOffset = _treeLayoutHeights[treeIndex] + treeOffset + _margin.top;
                         height += chartOffset;
                     }                    
 
