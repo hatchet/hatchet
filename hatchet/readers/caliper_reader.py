@@ -351,6 +351,13 @@ class CaliperReader:
                     missing_ranks = [x for x in rank_list if x not in present_ranks]
                     for rank in missing_ranks:
                         node_dict = dict(default_metric_dict)
+                        # fill missing rank data with data from present rank
+                        for idx, item in enumerate(self.json_cols_mdata):
+                            if self.json_cols[idx] != self.nid_col_name:
+                                if item["is_value"] is True:
+                                    continue
+                                else:
+                                    node_dict[self.json_cols[idx]] = metric_rows[self.json_cols[idx]].unique()[0]
                         node_dict[self.nid_col_name] = row[self.nid_col_name]
                         node_dict["rank"] = rank
                         missing_nodes.append(node_dict)
