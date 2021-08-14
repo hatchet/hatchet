@@ -60,6 +60,7 @@ class AscentReader:
         self.global_nid = 0
         self.nnodes_per_rank = 0
 
+        self.default_metric = None
         self.timer = Timer()
 
     def create_graph(self):
@@ -306,6 +307,13 @@ class AscentReader:
                 missing_ranks = [x for x in rank_list if x not in present_ranks]
                 for rank in missing_ranks:
                     node_dict = dict(default_metric_dict)
+                    for idx, item in enumerate(list(self.metric_columns)):
+                        if item in numeric_columns:
+                            continue
+                        else:
+                            node_dict[list(self.metric_columns)[idx]] = row[
+                                list(self.metric_columns)[idx]
+                            ]
                     node_dict["nid"] = row["nid"]
                     node_dict["rank"] = rank
                     missing_nodes.append(node_dict)
@@ -323,4 +331,15 @@ class AscentReader:
         exc_metrics = ["time"]
         inc_metrics = []
 
-        return hatchet.graphframe.GraphFrame(graph, dataframe, exc_metrics, inc_metrics)
+        # set the default metric
+        if self.default_metric is None:
+            if "time" in exc_metrics or "time" in inc_metrics:
+                self.default_metric = "time"
+            elif len(exc_metrics) > 0:
+                self.default_metric = exc_metrics[0]
+            elif len(inc_metrics) > 0:
+                self.default_metric = inc_metrics[0]
+
+        return hatchet.graphframe.GraphFrame(
+            graph, dataframe, exc_metrics, inc_metrics, self.default_metric
+        )
