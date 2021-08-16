@@ -813,7 +813,7 @@ class GraphFrame:
 
         return folded_stack
 
-    def to_literal(self, name="name", rank=0, thread=0):
+    def to_literal(self, name="name", rank=0, thread=0, columns=[]):
         """Format this graph as a list of dictionaries for Roundtrip
         visualizations.
         """
@@ -833,8 +833,10 @@ class GraphFrame:
             else:
                 df_index = hnode
 
+            valid_columns = [col for col in columns if col in self.dataframe.columns]
+
             metrics_dict = {}
-            for m in sorted(self.inc_metrics + self.exc_metrics):
+            for m in sorted(self.inc_metrics + self.exc_metrics + valid_columns):
                 node_metric_val = self.dataframe.loc[df_index, m]
                 metrics_dict[m] = node_metric_val
 
