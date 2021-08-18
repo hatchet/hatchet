@@ -172,9 +172,10 @@ class CaliperNativeReader:
         exc_metrics = []
         inc_metrics = []
         for column in self.metric_columns:
-            if "(inc)" in column:
-                inc_metrics.append(column)
-            else:
-                exc_metrics.append(column)
+            if self.filename_or_caliperreader.attribute(column).is_value():
+                if "inclusive" in column:
+                    inc_metrics.append(column)
+                else:
+                    exc_metrics.append(column)
 
         return hatchet.graphframe.GraphFrame(graph, dataframe, exc_metrics, inc_metrics)
