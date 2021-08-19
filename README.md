@@ -1,9 +1,10 @@
 # <img src="https://raw.githubusercontent.com/hatchet/hatchet/develop/logo-hex.png" width="64" valign="middle" alt="hatchet"/> Hatchet
 
 [![Build Status](https://travis-ci.com/hatchet/hatchet.svg?branch=develop)](https://travis-ci.com/hatchet/hatchet)
-[![codecov](https://codecov.io/gh/hatchet/hatchet/branch/develop/graph/badge.svg)](https://codecov.io/gh/hatchet/hatchet)
 [![Read the Docs](http://readthedocs.org/projects/hatchet/badge/?version=latest)](http://hatchet.readthedocs.io)
+[![codecov](https://codecov.io/gh/hatchet/hatchet/branch/develop/graph/badge.svg)](https://codecov.io/gh/hatchet/hatchet)
 [![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![Join slack](https://img.shields.io/badge/slack-hatchet--users-blue)](https://join.slack.com/t/hatchet-users/shared_invite/zt-twjzzdav-p1s7NUEJzBoejYdOAgeddg)
 
 Hatchet is a Python-based library that allows [Pandas](https://pandas.pydata.org) dataframes to be indexed by structured tree and graph data. It is intended for analyzing performance data that has a hierarchy (for example, serial or parallel profiles that represent calling context trees, call graphs, nested regions’ timers, etc.). Hatchet implements various operations to analyze a single hierarchical data set or compare multiple data sets, and its API facilitates analyzing such data programmatically.
 
@@ -37,7 +38,10 @@ Examples of performance analysis using hatchet are available [here](https://hatc
 Hatchet is an open source project. We welcome contributions via pull requests,
 and questions, feature requests, or bug reports via issues.
 
-You can also reach the hatchet developers by email at: [hatchet-help@listserv.umd.edu](mailto:hatchet-help@listserv.umd.edu).
+You can connect with the hatchet community on
+[slack](https://join.slack.com/t/hatchet-users/shared_invite/zt-twjzzdav-p1s7NUEJzBoejYdOAgeddg).
+You can also reach the hatchet developers by email at:
+[hatchet-help@listserv.umd.edu](mailto:hatchet-help@listserv.umd.edu).
 
 ### Authors
 

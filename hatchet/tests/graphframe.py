@@ -697,6 +697,7 @@ def test_tree(mock_graph_literal):
         thread=0,
         depth=10000,
         highlight_name=False,
+        colormap="RdYlGn",
         invert_colormap=False,
     )
     assert "0.000 foo" in output
@@ -715,6 +716,7 @@ def test_tree(mock_graph_literal):
         thread=0,
         depth=10000,
         highlight_name=False,
+        colormap="RdYlGn",
         invert_colormap=False,
     )
     assert "50.000 waldo" in output
@@ -772,6 +774,7 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
         thread=0,
         depth=10000,
         highlight_name=False,
+        colormap="RdYlGn",
         invert_colormap=False,
     )
     assert "0.000 C" in output
@@ -800,6 +803,7 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
         thread=0,
         depth=10000,
         highlight_name=False,
+        colormap="RdYlGn",
         invert_colormap=False,
     )
     assert "0.000 A" in output
@@ -833,6 +837,7 @@ def test_div_decorator(small_mock1, small_mock2):
         thread=0,
         depth=10000,
         highlight_name=False,
+        colormap="RdYlGn",
         invert_colormap=False,
     )
     assert "1.000 C" in output

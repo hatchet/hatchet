@@ -51,6 +51,7 @@ setup(
         "pandas",
         "textX",
         "multiprocess",
+        "caliper-reader",
     ],
     ext_modules=[
         Extension(

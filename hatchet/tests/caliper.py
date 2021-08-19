@@ -13,6 +13,12 @@ from hatchet.readers.caliper_reader import CaliperReader
 from hatchet.util.executable import which
 from hatchet.external.console import ConsoleRenderer
 
+caliperreader_avail = True
+try:
+    import caliperreader
+except ImportError:
+    caliperreader_avail = False
+
 annotations = [
     "main",
     "LagrangeLeapFrog",
@@ -166,6 +172,7 @@ def test_tree(lulesh_caliper_json):
         thread=0,
         depth=10000,
         highlight_name=False,
+        colormap="RdYlGn",
         invert_colormap=False,
     )
     assert "121489.000 main" in output
@@ -184,6 +191,7 @@ def test_tree(lulesh_caliper_json):
         thread=0,
         depth=10000,
         highlight_name=False,
+        colormap="RdYlGn",
         invert_colormap=False,
     )
     assert "662712.000 EvalEOSForElems" in output
@@ -198,3 +206,41 @@ def test_graphframe_to_literal(lulesh_caliper_json):
     gf2 = GraphFrame.from_literal(graph_literal)
 
     assert len(gf.graph) == len(gf2.graph)
+
+
+def test_graphframe_native_lulesh_from_file(lulesh_caliper_cali):
+    """Sanity check the native Caliper reader by examining a known input."""
+
+    gf = GraphFrame.from_caliperreader(str(lulesh_caliper_cali))
+    print(list(gf.dataframe.columns))
+
+    assert len(gf.dataframe.groupby("name")) == 19
+
+    for col in gf.dataframe.columns:
+        if col in ("time (inc)", "time"):
+            assert gf.dataframe[col].dtype == np.float64
+        elif col in ("nid", "rank"):
+            assert gf.dataframe[col].dtype == np.int64
+        elif col in ("name", "node"):
+            assert gf.dataframe[col].dtype == np.object
+
+
+@pytest.mark.skipif(
+    not caliperreader_avail, reason="needs caliper-reader package to be loaded"
+)
+def test_graphframe_native_lulesh_from_caliperreader(lulesh_caliper_cali):
+    """Sanity check the native Caliper reader by examining a known input."""
+    r = caliperreader.CaliperReader()
+    r.read(lulesh_caliper_cali)
+
+    gf = GraphFrame.from_caliperreader(r)
+
+    assert len(gf.dataframe.groupby("name")) == 19
+
+    for col in gf.dataframe.columns:
+        if col in ("time (inc)", "time"):
+            assert gf.dataframe[col].dtype == np.float64
+        elif col in ("nid", "rank"):
+            assert gf.dataframe[col].dtype == np.int64
+        elif col in ("name", "node"):
+            assert gf.dataframe[col].dtype == np.object
