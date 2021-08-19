@@ -1,6 +1,6 @@
 # <img src="https://raw.githubusercontent.com/hatchet/hatchet/develop/logo-hex.png" width="64" valign="middle" alt="hatchet"/> Hatchet
 
-[![Build Status](http://github.com/hatchet/hatchet/actions/workflows/unit-tests.yaml/badge.svg)](https://github.com/hatchet/hatchet/actions)
+[![Build Status](https://github.com/hatchet/hatchet/actions/workflows/unit-tests.yaml/badge.svg)](https://github.com/hatchet/hatchet/actions)
 [![Read the Docs](http://readthedocs.org/projects/hatchet/badge/?version=latest)](http://hatchet.readthedocs.io)
 [![codecov](https://codecov.io/gh/hatchet/hatchet/branch/develop/graph/badge.svg)](https://codecov.io/gh/hatchet/hatchet)
 [![Code Style: Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
