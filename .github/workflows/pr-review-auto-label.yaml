@@ -1,0 +1,26 @@
+name: pull request review auto label
+
+on:
+  pull_request_review:
+    types: [submitted]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Auto Label if Approved
+        if: github.event.review.state == 'approved'
+        uses: andymckay/labeler@master
+        with:
+          add-labels: 'status: approved, status: ready to merge'
+          remove-labels: 'status: ready for review'
+      - name: Auto Label if Revisions Needed
+        if: github.event.review.state == 'changes_requested'
+        uses: andymckay/labeler@master
+        with:
+          add-labels: 'status: revisions needed'
+          remove-labels: 'status: ready for review'
