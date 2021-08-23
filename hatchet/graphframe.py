@@ -844,7 +844,9 @@ class GraphFrame:
             return metrics_dict
 
         def attributes_to_dict(df_index):
-            valid_columns = [col for col in include_columns if col in self.dataframe.columns]
+            valid_columns = [
+                col for col in include_columns if col in self.dataframe.columns
+            ]
 
             attributes_dict = {}
             for m in sorted(valid_columns):
