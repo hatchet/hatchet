@@ -1,4 +1,4 @@
-name: Hatchet Unit Tests CI
+name: unit tests
 
 on:
   push:
