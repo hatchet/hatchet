@@ -58,10 +58,11 @@
             const _forestStats = model.data["foresetStats"];
             const _metricColumns = model.data["metricColumns"];
             const _attributeColumns = model.data["attributeColumns"];
-            const curMetric = _state["selectedMetric"];
 
             return {
                 setColors: function (treeIndex) {
+                    const curMetric = _state["selectedMetric"];
+
                     if (_metricColumns.includes(curMetric)) {
                         if (treeIndex == -1) return _allTreesColors[_state["colorScheme"]];
                         else return _regularColors[_state["colorScheme"]];
@@ -78,6 +79,7 @@
                      */
 
                     let colorScaleDomain;
+                    const curMetric = _state["selectedMetric"];
 
                     // so hacky: need to fix later
                     if (model.data["legends"][_state["legend"]].includes("Unified")) {
@@ -129,6 +131,7 @@
 
                     // Decide the color scheme for the settings.
                     const colorSchemeUsed = this.setColors(treeIndex);
+                    const curMetric = _state["selectedMetric"];
 
                     // Get the suitable data based on the Legend settings.
                     let _d;
@@ -137,6 +140,8 @@
                     } else {
                         _d = _forestMetrics[treeIndex][curMetric];
                     }
+
+                    console.log(curMetric);
 
                     if (_attributeColumns.includes(curMetric)) {
                         const nodeMetric = nodeData.attributes[curMetric];
