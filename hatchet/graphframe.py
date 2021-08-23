@@ -860,6 +860,8 @@ class GraphFrame:
                 node_metric_val = self.dataframe.loc[df_index, m]
                 metrics_dict[m] = node_metric_val
 
+            return metrics_dict
+
         def attributes_to_dict(df_index):
             valid_columns = [col for col in include_columns if col in self.dataframe.columns]
 
@@ -879,7 +881,7 @@ class GraphFrame:
 
             node_dict["name"] = node_name
             node_dict["frame"] = hnode.frame.attrs
-            node_dict["metrics"] = metrics_to_dict(df_index),
+            node_dict["metrics"] = metrics_to_dict(df_index)
             node_dict["metrics"]["_hatchet_nid"] = hnode._hatchet_nid
             node_dict["attributes"] = attributes_to_dict(df_index)
 
