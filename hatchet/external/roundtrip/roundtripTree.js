@@ -56,11 +56,19 @@
             const _state = model.state;
             const _forestMinMax = model.data["forestMinMax"];
             const _forestStats = model.data["foresetStats"];
+            const _metricColumns = model.data["metricColumns"];
+            const _attributeColumns = model.data["attributeColumns"];
+            const curMetric = _state["selectedMetric"];
 
             return {
                 setColors: function (treeIndex) {
-                    if (treeIndex == -1) return _allTreesColors[_state["colorScheme"]];
-                    else return _regularColors[_state["colorScheme"]];
+                    if (_metricColumns.includes(curMetric)) {
+                        if (treeIndex == -1) return _allTreesColors[_state["colorScheme"]];
+                        else return _regularColors[_state["colorScheme"]];
+                    } else if(_attributeColumns.includes(curMetric)) {
+                        if (treeIndex == -1) return _allTreesColors[2];
+                        else return _regularColors[2]; 
+                    }
                 },
                 getLegendDomains: function(treeIndex){
                     /**
@@ -70,9 +78,7 @@
                      */
 
                     let colorScaleDomain;
-                    const curMetric = _state["selectedMetric"];
-                    const curColorScheme = _state["colorScheme"];
-                    
+
                     // so hacky: need to fix later
                     if (model.data["legends"][_state["legend"]].includes("Unified")) {
                         treeIndex = -1;
@@ -84,13 +90,13 @@
                         _data = _forestStats[treeIndex][curMetric]
                     }
 
-                    if (curColorScheme == 0 || curColorScheme == 1) {
+                    if (_metricColumns.includes(curMetric)) {
                         let metricRange = _data.max - _data.min;
                         colorScaleDomain = [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1].map(function (x) {
                             return x * metricRange + _data.min;
                         });
                     } 
-                    else if (curColorScheme == 2) {
+                    else if (_attributeColumns.includes(curMetric)) {
                         colorScaleDomain = _data;
                     }
 
@@ -110,17 +116,16 @@
 
                     return this.setColors(treeIndex);
                 },
-                calcColorScale: function(nodeMetric, treeIndex) {
+                calcColorScale: function(nodeData) {
                     /**
                      * Calculates the bins for the color scheme based on the current, user-selected metric.
                      * 
-                     * @param {String} nodeMetric - the name of the current metric being mapped to a color range
-                     * @param {Int} treeIndex - The index of the current tree's legend being set
+                     * @param {String} nodeData - the name of the current metric being mapped to a color range
                      */
 
-                    // Fetch the selected metric from state.
-                    // d3.select(element).select('#metricSelect').property('value');
-                    const curMetric = _state["selectedMetric"];
+                    if(model.state["legend"] == globals.UNIFIED){
+                        treeIndex  = -1
+                    }
 
                     // Decide the color scheme for the settings.
                     const colorSchemeUsed = this.setColors(treeIndex);
@@ -133,15 +138,17 @@
                         _d = _forestMetrics[treeIndex][curMetric];
                     }
 
-                    console.log(_d);
-
-                    // Calculate the range of min/max.
-                    const metricRange = _d.max - _d.min;
-
-                    if (curMetric === "module") {
+                    if (_attributeColumns.includes(curMetric)) {
+                        const nodeMetric = nodeData.attributes[curMetric];
                         const indexOfMetric = _d.indexOf(nodeMetric);
                         return colorSchemeUsed[indexOfMetric];
-                    } else {
+                    } 
+                    else if(_metricColumns.includes(curMetric)) {
+                        const nodeMetric = nodeData.metrics[curMetric];
+
+                         // Calculate the range of min/max.
+                        const metricRange = _d.max - _d.min;
+                        
                         // Set colorMap for runtime metrics.
                         let proportion_of_total = nodeMetric / 1;;
 
@@ -243,11 +250,12 @@
             var _data = {
                             "trees":[],
                             "legends": ["Unified", "Indiv."],
-                            "colors": ["Default", "Inverted", "Categor."],
+                            "colors": ["Default", "Inverted"],
                             "forestData": null,
                             "rootNodeNames": [],
                             "numberOfTrees": 0,
                             "metricColumns": [],
+                            "attributeColumns": [],
                             "forestMinMax": [],
                             "forestStats": []
                         };
@@ -269,6 +277,7 @@
             _data["rootNodeNames"].push("Show all trees");
             _data["numberOfTrees"] = _data["forestData"].length;
             _data["metricColumns"] = d3.keys(_data["forestData"][0].metrics);
+            _data["attributeColumns"] = d3.keys(_data["forestData"][0].attributes);
 
             // pick the first metric listed to color the nodes
             _state["selectedMetric"] = _data["metricColumns"][0];
@@ -289,28 +298,16 @@
 
                 // init the min/max for all trees' metricColumns
                 for (let metric of _data["metricColumns"]) {
-                    let _d;
-                    if (metric === "module") {
-                        _d = [];
-                    }
-                    else {
-                        _d = { "min": Number.MAX_VALUE, "max": 0 }
-                    }
-                    thisTreeMetrics[metric] = _d;
+                    thisTreeMetrics[metric] = { "min": Number.MAX_VALUE, "max": 0 };
+                    _forestMinMax[metric] = { "min": Number.MAX_VALUE, "max": 0 };
+                }
+
+                for (let attribute of _data["attributeColumns"]) {
+                    thisTreeMetrics[attribute] = [];
+                    _forestMinMax[attribute] = [];
                 }
 
                 _forestStats.push(thisTreeMetrics);
-            }
-
-            for (let metric of _data["metricColumns"]) {
-                console.log(metric);
-                if (metric === "module") {
-                    _d = [];
-                }
-                else {
-                    _d = { "min": Number.MAX_VALUE, "max": 0 }
-                }
-                _forestMinMax[metric] = _d;
             }
 
             _data["forestMinMax"] = _forestMinMax;
@@ -461,30 +458,28 @@
 
                     var curTreeData = _forestStats[index];
                     for(let metric of  _data["metricColumns"]) {
-                        if(metric == "module") {
-                            // get all the unique types into the array.
-                            _data['trees'][index].descendants().forEach(function (d) {
-                                if (!curTreeData[metric].includes(d.data.metrics[metric])) {
-                                    curTreeData[metric].push(d.data.metrics[metric]);
-                                }
-                                if (!_forestMinMax[metric].includes(d.data.metrics[metric])) {
-                                    _forestMinMax[metric].push(d.data.metrics[metric]);
-                                }
-                            });
+                        // get local minimum and maximum for our current tree
+                        // for each metric
+                        _data['trees'][index].descendants().forEach(function (d) {
+                            curTreeData[metric].max = Math.max(curTreeData[metric].max, d.data.metrics[metric]);
+                            curTreeData[metric].min = Math.min(curTreeData[metric].min, d.data.metrics[metric]);
+                        });
 
-                        } else {
-                            // get local minimum and maximum for our current tree
-                            // for each metric
-                            _data['trees'][index].descendants().forEach(function (d) {
-                                curTreeData[metric].max = Math.max(curTreeData[metric].max, d.data.metrics[metric]);
-                                curTreeData[metric].min = Math.min(curTreeData[metric].min, d.data.metrics[metric]);
-                            });
+                        //Update global minimum and maximum per metric
+                        _forestMinMax[metric].max = Math.max(_forestMinMax[metric].max, curTreeData[metric].max);
+                        _forestMinMax[metric].min = Math.min(_forestMinMax[metric].min, curTreeData[metric].min);
+                    }
 
-                            //Update global minimum and maximum per metric
-                            _forestMinMax[metric].max = Math.max(_forestMinMax[metric].max, curTreeData[metric].max);
-                            _forestMinMax[metric].min = Math.min(_forestMinMax[metric].min, curTreeData[metric].min);
-    
-                        }
+                    for(let attribute of _data["attributeColumns"]) {
+                        // get all the unique types into the array.
+                        _data['trees'][index].descendants().forEach(function (d) {
+                            if (!curTreeData[attribute].includes(d.data.attributes[attribute])) {
+                                curTreeData[attribute].push(d.data.attributes[attribute]);
+                            }
+                            if (!_forestMinMax[attribute].includes(d.data.attributes[attribute])) {
+                                _forestMinMax[attribute].push(d.data.attributes[attribute]);
+                            }
+                        });
                     }
 
                     _data["forestStats"] = _forestStats;
@@ -679,6 +674,8 @@
             let _observers = makeSignaller();
             var rootNodeNames = model.data["rootNodeNames"];
             var metricColumns = model.data["metricColumns"];
+            const attributeColumns = model.data["attributeColumns"];
+            const allColumns = metricColumns.concat(attributeColumns);
             var brushOn = model.state["brushOn"];
             var curColor = model.state["colorScheme"];
             var colors = model.data["colors"];
@@ -696,7 +693,7 @@
             var metricInput = htmlInputs.append("select") //element
                     .attr("id", "metricSelect")
                     .selectAll('option')
-                    .data(metricColumns)
+                    .data(allColumns)
                     .enter()
                     .append('option')
                     .text(d => d)
@@ -904,6 +901,8 @@
         var createChartView = function(elem, model){
             let _observers = makeSignaller();
             var _colorManager = makeColorManager(model);
+            const metricColumns = model.data["metricColumns"];
+            const attributeColumns = model.data["attributeColumns"];
             var forestData = model.data["forestData"];
             var width = elem.clientWidth - globals.layout.margin.right - globals.layout.margin.left;
             var height = globals.layout.margin.top + globals.layout.margin.bottom;
@@ -1174,10 +1173,7 @@
                                 .attr('class', 'circleNode')
                                 .attr("r", 1e-6)
                                 .style("fill", function (d) {
-                                    if(model.state["legend"] == globals.UNIFIED){
-                                        return _colorManager.calcColorScale(d.data.metrics[selectedMetric], -1);
-                                    }
-                                    return _colorManager.calcColorScale(d.data.metrics[selectedMetric], treeIndex);
+                                    return _colorManager.calcColorScale(d.data);
                                 })
                                 .style('stroke-width', '1px')
                                 .style('stroke', 'black');
@@ -1259,7 +1255,12 @@
                             .transition()
                             .duration(globals.duration)
                             .attr('fill', function (d, i) {
-                                return _colorManager.getColorLegend(treeIndex)[d];
+                                if (metricColumns.includes(model.state["selectedMetric"])) {
+                                    return _colorManager.getColorLegend(treeIndex)[d];
+                                }
+                                else if (attributeColumns.includes(model.state["selectedMetric"])) {
+                                    return _colorManager.getColorLegend(treeIndex)[i];
+                                }
                             })
                             .attr('stroke', 'black');
 
@@ -1267,10 +1268,10 @@
                             .transition()
                             .duration(globals.duration)
                             .text((d, i) => {
-                                if (model.state["selectedMetric"] !== "module") {
+                                if (metricColumns.includes(model.state["selectedMetric"])) {
                                     return _colorManager.getLegendDomains(treeIndex)[6 - d - 1] + ' - ' + _colorManager.getLegendDomains(treeIndex)[6 - d];                                    
                                 }
-                                else {
+                                else if (attributeColumns.includes(model.state["selectedMetric"])) {
                                     return _colorManager.getLegendDomains(treeIndex)[i];
                                 }
                             });
@@ -1319,10 +1320,7 @@
                                 .transition()
                                 .duration(globals.duration)
                                 .style('fill', function (d) {
-                                     if(model.state["legend"] == globals.UNIFIED){
-                                        return _colorManager.calcColorScale(d.data.metrics[selectedMetric], -1);
-                                    }
-                                    return _colorManager.calcColorScale(d.data.metrics[selectedMetric], treeIndex);
+                                    return _colorManager.calcColorScale(d.data);
                                 })
 
                         nodeUpdate.select('text')
