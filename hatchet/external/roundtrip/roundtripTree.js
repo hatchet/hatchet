@@ -141,8 +141,6 @@
                         _d = _forestMetrics[treeIndex][curMetric];
                     }
 
-                    console.log(curMetric);
-
                     if (_attributeColumns.includes(curMetric)) {
                         const nodeMetric = nodeData.attributes[curMetric];
                         const indexOfMetric = _d.indexOf(nodeMetric);
