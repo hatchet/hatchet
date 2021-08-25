@@ -167,6 +167,13 @@ class CaliperNativeReader:
                 dataframe.columns.values[idx] = "rank"
             if item == "module#cali.sampler.pc":
                 dataframe.columns.values[idx] = "module"
+            if item == "sum#time.duration" or item == "sum#avg#sum#time.duration":
+                dataframe.columns.values[idx] = "time"
+            if (
+                item == "inclusive#sum#time.duration"
+                or item == "sum#avg#inclusive#sum#time.duration"
+            ):
+                dataframe.columns.values[idx] = "time (inc)"
 
         # create list of exclusive and inclusive metric columns
         exc_metrics = []
