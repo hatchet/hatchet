@@ -58,9 +58,8 @@ class ScorepReader:
                     "thread": thread,
                 }
 
-            # TODO: should decide if we should add (inc)/(exc) to all or some metrics.
-            # example metrics: 'name', 'visits', 'time (inc)', 'min_time (exc)',
-            # 'max_time (exc)', 'bytes_sent', 'bytes_received'
+            # example metrics: 'name', 'visits', 'time (inc)', 'min_time',
+            # 'max_time', 'bytes_sent', 'bytes_received'.
             metric_name = metric.name
             if metric.metric_type == "INCLUSIVE":
                 metric_name = "{}{}".format(metric.name, " (inc)")
@@ -104,7 +103,7 @@ class ScorepReader:
                             pycubexr_cnode,
                             node_name,
                         )
-                except MissingMetricError as e:
+                except MissingMetricError:
                     # Ignore missing metrics
                     pass
 
@@ -134,6 +133,8 @@ class ScorepReader:
         self.threads_per_rank = int(cubex.get_locations()[-1].rank) + 1
         for metric in cubex.get_metrics():
             try:
+                # example metrics: 'name', 'visits', 'time (inc)', 'min_time',
+                # 'max_time', 'bytes_sent', 'bytes_received'.
                 metric_values = cubex.get_metric_values(metric)
                 if metric.metric_type == "INCLUSIVE":
                     self.inc_metrics.append(metric.name + " (inc)")
@@ -151,7 +152,7 @@ class ScorepReader:
                         root,
                         root_name,
                     )
-            except MissingMetricError as e:
+            except MissingMetricError:
                 # Ignore missing metrics
                 pass
 
