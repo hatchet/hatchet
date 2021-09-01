@@ -50,18 +50,17 @@ class TimemoryReader:
         self.include_nid = True
         self.multiple_ranks = False
         self.multiple_threads = False
-        # (callpath, rank, thread): <node_dict>
-        self.callpath_to_node_dict = {}
-        # (callpath): <node>
-        self.callpath_to_node = {}
+        self.callpath_to_node_dict = {}  # (callpath, rank, thread): <node_dict>
+        self.callpath_to_node = {}  # (callpath): <node>
+
         # the per_thread and per_rank settings make sure that
         # squashing doesn't collapse the threads/ranks
         self.per_thread = _kwargs["per_thread"] if "per_thread" in _kwargs else False
         self.per_rank = _kwargs["per_rank"] if "per_rank" in _kwargs else False
+
         if select is None:
             self.select = select
         elif isinstance(select, list):
-
             if select:
 
                 def _get_select(val):
@@ -81,7 +80,6 @@ class TimemoryReader:
 
     def create_graph(self):
         """Create graph and dataframe"""
-
         list_roots = []
 
         def remove_keys(_dict, _keys):
@@ -168,9 +166,18 @@ class TimemoryReader:
             return (_keys, _extra)
 
         def format_labels(_labels):
-            """Gets a multi-dimensional suffix"""
+            """Formats multi dimensional metrics which refers to multiple metrics
+            stored in a 1D list.
+
+            Example: PAPI_TOT_CYC, PAPI_TOT_INS, and PAPI_L2_TCM are storead as
+            ["Total_cycles", "Instr_completed", "L2_cache_misses"].
+
+            After formatting:
+            ['Total-cycles', 'Instr-completed', 'L2-cache-misses']
+            """
             _ret = []
             if isinstance(_labels, str):
+                # put in a list if the label is a string.
                 _ret = [_labels]
             elif isinstance(_labels, dict):
                 for _key, _item in _labels.items():
@@ -181,17 +188,29 @@ class TimemoryReader:
             return _ret
 
         def match_labels_and_values(_metric_stats, _metric_label, _metric_type):
-            """Gets a multi-dimensional entries"""
+            """Match metric labels with values and add '(inc)' if the metric type
+            is inclusive.
+
+            _metric_stat example 1: {'sum': 0.010, 'min': 0.001, ...}
+            _metric_stat example 2: {'sum': [0.010, 0.020, 0.030], ...}
+
+            _metric_label example 1: wall_clock
+            _metric_label example 2: ['Total-cycles', 'Instr-completed', 'L2-cache-misses']
+
+            _metric_type: ' (inc)' or ''
+            """
             _ret = {}
             for _key, _item in _metric_stats.items():
                 if isinstance(_item, dict):
                     for i, (k, v) in enumerate(_item.items()):
                         _ret["{}.{}{}".format(_key, _metric_label[i], _metric_type)] = v
+                # match with metric labels if _metric_stat item is a list.
                 elif isinstance(_item, list):
                     for i in range(len(_item)):
                         _ret[
                             "{}.{}{}".format(_key, _metric_label[i], _metric_type)
                         ] = _item[i]
+                # check if _metric_stat item is not a dict or list
                 else:
                     _ret["{}.{}{}".format(_key, _metric_label, _metric_type)] = _item
             return _ret
@@ -307,7 +326,6 @@ class TimemoryReader:
 
             # if multi-dimensions, create alternative "sum.<...>", etc. labels + data
             # add " (inc)" to the end of every column that represents an inclusive stat
-            # TODO: we might want to change ' (inc)' to '.inc'.
             if _metrics_in_vector:
                 # Example of a multi-dimensional output: if we have 3 papi events
                 # PAPI_TOT_CYC, PAPI_TOT_INS, PAPI_L2_TCM:
@@ -371,7 +389,7 @@ class TimemoryReader:
 
             for i in range(total_ranks):
                 # rank_data stores all the graph/cct data of a rank
-                # starting from the first node in the cct
+                # starting from the first node in the cct.
                 rank_data = ranks_data[i]
                 rank = None if _rank is None else i + _rank
                 if isinstance(rank_data, list):
@@ -550,18 +568,19 @@ class TimemoryReader:
     def read(self):
         """Read timemory json."""
 
+        # check if the input is dictionary.
         if isinstance(self.input, dict):
             self.graph_dict = self.input
+        # check if the input is a directory and
+        # get '.tree.json' files if true.
         elif os.path.isdir(self.input):
-            # check if a directory is given as input
             tree_files = glob.glob(self.input + "/*.tree.json")
             for file in tree_files:
                 # read all files that ends with .tree.json.
                 with open(file, "r") as f:
-                    # adds new metrics to the same dict if timemory creates
+                    # add all metrics to the same dict if timemory creates
                     # a separate file for each metric.
                     self.graph_dict["timemory"].update(json.load(f)["timemory"])
-
         elif isinstance(self.input, str) and self.input.endswith("json"):
             with open(self.input, "r") as f:
                 self.graph_dict = json.load(f)
