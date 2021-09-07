@@ -57,9 +57,8 @@ class GraphFrame:
 
         Likely, you do not want to use this function.
 
-        See ``from_hpctoolkit``, ``from_caliper``, ``from_caliper_json``,
-        ``from_gprof_dot``, and other reader methods for easier ways to
-        create a ``GraphFrame``.
+        See ``from_hpctoolkit``, ``from_caliper``, ``from_gprof_dot``, and
+        other reader methods for easier ways to create a ``GraphFrame``.
 
         Arguments:
              graph (Graph): Graph of nodes in this GraphFrame.
@@ -101,30 +100,18 @@ class GraphFrame:
         return HPCToolkitReader(dirname).read()
 
     @staticmethod
-    def from_caliper(filename, query):
-        """Read in a Caliper `cali` file.
+    def from_caliper(filename_or_stream, query=None):
+        """Read in a Caliper file.
 
         Args:
-            filename (str): name of a Caliper output file in `.cali` format
+            filename_or_stream (str or file-like): name of a Caliper output
+                file in `.cali` or JSON-split, or an open file object to read one
             query (str): cali-query in CalQL format
         """
         # import this lazily to avoid circular dependencies
         from .readers.caliper_reader import CaliperReader
 
-        return CaliperReader(filename, query).read()
-
-    @staticmethod
-    def from_caliper_json(filename_or_stream):
-        """Read in a Caliper `cali-query` JSON-split file or an open file object.
-
-        Args:
-            filename_or_stream (str or file-like): name of a Caliper JSON-split
-                output file, or an open file object to read one
-        """
-        # import this lazily to avoid circular dependencies
-        from .readers.caliper_reader import CaliperReader
-
-        return CaliperReader(filename_or_stream).read()
+        return CaliperReader(filename_or_stream, query).read()
 
     @staticmethod
     def from_caliperreader(filename_or_caliperreader):
