@@ -827,6 +827,7 @@ def timemory_json_data():
 
     # disable automatic output during finalization
     timemory.settings.auto_output = False
+
     # enable flat collection because of the coverage exe
     timemory.settings.flat_profile = True
 
@@ -840,6 +841,7 @@ def timemory_json_data():
 
         # restrict the scope of the profiler
         ProfilerConfig.only_filenames = ["timemory_func.py", "_methods.py"]
+        ProfilerConfig.include_line = False
         prof_func(profl_arr, tol)
 
         # restrict the scope of the tracer
