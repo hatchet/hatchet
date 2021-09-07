@@ -328,12 +328,15 @@ class AscentReader:
             dataframe.sort_index(inplace=True)
 
         # create list of exclusive and inclusive metric columns
-        exc_metrics = ["time"]
+        exc_metrics = []
         inc_metrics = []
+        # add time to list of exclusive metrics if it exists
+        if "time" in self.metric_columns:
+            exc_metrics.append("time")
 
         # set the default metric
         if self.default_metric is None:
-            if "time" in exc_metrics or "time" in inc_metrics:
+            if "time" in exc_metrics:
                 self.default_metric = "time"
             elif len(exc_metrics) > 0:
                 self.default_metric = exc_metrics[0]
