@@ -251,7 +251,7 @@ class AscentReader:
                 elif self.filename_ext == ".json":
                     df_data = json.load(stream)
 
-                for k, v in df_data.items():
+                for _, v in df_data.items():
                     self.get_header(v)
                     break
 
@@ -274,14 +274,14 @@ class AscentReader:
         df_nodes = pd.DataFrame.from_dict(data=self.node_dicts)
 
         numeric_columns = []
-        for column in self.df_fixed_data.columns:
-            if is_numeric_dtype(self.df_fixed_data[column]):
-                numeric_columns.append(column)
+        for col in self.df_fixed_data.columns:
+            if is_numeric_dtype(self.df_fixed_data[col]):
+                numeric_columns.append(col)
 
         # Create a standard dict to be used for filling all missing rows
         default_metric_dict = {}
-        for idx, item in enumerate(list(self.metric_columns)):
-            if item in numeric_columns:
+        for idx, col in enumerate(list(self.metric_columns)):
+            if col in numeric_columns:
                 default_metric_dict[list(self.metric_columns)[idx]] = 0
             else:
                 default_metric_dict[list(self.metric_columns)[idx]] = None
