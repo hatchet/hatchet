@@ -166,10 +166,10 @@ class TimemoryReader:
             return (_keys, _extra)
 
         def format_labels(_labels):
-            """Formats multi dimensional metrics which refers to multiple metrics
+            """Formats multi dimensional metrics which refer to multiple metrics
             stored in a 1D list.
 
-            Example: PAPI_TOT_CYC, PAPI_TOT_INS, and PAPI_L2_TCM are storead as
+            Example: PAPI_TOT_CYC, PAPI_TOT_INS, and PAPI_L2_TCM are stored as
             ["Total_cycles", "Instr_completed", "L2_cache_misses"].
 
             After formatting:
@@ -280,14 +280,14 @@ class TimemoryReader:
             # check if the node already exits.
             _hnode = self.callpath_to_node.get(callpath)
             if _hnode is None:
-                # adding the parent during the node creation.
+                # connect with the parent during node creation.
                 _hnode = Node(Frame(_frame_attrs), _hparent)
                 self.callpath_to_node[callpath] = _hnode
                 if _hparent is None:
-                    # if parent is none that should be a root node.
+                    # if parent is none, this is a root node.
                     list_roots.append(_hnode)
                 else:
-                    # add as a child if the parent is not node.
+                    # if parent is not none, add as a child.
                     _hparent.add_child(_hnode)
 
             # by placing the thread-id or rank-id in _frame_attrs, the hash
@@ -568,25 +568,25 @@ class TimemoryReader:
     def read(self):
         """Read timemory json."""
 
-        # check if the input is dictionary.
+        # check if the input is a dictionary.
         if isinstance(self.input, dict):
             self.graph_dict = self.input
-        # check if the input is a directory and
-        # get '.tree.json' files if true.
+        # check if the input is a directory and get '.tree.json' files if true.
         elif os.path.isdir(self.input):
             tree_files = glob.glob(self.input + "/*.tree.json")
             for file in tree_files:
-                # read all files that ends with .tree.json.
+                # read all files that end with .tree.json.
                 with open(file, "r") as f:
-                    # add all metrics to the same dict if timemory creates
-                    # a separate file for each metric.
+                    # add all metrics to the same dict even though timemory
+                    # creates a separate file for each metric.
                     self.graph_dict["timemory"].update(json.load(f)["timemory"])
+        # check if the input is a filename that ends in json
         elif isinstance(self.input, str) and self.input.endswith("json"):
             with open(self.input, "r") as f:
                 self.graph_dict = json.load(f)
         elif not isinstance(self.input, str):
             self.graph_dict = json.loads(self.input.read())
         else:
-            raise TypeError("input must be dict, json file, or string")
+            raise TypeError("input must be dict, directory, json file, or string")
 
         return self.create_graph()
