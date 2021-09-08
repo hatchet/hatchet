@@ -579,7 +579,7 @@ class GraphFrame:
                 else:
                     df_index1 = node
                     df_index2 = [node] + node.children
-                        
+
                 for col in out_columns:
                     self.dataframe.loc[df_index1, col] = function(
                         self.dataframe.loc[df_index2, col]
