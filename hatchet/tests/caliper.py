@@ -49,7 +49,7 @@ annotations = [
 
 def test_graphframe(lulesh_caliper_json):
     """Sanity test a GraphFrame object with known data."""
-    gf = GraphFrame.from_caliper_json(str(lulesh_caliper_json))
+    gf = GraphFrame.from_caliper(str(lulesh_caliper_json))
 
     assert len(gf.dataframe.groupby("name")) == 24
 
@@ -80,7 +80,7 @@ def test_read_lulesh_json(lulesh_caliper_json):
 
 def test_calc_pi_json(calc_pi_caliper_json):
     """Sanity test a GraphFrame object with known data."""
-    gf = GraphFrame.from_caliper_json(str(calc_pi_caliper_json))
+    gf = GraphFrame.from_caliper(str(calc_pi_caliper_json))
 
     assert len(gf.dataframe.groupby("name")) == 100
 
@@ -115,15 +115,15 @@ def test_lulesh_json_stream(lulesh_caliper_cali):
         [cali_query, "-q", query, lulesh_caliper_cali], stdout=subprocess.PIPE
     )
 
-    gf = GraphFrame.from_caliper_json(cali_json.stdout)
+    gf = GraphFrame.from_caliper(cali_json.stdout)
 
     assert len(gf.dataframe.groupby("name")) == 18
 
 
 def test_filter_squash_unify_caliper_data(lulesh_caliper_json):
     """Sanity test a GraphFrame object with known data."""
-    gf1 = GraphFrame.from_caliper_json(str(lulesh_caliper_json))
-    gf2 = GraphFrame.from_caliper_json(str(lulesh_caliper_json))
+    gf1 = GraphFrame.from_caliper(str(lulesh_caliper_json))
+    gf2 = GraphFrame.from_caliper(str(lulesh_caliper_json))
 
     assert gf1.graph is not gf2.graph
 
@@ -158,7 +158,7 @@ def test_filter_squash_unify_caliper_data(lulesh_caliper_json):
 
 def test_tree(lulesh_caliper_json):
     """Sanity test a GraphFrame object with known data."""
-    gf = GraphFrame.from_caliper_json(str(lulesh_caliper_json))
+    gf = GraphFrame.from_caliper(str(lulesh_caliper_json))
 
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
@@ -200,7 +200,7 @@ def test_tree(lulesh_caliper_json):
 
 def test_graphframe_to_literal(lulesh_caliper_json):
     """Sanity test a GraphFrame object with known data."""
-    gf = GraphFrame.from_caliper_json(str(lulesh_caliper_json))
+    gf = GraphFrame.from_caliper(str(lulesh_caliper_json))
     graph_literal = gf.to_literal()
 
     gf2 = GraphFrame.from_literal(graph_literal)
