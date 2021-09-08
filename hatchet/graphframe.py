@@ -101,11 +101,12 @@ class GraphFrame:
 
     @staticmethod
     def from_caliper(filename_or_stream, query=None):
-        """Read in a Caliper file.
+        """Read in a Caliper .cali or .json file.
 
         Args:
             filename_or_stream (str or file-like): name of a Caliper output
-                file in `.cali` or JSON-split, or an open file object to read one
+                file in `.cali` or JSON-split format, or an open file object
+                to read one
             query (str): cali-query in CalQL format
         """
         # import this lazily to avoid circular dependencies
