@@ -129,7 +129,7 @@ class Roundtrip(Magics):
                 "ocat": {"type": "array"},
                 "ometric": {"type": "array"},
                 "nid": {"type": "string"},
-                "node": {"type": "string"},
+                "node": {"type": "object"},
             },
         }
 

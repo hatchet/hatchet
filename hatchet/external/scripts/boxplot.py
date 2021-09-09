@@ -30,6 +30,8 @@ class BoxPlot:
         assert isinstance(metrics, list)
         assert isinstance(iqr_scale, float)
 
+        self.df_index = ["node"]
+
         if bkg_gf is not None:
             assert isinstance(bkg_gf, ht.GraphFrame)
             assert cat_column in bkg_gf.dataframe.column
@@ -51,27 +53,22 @@ class BoxPlot:
         if len(metrics) == 0:
             self.metrics = tgt_gf.inc_metrics + tgt_gf.exc_metrics
 
-        tgt_gf.dataframe.reset_index(inplace=True)
         tgt_dict = BoxPlot.df_groupby(
             tgt_gf.dataframe,
             groupby="name",
-            cols=self.metrics + [self.cat_column],
+            cols=self.metrics + [self.cat_column] + self.df_index,
         )
+        self.box_types = ["tgt"]
 
         if bkg_gf is not None:
-            bkg_gf.dataframe.reset_index(inplace=True)
             bkg_dict = BoxPlot.df_groupby(
                 bkg_gf.dataframe,
                 groupby="name",
-                cols=self.metrics + [self.cat_column],
+                cols=self.metrics + [self.cat_column] + self.df_index,
             )
-
-        self.result = {}
-
-        self.box_types = ["tgt"]
-        if bkg_gf is not None:
             self.box_types = ["tgt", "bkg"]
 
+        self.result = {}
         for callsite in self.callsites:
             ret = {}
             tgt_df = tgt_dict[callsite]
@@ -82,6 +79,10 @@ class BoxPlot:
                 ret["bkg"] = self.compute(bkg_df)
 
             self.result[callsite] = ret
+
+        self.tgt_gf = self.to_gf(tgt_gf, "tgt")
+        if bkg_gf is not None:
+            self.bkg_gf = self.to_gf(bkg_gf, "bkg")
 
     @staticmethod
     def df_groupby(df, groupby, cols):
@@ -159,7 +160,6 @@ class BoxPlot:
                 }
             }
         """
-
         ret = {_: {} for _ in self.metrics}
         for tk, tv in zip(self.metrics, self.metrics):
             q = np.percentile(df[tv], [0.0, 25.0, 50.0, 75.0, 100.0])
@@ -182,11 +182,12 @@ class BoxPlot:
                 "uv": (_mean, _var),
                 "imb": _imb,
                 "ks": (_kurt, _skew),
+                "node": df["node"].unique().tolist()[0],
             }
 
         return ret
 
-    def unpack(self):
+    def to_json(self):
         """
         Unpack the boxplot data into JSON format.
 
@@ -195,40 +196,106 @@ class BoxPlot:
         Return:
             result (dict): {
                 "callsite1": {
-                    "metric1": {
-                        "q": (array) quartiles (i.e., [q0, q1, q2, q3, q4]),
-                        "ocat": (array) outlier from cat_column,
-                        "ometric": (array) outlier from metri,
-                        "min": (number) minimum,
-                        "max": (number) maximum,
-                        "mean": (number) mean,
-                        "var": (number) variance,
-                        "imb": (number) imbalance,
-                        "kurt": (number) kurtosis,
-                        "skew": (number) skewness,
-                    }, ...
-                }, ...
+                    "tgt": self._unpack_callsite,
+                    "bkg": self._unpack_callsite
+                },
             }
         """
-        result = {}
-        for callsite in self.callsites:
-            result[callsite] = {}
-            for box_type in self.box_types:
-                result[callsite][box_type] = {}
-                for metric in self.metrics:
-                    box = self.result[callsite][box_type][metric]
-                    result[callsite][box_type][metric] = {
-                        "q": box["q"].tolist(),
-                        "ocat": box["ocat"].tolist(),
-                        "ometric": box["ometric"].tolist(),
-                        "min": box["rng"][0],
-                        "max": box["rng"][1],
-                        "mean": box["uv"][0],
-                        "var": box["uv"][1],
-                        "imb": box["imb"],
-                        "kurt": box["ks"][0],
-                        "skew": box["ks"][1],
-                    }
+        return {
+            callsite: {
+                _type: self._unpack_callsite(callsite, _type)
+                for _type in self.box_types
+            }
+            for callsite in self.callsites
+        }
 
+    def _unpack_callsite(self, callsite, box_type, with_htnode=False):
+        """
+        Helper function to unpack the data by callsite.
 
-        return result
+        Arguments:
+            callsite: Callsite's name
+            box_type: (string) Boxplot type (i.e., "tgt" or "bkg")
+            with_htnode: (bool) An option to add hatchet.Node to the dict.
+
+        Return:
+            ret (dict): {
+                "metric": {
+                    "q": (array) quartiles (i.e., [q0, q1, q2, q3, q4]),
+                    "ocat": (array) outlier from cat_column,
+                    "ometric": (array) outlier from metri,
+                    "min": (number) minimum,
+                    "max": (number) maximum,
+                    "mean": (number) mean,
+                    "var": (number) variance,
+                    "imb": (number) imbalance,
+                    "kurt": (number) kurtosis,
+                    "skew": (number) skewness,
+                }
+            }
+        """
+        ret = {}
+        for metric in self.metrics:
+            box = self.result[callsite][box_type][metric]
+            ret[metric] = {
+                "q": box["q"].tolist(),
+                "ocat": box["ocat"].tolist(),
+                "ometric": box["ometric"].tolist(),
+                "min": box["rng"][0],
+                "max": box["rng"][1],
+                "mean": box["uv"][0],
+                "var": box["uv"][1],
+                "imb": box["imb"],
+                "kurt": box["ks"][0],
+                "skew": box["ks"][1],
+            }
+            if with_htnode:
+                ret[metric]["node"] = box["node"]
+
+        return ret
+
+    def _to_gf_by_metric(self, gf, box_type, metric):
+        """
+        Wrapper function to unpack the boxplot data into Hatchet.GraphFrame by
+        respective metric.
+
+        Argument:
+            gf: (hatchet.GraphFrame) GraphFrame
+            box_type: (string) Boxplot type (i.e., "tgt" or "bkg")
+            metric: (string) Metric
+
+        Return:
+            hatchet.GraphFrame with boxplot information as columns.
+
+        """
+        _dict = {
+            callsite: self._unpack_callsite(callsite, box_type, with_htnode=True)[
+                metric
+            ]
+            for callsite in self.callsites
+        }
+        tmp_df = pd.DataFrame.from_dict(data=_dict).T
+        tmp_df.set_index(self.df_index, inplace=True)
+
+        return ht.GraphFrame(gf.graph, tmp_df, gf.exc_metrics, gf.inc_metrics)
+
+    def to_gf(self, gf, box_type):
+        """
+        Unpack the boxplot data into GraphFrame object.
+
+        Note: In this case, only the hatchet.dataframe will be updated, with
+        hatchet.Graph being the same as the input gf.
+
+        Arguments:
+            gf: (hatchet.GraphFrame) GraphFrame
+            box_type: (string) Boxplot type (i.e., "tgt" or "bkg")
+
+        Return:
+            (dict) : {
+                "metric": hatchet.GraphFrame, ...
+            }
+        """
+        return {
+            metric: self._to_gf_by_metric(gf, box_type, metric)
+            for metric in self.metrics
+        }
