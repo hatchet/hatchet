@@ -80,9 +80,9 @@ class BoxPlot:
 
             self.result[callsite] = ret
 
-        self.tgt_gf = self.to_gf(tgt_gf, "tgt")
+        self.tgt = self.to_gf(tgt_gf, "tgt")
         if bkg_gf is not None:
-            self.bkg_gf = self.to_gf(bkg_gf, "bkg")
+            self.bkg = self.to_gf(bkg_gf, "bkg")
 
     @staticmethod
     def df_groupby(df, groupby, cols):
