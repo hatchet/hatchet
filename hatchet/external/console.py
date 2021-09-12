@@ -261,8 +261,8 @@ class ConsoleRenderer:
         if self.expand is False:
             if len(node_name) > 39:
                 node_name = node_name[:18] + "..." + node_name[(len(node_name) - 18) :]
-        name_str = self._ansi_color_for_name(node_name) + node_name + self.colors.end
-
+            name_str = self._ansi_color_for_name(node_name) + node_name + self.colors.end
+            
         # Print the graph based on the depth of a node and check if its
         # below the default or user specified depth.
         if node_depth < self.depth:
@@ -304,7 +304,7 @@ class ConsoleRenderer:
                 sorted_children = sorted(node.children, key=lambda n: n.frame)
                 if sorted_children:
                     last_child = sorted_children[-1]
-
+                    
                 for child in sorted_children:
                     if child is not last_child:
                         c_indent = child_indent + indents["├"]
@@ -322,19 +322,16 @@ class ConsoleRenderer:
                 )
             else:
                 _get_subtree_info(node, subtree_info)
-                result = (
-                    u"{indent}{metric_str} {name_str}".format(
-                        indent=indent, metric_str=metric_str, name_str=name_str
-                    )
-                    + "\n{child_indent}└─".format(child_indent=child_indent)
-                    + u"\u2B24"
-                    + "  Subtree Info (Total Metric: "
-                    + str(subtree_info["sum_metric"])
-                    + ", # Descendants: "
-                    + str(subtree_info["descendants"])
-                    + ", # Remaining Levels: "
-                    + str(subtree_info["levels"] - node_depth)
-                    + ")\n"
+                summary_string = "{indent}{metric_str} {name_str}\n{child_indent}└─\u25C0\u25AE Subtree Info (Total Metric: {metric}, # Descendants: {desc}, # Remaining Levels {levels})\n"
+
+                result = summary_string.format(
+                    indent=indent,
+                    metric_str=metric_str,
+                    name_str=name_str,
+                    child_indent=child_indent,
+                    metric=str(subtree_info["sum_metric"]),
+                    desc=str(subtree_info["descendants"]),
+                    levels=str(subtree_info["levels"] - node_depth),
                 )
         return result
 
