@@ -261,8 +261,8 @@ class ConsoleRenderer:
         if self.expand is False:
             if len(node_name) > 39:
                 node_name = node_name[:18] + "..." + node_name[(len(node_name) - 18) :]
-            name_str = self._ansi_color_for_name(node_name) + node_name + self.colors.end
-            
+        name_str = self._ansi_color_for_name(node_name) + node_name + self.colors.end
+
         # Print the graph based on the depth of a node and check if its
         # below the default or user specified depth.
         if node_depth < self.depth:
@@ -304,7 +304,7 @@ class ConsoleRenderer:
                 sorted_children = sorted(node.children, key=lambda n: n.frame)
                 if sorted_children:
                     last_child = sorted_children[-1]
-                    
+
                 for child in sorted_children:
                     if child is not last_child:
                         c_indent = child_indent + indents["├"]
