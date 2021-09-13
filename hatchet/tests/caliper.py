@@ -51,6 +51,7 @@ def test_graphframe(lulesh_caliper_json):
     """Sanity test a GraphFrame object with known data."""
     gf = GraphFrame.from_caliper(str(lulesh_caliper_json))
 
+    assert gf.dataset == str(lulesh_caliper_json)
     assert len(gf.dataframe.groupby("name")) == 24
 
     for col in gf.dataframe.columns:
@@ -97,6 +98,7 @@ def test_lulesh_cali(lulesh_caliper_cali):
 
     gf = GraphFrame.from_caliper(str(lulesh_caliper_cali), query)
 
+    assert gf.dataset == str(lulesh_caliper_cali)
     assert len(gf.dataframe.groupby("name")) == 18
 
 
@@ -214,6 +216,7 @@ def test_graphframe_native_lulesh_from_file(lulesh_caliper_cali):
     gf = GraphFrame.from_caliperreader(str(lulesh_caliper_cali))
     print(list(gf.dataframe.columns))
 
+    assert gf.dataset == str(lulesh_caliper_cali)
     assert len(gf.dataframe.groupby("name")) == 19
 
     for col in gf.dataframe.columns:
