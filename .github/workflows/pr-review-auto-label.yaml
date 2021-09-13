@@ -2,7 +2,7 @@ name: pull request review auto label
 
 on:
   pull_request_review:
-    types: [submitted]
+    types: [submitted, edited]
 
 jobs:
   build:
@@ -20,6 +20,7 @@ jobs:
         with:
           add-labels: 'status: approved, status: ready to merge'
           remove-labels: 'status: ready for review'
+          issue-number: ${{ github.event.pull_request.number }}
       - name: Auto Label if Revisions Needed
         if: github.event.review.state == 'changes_requested'
         # There's a bug in master of this tool that causes action to fail.
@@ -28,3 +29,4 @@ jobs:
         with:
           add-labels: 'status: revisions needed'
           remove-labels: 'status: ready for review'
+          issue-number: ${{ github.event.pull_request.number }}
