@@ -6,7 +6,7 @@ import json
 from datetime import datetime
 import hatchet
 
-RcParams = {"logging": False, "log_directory": "~/.hatchet/logs/"}
+RcParams = {"logging": True, "log_directory": "~/.hatchet/logs/"}
 
 
 def isJsonable(var):

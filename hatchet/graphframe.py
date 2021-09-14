@@ -90,7 +90,7 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_hpctoolkit(dirname, logging=False):
+    def from_hpctoolkit(dirname):
         """Read an HPCToolkit database directory into a new GraphFrame.
 
         Arguments:
@@ -169,7 +169,7 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_cprofile(filename, logging=False):
+    def from_cprofile(filename):
         """Read in a pstats/prof file generated using python's cProfile."""
         # import this lazily to avoid circular dependencies
         from .readers.cprofile_reader import CProfileReader
@@ -178,7 +178,7 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_pyinstrument(filename, logging=False):
+    def from_pyinstrument(filename):
         """Read in a JSON file generated using Pyinstrument."""
         # import this lazily to avoid circular dependencies
         from .readers.pyinstrument_reader import PyinstrumentReader
@@ -195,7 +195,7 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_timemory(input=None, select=None, logging=False, **_kwargs):
+    def from_timemory(input=None, select=None, **_kwargs):
         """Read in timemory data.
 
         Links:
@@ -280,7 +280,7 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_literal(graph_dict, logging=False):
+    def from_literal(graph_dict):
         """Create a GraphFrame from a list of dictionaries."""
         # import this lazily to avoid circular dependencies
         from .readers.literal_reader import LiteralReader
@@ -289,7 +289,7 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_lists(*lists, logging=False):
+    def from_lists(*lists):
         """Make a simple GraphFrame from lists.
 
         This creates a Graph from lists (see ``Graph.from_lists()``) and uses
