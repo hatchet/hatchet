@@ -6,7 +6,7 @@ import hatchet as ht
 
 class BoxPlot:
     def __init__(
-        self, cat_column, tgt_gf, bkg_gf=None, callsites=[], metrics=[], iqr_scale=1.5
+        self, cat_column, tgt_gf, bkg_gf=None, callsites=[], metrics=[]
     ):
         """
         Boxplot computation for callsites. The data can be computed for two use
@@ -28,7 +28,6 @@ class BoxPlot:
         assert isinstance(tgt_gf, ht.GraphFrame)
         assert isinstance(callsites, list)
         assert isinstance(metrics, list)
-        assert isinstance(iqr_scale, float)
 
         self.df_index = ["node"]
 
@@ -45,13 +44,21 @@ class BoxPlot:
             if cat_column not in bkg_gf.dataframe.columns:
                 raise Exception(f"{cat_column} not found in bkg_gf.")
 
-        self.metrics = metrics
-        self.iqr_scale = iqr_scale
+        self.iqr_scale = 1.5
         self.callsites = callsites
         self.cat_column = cat_column
 
         if len(metrics) == 0:
             self.metrics = tgt_gf.inc_metrics + tgt_gf.exc_metrics
+        else:
+            self.metrics = metrics
+
+        if len(callsites) == 0:
+            self.callsites = tgt_gf.dataframe['name'].unique().tolist() 
+            if bkg_gf is not None:
+                self.callsites = tgt_gf.dataframe['name'].unique().tolist() + bkg_gf.dataframe['name'].unique().tolist()
+        else:
+            self.callsites = callsites
 
         tgt_dict = BoxPlot.df_groupby(
             tgt_gf.dataframe,
