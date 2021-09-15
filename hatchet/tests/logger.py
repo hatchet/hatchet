@@ -59,6 +59,6 @@ def test_output(calc_pi_hpct_db):
 
     for line in log_lines:
         assert line["function"] in functions
-    
+
     Logger.set_inactive()
     os.remove(logpath)
