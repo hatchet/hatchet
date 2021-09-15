@@ -28,7 +28,6 @@ def test_output(calc_pi_hpct_db):
         "to_literal",
         "add",
         "sub",
-        "div",
         "mul",
     ]
     log_lines = []
@@ -46,7 +45,6 @@ def test_output(calc_pi_hpct_db):
 
     gf3 = gf + gf2
     gf3 = gf - gf2
-    gf3 = gf / gf2
     gf3 = gf * gf2
 
     assert os.path.exists(logpath)
