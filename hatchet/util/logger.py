@@ -6,8 +6,6 @@ import json
 from datetime import datetime
 import hatchet
 
-RcParams = {"logging": True, "log_directory": "~/.hatchet/logs/"}
-
 
 def isJsonable(var):
     try:
@@ -20,10 +18,7 @@ def isJsonable(var):
 class Log(object):
     def __init__(self, filename="hatchet.log", active=None):
         self._log_file = filename
-        if active is not None:
-            self._active = active
-        else:
-            self._active = RcParams["logging"]
+        self._active = active
 
         # ensures we only log api calls made explicitly by
         # a user
@@ -40,7 +35,7 @@ class Log(object):
 
     def append_to_file(self, log):
         """Manages the opening and writing of log information to a file."""
-        logpath = os.path.expanduser(RcParams["log_directory"])
+        logpath = os.path.expanduser("~/.hatchet/logs/")
         if not os.path.exists(logpath):
             try:
                 os.makedirs(logpath)
@@ -60,13 +55,19 @@ class Log(object):
 
         def inner(*args, **kwargs):
             try:
+                # turn on logger
+                if "logging" in kwargs and kwargs["logging"] is True:
+                    self._active = True
+                elif "logging" in kwargs and kwargs["logging"] is False:
+                    self._active = False
+
                 # if logger is on and user called function
                 if self._active and not self._nested:
                     log_dict = {}
                     arg_list = []
                     serlizable_kwargs = {}
 
-                    # Get a  user id
+                    # Get a user id
                     try:
                         log_dict["user_id"] = os.getuid()
                     except AttributeError:
@@ -103,7 +104,6 @@ class Log(object):
                     self._nested = False
 
                     log_dict["end"] = datetime.now().isoformat()
-
                     log_dict["function"] = function.__name__
                     log_dict["args"] = tuple(arg_list)
 

@@ -90,7 +90,7 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_hpctoolkit(dirname):
+    def from_hpctoolkit(dirname, logging=False):
         """Read an HPCToolkit database directory into a new GraphFrame.
 
         Arguments:
@@ -107,7 +107,7 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_caliper(filename_or_stream, query=None):
+    def from_caliper(filename_or_stream, query=None, logging=False):
         """Read in a Caliper .cali or .json file.
         Args:
             filename_or_stream (str or file-like): name of a Caliper output
@@ -122,7 +122,7 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_caliperreader(filename_or_caliperreader):
+    def from_caliperreader(filename_or_caliperreader, logging=False):
         """Read in a native Caliper `cali' file using Caliper's python reader.
 
         Args:
@@ -169,7 +169,7 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_cprofile(filename):
+    def from_cprofile(filename, logging=False):
         """Read in a pstats/prof file generated using python's cProfile."""
         # import this lazily to avoid circular dependencies
         from .readers.cprofile_reader import CProfileReader
@@ -178,7 +178,7 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_pyinstrument(filename):
+    def from_pyinstrument(filename, logging=False):
         """Read in a JSON file generated using Pyinstrument."""
         # import this lazily to avoid circular dependencies
         from .readers.pyinstrument_reader import PyinstrumentReader
@@ -186,7 +186,7 @@ class GraphFrame:
         return PyinstrumentReader(filename).read()
 
     @staticmethod
-    def from_tau(dirname):
+    def from_tau(dirname, logging=False):
         """Read in a profile generated using TAU."""
         # import this lazily to avoid circular dependencies
         from .readers.tau_reader import TAUReader
@@ -195,7 +195,7 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_timemory(input=None, select=None, **_kwargs):
+    def from_timemory(input=None, select=None, logging=False, **_kwargs):
         """Read in timemory data.
 
         Links:
@@ -280,7 +280,7 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_literal(graph_dict):
+    def from_literal(graph_dict, logging=False):
         """Create a GraphFrame from a list of dictionaries."""
         # import this lazily to avoid circular dependencies
         from .readers.literal_reader import LiteralReader
@@ -289,7 +289,7 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_lists(*lists):
+    def from_lists(*lists, logging=False):
         """Make a simple GraphFrame from lists.
 
         This creates a Graph from lists (see ``Graph.from_lists()``) and uses
@@ -312,7 +312,7 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_hdf(filename, **kwargs):
+    def from_hdf(filename, logging=False, **kwargs):
         # import this lazily to avoid circular dependencies
         from .readers.hdf5_reader import HDF5Reader
 
@@ -723,6 +723,7 @@ class GraphFrame:
         ]
         self.subgraph_sum(self.exc_metrics, self.inc_metrics)
 
+    @Logger.loggable
     def show_metric_columns(self):
         """Returns a list of dataframe column labels."""
         return list(self.exc_metrics + self.inc_metrics)
