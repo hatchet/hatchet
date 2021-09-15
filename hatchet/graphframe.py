@@ -289,7 +289,7 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_lists(*lists, logging=False):
+    def from_lists(*lists):
         """Make a simple GraphFrame from lists.
 
         This creates a Graph from lists (see ``Graph.from_lists()``) and uses
