@@ -50,7 +50,7 @@ Style tests
 ^^^^^^^^^^^
 
 Hatchet uses `Flake8 <https://flake8.pycqa.org/en/latest>`_ to test for `PEP 8
-<https://www.python.org/dev/peps/pep-0008>` compliance. You can check for
+<https://www.python.org/dev/peps/pep-0008>`_ compliance. You can check for
 compliance using:
 
 .. code-block:: console
