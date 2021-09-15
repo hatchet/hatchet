@@ -248,7 +248,7 @@ def test_graphframe_native_lulesh_from_caliperreader(lulesh_caliper_cali):
 
 def test_inclusive_time_calculation(lulesh_caliper_json):
     """Validate update_inclusive_columns() on known dataset containing per-rank data."""
-    gf = GraphFrame.from_caliper_json(str(lulesh_caliper_json))
+    gf = GraphFrame.from_caliper(str(lulesh_caliper_json))
 
     # save original time (inc) column for correctness check
     gf.dataframe["orig_inc_time"] = gf.dataframe["time (inc)"]

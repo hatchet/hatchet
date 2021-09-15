@@ -576,14 +576,16 @@ class GraphFrame:
                         else:
                             df_index1 = (node, rank_thread)
                             df_index2 = ([node] + node.children, rank_thread)
-                else:
-                    df_index1 = node
-                    df_index2 = [node] + node.children
 
-                for col in out_columns:
-                    self.dataframe.loc[df_index1, col] = function(
-                        self.dataframe.loc[df_index2, col]
-                    )
+                        for col in out_columns:
+                            self.dataframe.loc[df_index1, col] = function(
+                                self.dataframe.loc[df_index2, col]
+                            )
+                else:
+                    for col in out_columns:
+                        self.dataframe.loc[node, col] = function(
+                            self.dataframe.loc[[node] + node.children, col]
+                        )
 
     def subgraph_sum(
         self, columns, out_columns=None, function=lambda x: x.sum(min_count=1)
