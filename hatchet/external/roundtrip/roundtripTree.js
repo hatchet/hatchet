@@ -1,3 +1,4 @@
+
 //d3.v4
 (function (element) {
     require(['https://d3js.org/d3.v4.min.js'], function (d3) {
@@ -68,7 +69,7 @@
                     if (_metricColumns.includes(curMetric)) {
 
                         if (treeIndex == -1) return _allTreesColors[colorScheme];
-                        else return _regularColors[colorScheme][1];
+                        else return _regularColors[colorScheme][treeIndex % REGULAR_COLORS.length];
                     } else if(_attributeColumns.includes(curMetric)) {
                         if (treeIndex == -1) return _allTreesColors[2 + colorScheme];
                         else return _regularColors[2 + colorScheme]; 
@@ -136,7 +137,6 @@
                     // Decide the color scheme for the settings.
                     const colorSchemeUsed = this.setColors(treeIndex);
                     const curMetric = _state["selectedMetric"];
-
 
                     // Get the suitable data based on the Legend settings.
                     let _d;
