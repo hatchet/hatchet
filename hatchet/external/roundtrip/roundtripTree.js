@@ -1,4 +1,3 @@
-
 //d3.v4
 (function (element) {
     require(['https://d3js.org/d3.v4.min.js'], function (d3) {
@@ -43,6 +42,7 @@
                 0: REGULAR_COLORS,
                 1: REGULAR_COLORS.map((colorArr) => [].concat(colorArr).reverse()),
                 2: CAT_COLORS,
+                3: [].concat(CAT_COLORS).reverse()
             };
 
             const ALL_COLORS = ['#d73027', '#fc8d59', '#fee090', '#e0f3f8', '#91bfdb', '#4575b4'];
@@ -51,24 +51,27 @@
                 0: ALL_COLORS,
                 1: [].concat(ALL_COLORS).reverse(),
                 2: CAT_COLORS,
+                3: [].concat(CAT_COLORS).reverse(),
             };
 
             const _state = model.state;
             const _forestMinMax = model.data["forestMinMax"];
-            const _forestStats = model.data["foresetStats"];
+            const _forestStats = model.data["forestStats"];
             const _metricColumns = model.data["metricColumns"];
             const _attributeColumns = model.data["attributeColumns"];
 
             return {
                 setColors: function (treeIndex) {
                     const curMetric = _state["selectedMetric"];
+                    const colorScheme = _state["colorScheme"];
 
                     if (_metricColumns.includes(curMetric)) {
-                        if (treeIndex == -1) return _allTreesColors[_state["colorScheme"]];
-                        else return _regularColors[_state["colorScheme"]];
+
+                        if (treeIndex == -1) return _allTreesColors[colorScheme];
+                        else return _regularColors[colorScheme][1];
                     } else if(_attributeColumns.includes(curMetric)) {
-                        if (treeIndex == -1) return _allTreesColors[2];
-                        else return _regularColors[2]; 
+                        if (treeIndex == -1) return _allTreesColors[2 + colorScheme];
+                        else return _regularColors[2 + colorScheme]; 
                     }
                 },
                 getLegendDomains: function(treeIndex){
@@ -78,7 +81,6 @@
                      * @param {Int} treeIndex - The index of the current tree's legend being set
                      */
 
-                    let colorScaleDomain;
                     const curMetric = _state["selectedMetric"];
 
                     // so hacky: need to fix later
@@ -86,20 +88,22 @@
                         treeIndex = -1;
                     }
 
+                    let metricMinMax;
                     if (treeIndex === -1) { //unified color legend
-                        _data = _forestMinMax[curMetric]
+                        metricMinMax = _forestMinMax[curMetric]
                     } else { // individual color legend
-                        _data = _forestStats[treeIndex][curMetric]
+                        metricMinMax = _forestStats[treeIndex][curMetric]
                     }
 
+                    let colorScaleDomain;
                     if (_metricColumns.includes(curMetric)) {
-                        let metricRange = _data.max - _data.min;
+                        let metricRange = metricMinMax.max - metricMinMax.min;
                         colorScaleDomain = [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1].map(function (x) {
-                            return x * metricRange + _data.min;
+                            return x * metricRange + metricMinMax.min;
                         });
                     } 
                     else if (_attributeColumns.includes(curMetric)) {
-                        colorScaleDomain = _data;
+                        colorScaleDomain = metricMinMax;
                     }
 
                     return colorScaleDomain;
@@ -118,13 +122,13 @@
 
                     return this.setColors(treeIndex);
                 },
-                calcColorScale: function(nodeData) {
+                calcColorScale: function(nodeData, treeIndex) {
                     /**
                      * Calculates the bins for the color scheme based on the current, user-selected metric.
                      * 
                      * @param {String} nodeData - the name of the current metric being mapped to a color range
                      */
-
+                    
                     if(model.state["legend"] == globals.UNIFIED){
                         treeIndex  = -1
                     }
@@ -133,12 +137,13 @@
                     const colorSchemeUsed = this.setColors(treeIndex);
                     const curMetric = _state["selectedMetric"];
 
+
                     // Get the suitable data based on the Legend settings.
                     let _d;
-                    if (treeIndex == -1) {
+                    if (treeIndex === -1) {
                         _d = _forestMinMax[curMetric];
                     } else {
-                        _d = _forestMetrics[treeIndex][curMetric];
+                        _d = _forestStats[treeIndex][curMetric];
                     }
 
                     if (_attributeColumns.includes(curMetric)) {
@@ -1176,7 +1181,7 @@
                                 .attr('class', 'circleNode')
                                 .attr("r", 1e-6)
                                 .style("fill", function (d) {
-                                    return _colorManager.calcColorScale(d.data);
+                                    return _colorManager.calcColorScale(d.data, treeIndex);
                                 })
                                 .style('stroke-width', '1px')
                                 .style('stroke', 'black');
@@ -1258,12 +1263,7 @@
                             .transition()
                             .duration(globals.duration)
                             .attr('fill', function (d, i) {
-                                if (metricColumns.includes(model.state["selectedMetric"])) {
-                                    return _colorManager.getColorLegend(treeIndex)[d];
-                                }
-                                else if (attributeColumns.includes(model.state["selectedMetric"])) {
-                                    return _colorManager.getColorLegend(treeIndex)[i];
-                                }
+                                return _colorManager.getColorLegend(treeIndex)[d];
                             })
                             .attr('stroke', 'black');
 
@@ -1323,7 +1323,7 @@
                                 .transition()
                                 .duration(globals.duration)
                                 .style('fill', function (d) {
-                                    return _colorManager.calcColorScale(d.data);
+                                    return _colorManager.calcColorScale(d.data, treeIndex);
                                 })
 
                         nodeUpdate.select('text')
