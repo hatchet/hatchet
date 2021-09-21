@@ -57,9 +57,8 @@ class GraphFrame:
 
         Likely, you do not want to use this function.
 
-        See ``from_hpctoolkit``, ``from_caliper``, ``from_caliper_json``,
-        ``from_gprof_dot``, and other reader methods for easier ways to
-        create a ``GraphFrame``.
+        See ``from_hpctoolkit``, ``from_caliper``, ``from_gprof_dot``, and
+        other reader methods for easier ways to create a ``GraphFrame``.
 
         Arguments:
              graph (Graph): Graph of nodes in this GraphFrame.
@@ -101,30 +100,19 @@ class GraphFrame:
         return HPCToolkitReader(dirname).read()
 
     @staticmethod
-    def from_caliper(filename, query):
-        """Read in a Caliper `cali` file.
+    def from_caliper(filename_or_stream, query=None):
+        """Read in a Caliper .cali or .json file.
 
         Args:
-            filename (str): name of a Caliper output file in `.cali` format
+            filename_or_stream (str or file-like): name of a Caliper output
+                file in `.cali` or JSON-split format, or an open file object
+                to read one
             query (str): cali-query in CalQL format
         """
         # import this lazily to avoid circular dependencies
         from .readers.caliper_reader import CaliperReader
 
-        return CaliperReader(filename, query).read()
-
-    @staticmethod
-    def from_caliper_json(filename_or_stream):
-        """Read in a Caliper `cali-query` JSON-split file or an open file object.
-
-        Args:
-            filename_or_stream (str or file-like): name of a Caliper JSON-split
-                output file, or an open file object to read one
-        """
-        # import this lazily to avoid circular dependencies
-        from .readers.caliper_reader import CaliperReader
-
-        return CaliperReader(filename_or_stream).read()
+        return CaliperReader(filename_or_stream, query).read()
 
     @staticmethod
     def from_caliperreader(filename_or_caliperreader):
@@ -565,10 +553,39 @@ class GraphFrame:
         # sum over the output columns
         for node in self.graph.traverse(order="post"):
             if node.children:
-                for col in out_columns:
-                    self.dataframe.loc[node, col] = function(
-                        self.dataframe.loc[[node] + node.children, col]
+                # TODO: need a better way of aggregating inclusive metrics when
+                # TODO: there is a multi-index
+                try:
+                    is_multi_index = isinstance(
+                        self.dataframe.index, pd.core.index.MultiIndex
                     )
+                except AttributeError:
+                    is_multi_index = isinstance(self.dataframe.index, pd.MultiIndex)
+
+                if is_multi_index:
+                    for rank_thread in self.dataframe.loc[
+                        (node), out_columns
+                    ].index.unique():
+                        # rank_thread is either rank or a tuple of (rank, thread).
+                        # We check if rank_thread is a tuple and if it is, we
+                        # create a tuple of (node, rank, thread). If not, we create
+                        # a tuple of (node, rank).
+                        if isinstance(rank_thread, tuple):
+                            df_index1 = (node,) + rank_thread
+                            df_index2 = ([node] + node.children,) + rank_thread
+                        else:
+                            df_index1 = (node, rank_thread)
+                            df_index2 = ([node] + node.children, rank_thread)
+
+                        for col in out_columns:
+                            self.dataframe.loc[df_index1, col] = function(
+                                self.dataframe.loc[df_index2, col]
+                            )
+                else:
+                    for col in out_columns:
+                        self.dataframe.loc[node, col] = function(
+                            self.dataframe.loc[[node] + node.children, col]
+                        )
 
     def subgraph_sum(
         self, columns, out_columns=None, function=lambda x: x.sum(min_count=1)
