@@ -830,7 +830,7 @@ class GraphFrame:
 
         return folded_stack
 
-    def to_literal(self, name="name", rank=0, thread=0, include_columns=[]):
+    def to_literal(self, name="name", rank=0, thread=0, cat_columns=[]):
         """Format this graph as a list of dictionaries for Roundtrip
         visualizations.
         """
@@ -862,7 +862,7 @@ class GraphFrame:
 
         def attributes_to_dict(df_index):
             valid_columns = [
-                col for col in include_columns if col in self.dataframe.columns
+                col for col in cat_columns if col in self.dataframe.columns
             ]
 
             attributes_dict = {}
