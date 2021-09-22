@@ -247,6 +247,7 @@ class BoxPlot:
         for metric in self.metrics:
             box = self.result[callsite][box_type][metric]
             ret[metric] = {
+                "name": callsite,
                 "q": box["q"].tolist(),
                 "ocat": box["ocat"].tolist(),
                 "ometric": box["ometric"].tolist(),
@@ -278,6 +279,7 @@ class BoxPlot:
 
         """
         _dtype = {
+            "name": object,
             'q': object,
             'ocat': object,
             'ometric': object,
