@@ -29,11 +29,13 @@ class BoxPlot:
         assert isinstance(callsites, list)
         assert isinstance(metrics, list)
 
-        self.df_index = ["node"]
-
         if bkg_gf is not None:
             assert isinstance(bkg_gf, ht.GraphFrame)
             assert cat_column in bkg_gf.dataframe.column
+
+        # self.df_index = list(tgt_gf.dataframe.index.names) # This will cause a
+        # bug.
+        self.df_index = ["node"]
 
         tgt_gf.dataframe = tgt_gf.dataframe.reset_index()
         if cat_column not in tgt_gf.dataframe.columns:
@@ -275,6 +277,18 @@ class BoxPlot:
             hatchet.GraphFrame with boxplot information as columns.
 
         """
+        _dtype = {
+            'q': object,
+            'ocat': object,
+            'ometric': object,
+            'min': np.float64,
+            'max': np.float64,
+            'mean': np.float64,
+            'var': np.float64,
+            'imb': np.float64,
+            'kurt': np.float64,
+            'skew': np.float64
+        }
         _dict = {
             callsite: self._unpack_callsite(callsite, box_type, with_htnode=True)[
                 metric
@@ -282,6 +296,7 @@ class BoxPlot:
             for callsite in self.callsites
         }
         tmp_df = pd.DataFrame.from_dict(data=_dict).T
+        tmp_df = tmp_df.astype(_dtype)
         tmp_df.set_index(self.df_index, inplace=True)
 
         return ht.GraphFrame(gf.graph, tmp_df, gf.exc_metrics, gf.inc_metrics)
