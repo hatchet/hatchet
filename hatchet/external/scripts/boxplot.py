@@ -31,7 +31,6 @@ class BoxPlot:
 
         if bkg_gf is not None:
             assert isinstance(bkg_gf, ht.GraphFrame)
-            assert cat_column in bkg_gf.dataframe.column
 
         # self.df_index = list(tgt_gf.dataframe.index.names) # This will cause a
         # bug.
