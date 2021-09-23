@@ -12,3 +12,4 @@ multiprocess
 textX
 scipy
 caliper-reader
+jsonschema

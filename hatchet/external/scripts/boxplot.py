@@ -6,7 +6,12 @@ import hatchet as ht
 
 class BoxPlot:
     def __init__(
-        self, cat_column, tgt_gf, bkg_gf=None, callsites=[], metrics=[]
+        self,
+        cat_column,
+        tgt_gf,
+        bkg_gf=None,
+        group_by="nid",
+        metrics=[],
     ):
         """
         Boxplot computation for callsites. The data can be computed for two use
@@ -19,22 +24,22 @@ class BoxPlot:
             cat_column: (string) Categorical column to aggregate the boxplot computation.
             tgt_gf: (ht.GraphFrame) Target GraphFrame.
             bkg_gf: (ht.GraphFrame) Background GraphFrame.
-            callsite: (list) List of callsites.
+            group_by: (string) Column to identify the callsites (e.g., name, nid).
             metrics: (list) List of metrics to compute.
-            iqr_scale: (float) IQR range for outliers.
 
         Return: None
         """
         assert isinstance(tgt_gf, ht.GraphFrame)
-        assert isinstance(callsites, list)
+        assert isinstance(group_by, str)
         assert isinstance(metrics, list)
 
         if bkg_gf is not None:
             assert isinstance(bkg_gf, ht.GraphFrame)
 
-        # self.df_index = list(tgt_gf.dataframe.index.names) # This will cause a
-        # bug.
-        self.df_index = ["node"]
+        self.df_index = list(tgt_gf.dataframe.index.names)
+        # Remove cat_column from the index, since we will aggregate by this column.
+        if cat_column in self.df_index:
+            self.df_index.remove(cat_column)
 
         tgt_gf.dataframe = tgt_gf.dataframe.reset_index()
         if cat_column not in tgt_gf.dataframe.columns:
@@ -46,7 +51,6 @@ class BoxPlot:
                 raise Exception(f"{cat_column} not found in bkg_gf.")
 
         self.iqr_scale = 1.5
-        self.callsites = callsites
         self.cat_column = cat_column
 
         if len(metrics) == 0:
@@ -54,25 +58,25 @@ class BoxPlot:
         else:
             self.metrics = metrics
 
-        if len(callsites) == 0:
-            self.callsites = tgt_gf.dataframe['name'].unique().tolist() 
-            if bkg_gf is not None:
-                self.callsites = tgt_gf.dataframe['name'].unique().tolist() + bkg_gf.dataframe['name'].unique().tolist()
-        else:
-            self.callsites = callsites
+        self.callsites = tgt_gf.dataframe[group_by].unique().tolist()
+        if bkg_gf is not None:
+            self.callsites = (
+                tgt_gf.dataframe[group_by].unique().tolist()
+                + bkg_gf.dataframe[group_by].unique().tolist()
+            )
 
         tgt_dict = BoxPlot.df_groupby(
             tgt_gf.dataframe,
-            groupby="name",
-            cols=self.metrics + [self.cat_column] + self.df_index,
+            groupby=group_by,
+            cols=self.metrics + [self.cat_column] + self.df_index + ["name"],
         )
         self.box_types = ["tgt"]
 
         if bkg_gf is not None:
             bkg_dict = BoxPlot.df_groupby(
                 bkg_gf.dataframe,
-                groupby="name",
-                cols=self.metrics + [self.cat_column] + self.df_index,
+                groupby=group_by,
+                cols=self.metrics + [self.cat_column] + self.df_index + ["name"],
             )
             self.box_types = ["tgt", "bkg"]
 
@@ -191,6 +195,7 @@ class BoxPlot:
                 "imb": _imb,
                 "ks": (_kurt, _skew),
                 "node": df["node"].unique().tolist()[0],
+                "name": df["name"].unique().tolist()[0],
             }
 
         return ret
@@ -246,7 +251,7 @@ class BoxPlot:
         for metric in self.metrics:
             box = self.result[callsite][box_type][metric]
             ret[metric] = {
-                "name": callsite,
+                "name": box["name"],
                 "q": box["q"].tolist(),
                 "ocat": box["ocat"].tolist(),
                 "ometric": box["ometric"].tolist(),
@@ -278,17 +283,17 @@ class BoxPlot:
 
         """
         _dtype = {
-            "name": object,
-            'q': object,
-            'ocat': object,
-            'ometric': object,
-            'min': np.float64,
-            'max': np.float64,
-            'mean': np.float64,
-            'var': np.float64,
-            'imb': np.float64,
-            'kurt': np.float64,
-            'skew': np.float64
+            "name": str,
+            "q": object,
+            "ocat": object,
+            "ometric": object,
+            "min": np.float64,
+            "max": np.float64,
+            "mean": np.float64,
+            "var": np.float64,
+            "imb": np.float64,
+            "kurt": np.float64,
+            "skew": np.float64,
         }
         _dict = {
             callsite: self._unpack_callsite(callsite, box_type, with_htnode=True)[
@@ -300,6 +305,8 @@ class BoxPlot:
         tmp_df = tmp_df.astype(_dtype)
         tmp_df.set_index(self.df_index, inplace=True)
 
+        # TODO: Would we need to squash the graph. (Check in the to_gf() method.)
+        # Call into the gf.groupby_aggregate() (in PR) before returning the gf.
         return ht.GraphFrame(gf.graph, tmp_df, gf.exc_metrics, gf.inc_metrics)
 
     def to_gf(self, gf, box_type):
