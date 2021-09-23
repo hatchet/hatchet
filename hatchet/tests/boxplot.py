@@ -5,11 +5,9 @@
 
 import pandas as pd
 import pandas.api.types as ptypes
-import jsonschema
 
 import hatchet as ht
 from hatchet.external.scripts import BoxPlot
-from hatchet.util.executable import which
 
 bp_columns = [
     "name",
@@ -41,7 +39,6 @@ def test_boxplot_tgt(calc_pi_hpct_db):
     assert not hasattr(bp, "bkg")
 
     df = bp.tgt[metrics[0]].dataframe
-    graph = bp.tgt[metrics[0]].graph
 
     # Check if the required columns are present.
     columns = [
