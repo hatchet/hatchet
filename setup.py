@@ -39,7 +39,6 @@ setup(
         "hatchet.readers",
         "hatchet.util",
         "hatchet.external",
-        "hatchet.external.scripts",
         "hatchet.tests",
         "hatchet.cython_modules.libs",
     ],
