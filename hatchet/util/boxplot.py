@@ -1,3 +1,8 @@
+# Copyright 2021 University of Maryland and other Hatchet Project
+# Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: MIT
+
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -13,7 +18,7 @@ class BoxPlot:
     ):
         """
         Boxplot class computes the runtime distributions of a multi-indexed GraphFrame.
-        
+
 
         Arguments:
             multi_index_gf: (ht.GraphFrame) Target GraphFrame.
@@ -32,18 +37,24 @@ class BoxPlot:
 
         # Validate if only 2 indexes are provided. Else, warn the user to pass `drop_column`.
         if len(df_index) > 2 and not drop_index:
-            raise Exception(f"multi_index_gf contains len(self.df_index) indexes. Please specify the `drop_index` by which BoxPlot API will compute the distribution to avoid ambiguity.")
+            raise Exception(
+                "multi_index_gf contains len(self.df_index) indexes. Please specify the `drop_index` by which BoxPlot API will compute the distribution to avoid ambiguity."
+            )
 
         # Validate primary index is 'node'.
         if "node" not in df_index:
-            raise Exception(f"BoxPlot expects 'node' to be a primary index of 'multi_index_gf'.")
-            
+            raise Exception(
+                "BoxPlot expects 'node' to be a primary index of 'multi_index_gf'."
+            )
+
         # Validate drop_index in the dataframe, if provided.
         if drop_index and drop_index not in df_index:
-            raise Exception(f"'drop_index: {drop_index}' is not a valid index of 'multi_index_gf'.")
+            raise Exception(
+                f"'drop_index: {drop_index}' is not a valid index of 'multi_index_gf'."
+            )
 
         # Validate metrics are columns in the dataframe, if provided.
-        if len(metrics) > 0: 
+        if len(metrics) > 0:
             for metric in metrics:
                 if metric not in multi_index_gf.dataframe.columns:
                     raise Exception(f"{metric} not found in the gf.dataframe.")
@@ -51,20 +62,22 @@ class BoxPlot:
         # Set drop_index as the secondary index.
         if len(df_index) == 2:
             self.drop_index = multi_index_gf.dataframe.names[1]
-        else: 
+        else:
             self.drop_index = drop_index
 
         # Reset the indexes in the dataframe.
         multi_index_gf_copy = multi_index_gf.copy()
         multi_index_gf_copy.dataframe = multi_index_gf.dataframe.reset_index()
-        
+
         # Set the metrics for computation.
         if len(metrics) == 0:
-            self.metrics = multi_index_gf_copy.inc_metrics + multi_index_gf_copy.exc_metrics
+            self.metrics = (
+                multi_index_gf_copy.inc_metrics + multi_index_gf_copy.exc_metrics
+            )
         else:
             self.metrics = metrics
 
-        # Drop the 'node' and `drop_index` from the ht.GraphFrame.DataFrame's indexes. 
+        # Drop the 'node' and `drop_index` from the ht.GraphFrame.DataFrame's indexes.
         df_index.remove("node")
         df_index.remove(self.drop_index)
 
@@ -83,15 +96,15 @@ class BoxPlot:
             cols=self.metrics + self.ht_columns + [self.drop_index],
         )
 
-        # for callsite in self.callsites:
-        #     print(callsites_dict[callsite])
+        # Dump the computation result for each callsite.
+        self.result = {
+            callsite: self.compute(callsites_dict[callsite])
+            for callsite in self.callsites
+        }
 
-        # Dump the computation result for each callsite. 
-        self.result = { callsite: self.compute(callsites_dict[callsite]) for callsite in self.callsites}
-        
         # Convert it to a GraphFrame.
         self.gf = self.to_gf(multi_index_gf_copy)
-        
+
     @staticmethod
     def df_groupby(df, groupby, cols):
         """
@@ -181,7 +194,7 @@ class BoxPlot:
             _kurt = stats.kurtosis(_data)
 
             # TODO: Outliers and their corresponding rank member is not being
-            # fetched accurately. 
+            # fetched accurately.
             # _outliers = df[tv].to_numpy()[mask]
 
             ret[tk] = {
@@ -215,8 +228,7 @@ class BoxPlot:
             }
         """
         return {
-            callsite: self._unpack_callsite(callsite)
-            for callsite in self.callsites
+            callsite: self._unpack_callsite(callsite) for callsite in self.callsites
         }
 
     def _unpack_callsite(self, callsite):
@@ -321,7 +333,4 @@ class BoxPlot:
                 "metric": hatchet.GraphFrame, ...
             }
         """
-        return {
-            metric: self._to_gf_by_metric(gf, metric)
-            for metric in self.metrics
-        }
+        return {metric: self._to_gf_by_metric(gf, metric) for metric in self.metrics}
