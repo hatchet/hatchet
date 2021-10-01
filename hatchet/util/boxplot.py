@@ -1,4 +1,3 @@
-from itertools import groupby
 import numpy as np
 import pandas as pd
 from scipy import stats
@@ -13,17 +12,12 @@ class BoxPlot:
         metrics=[],
     ):
         """
-        Boxplot computation for callsites. The data can be computed for two use
-        cases:
-        1. Examining runtime distributions of a single GraphFrame.
-        2. Comparing runtime distributions of a target GraphFrame against a
-           background GraphFrame.
+        Boxplot class computes the runtime distributions of a multi-indexed GraphFrame.
+        
 
         Arguments:
+            multi_index_gf: (ht.GraphFrame) Target GraphFrame.
             cat_column: (string) Categorical column to aggregate the boxplot computation.
-            tgt_gf: (ht.GraphFrame) Target GraphFrame.
-            bkg_gf: (ht.GraphFrame) Background GraphFrame.
-            group_by: (string) Column to identify the callsites (e.g., name, nid).
             metrics: (list) List of metrics to compute.
 
         Return: None
@@ -32,10 +26,11 @@ class BoxPlot:
         assert isinstance(metrics, list)
 
         self.df_index = list(multi_index_gf.dataframe.index.names)
-        print(self.df_index)
+        drop_indexes = ["node", cat_column]
         # Remove cat_column from the index, since we will aggregate by this column.
-        if cat_column in self.df_index:
-            self.df_index.remove(cat_column)
+        for index in drop_indexes:
+            if index in self.df_index:
+                self.df_index.remove(index)
 
         print(self.df_index)
 
@@ -51,13 +46,14 @@ class BoxPlot:
         else:
             self.metrics = metrics
 
-        groupby = "nid"
-        self.callsites = multi_index_gf.dataframe[groupby].unique().tolist()
+        self.input_index = ["nid", cat_column]
+        self.output_index = ["node", cat_column]
+        self.ht_columns = ["name", "node"]
 
-        tgt_dict = BoxPlot.df_groupby(
+        self.callsites, tgt_dict = BoxPlot.df_groupby(
             multi_index_gf.dataframe,
-            groupby=groupby,
-            cols=self.metrics + [self.cat_column] + self.df_index + ["name"],
+            groupby=self.input_index,
+            cols=self.metrics + self.ht_columns,
         )
 
         self.result = {}
@@ -80,10 +76,9 @@ class BoxPlot:
         Return:
             (dict): A dictionary of dataframes (columns) keyed by groups.
         """
-        _df = df.set_index([groupby])
+        _df = df.set_index(groupby)
         _levels = _df.index.unique().tolist()
-
-        return {_: _df.xs(_)[cols] for _ in _levels}
+        return _levels, {_: _df.xs(_)[cols] for _ in _levels}
 
     @staticmethod
     def outliers(data, scale=1.5, side="both"):
@@ -156,20 +151,22 @@ class BoxPlot:
             _skew = stats.skew(_data)
             _kurt = stats.kurtosis(_data)
 
+            # TODO: Outliers and their corresponding rank member is not being
+            # fetched accurately. 
+            # _outliers = df[tv].to_numpy()[mask]
+
             ret[tk] = {
                 "q": q,
-                "ometric": df[tv].to_numpy()[mask],
-                "ocat": df[self.cat_column].to_numpy()[mask],
+                # "ometric": _outliers,
+                # "ocat": df.index[1] if len(_outliers) > 0 else -1, # not being used in the vis yet.
                 "d": _data,
                 "rng": (_min, _max),
                 "uv": (_mean, _var),
                 "imb": _imb,
                 "ks": (_kurt, _skew),
                 "name": df["name"].unique().tolist()[0],
+                "node": df["node"].unique().tolist()[0]
             }
-
-            for index in self.df_index:
-                ret[tk][index] = df[index].unique().tolist()[0],
 
         return ret
 
@@ -204,8 +201,8 @@ class BoxPlot:
             ret (dict): {
                 "metric": {
                     "q": (array) quartiles (i.e., [q0, q1, q2, q3, q4]),
-                    "ocat": (array) outlier from cat_column,
-                    "ometric": (array) outlier from metri,
+                    "ocat": (array) outlier from cat_column, (TODO)
+                    "ometric": (array) outlier from metri, (TODO)
                     "min": (number) minimum,
                     "max": (number) maximum,
                     "mean": (number) mean,
@@ -222,8 +219,8 @@ class BoxPlot:
             ret[metric] = {
                 "name": box["name"],
                 "q": box["q"].tolist(),
-                "ocat": box["ocat"].tolist(),
-                "ometric": box["ometric"].tolist(),
+                # "ocat": box["ocat"], # TODO
+                # "ometric": box["ometric"].tolist(), # TODO
                 "min": box["rng"][0],
                 "max": box["rng"][1],
                 "mean": box["uv"][0],
@@ -231,10 +228,8 @@ class BoxPlot:
                 "imb": box["imb"],
                 "kurt": box["ks"][0],
                 "skew": box["ks"][1],
+                "node": box["node"]
             }
-
-            for index in self.df_index:
-                ret[metric][index] = box[index]
 
         return ret
 
@@ -254,8 +249,8 @@ class BoxPlot:
         _dtype = {
             "name": str,
             "q": object,
-            "ocat": object,
-            "ometric": object,
+            # "ocat": object, # TODO
+            # "ometric": object, # TODO
             "min": np.float64,
             "max": np.float64,
             "mean": np.float64,
@@ -270,7 +265,9 @@ class BoxPlot:
         }
         tmp_df = pd.DataFrame.from_dict(data=_dict).T
         tmp_df = tmp_df.astype(_dtype)
-        tmp_df.set_index(self.df_index, inplace=True)
+        tmp_df.index.names = self.input_index
+        tmp_df.reset_index(inplace=True)
+        tmp_df.set_index(self.output_index, inplace=True)
 
         # TODO: Would we need to squash the graph. (Check in the to_gf() method.)
         # Call into the gf.groupby_aggregate() (in PR) before returning the gf.
