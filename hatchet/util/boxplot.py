@@ -61,7 +61,7 @@ class BoxPlot:
 
         # Set drop_index as the secondary index.
         if len(df_index) == 2:
-            self.drop_index = multi_index_gf.dataframe.names[1]
+            self.drop_index = multi_index_gf.dataframe.index.names[1]
         else:
             self.drop_index = drop_index
 
@@ -84,7 +84,7 @@ class BoxPlot:
         self.df_index = df_index
         # BoxPlot API will aggregate considering the `hatchet_nid` and the
         # `drop_index`.
-        self.group_by = ["hatchet_nid"] + self.df_index
+        self.group_by = ["nid"] + self.df_index
 
         # Hatchet columns that are required by BoxPlot API for computation.
         self.ht_columns = ["name", "node"]
