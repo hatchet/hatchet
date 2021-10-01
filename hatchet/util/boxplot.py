@@ -66,13 +66,13 @@ class BoxPlot:
             self.drop_index = drop_index
 
         # Reset the indexes in the dataframe.
-        multi_index_gf_copy = multi_index_gf.copy()
-        multi_index_gf_copy.dataframe = multi_index_gf.dataframe.reset_index()
+        self.multi_index_gf = multi_index_gf.copy()
+        self.multi_index_gf.dataframe = self.multi_index_gf.dataframe.reset_index()
 
         # Set the metrics for computation.
         if len(metrics) == 0:
             self.metrics = (
-                multi_index_gf_copy.inc_metrics + multi_index_gf_copy.exc_metrics
+                self.multi_index_gf.inc_metrics + self.multi_index_gf.exc_metrics
             )
         else:
             self.metrics = metrics
@@ -89,21 +89,15 @@ class BoxPlot:
         # Hatchet columns that are required by BoxPlot API for computation.
         self.ht_columns = ["name", "node"]
 
-        # Group the dataframe by the provided group_by columns.
-        self.callsites, callsites_dict = BoxPlot.df_groupby(
-            multi_index_gf_copy.dataframe,
+        # Compute the boxplot dictionary keyed by "index" and valued as a dataframe.
+        self.boxplot_df_dict = self.compute(
+            multi_index_df=self.multi_index_gf.dataframe,
             groupby=self.group_by,
             cols=self.metrics + self.ht_columns + [self.drop_index],
         )
 
-        # Dump the computation result for each callsite.
-        self.result = {
-            callsite: self.compute(callsites_dict[callsite])
-            for callsite in self.callsites
-        }
-
         # Convert it to a GraphFrame.
-        self.gf = self.to_gf(multi_index_gf_copy)
+        self.gf = self.to_gf()
 
     @staticmethod
     def df_groupby(df, groupby, cols):
@@ -120,7 +114,7 @@ class BoxPlot:
         """
         _df = df.set_index(groupby)
         _levels = _df.index.unique().tolist()
-        return _levels, {_: _df.xs(_)[cols] for _ in _levels}
+        return {_: _df.xs(_)[cols] for _ in _levels}
 
     @staticmethod
     def outliers(data, scale=1.5, side="both"):
@@ -159,12 +153,14 @@ class BoxPlot:
         if side == "both":
             return np.logical_or(upper_outlier, lower_outlier)
 
-    def compute(self, df):
+    def compute(self, multi_index_df, groupby, cols):
         """
         Compute boxplot quartiles and statistics.
 
         Arguments:
-            df: Dataframe to calculate the boxplot information.
+            multi_index_df: Dataframe to calculate the boxplot information.
+            groupby: Columns to aggregate the data.
+            cols: Columns to retain in the output dataframe.
 
         Return:
             ret (dict): {
@@ -180,38 +176,48 @@ class BoxPlot:
                 }
             }
         """
-        ret = {_: {} for _ in self.metrics}
-        for tk, tv in zip(self.metrics, self.metrics):
-            q = np.percentile(df[tv], [0.0, 25.0, 50.0, 75.0, 100.0])
-            mask = BoxPlot.outliers(df[tv], scale=1.5)
-            mask = np.where(mask)[0]
+        group_df_dict = BoxPlot.df_groupby(
+            df=multi_index_df,
+            groupby=groupby,
+            cols=cols,
+        )
 
-            _data = df[tv].to_numpy()
-            _min, _mean, _max = _data.min(), _data.mean(), _data.max()
-            _var = _data.var() if _data.shape[0] > 0 else 0.0
-            _imb = (_max - _mean) / _mean if not np.isclose(_mean, 0.0) else _max
-            _skew = stats.skew(_data)
-            _kurt = stats.kurtosis(_data)
+        boxplot_dict_df = {_: {} for _ in group_df_dict.keys()}
+        for callsite, callsite_df in group_df_dict.items():
+            ret = {_: {} for _ in self.metrics}
+            for tk, tv in zip(self.metrics, self.metrics):
+                q = np.percentile(callsite_df[tv], [0.0, 25.0, 50.0, 75.0, 100.0])
+                mask = BoxPlot.outliers(callsite_df[tv])
+                mask = np.where(mask)[0]
 
-            # TODO: Outliers and their corresponding rank member is not being
-            # fetched accurately.
-            # _outliers = df[tv].to_numpy()[mask]
+                _data = callsite_df[tv].to_numpy()
+                _min, _mean, _max = _data.min(), _data.mean(), _data.max()
+                _var = _data.var() if _data.shape[0] > 0 else 0.0
+                _imb = (_max - _mean) / _mean if not np.isclose(_mean, 0.0) else _max
+                _skew = stats.skew(_data)
+                _kurt = stats.kurtosis(_data)
 
-            ret[tk] = {
-                "q": q,
-                # "ometric": _outliers,
-                # "ocat": df.index[1] if len(_outliers) > 0 else -1, # not being used in the vis yet.
-                "d": _data,
-                "rng": (_min, _max),
-                "uv": (_mean, _var),
-                "imb": _imb,
-                "ks": (_kurt, _skew),
-            }
+                # TODO: Outliers and their corresponding rank member is not being
+                # fetched accurately.
+                # _outliers = df[tv].to_numpy()[mask]
 
-            for ht_column in self.ht_columns + [self.drop_index]:
-                ret[tk][ht_column] = df[ht_column].iloc[0]
+                ret[tk] = {
+                    "q": q,
+                    # "ometric": _outliers,
+                    # "ocat": df.index[1] if len(_outliers) > 0 else -1, # not being used in the vis yet.
+                    "d": _data,
+                    "rng": (_min, _max),
+                    "uv": (_mean, _var),
+                    "imb": _imb,
+                    "ks": (_kurt, _skew),
+                }
 
-        return ret
+                for ht_column in self.ht_columns + [self.drop_index]:
+                    ret[tk][ht_column] = callsite_df[ht_column].iloc[0]
+
+            boxplot_dict_df[callsite] = ret
+
+        return boxplot_dict_df
 
     def to_json(self):
         """
@@ -228,7 +234,8 @@ class BoxPlot:
             }
         """
         return {
-            callsite: self._unpack_callsite(callsite) for callsite in self.callsites
+            callsite: self._unpack_callsite(callsite)
+            for callsite in self.boxplot_df_dict.keys()
         }
 
     def _unpack_callsite(self, callsite):
@@ -257,7 +264,7 @@ class BoxPlot:
         """
         ret = {}
         for metric in self.metrics:
-            box = self.result[callsite][metric]
+            box = self.boxplot_df_dict[callsite][metric]
             ret[metric] = {
                 "q": box["q"].tolist(),
                 # "ocat": box["ocat"], # TODO
@@ -304,7 +311,7 @@ class BoxPlot:
         }
         _dict = {
             callsite: self._unpack_callsite(callsite)[metric]
-            for callsite in self.callsites
+            for callsite in self.boxplot_df_dict.keys()
         }
         tmp_df = pd.DataFrame.from_dict(data=_dict).T
         tmp_df = tmp_df.astype(_dtype)
@@ -318,7 +325,7 @@ class BoxPlot:
         # Call into the gf.groupby_aggregate() (in PR) before returning the gf.
         return ht.GraphFrame(gf.graph, tmp_df, gf.exc_metrics, gf.inc_metrics)
 
-    def to_gf(self, gf):
+    def to_gf(self):
         """
         Unpack the boxplot data into GraphFrame object.
 
@@ -326,11 +333,13 @@ class BoxPlot:
         hatchet.Graph being the same as the input gf.
 
         Arguments:
-            gf: (hatchet.GraphFrame) GraphFrame
 
         Return:
             (dict) : {
                 "metric": hatchet.GraphFrame, ...
             }
         """
-        return {metric: self._to_gf_by_metric(gf, metric) for metric in self.metrics}
+        return {
+            metric: self._to_gf_by_metric(self.multi_index_gf, metric)
+            for metric in self.metrics
+        }
