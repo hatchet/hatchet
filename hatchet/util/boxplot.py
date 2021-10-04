@@ -13,7 +13,7 @@ class BoxPlot:
     def __init__(
         self,
         multi_index_gf,
-        drop_index="",
+        drop_index_levels=[],
         metrics=[],
     ):
         """
@@ -22,82 +22,93 @@ class BoxPlot:
 
         Arguments:
             multi_index_gf: (ht.GraphFrame) Target GraphFrame.
-            drop_index: (string) Categorical column to aggregate the boxplot
-            computation. (Optional, as long as there is only 2 indexes in the
-            ht.GraphFrame)
-            metrics: (list) List of metrics to compute.
+            drop_index_levels (Optional): (list) List of columns to aggregate the boxplot
+            computation.
+            metrics (Optional): (list) List of metrics to compute.
 
         Return: None
         """
         assert isinstance(multi_index_gf, ht.GraphFrame)
-        assert isinstance(drop_index, str)
+        assert isinstance(drop_index_levels, list)
         assert isinstance(metrics, list)
 
-        df_index = list(multi_index_gf.dataframe.index.names)
+        # Reset the indexes in the dataframe.
+        self.multi_index_gf = multi_index_gf.copy()
+        self.multi_index_gf.dataframe = self.multi_index_gf.dataframe.reset_index()
+        self.multi_index_gf.dataframe["_hatchet_nid"] = self.multi_index_gf.dataframe[
+            "node"
+        ].apply(lambda _: _._hatchet_nid)
 
-        # Validate if only 2 indexes are provided. Else, warn the user to pass `drop_column`.
-        if len(df_index) > 2 and not drop_index:
-            raise Exception(
-                "multi_index_gf contains len(self.df_index) indexes. Please specify the `drop_index` by which BoxPlot API will compute the distribution to avoid ambiguity."
-            )
+        self.drop_indexes, self.output_indexes = BoxPlot.validate_drop_index_level(
+            multi_index_gf, drop_index_levels
+        )
+        self.metrics = BoxPlot.validate_metrics(multi_index_gf, metrics)
+
+        self.agg_columns = ["_hatchet_nid"] + self.output_indexes
+        self.output_columns = list(
+            set(self.multi_index_gf.dataframe.columns)
+            .difference(set(self.agg_columns))
+            .difference(set(self.metrics))
+        )
+
+        # Compute the boxplot dictionary keyed by "index" and valued as a dataframe.
+        self.boxplot_df_dict = BoxPlot.compute(
+            multi_index_df=self.multi_index_gf.dataframe,
+            groupby=self.agg_columns,
+            cols=self.output_columns,
+            metrics=self.metrics,
+        )
+
+        # Convert it to a GraphFrame.
+        self.gf = self.to_gf()
+
+    @staticmethod
+    def validate_drop_index_level(
+        multi_index_gf: ht.GraphFrame, drop_index_levels: list
+    ):
+        df_index_levels = list(multi_index_gf.dataframe.index.names)
 
         # Validate primary index is 'node'.
-        if "node" not in df_index:
+        if "node" not in df_index_levels:
             raise Exception(
-                "BoxPlot expects 'node' to be a primary index of 'multi_index_gf'."
+                "ht.util.BoxPlot expects the primary index of `multi_index_gf` to be `ht.Graph.Node`."
             )
 
         # Validate drop_index in the dataframe, if provided.
-        if drop_index and drop_index not in df_index:
-            raise Exception(
-                f"'drop_index: {drop_index}' is not a valid index of 'multi_index_gf'."
-            )
+        if len(drop_index_levels) > 0:
+            for _index in drop_index_levels:
+                if _index not in df_index_levels:
+                    raise Exception(
+                        f"'drop_index_level: {_index}' is not a valid index of 'multi_index_gf'."
+                    )
+        elif len(drop_index_levels) == 0:
+            # Validate if only 2 indexes are provided. Else, warn the user to pass `drop_column`.
+            if len(df_index_levels) > 2:
+                raise Exception(
+                    f"multi_index_gf contains {len(df_index_levels)} indexes = {df_index_levels}. ht.util.BoxPlot is limited to processing GraphFrames with 2 indexes. Please specify the `drop_index` by which BoxPlot API will compute the distribution to avoid ambiguity."
+                )
+            elif len(df_index_levels) == 2:
+                drop_index_levels = [multi_index_gf.dataframe.index.names[1]]
 
+        # Drop the 'node' and `drop_index_levels` from the
+        # ht.GraphFrame.DataFrame's indexes.
+        df_index_levels.remove("node")
+        for index in drop_index_levels:
+            df_index_levels.remove(index)
+
+        return drop_index_levels, df_index_levels
+
+    @staticmethod
+    def validate_metrics(multi_index_gf: ht.GraphFrame, metrics: list):
         # Validate metrics are columns in the dataframe, if provided.
         if len(metrics) > 0:
             for metric in metrics:
                 if metric not in multi_index_gf.dataframe.columns:
                     raise Exception(f"{metric} not found in the gf.dataframe.")
 
-        # Set drop_index as the secondary index.
-        if len(df_index) == 2:
-            self.drop_index = multi_index_gf.dataframe.index.names[1]
-        else:
-            self.drop_index = drop_index
-
-        # Reset the indexes in the dataframe.
-        self.multi_index_gf = multi_index_gf.copy()
-        self.multi_index_gf.dataframe = self.multi_index_gf.dataframe.reset_index()
-
-        # Set the metrics for computation.
         if len(metrics) == 0:
-            self.metrics = (
-                self.multi_index_gf.inc_metrics + self.multi_index_gf.exc_metrics
-            )
-        else:
-            self.metrics = metrics
-
-        # Drop the 'node' and `drop_index` from the ht.GraphFrame.DataFrame's indexes.
-        df_index.remove("node")
-        df_index.remove(self.drop_index)
-
-        self.df_index = df_index
-        # BoxPlot API will aggregate considering the `hatchet_nid` and the
-        # `drop_index`.
-        self.group_by = ["nid"] + self.df_index
-
-        # Hatchet columns that are required by BoxPlot API for computation.
-        self.ht_columns = ["name", "node"]
-
-        # Compute the boxplot dictionary keyed by "index" and valued as a dataframe.
-        self.boxplot_df_dict = self.compute(
-            multi_index_df=self.multi_index_gf.dataframe,
-            groupby=self.group_by,
-            cols=self.metrics + self.ht_columns + [self.drop_index],
-        )
-
-        # Convert it to a GraphFrame.
-        self.gf = self.to_gf()
+            return multi_index_gf.inc_metrics + multi_index_gf.exc_metrics
+        return metrics
 
     @staticmethod
     def df_groupby(df, groupby, cols):
@@ -153,7 +164,8 @@ class BoxPlot:
         if side == "both":
             return np.logical_or(upper_outlier, lower_outlier)
 
-    def compute(self, multi_index_df, groupby, cols):
+    @staticmethod
+    def compute(multi_index_df, groupby, metrics, cols):
         """
         Compute boxplot quartiles and statistics.
 
@@ -179,13 +191,13 @@ class BoxPlot:
         group_df_dict = BoxPlot.df_groupby(
             df=multi_index_df,
             groupby=groupby,
-            cols=cols,
+            cols=cols + metrics,
         )
 
         boxplot_dict_df = {_: {} for _ in group_df_dict.keys()}
         for callsite, callsite_df in group_df_dict.items():
-            ret = {_: {} for _ in self.metrics}
-            for tk, tv in zip(self.metrics, self.metrics):
+            ret = {_: {} for _ in metrics}
+            for tk, tv in zip(metrics, metrics):
                 q = np.percentile(callsite_df[tv], [0.0, 25.0, 50.0, 75.0, 100.0])
                 mask = BoxPlot.outliers(callsite_df[tv])
                 mask = np.where(mask)[0]
@@ -212,8 +224,8 @@ class BoxPlot:
                     "ks": (_kurt, _skew),
                 }
 
-                for ht_column in self.ht_columns + [self.drop_index]:
-                    ret[tk][ht_column] = callsite_df[ht_column].iloc[0]
+                for _column in cols:
+                    ret[tk][_column] = callsite_df[_column].iloc[0]
 
             boxplot_dict_df[callsite] = ret
 
@@ -278,8 +290,8 @@ class BoxPlot:
                 "skew": box["ks"][1],
             }
 
-            for ht_column in self.ht_columns + [self.drop_index]:
-                ret[metric][ht_column] = box[ht_column]
+            for _column in self.output_columns:
+                ret[metric][_column] = box[_column]
 
         return ret
 
@@ -315,11 +327,11 @@ class BoxPlot:
         }
         tmp_df = pd.DataFrame.from_dict(data=_dict).T
         tmp_df = tmp_df.astype(_dtype)
-        tmp_df.index.names = self.group_by
+        tmp_df.index.names = self.agg_columns
         tmp_df.reset_index(inplace=True)
 
-        tmp_df = tmp_df.drop(columns=[self.drop_index])
-        tmp_df.set_index(["node"] + self.df_index, inplace=True)
+        tmp_df = tmp_df.drop(columns=self.drop_indexes + ["_hatchet_nid"])
+        tmp_df.set_index(["node"] + self.output_indexes, inplace=True)
 
         # TODO: Would we need to squash the graph. (Check in the to_gf() method.)
         # Call into the gf.groupby_aggregate() (in PR) before returning the gf.

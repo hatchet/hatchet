@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: MIT
 
 import pandas as pd
-import pandas.api.types as ptypes
 
 import hatchet as ht
 from hatchet.util.boxplot import BoxPlot
@@ -26,7 +25,6 @@ bp_columns = [
 
 def test_gf_format(calc_pi_hpct_db):
     gf = ht.GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
-    gf_indexes = gf.dataframe.index.names
     bp = BoxPlot(multi_index_gf=gf)
 
     metrics = gf.inc_metrics + gf.exc_metrics
@@ -51,10 +49,18 @@ def test_gf_format(calc_pi_hpct_db):
         "kurt",
         "skew",
     ]
-    assert all(bp.gf[metric].dataframe.columns.tolist().sort() == columns.sort() for metric in metrics)
+    assert all(
+        bp.gf[metric].dataframe.columns.tolist().sort() == columns.sort()
+        for metric in metrics
+    )
 
-    assert all(len(list(bp.gf[metric].dataframe.index.names)) == 1 for metric in metrics)
-    assert all(list(bp.gf[metric].dataframe.index.names) == ["node"] for metric in metrics)
+    assert all(
+        len(list(bp.gf[metric].dataframe.index.names)) == 1 for metric in metrics
+    )
+    assert all(
+        list(bp.gf[metric].dataframe.index.names) == ["node"] for metric in metrics
+    )
+
 
 # def test_output_dtypes(calc_pi_hpct_db):
 #     gf = ht.GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
