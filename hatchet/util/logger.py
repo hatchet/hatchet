@@ -1,6 +1,5 @@
 import inspect
 import os
-import errno
 import getpass
 import json
 from datetime import datetime
@@ -35,16 +34,8 @@ class Log(object):
 
     def append_to_file(self, log):
         """Manages the opening and writing of log information to a file."""
-        logpath = os.path.expanduser("~/.hatchet/logs/")
-        if not os.path.exists(logpath):
-            try:
-                os.makedirs(logpath)
-            except OSError as e:
-                if e.errno != errno.EEXIST:
-                    raise
 
-        logpath = os.path.join(logpath, self._log_file)
-        with open(logpath, "a") as f:
+        with open(self._log_file, "a") as f:
             try:
                 f.write(json.dumps(log) + "\n")
             except TypeError as e:
@@ -56,10 +47,15 @@ class Log(object):
         def inner(*args, **kwargs):
             try:
                 # turn on logger
-                if "logging" in kwargs and kwargs["logging"] is True:
+                if "logging" in kwargs and kwargs["logging"] is True and not self._active:
                     self._active = True
+
+                    self._log_file = "hatchet_{}.log".format(datetime.now().replace(microsecond=0).isoformat())
+                    print("""Notification: Local logging of Hatchet function calls has been enabled. Output will be dumped to {}""".format(self._log_file))
+
                 elif "logging" in kwargs and kwargs["logging"] is False:
                     self._active = False
+                    print("""Notification: Local logging of Hatchet function calls has been disabled.""".format(self._log_file))
 
                 # if logger is on and user called function
                 if self._active and not self._nested:
@@ -127,6 +123,7 @@ class Log(object):
                 return function(*args, **kwargs)
 
         return inner
-
+    
+    # TODO: add log reader
 
 Logger = Log()
