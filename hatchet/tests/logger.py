@@ -1,5 +1,6 @@
 import os
 import json
+import glob
 
 from hatchet import GraphFrame
 from hatchet.util.logger import Logger
@@ -16,7 +17,6 @@ def test_no_logging_by_default(calc_pi_hpct_db, lulesh_caliper_json):
 
 
 def test_output(calc_pi_hpct_db):
-    logpath = os.path.expanduser("~/.hatchet/logs/hatchet.log")
     functions = [
         "from_hpctoolkit",
         "copy",
@@ -47,9 +47,11 @@ def test_output(calc_pi_hpct_db):
     gf3 = gf - gf2
     gf3 = gf * gf2
 
-    assert os.path.exists(logpath)
+    path = "hatchet_*.log"
+    files = glob.glob(path)
+    assert len(files) == 1
 
-    with open(logpath) as f:
+    with open(files[0], "r") as f:
         line = f.readline()
         while line:
             log_lines.append(json.loads(line))
@@ -59,4 +61,4 @@ def test_output(calc_pi_hpct_db):
         assert line["function"] in functions
 
     Logger.set_inactive()
-    os.remove(logpath)
+    os.remove(files[0])

@@ -47,15 +47,27 @@ class Log(object):
         def inner(*args, **kwargs):
             try:
                 # turn on logger
-                if "logging" in kwargs and kwargs["logging"] is True and not self._active:
+                if (
+                    "logging" in kwargs
+                    and kwargs["logging"] is True
+                    and not self._active
+                ):
                     self._active = True
 
-                    self._log_file = "hatchet_{}.log".format(datetime.now().replace(microsecond=0).isoformat())
-                    print("""Notification: Local logging of Hatchet function calls has been enabled. Output will be dumped to {}""".format(self._log_file))
+                    self._log_file = "hatchet_{}.log".format(
+                        datetime.now().replace(microsecond=0).isoformat()
+                    )
+                    print(
+                        """Notification: Local logging of Hatchet function calls has been enabled. Output will be dumped to {}""".format(
+                            self._log_file
+                        )
+                    )
 
                 elif "logging" in kwargs and kwargs["logging"] is False:
                     self._active = False
-                    print("""Notification: Local logging of Hatchet function calls has been disabled.""".format(self._log_file))
+                    print(
+                        """Notification: Local logging of Hatchet function calls has been disabled."""
+                    )
 
                 # if logger is on and user called function
                 if self._active and not self._nested:
@@ -123,7 +135,8 @@ class Log(object):
                 return function(*args, **kwargs)
 
         return inner
-    
+
     # TODO: add log reader
+
 
 Logger = Log()
