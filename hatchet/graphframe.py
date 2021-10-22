@@ -693,7 +693,15 @@ class GraphFrame:
         if not self.exc_metrics:
             return
 
-        self.inc_metrics = ["%s (inc)" % s for s in self.exc_metrics]
+        # TODO Change this logic when inc_metrics and exc_metrics are changed
+        new_inc_metrics = []
+        for exc in self.exc_metrics:
+            if exc.endswith("(exc)"):
+                new_inc_metrics.append(exc[:-len("(exc)")].strip())
+            else:
+                new_inc_metrics.append("%s (inc)" % exc)
+        self.inc_metrics = new_inc_metrics
+
         self.subgraph_sum(self.exc_metrics, self.inc_metrics)
 
     def show_metric_columns(self):
