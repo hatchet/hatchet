@@ -29,109 +29,181 @@ class CaliperNativeReader:
         self.filename_or_caliperreader = filename_or_caliperreader
         self.filename_ext = ""
 
-        self.metric_columns = set()
+        self.metric_columns = []
+        self.record_cols_mdata = []
         self.node_dicts = []
+
+        self.df_nodes = {}
+        self.callpath_to_node = {}
+        self.callpath_to_idx = {}
+        self.global_nid = 0
 
         self.timer = Timer()
 
         if isinstance(self.filename_or_caliperreader, str):
             _, self.filename_ext = os.path.splitext(filename_or_caliperreader)
 
+    def read_metrics(self, ctx="path"):
+        all_metrics = []
+
+        for record in self.filename_or_caliperreader.records:
+            node_dict = {}
+            if ctx in record:
+                if isinstance(record[ctx], list):
+                    node_callpath = tuple(record[ctx])
+                else:
+                    node_callpath = tuple([record[ctx]])
+
+                nid = self.callpath_to_idx.get(node_callpath)
+                if nid is not None:
+                    node_dict["nid"] = int(nid)
+                else:
+                    pass
+
+                for item in record.keys():
+                    if item != ctx:
+                        if item not in self.record_cols_mdata:
+                            self.record_cols_mdata.append(item)
+
+                        if (
+                            self.filename_or_caliperreader.attribute(
+                                item
+                            ).attribute_type()
+                            == "double"
+                        ):
+                            node_dict[item] = float(record[item])
+                        elif (
+                            self.filename_or_caliperreader.attribute(
+                                item
+                            ).attribute_type()
+                            == "int"
+                        ):
+                            node_dict[item] = int(record[item])
+                        elif item == "function":
+                            if isinstance(record[item], list):
+                                node_dict[item] = record[item][-1]
+                            else:
+                                node_dict[item] = record[item]
+                        else:
+                            node_dict[item] = record[item]
+
+                all_metrics.append(node_dict)
+
+        for col in self.record_cols_mdata:
+            if self.filename_or_caliperreader.attribute(col).is_value():
+                self.metric_columns.append(col)
+
+        df_metrics = pd.DataFrame.from_dict(data=all_metrics)
+        return df_metrics
+
     def create_graph(self, ctx="path"):
+        def _create_parent(hnode, parent_callpath):
+            """We may encounter a parent node in the callpath before we see it
+            as a child node. In this case, we need to create a hatchet node for
+            the parent.
+
+            We can't create a node_dict for the parent because we don't
+            know its metric values when we first see it in a callpath.
+
+            This function recursively creates parent nodes in a callpath
+            until it reaches the already existing parent in that callpath.
+            """
+            parent_node = self.callpath_to_node.get(parent_callpath)
+
+            # return if arrives at the parent
+            # else create a parent and add parent/child
+            if parent_node:
+                parent_node.add_child(hnode)
+                hnode.add_parent(parent_node)
+                return
+            else:
+                grandparent_callpath = parent_callpath[:-1]
+                parent_name = parent_callpath[-1]
+
+                parent_node = Node(
+                    Frame({"type": "function", "name": parent_name}),
+                    None,
+                    hnid=self.global_nid,
+                )
+
+                self.callpath_to_node[parent_callpath] = parent_node
+                self.callpath_to_idx[parent_callpath] = self.global_nid
+                node_dict = dict(
+                    {"name": parent_name, "node": parent_node, "nid": self.global_nid},
+                )
+                self.node_dicts.append(node_dict)
+                self.global_nid += 1
+
+                parent_node.add_child(hnode)
+                hnode.add_parent(parent_node)
+                _create_parent(parent_node, grandparent_callpath)
+
         list_roots = []
-        visited = {}  # map frame to node
         parent_hnode = None
 
-        # find nodes in the nodes section that represent the path hierarchy
-        for node in self.filename_or_caliperreader.records:
-            metrics = {}
+        # find records containing the path hierarchy
+        for record in self.filename_or_caliperreader.records:
             node_label = ""
-            if ctx in node:
+
+            if ctx in record:
                 # if it's a list, then it's a callpath
-                if isinstance(node[ctx], list):
-                    node_label = node[ctx][-1]
-                    for i in node.keys():
-                        if node[i] == node_label:
-                            self.node_type = i
-                        elif i != ctx:
-                            self.metric_columns.add(i)
-                            if (
-                                self.filename_or_caliperreader.attribute(
-                                    i
-                                ).attribute_type()
-                                == "double"
-                            ):
-                                metrics[i] = float(node[i])
-                            elif (
-                                self.filename_or_caliperreader.attribute(
-                                    i
-                                ).attribute_type()
-                                == "int"
-                            ):
-                                metrics[i] = int(node[i])
-                            elif i == "function":
-                                if isinstance(node[i], list):
-                                    metrics[i] = node[i][-1]
-                                else:
-                                    metrics[i] = node[i]
-                            else:
-                                metrics[i] = node[i]
+                if isinstance(record[ctx], list):
+                    node_label = record[ctx][-1]
+                    node_callpath = tuple(record[ctx])
+                    parent_callpath = node_callpath[:-1]
+                    node_type = "function"
 
-                    frame = Frame({"type": self.node_type, "name": node_label})
-                    parent_frame = None
-                    for i in visited.keys():
-                        parent_label = node[ctx][-2]
-                        if i["name"] == parent_label:
-                            parent_frame = i
-                            break
-                    parent_hnode = visited[parent_frame]
+                    hnode = self.callpath_to_node.get(node_callpath)
+                    if not hnode:
+                        # create the node since it does not exist
+                        frame = Frame({"type": node_type, "name": node_label})
+                        hnode = Node(frame, None, hnid=self.global_nid)
 
-                    hnode = Node(frame, parent_hnode)
+                        # store callpaths to identify the node
+                        self.callpath_to_idx[node_callpath] = self.global_nid
+                        self.callpath_to_node[node_callpath] = hnode
 
-                    visited[frame] = hnode
+                        # get parent from node callpath
+                        parent_hnode = self.callpath_to_node.get(parent_callpath)
 
-                    node_dict = dict({"name": node_label, "node": hnode}, **metrics)
-                    parent_hnode.add_child(hnode)
-                    self.node_dicts.append(node_dict)
-                # if it's a string, then it's a root
-                else:
-                    node_label = node[ctx]
-                    for i in node.keys():
-                        if node[i] == node_label:
-                            self.node_type = i
+                        if not parent_hnode:
+                            _create_parent(hnode, parent_callpath)
                         else:
-                            self.metric_columns.add(i)
-                            if (
-                                self.filename_or_caliperreader.attribute(
-                                    i
-                                ).attribute_type()
-                                == "double"
-                            ):
-                                metrics[i] = float(node[i])
-                            elif (
-                                self.filename_or_caliperreader.attribute(
-                                    i
-                                ).attribute_type()
-                                == "int"
-                            ):
-                                metrics[i] = int(node[i])
-                            elif i == "function":
-                                metrics[i] = node[i][-1]
-                            else:
-                                metrics[i] = node[i]
-
-                    frame = Frame({"type": self.node_type, "name": node_label})
-
-                    # since this node does not have a parent, this is a root
-                    graph_root = Node(frame, None)
-                    visited[frame] = graph_root
-                    list_roots.append(graph_root)
+                            parent_hnode.add_child(hnode)
+                            hnode.add_parent(parent_hnode)
 
                     node_dict = dict(
-                        {"name": node_label, "node": graph_root}, **metrics
+                        {"name": node_label, "node": hnode, "nid": self.global_nid}
                     )
                     self.node_dicts.append(node_dict)
-                    parent_hnode = graph_root
+                    self.global_nid += 1
+                # if it's a string, then it's a root
+                else:
+                    root_label = record[ctx]
+                    root_callpath = tuple([root_label])
+
+                    if root_callpath not in self.callpath_to_node:
+                        # create the root since it does not exist
+                        frame = Frame({"type": "function", "name": root_label})
+                        graph_root = Node(frame, None, hnid=self.global_nid)
+
+                        # store callpaths to identify the root
+                        self.callpath_to_node[root_callpath] = graph_root
+                        self.callpath_to_idx[root_callpath] = self.global_nid
+                        list_roots.append(graph_root)
+                    else:
+                        # do not create a new root node since it was already created
+                        graph_root = self.callpath_to_node.get(root_callpath)
+
+                    node_dict = dict(
+                        {
+                            "name": root_label,
+                            "node": graph_root,
+                            "nid": self.global_nid,
+                        }
+                    )
+                    self.node_dicts.append(node_dict)
+                    self.global_nid += 1
 
         return list_roots
 
@@ -148,34 +220,105 @@ class CaliperNativeReader:
         with self.timer.phase("graph construction"):
             list_roots = self.create_graph()
 
+        self.df_nodes = pd.DataFrame(data=self.node_dicts)
+
         # create a graph object once all the nodes have been added
         graph = Graph(list_roots)
         graph.enumerate_traverse()
 
-        dataframe = pd.DataFrame(data=self.node_dicts)
+        with self.timer.phase("read metrics"):
+            df_fixed_data = self.read_metrics()
 
-        indices = ["node"]
-        if "rank" in dataframe.columns:
-            indices.append("rank")
-        dataframe.set_index(indices, inplace=True)
-        dataframe.sort_index(inplace=True)
+        # add missing intermediate nodes to the df_fixed_data dataframe
+        if "mpi.rank" in df_fixed_data.columns:
+            num_ranks = df_fixed_data["mpi.rank"].max() + 1
+            rank_list = range(0, num_ranks)
 
-        # change column names
-        for idx, item in enumerate(dataframe.columns):
-            # make other columns consistent with other readers
-            if item == "mpi.rank":
-                dataframe.columns.values[idx] = "rank"
-            if item == "module#cali.sampler.pc":
-                dataframe.columns.values[idx] = "module"
+        # create a standard dict to be used for filling all missing rows
+        default_metric_dict = {}
+        for idx, col in enumerate(self.record_cols_mdata):
+            if self.filename_or_caliperreader.attribute(col).is_value():
+                default_metric_dict[list(self.record_cols_mdata)[idx]] = 0
+            else:
+                default_metric_dict[list(self.record_cols_mdata)[idx]] = None
+
+        # create a list of dicts, one dict for each missing row
+        missing_nodes = []
+        for _, row in self.df_nodes.iterrows():
+            # check if df_nodes row exists in df_fixed_data
+            metric_rows = df_fixed_data.loc[df_fixed_data["nid"] == row["nid"]]
+            if "mpi.rank" not in self.metric_columns:
+                if metric_rows.empty:
+                    # add a single row
+                    node_dict = dict(default_metric_dict)
+                    missing_nodes.append(node_dict)
+            else:
+                if metric_rows.empty:
+                    # add a row per MPI rank
+                    for rank in rank_list:
+                        node_dict = dict(default_metric_dict)
+                        node_dict["nid"] = row["nid"]
+                        node_dict["mpi.rank"] = rank
+                        missing_nodes.append(node_dict)
+                elif len(metric_rows) < num_ranks:
+                    # add a row for each missing MPI rank
+                    present_ranks = metric_rows["mpi.rank"].values
+                    missing_ranks = [x for x in rank_list if x not in present_ranks]
+                    for rank in missing_ranks:
+                        node_dict = dict(default_metric_dict)
+                        node_dict["nid"] = row["nid"]
+                        node_dict["mpi.rank"] = rank
+                        missing_nodes.append(node_dict)
+
+        df_missing = pd.DataFrame.from_dict(data=missing_nodes)
+        df_metrics = pd.concat([df_fixed_data, df_missing], sort=False)
+
+        # dict mapping old to new column names
+        old_to_new = {
+            "mpi.rank": "rank",
+            "module#cali.sampler.pc": "module",
+            "sum#time.duration": "time",
+            "sum#avg#sum#time.duration": "time",
+            "inclusive#sum#time.duration": "time (inc)",
+            "sum#avg#inclusive#sum#time.duration": "time (inc)",
+        }
 
         # create list of exclusive and inclusive metric columns
         exc_metrics = []
         inc_metrics = []
         for column in self.metric_columns:
-            if "(inc)" in column:
+            # do not add rank as an exc or inc metric
+            if column == "mpi.rank":
+                continue
+
+            if "(inc)" in column or "inclusive" in column:
+                if column in old_to_new:
+                    column = old_to_new[column]
                 inc_metrics.append(column)
             else:
+                if column in old_to_new:
+                    column = old_to_new[column]
                 exc_metrics.append(column)
+
+        # change column names
+        new_cols = []
+        for col in df_metrics.columns:
+            if col in old_to_new:
+                new_cols.append(old_to_new[col])
+            else:
+                new_cols.append(col)
+        df_metrics.columns = new_cols
+
+        with self.timer.phase("data frame"):
+            # merge the metrics and node dataframes on the nid column
+            dataframe = pd.merge(df_metrics, self.df_nodes, on="nid")
+
+            # set the index to be a MultiIndex
+            indices = ["node"]
+            if "rank" in dataframe.columns:
+                indices.append("rank")
+            dataframe.set_index(indices, inplace=True)
+            dataframe.sort_index(inplace=True)
 
         metadata = self.filename_or_caliperreader.globals
 
