@@ -215,6 +215,7 @@ def test_graphframe_native_lulesh_from_file(lulesh_caliper_cali):
     print(list(gf.dataframe.columns))
 
     assert len(gf.dataframe.groupby("name")) == 19
+    assert "cali.caliper.version" in gf.rundata.keys()
 
     for col in gf.dataframe.columns:
         if col in ("time (inc)", "time"):
@@ -236,6 +237,7 @@ def test_graphframe_native_lulesh_from_caliperreader(lulesh_caliper_cali):
     gf = GraphFrame.from_caliperreader(r)
 
     assert len(gf.dataframe.groupby("name")) == 19
+    assert "cali.caliper.version" in gf.rundata.keys()
 
     for col in gf.dataframe.columns:
         if col in ("time (inc)", "time"):
