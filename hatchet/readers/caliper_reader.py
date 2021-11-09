@@ -43,7 +43,7 @@ class CaliperReader:
         self.json_cols_mdata = {}
         self.json_nodes = {}
 
-        self.rundata = {}
+        self.metadata = {}
 
         self.idx_to_label = {}
         self.idx_to_node = {}
@@ -84,7 +84,7 @@ class CaliperReader:
         # one of the above sections are run metadata
         skip = [ "data", "columns", "column_metadata", "nodes" ]
         keys = [ k for k in json_obj.keys() if k not in skip ]
-        self.rundata = { k : json_obj[k] for k in keys }
+        self.metadata = { k : json_obj[k] for k in keys }
 
         # decide which column to use as the primary path hierarchy
         # first preference to callpath if available
@@ -390,4 +390,4 @@ class CaliperReader:
                 exc_metrics.append(column)
 
         return hatchet.graphframe.GraphFrame(graph, dataframe, exc_metrics, inc_metrics,
-                                             rundata=self.rundata)
+                                             metadata=self.metadata)

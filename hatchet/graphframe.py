@@ -52,7 +52,7 @@ class GraphFrame:
         exc_metrics=None,
         inc_metrics=None,
         default_metric="time",
-        rundata={}
+        metadata={}
     ):
         """Create a new GraphFrame from a graph and a dataframe.
 
@@ -83,7 +83,7 @@ class GraphFrame:
         self.exc_metrics = [] if exc_metrics is None else exc_metrics
         self.inc_metrics = [] if inc_metrics is None else inc_metrics
         self.default_metric = default_metric
-        self.rundata = rundata
+        self.metadata = metadata
 
     @staticmethod
     def from_hpctoolkit(dirname):
