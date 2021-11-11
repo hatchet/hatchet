@@ -52,7 +52,7 @@ class GraphFrame:
         exc_metrics=None,
         inc_metrics=None,
         default_metric="time",
-        metadata={}
+        metadata={},
     ):
         """Create a new GraphFrame from a graph and a dataframe.
 

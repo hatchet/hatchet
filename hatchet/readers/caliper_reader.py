@@ -82,9 +82,9 @@ class CaliperReader:
 
         # read run metadata: all top-level elements in the json object that aren't
         # one of the above sections are run metadata
-        skip = [ "data", "columns", "column_metadata", "nodes" ]
-        keys = [ k for k in json_obj.keys() if k not in skip ]
-        self.metadata = { k : json_obj[k] for k in keys }
+        skip = ["data", "columns", "column_metadata", "nodes"]
+        keys = [k for k in json_obj.keys() if k not in skip]
+        self.metadata = {k : json_obj[k] for k in keys}
 
         # decide which column to use as the primary path hierarchy
         # first preference to callpath if available
@@ -389,5 +389,6 @@ class CaliperReader:
             else:
                 exc_metrics.append(column)
 
-        return hatchet.graphframe.GraphFrame(graph, dataframe, exc_metrics, inc_metrics,
-                                             metadata=self.metadata)
+        return hatchet.graphframe.GraphFrame(
+            graph, dataframe, exc_metrics, inc_metrics, metadata=self.metadata
+        )
