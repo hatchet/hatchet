@@ -15,7 +15,7 @@ jobs:
         # TODO: add macos-latest
         os: [ubuntu-latest]
         # TODO: add pypy2, pypy3
-        python-version: [2.7, 3.5, 3.6, 3.7, 3.8]
+        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9]
         exclude:
           - os: macos-latest
             python-version: [3.5, 3.6]
@@ -51,13 +51,13 @@ jobs:
         python -m pip list
 
     - name: Update Black
-      if: ${{ matrix.python-version == 3.7 }}
+      if: ${{ matrix.python-version == 3.8 }}
       run: |
         pip install --upgrade click==8.0.4
         pip install --upgrade black==21.12b0
 
     - name: Lint and Format Check with Flake8 and Black
-      if: ${{ matrix.python-version == 3.7 }}
+      if: ${{ matrix.python-version == 3.8 }}
       run: |
         black --diff --check .
         flake8
