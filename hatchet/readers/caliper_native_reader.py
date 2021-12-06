@@ -20,7 +20,7 @@ class CaliperNativeReader:
     """Read in a native `.cali` file using Caliper's python reader."""
 
     def __init__(self, filename_or_caliperreader):
-        """Read in a native cali with Caliper's python reader.
+        """Read in a native cali using Caliper's python reader.
 
         Args:
             filename_or_caliperreader (str or CaliperReader): name of a `cali` file OR
@@ -30,16 +30,13 @@ class CaliperNativeReader:
         self.filename_ext = ""
 
         self.df_nodes = {}
-        self.metric_columns = []
-        self.record_cols_mdata = []
+        self.metric_cols = []
+        self.record_data_cols = []
         self.node_dicts = []
         self.callpath_to_node = {}
-        self.node_to_nid = {}
         self.idx_to_node = {}
-        self.callpath_to_metrics = {}
         self.callpath_to_idx = {}
         self.global_nid = 0
-        self.global_nid2 = 0
 
         self.timer = Timer()
 
@@ -67,13 +64,14 @@ class CaliperNativeReader:
                 else:
                     node_label = record[ctx][-1]
                     node_callpath = tuple([record[ctx]])
-                nid = self.callpath_to_idx.get(node_callpath)
-                node_dict["nid"] = nid
+
+                # get nid based on callpath
+                node_dict["nid"] = self.callpath_to_idx.get(node_callpath)
 
                 for item in record.keys():
                     if item != ctx:
-                        if item not in self.record_cols_mdata:
-                            self.record_cols_mdata.append(item)
+                        if item not in self.record_data_cols:
+                            self.record_data_cols.append(item)
 
                         if (
                             self.filename_or_caliperreader.attribute(
@@ -97,12 +95,11 @@ class CaliperNativeReader:
                         else:
                             node_dict[item] = record[item]
 
-                self.global_nid2 = self.global_nid2 + 1
                 all_metrics.append(node_dict)
 
-        for col in self.record_cols_mdata:
+        for col in self.record_data_cols:
             if self.filename_or_caliperreader.attribute(col).is_value():
-                self.metric_columns.append(col)
+                self.metric_cols.append(col)
 
         df_metrics = pd.DataFrame.from_dict(data=all_metrics)
         return df_metrics
@@ -113,21 +110,18 @@ class CaliperNativeReader:
             as a child node. In this case, we need to create a hatchet node for
             the parent.
 
-            We can't create a node_dict for the parent because we don't
-            know its metric values when we first see it in a callpath.
-
             This function recursively creates parent nodes in a callpath
             until it reaches the already existing parent in that callpath.
             """
             parent_node = self.callpath_to_node.get(parent_callpath)
 
-            # return if arrives at the parent
-            # else create a parent and add parent/child
             if parent_node:
+                # return if arrives at the parent
                 parent_node.add_child(child_node)
                 child_node.add_parent(parent_node)
                 return
             else:
+                # else create the parent and add parent/child
                 grandparent_callpath = parent_callpath[:-1]
                 parent_name = parent_callpath[-1]
 
@@ -150,8 +144,9 @@ class CaliperNativeReader:
 
         list_roots = []
         parent_hnode = None
+        records = self.filename_or_caliperreader.records
 
-        for record in self.filename_or_caliperreader.records:
+        for record in records:
             node_label = ""
             if ctx in record:
                 # if it's a list, then it's a callpath
@@ -185,8 +180,9 @@ class CaliperNativeReader:
                         # get parent from node callpath
                         parent_hnode = self.callpath_to_node.get(parent_callpath)
 
+                        # create parent if it doesn't exist
+                        # else if parent already exists, add child-parent
                         if not parent_hnode:
-                            # create parent since it doesn't exist
                             _create_parent(hnode, parent_callpath)
                         else:
                             parent_hnode.add_child(hnode)
@@ -224,9 +220,6 @@ class CaliperNativeReader:
 
                         self.idx_to_node[self.global_nid] = node_dict
                         self.global_nid += 1
-                    else:
-                        # don't create a new node since it was already created
-                        graph_root = self.callpath_to_node.get(root_callpath)
 
         return list_roots
 
@@ -260,18 +253,18 @@ class CaliperNativeReader:
 
         # create a standard dict to be used for filling all missing rows
         default_metric_dict = {}
-        for idx, col in enumerate(self.record_cols_mdata):
+        for idx, col in enumerate(self.record_data_cols):
             if self.filename_or_caliperreader.attribute(col).is_value():
-                default_metric_dict[list(self.record_cols_mdata)[idx]] = 0
+                default_metric_dict[list(self.record_data_cols)[idx]] = 0
             else:
-                default_metric_dict[list(self.record_cols_mdata)[idx]] = None
+                default_metric_dict[list(self.record_data_cols)[idx]] = None
 
         # create a list of dicts, one dict for each missing row
         missing_nodes = []
         for iteridx, row in self.df_nodes.iterrows():
             # check if df_nodes row exists in df_fixed_data
             metric_rows = df_fixed_data.loc[metrics["nid"] == row["nid"]]
-            if "mpi.rank" not in self.metric_columns:
+            if "mpi.rank" not in self.metric_cols:
                 if metric_rows.empty:
                     # add a single row
                     node_dict = dict(default_metric_dict)
@@ -310,7 +303,7 @@ class CaliperNativeReader:
         # create list of exclusive and inclusive metric columns
         exc_metrics = []
         inc_metrics = []
-        for column in self.metric_columns:
+        for column in self.metric_cols:
             # do not add rank as an exc or inc metric
             if column == "mpi.rank":
                 continue
