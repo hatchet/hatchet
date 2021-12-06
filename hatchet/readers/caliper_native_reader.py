@@ -47,10 +47,13 @@ class CaliperNativeReader:
         all_metrics = []
         records = self.filename_or_caliperreader.records
 
+        # read metadata from the caliper reader
         for record in records:
             node_dict = {}
             if ctx in record:
+                # get the node label and callpath for the record
                 if isinstance(record[ctx], list):
+                    # specify how to parse cupti records
                     if "cupti.activity.kind" in record:
                         if record["cupti.activity.kind"] == "kernel":
                             node_label = record["cupti.kernel.name"]
@@ -65,7 +68,7 @@ class CaliperNativeReader:
                     node_label = record[ctx][-1]
                     node_callpath = tuple([record[ctx]])
 
-                # get nid based on callpath
+                # get node nid based on callpath
                 node_dict["nid"] = self.callpath_to_idx.get(node_callpath)
 
                 for item in record.keys():
@@ -97,6 +100,7 @@ class CaliperNativeReader:
 
                 all_metrics.append(node_dict)
 
+        # make list of metric columns
         for col in self.record_data_cols:
             if self.filename_or_caliperreader.attribute(col).is_value():
                 self.metric_cols.append(col)
@@ -151,6 +155,7 @@ class CaliperNativeReader:
             if ctx in record:
                 # if it's a list, then it's a callpath
                 if isinstance(record[ctx], list):
+                    # specify how to parse cupti records
                     if "cupti.activity.kind" in record:
                         if record["cupti.activity.kind"] == "kernel":
                             node_label = record["cupti.kernel.name"]
@@ -290,7 +295,8 @@ class CaliperNativeReader:
         df_missing = pd.DataFrame.from_dict(data=missing_nodes)
         df_metrics = pd.concat([df_fixed_data, df_missing], sort=False)
 
-        # dict mapping old to new column names
+        # dict mapping old to new column names to make columns consistent with
+        # other readers
         old_to_new = {
             "mpi.rank": "rank",
             "module#cali.sampler.pc": "module",
@@ -300,23 +306,6 @@ class CaliperNativeReader:
             "sum#avg#inclusive#sum#time.duration": "time (inc)",
         }
 
-        # create list of exclusive and inclusive metric columns
-        exc_metrics = []
-        inc_metrics = []
-        for column in self.metric_cols:
-            # do not add rank as an exc or inc metric
-            if column == "mpi.rank":
-                continue
-
-            if "(inc)" in column or "inclusive" in column:
-                if column in old_to_new:
-                    column = old_to_new[column]
-                inc_metrics.append(column)
-            else:
-                if column in old_to_new:
-                    column = old_to_new[column]
-                exc_metrics.append(column)
-
         # change column names
         new_cols = []
         for col in df_metrics.columns:
@@ -325,6 +314,25 @@ class CaliperNativeReader:
             else:
                 new_cols.append(col)
         df_metrics.columns = new_cols
+
+        # create list of exclusive and inclusive metric columns
+        exc_metrics = []
+        inc_metrics = []
+        for column in self.metric_cols:
+            # ignore rank as an exc or inc metric
+            if column == "mpi.rank":
+                continue
+
+            # add new column names to list of metrics if inc or inclusive in
+            # old column names
+            if "(inc)" in column or "inclusive" in column:
+                if column in old_to_new:
+                    column = old_to_new[column]
+                inc_metrics.append(column)
+            else:
+                if column in old_to_new:
+                    column = old_to_new[column]
+                exc_metrics.append(column)
 
         with self.timer.phase("data frame"):
             # merge the metrics and node dataframes on the nid column
