@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+from numpy import string_
 import pandas as pd
 
 import hatchet.graphframe
@@ -20,7 +21,7 @@ def _find_child_node(node, name):
 
 
 class SpotDatasetReader:
-    """ Reads a (single-run) dataset from SpotDB 
+    """ Reads a (single-run) dataset from SpotDB
     """
 
     def __init__(self, regionprofile, metadata, attr_info):
@@ -41,6 +42,7 @@ class SpotDatasetReader:
         self.df_data.clear()
 
         for pathstr, vals in self.regionprofile.items():
+            # parse { "a/b/c": { "metric": val, ... }, ... } records
             if len(pathstr) == 0:
                 continue
 
@@ -50,22 +52,27 @@ class SpotDatasetReader:
 
             metrics = {}
             for k, v in vals.items():
-                type = self.attr_info[k]["type"] if k in self.attr_info else "string"
+                info = self.attr_info.get(k, dict())
+                clmn = info.get("alias", k)
+                type = info.get("type", "string")
+                if "inclusive" in k:
+                    clmn += " (inc)"
+
                 if type == "double":
-                    metrics[k] = float(v)
+                    metrics[clmn] = float(v)
                 elif type == "int" or type == "uint":
-                    metrics[k] = int(v)
+                    metrics[clmn] = int(v)
                 else:
-                    metrics[k] = v
-                self.metric_columns.add(k)
+                    metrics[clmn] = v
+                self.metric_columns.add(clmn)
 
             self.df_data.append(dict({ "name": name, "node": node }, **metrics))
 
 
-    def read(self):
+    def read(self, default_metric="Total time (inc)"):
         with self.timer.phase("graph construction"):
             self.create_graph()
-        
+
         graph = Graph(list(self.roots.values()))
         graph.enumerate_traverse()
 
@@ -79,9 +86,10 @@ class SpotDatasetReader:
                 inc_metrics.append(m)
             else:
                 exc_metrics.append(m)
-        
+
         return hatchet.graphframe.GraphFrame(
-            graph, dataframe, exc_metrics, inc_metrics, metadata=self.metadata
+            graph, dataframe, exc_metrics, inc_metrics, metadata=self.metadata,
+            default_metric=default_metric
         )
 
 
@@ -90,7 +98,7 @@ class SpotDatasetReader:
         if parent is None:
             parent = Node(Frame(name=path[0]))
             self.roots[path[0]] = parent
-        
+
         node = parent
         for name in path[1:]:
             node = _find_child_node(parent, name)
@@ -106,10 +114,11 @@ class SpotDBReader:
     """ Import multiple runs as graph frames from a SpotDB instance
     """
 
-    def __init__(self, db_key, list_of_ids=None):
+    def __init__(self, db_key, list_of_ids=None, default_metric="Total time (inc)"):
         self.db_key = db_key
-        self.list_of_ids = None
-    
+        self.list_of_ids = list_of_ids
+        self.default_metric = default_metric
+
     def read(self):
         import spotdb
 
@@ -117,7 +126,7 @@ class SpotDBReader:
             db = spotdb.connect(self.db_key)
         else:
             db = self.db_key
-        
+
         runs = self.list_of_ids if self.list_of_ids is not None else db.get_all_run_ids()
 
         regionprofiles = db.get_regionprofiles(runs)
@@ -128,6 +137,6 @@ class SpotDBReader:
 
         for run in runs:
             if run in regionprofiles:
-                result.append(SpotDatasetReader(regionprofiles[run], metadata[run], attr_info).read())
-        
+                result.append(SpotDatasetReader(regionprofiles[run], metadata[run], attr_info).read(self.default_metric))
+
         return result
