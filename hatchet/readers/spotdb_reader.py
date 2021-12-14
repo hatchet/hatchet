@@ -14,6 +14,7 @@ from hatchet.util.timer import Timer
 
 
 def _find_child_node(node, name):
+    """Return child with given name from parent node"""
     for c in node.children:
         if c.frame.get("name") == name:
             return c
@@ -21,11 +22,23 @@ def _find_child_node(node, name):
 
 
 class SpotDatasetReader:
-    """ Reads a (single-run) dataset from SpotDB
-    """
+    """Reads a (single-run) dataset from SpotDB"""
 
     def __init__(self, regionprofile, metadata, attr_info):
-        """ Read SpotDB dataset
+        """Initialize SpotDataset reader
+
+        Args:
+            regionprofile (dict): Dict with region names to key:value record with
+                metrics. Region names are hierarchical, separated with '/'.
+                Example:
+                { "a/b/c": { "metric": val, ... }, ... }
+
+            metadata: (dict): Key-value run metadata for this dataset. Example:
+                { "launchdate": 123456789, "figure_of_merit": 42.0 }
+
+            attr_info (dict): Information about metric attributes. Contains, e.g.,
+                type and alias info. This data is optional. Example:
+                { "metric": { "type": "double", "alias": "The Metric", ... }, ... }
         """
 
         self.regionprofile = regionprofile
@@ -37,8 +50,9 @@ class SpotDatasetReader:
 
         self.timer = Timer()
 
-
     def create_graph(self):
+        """Create the graph. Fills in df_data and metric_columns."""
+
         self.df_data.clear()
 
         for pathstr, vals in self.regionprofile.items():
@@ -53,23 +67,24 @@ class SpotDatasetReader:
             metrics = {}
             for k, v in vals.items():
                 info = self.attr_info.get(k, dict())
-                clmn = info.get("alias", k)
+                colm = info.get("alias", k)
                 type = info.get("type", "string")
                 if "inclusive" in k:
-                    clmn += " (inc)"
+                    colm += " (inc)"
 
                 if type == "double":
-                    metrics[clmn] = float(v)
+                    metrics[colm] = float(v)
                 elif type == "int" or type == "uint":
-                    metrics[clmn] = int(v)
+                    metrics[colm] = int(v)
                 else:
-                    metrics[clmn] = v
-                self.metric_columns.add(clmn)
+                    metrics[colm] = v
+                self.metric_columns.add(colm)
 
-            self.df_data.append(dict({ "name": name, "node": node }, **metrics))
-
+            self.df_data.append(dict({"name": name, "node": node}, **metrics))
 
     def read(self, default_metric="Total time (inc)"):
+        """Create GraphFrame for the given Spot dataset."""
+
         with self.timer.phase("graph construction"):
             self.create_graph()
 
@@ -88,10 +103,13 @@ class SpotDatasetReader:
                 exc_metrics.append(m)
 
         return hatchet.graphframe.GraphFrame(
-            graph, dataframe, exc_metrics, inc_metrics, metadata=self.metadata,
-            default_metric=default_metric
+            graph,
+            dataframe,
+            exc_metrics,
+            inc_metrics,
+            metadata=self.metadata,
+            default_metric=default_metric,
         )
-
 
     def _create_node(self, path):
         parent = self.roots.get(path[0], None)
@@ -111,15 +129,34 @@ class SpotDatasetReader:
 
 
 class SpotDBReader:
-    """ Import multiple runs as graph frames from a SpotDB instance
-    """
+    """Import multiple runs as graph frames from a SpotDB instance"""
 
     def __init__(self, db_key, list_of_ids=None, default_metric="Total time (inc)"):
+        """Initialize SpotDBReader
+
+        Args:
+            db_key (str or SpotDB object): locator for SpotDB instance
+                This can be a SpotDB object directly, or a locator for a spot
+                database, which is a string with either
+                    * A directory for .cali files,
+                    * A .sqlite file name
+                    * A SQL database URL (e.g., "mysql://hostname/db")
+
+            list_of_ids: The list of run IDs to read from the database.
+                If this is None, returns all runs.
+
+            default_metric: Name of the default metric for the GraphFrames.
+        """
         self.db_key = db_key
         self.list_of_ids = list_of_ids
         self.default_metric = default_metric
 
     def read(self):
+        """Read given runs from SpotDB
+
+        Returns:
+            List of GraphFrames, one for each entry that was found
+        """
         import spotdb
 
         if isinstance(self.db_key, str):
@@ -127,7 +164,7 @@ class SpotDBReader:
         else:
             db = self.db_key
 
-        runs = self.list_of_ids if self.list_of_ids is not None else db.get_all_run_ids()
+        runs = self.list_of_ids or db.get_all_run_ids()
 
         regionprofiles = db.get_regionprofiles(runs)
         metadata = db.get_global_data(runs)
@@ -137,6 +174,10 @@ class SpotDBReader:
 
         for run in runs:
             if run in regionprofiles:
-                result.append(SpotDatasetReader(regionprofiles[run], metadata[run], attr_info).read(self.default_metric))
+                result.append(
+                    SpotDatasetReader(
+                        regionprofiles[run], metadata[run], attr_info
+                    ).read(self.default_metric)
+                )
 
         return result

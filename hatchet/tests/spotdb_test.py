@@ -16,24 +16,24 @@ except ImportError:
 
 
 def test_spot_dataset_reader():
-    """ Sanity-check the Spot dataset reader """
+    """Sanity-check the Spot dataset reader"""
 
-    regionprofile = { 
-        "a/b/c": { "m": 20, "m#inclusive": 20 }, 
-        "a/b": { "m#inclusive": 40}, 
-        "a": { "m#inclusive": 42 }
+    regionprofile = {
+        "a/b/c": {"m": 20, "m#inclusive": 20},
+        "a/b": {"m#inclusive": 40},
+        "a": {"m#inclusive": 42},
     }
-    metadata = { "launchdate": 123456789 }
-    attr_info = { 
-        "m": { "type": "double"}, 
-        "m#inclusive": { "type": "int", "alias": "M Alias" } 
+    metadata = {"launchdate": 123456789}
+    attr_info = {
+        "m": {"type": "double"},
+        "m#inclusive": {"type": "int", "alias": "M Alias"},
     }
 
     reader = SpotDatasetReader(regionprofile, metadata, attr_info)
     gf = reader.read(default_metric="M Alias (inc)")
 
     assert len(gf.dataframe) == 3
-    assert set(gf.dataframe.columns) == { "name", "m", "M Alias (inc)" }
+    assert set(gf.dataframe.columns) == {"name", "m", "M Alias (inc)"}
 
     assert gf.metadata["launchdate"] == metadata["launchdate"]
     assert gf.default_metric == "M Alias (inc)"
@@ -41,7 +41,8 @@ def test_spot_dataset_reader():
 
 @pytest.mark.skipif(not spotdb_avail, reason="spotdb module not available")
 def test_spotdb_reader(spotdb_data):
-    """ Sanity check for the SpotDB reader """
+    """Sanity check for the SpotDB reader"""
+
     db = spotdb_data
 
     reader = SpotDBReader(db)
@@ -49,7 +50,7 @@ def test_spotdb_reader(spotdb_data):
 
     assert len(gfs) == 4
 
-    metrics = { "Total time (inc)", "Avg time/rank (inc)" }
+    metrics = {"Total time (inc)", "Avg time/rank (inc)"}
 
     assert len(gfs[0].dataframe) > 2
     assert gfs[0].default_metric == "Total time (inc)"
