@@ -58,3 +58,22 @@ def test_spotdb_reader(spotdb_data):
     assert metrics < set(gfs[3].dataframe.columns)
 
     assert "launchdate" in gfs[0].metadata.keys()
+
+
+@pytest.mark.skipif(not spotdb_avail, reason="spotdb module not available")
+def test_from_spotdb(spotdb_data):
+    """Sanity check for GraphFrame.from_spotdb"""
+
+    db = spotdb_data
+    runs = db.get_all_run_ids()
+    gfs = GraphFrame.from_spotdb(spotdb_data, runs[0:2])
+
+    assert len(gfs) == 2
+
+    metrics = {"Total time (inc)", "Avg time/rank (inc)"}
+
+    assert len(gfs[0].dataframe) > 2
+    assert gfs[0].default_metric == "Total time (inc)"
+    assert metrics < set(gfs[0].dataframe.columns)
+
+    assert "launchdate" in gfs[0].metadata.keys()

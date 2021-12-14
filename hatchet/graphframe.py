@@ -150,7 +150,7 @@ class GraphFrame:
 
         from .readers.spotdb_reader import SpotDBReader
 
-        return SpotDBReader.read(db_key, list_of_ids)
+        return SpotDBReader(db_key, list_of_ids).read()
 
     @staticmethod
     def from_gprof_dot(filename):
