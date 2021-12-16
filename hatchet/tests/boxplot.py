@@ -2,7 +2,7 @@
 # Hatchet Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
-
+import jsonschema
 import pandas as pd
 
 import hatchet as ht
@@ -65,7 +65,7 @@ def test_gf_format(calc_pi_hpct_db):
 # def test_output_dtypes(calc_pi_hpct_db):
 #     gf = ht.GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
 #     metrics = ["time"]
-#     bp = BoxPlot(cat_column="rank", tgt_gf=gf, bkg_gf=None, metrics=metrics)
+#     bp = BoxPlot(multi_index_gf=gf, drop_index_levels=["rank"], metrics=metrics)
 
 #     object_dtype = ["name", "q", "ocat", "ometric"]
 #     float_dtype = ["min", "max", "mean", "var", "imb", "kurt", "skew"]
@@ -78,53 +78,53 @@ def test_gf_format(calc_pi_hpct_db):
 #     )
 
 
-# def test_callsite_count(calc_pi_hpct_db):
+def test_callsite_count(calc_pi_hpct_db):
+    gf = ht.GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+    metrics = ["time"]
+    bp = BoxPlot(multi_index_gf=gf, drop_index_levels=["rank"], metrics=metrics)
+
+    assert len(bp.gf["time"].graph) == len(
+        bp.gf["time"].dataframe.index.values.tolist()
+    )
+
+
+def test_multiple_metrics(calc_pi_hpct_db):
+    gf = ht.GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+    metrics = ["time", "time (inc)"]
+    bp = BoxPlot(multi_index_gf=gf, drop_index_levels=["rank"], metrics=metrics)
+
+    assert all(metric in bp.gf for metric in metrics)
+
+
+def test_to_json(calc_pi_hpct_db):
+    gf = ht.GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+    bp = BoxPlot(multi_index_gf=gf, drop_index_levels=["rank"], metrics=["time"])
+    json = bp.to_json()
+    assert all(
+        (nid in json.keys())
+        for nid in gf.dataframe["nid"].unique().tolist()
+    )
+
+
+# def test_to_json_schema(calc_pi_hpct_db):
 #     gf = ht.GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
-#     metrics = ["time"]
-#     bp = BoxPlot(cat_column="rank", tgt_gf=gf, bkg_gf=None, metrics=metrics)
-
-#     assert len(bp.tgt["time"].graph) == len(
-#         bp.tgt["time"].dataframe.index.values.tolist()
-#     )
-
-
-# def test_multiple_metrics(calc_pi_hpct_db):
-#     gf = ht.GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
-#     metrics = ["time", "time (inc)"]
-#     bp = BoxPlot(cat_column="rank", tgt_gf=gf, bkg_gf=None, metrics=metrics)
-
-#     assert all(metric in bp.tgt for metric in metrics)
-
-
-# def test_to_json(calc_pi_hpct_db):
-#     gf = ht.GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
-#     bp = BoxPlot(cat_column="rank", tgt_gf=gf, bkg_gf=None, metrics=["time"])
+#     bp = BoxPlot(multi_index_gf=gf, drop_index_levels=["rank"], metrics=["time"])
 #     json = bp.to_json()
-#     assert all(
-#         (nid in json.keys()) and ("tgt" in json[nid])
-#         for nid in gf.dataframe["nid"].unique().tolist()
-#     )
+#     STATS_SCHEMA = {
+#         "type": "object",
+#         "properties": {
+#             "name": {"type": "string"},
+#             "min": {"type": "number"},
+#             "max": {"type": "number"},
+#             "mean": {"type": "number"},
+#             "imb": {"type": "number"},
+#             "var": {"type": "number"},
+#             "kurt": {"type": "number"},
+#             "skew": {"type": "number"},
+#             "q": {"type": "array"},
+#         },
+#     }
 
+#     print(json.keys())
 
-# # def test_to_json_schema(calc_pi_hpct_db):
-# #     gf = ht.GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
-# #     bp = BoxPlot(cat_column="rank", tgt_gf=gf, bkg_gf=None, metrics=["time"])
-# #     json = bp.to_json()
-# #     STATS_SCHEMA = {
-# #         "type": "object",
-# #         "properties": {
-# #             "name": {"type": "string"},
-# #             "min": {"type": "number"},
-# #             "max": {"type": "number"},
-# #             "mean": {"type": "number"},
-# #             "imb": {"type": "number"},
-# #             "var": {"type": "number"},
-# #             "kurt": {"type": "number"},
-# #             "skew": {"type": "number"},
-# #             "q": {"type": "array"},
-# #             "ocat": {"type": "array"},
-# #             "ometric": {"type": "array"}
-# #         },
-# #     }
-
-# #     assert all(jsonschema.validate(instance=json[nid]["tgt"]["time"], schema=STATS_SCHEMA) for nid in gf.dataframe["nid"].unique().tolist())
+#     assert all(jsonschema.validate(instance=json[nid]["time"], schema=STATS_SCHEMA) for nid in gf.dataframe["nid"].unique().tolist())

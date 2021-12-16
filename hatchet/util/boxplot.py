@@ -125,7 +125,7 @@ class BoxPlot:
         """
         _df = df.set_index(groupby)
         _levels = _df.index.unique().tolist()
-        return {_: _df.xs(_)[cols] for _ in _levels}
+        return {_df.xs(_)["nid"].unique().tolist()[0]: _df.xs(_)[cols] for _ in _levels}
 
     @staticmethod
     def outliers(data, scale=1.5, side="both"):
