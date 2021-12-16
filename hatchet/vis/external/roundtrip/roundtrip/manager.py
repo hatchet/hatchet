@@ -505,4 +505,5 @@ class Bridge:
 
 # Singelton declaration of the roundtrip object.
 Roundtrip = RoundTrip()
-# Roundtrip.shell.events.register("post_run_cell", Roundtrip.manage_jupter_change)
+if Roundtrip.shell is not None:
+    Roundtrip.shell.events.register("post_run_cell", Roundtrip.manage_jupter_change)
