@@ -466,6 +466,9 @@ class Bridge:
         except:
             pass
 
+        # Patch: Ensure all ' and " are escaped
+        data = data.replace('"', '\\"').replace("'", "\\'")
+
         conv_spec = None
 
         if js_to_py_converter is not None:
