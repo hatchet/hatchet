@@ -1,9 +1,13 @@
 
 //d3.v4
 import * as d3 from 'd3v4';
+<<<<<<< HEAD
 
 
 const RT = window.Roundtrip;
+=======
+var RT = window.Roundtrip;
+>>>>>>> Removed empty files, added build and watch commands to package.json, webpack minifies code by default, added readme
 
 (function (element) {
     const globals = Object.freeze({
@@ -120,17 +124,18 @@ const RT = window.Roundtrip;
                  * 
                  * @param {Int} treeIndex - The index of the current tree's legend being set
                  */
-            
+                let colorSchemeUsed = null;
+
                 //hacky need to fix later
                 if (model.data["legends"][_state["legend"]].includes("Unified")) {
                     treeIndex = -1;
                 }
 
                 if (treeIndex == -1) { //unified color legend
-                    var colorSchemeUsed = this.setColors(treeIndex);
+                    colorSchemeUsed = this.setColors(treeIndex);
 
                 } else {
-                    var colorSchemeUsed = this.setColors(treeIndex);
+                    colorSchemeUsed = this.setColors(treeIndex);
                 }
                 return colorSchemeUsed;
             },
