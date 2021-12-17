@@ -282,6 +282,7 @@ def test_sw4_cuda_from_caliperreader(sw4_caliper_cuda_activity_profile_cali):
     for col in gf.exc_metrics + gf.inc_metrics:
         assert col in gf.dataframe.columns
 
+
 def test_sw4_cuda_summary_from_caliperreader(
     sw4_caliper_cuda_activity_profile_summary_cali,
 ):
