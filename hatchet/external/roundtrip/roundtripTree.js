@@ -26,16 +26,16 @@
 
         jsNodeSelected = "['*']";
 
-        const makeColorManager = function(model){
-            
+        const makeColorManager = function(model) {
             // TODO: Move the colors to a color.js.
-            const REGULAR_COLORS = [['#006d2c', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#edf8e9'], //green
-                            ['#a50f15', '#de2d26', '#fb6a4a', '#fc9272', '#fcbba1', '#fee5d9'], //red
-                            ['#08519c', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#eff3ff'], //blue
-                            ['#54278f', '#756bb1', '#9e9ac8', '#bcbddc', '#dadaeb', '#f2f0f7'], //purple
-                            ['#a63603', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#feedde'], //orange
-                            ['#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7']];
-
+            const REGULAR_COLORS = [
+                ['#006d2c', '#31a354', '#74c476', '#a1d99b', '#c7e9c0', '#edf8e9'], //green
+                ['#a50f15', '#de2d26', '#fb6a4a', '#fc9272', '#fcbba1', '#fee5d9'], //red
+                ['#08519c', '#3182bd', '#6baed6', '#9ecae1', '#c6dbef', '#eff3ff'], //blue
+                ['#54278f', '#756bb1', '#9e9ac8', '#bcbddc', '#dadaeb', '#f2f0f7'], //purple
+                ['#a63603', '#e6550d', '#fd8d3c', '#fdae6b', '#fdd0a2', '#feedde'], //orange
+                ['#252525', '#636363', '#969696', '#bdbdbd', '#d9d9d9', '#f7f7f7']
+            ];
 
             const CAT_COLORS = ["#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", "#0099c6", "#dd4477", "#66aa00", "#b82e2e", "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc", "#e67300", "#8b0707", "#651067", "#329262", "#5574a6", "#3b3eac"];
 
@@ -62,17 +62,16 @@
             const _attributeColumns = model.data["attributeColumns"];
 
             return {
-                setColors: function (treeIndex) {
+                setColors: function(treeIndex) {
                     const curMetric = _state["selectedMetric"];
                     const colorScheme = _state["colorScheme"];
 
                     if (_metricColumns.includes(curMetric)) {
-
                         if (treeIndex == -1) return _allTreesColors[colorScheme];
                         else return _regularColors[colorScheme][treeIndex % REGULAR_COLORS.length];
-                    } else if(_attributeColumns.includes(curMetric)) {
+                    } else if (_attributeColumns.includes(curMetric)) {
                         if (treeIndex == -1) return _allTreesColors[2 + colorScheme];
-                        else return _regularColors[2 + colorScheme]; 
+                        else return _regularColors[2 + colorScheme];
                     }
                 },
                 getLegendDomains: function(treeIndex){
@@ -99,11 +98,10 @@
                     let colorScaleDomain;
                     if (_metricColumns.includes(curMetric)) {
                         let metricRange = metricMinMax.max - metricMinMax.min;
-                        colorScaleDomain = [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1].map(function (x) {
+                        colorScaleDomain = [0, 0.1, 0.3, 0.5, 0.7, 0.9, 1].map(function(x) {
                             return x * metricRange + metricMinMax.min;
                         });
-                    } 
-                    else if (_attributeColumns.includes(curMetric)) {
+                    } else if (_attributeColumns.includes(curMetric)) {
                         colorScaleDomain = metricMinMax;
                     }
 
@@ -126,11 +124,11 @@
                 calcColorScale: function(nodeData, treeIndex) {
                     /**
                      * Calculates the bins for the color scheme based on the current, user-selected metric.
-                     * 
+                     *
                      * @param {String} nodeData - the name of the current metric being mapped to a color range
                      */
-                    
-                    if(model.state["legend"] == globals.UNIFIED){
+
+                    if (model.state["legend"] == globals.UNIFIED) {
                         treeIndex  = -1
                     }
 
@@ -150,17 +148,16 @@
                         const nodeMetric = nodeData.attributes[curMetric];
                         const indexOfMetric = _d.indexOf(nodeMetric);
                         return colorSchemeUsed[indexOfMetric];
-                    } 
-                    else if(_metricColumns.includes(curMetric)) {
+                    } else if (_metricColumns.includes(curMetric)) {
                         const nodeMetric = nodeData.metrics[curMetric];
 
-                         // Calculate the range of min/max.
+                        // Calculate the range of min/max.
                         const metricRange = _d.max - _d.min;
-                        
-                        // Set colorMap for runtime metrics.
-                        let proportion_of_total = nodeMetric / 1;;
 
-                        // If min !== max, we can split the runtime into bins. 
+                        // Set colorMap for runtime metrics.
+                        let proportion_of_total = nodeMetric / 1;
+
+                        // If min != max, we can split the runtime into bins.
                         if (metricRange != 0) {
                             proportion_of_total = (nodeMetric - _d.min) / metricRange;
                         }
@@ -187,7 +184,7 @@
                 }
             }
         }
-        
+
         // This is the makeSignaller from class
         var makeSignaller = function() {
             let _subscribers = []; // Private member
@@ -251,22 +248,22 @@
         }
 
 
-        var createModel = function(){
+        var createModel = function() {
             var _observers = makeSignaller();
-            
+
             //initialize default data and state
             var _data = {
-                            "trees":[],
-                            "legends": ["Unified", "Indiv."],
-                            "colors": ["Default", "Inverted"],
-                            "forestData": null,
-                            "rootNodeNames": [],
-                            "numberOfTrees": 0,
-                            "metricColumns": [],
-                            "attributeColumns": [],
-                            "forestMinMax": [],
-                            "forestStats": []
-                        };
+                "trees": [],
+                "legends": ["Unified", "Indiv."],
+                "colors": ["Default", "Inverted"],
+                "forestData": null,
+                "rootNodeNames": [],
+                "numberOfTrees": 0,
+                "metricColumns": [],
+                "attributeColumns": [],
+                "forestMinMax": [],
+                "forestStats": []
+            };
 
             var _state = {
                             "selectedNodes":[], 
@@ -478,9 +475,9 @@
                         _forestMinMax[metric].min = Math.min(_forestMinMax[metric].min, curTreeData[metric].min);
                     }
 
-                    for(let attribute of _data["attributeColumns"]) {
+                    for (let attribute of _data["attributeColumns"]) {
                         // get all the unique types into the array.
-                        _data['trees'][index].descendants().forEach(function (d) {
+                        _data['trees'][index].descendants().forEach(function(d) {
                             if (!curTreeData[attribute].includes(d.data.attributes[attribute])) {
                                 curTreeData[attribute].push(d.data.attributes[attribute]);
                             }
@@ -687,7 +684,7 @@
             var brushOn = model.state["brushOn"];
             var curColor = model.state["colorScheme"];
             var colors = model.data["colors"];
-                 
+
             //initialize bounds for svg
             var width = element.clientWidth - globals.layout.margin.right - globals.layout.margin.left;
             var height = globals.treeHeight * (model.data["numberOfTrees"] + 1);
@@ -699,13 +696,13 @@
 
             htmlInputs.append('label').attr('for', 'metricSelect').text('Color by:');
             var metricInput = htmlInputs.append("select") //element
-                    .attr("id", "metricSelect")
-                    .selectAll('option')
-                    .data(allColumns)
-                    .enter()
-                    .append('option')
-                    .text(d => d)
-                    .attr('value', d => d);
+                .attr("id", "metricSelect")
+                .selectAll('option')
+                .data(allColumns)
+                .enter()
+                .append('option')
+                .text(d => d)
+                .attr('value', d => d);
             document.getElementById("metricSelect").style.margin = "10px 10px 10px 0px";
 
             htmlInputs.append('label').style('margin', '0 0 0 10px').attr('for', 'treeRootSelect').text(' Display:');
@@ -1176,16 +1173,16 @@
                                         tree: treeIndex
                                     })
                                 });
-            
+
                         nodeEnter.append("circle")
-                                .attr('class', 'circleNode')
-                                .attr("r", 1e-6)
-                                .style("fill", function (d) {
-                                    return _colorManager.calcColorScale(d.data, treeIndex);
-                                })
-                                .style('stroke-width', '1px')
-                                .style('stroke', 'black');
-            
+                            .attr('class', 'circleNode')
+                            .attr("r", 1e-6)
+                            .style("fill", function(d) {
+                                return _colorManager.calcColorScale(d.data, treeIndex);
+                            })
+                            .style('stroke-width', '1px')
+                            .style('stroke', 'black');
+
                         //Append text to nodes
                         nodeEnter.append("text")
                         .attr("x", function (d) {
@@ -1272,9 +1269,8 @@
                             .duration(globals.duration)
                             .text((d, i) => {
                                 if (metricColumns.includes(model.state["selectedMetric"])) {
-                                    return _colorManager.getLegendDomains(treeIndex)[6 - d - 1] + ' - ' + _colorManager.getLegendDomains(treeIndex)[6 - d];                                    
-                                }
-                                else if (attributeColumns.includes(model.state["selectedMetric"])) {
+                                    return _colorManager.getLegendDomains(treeIndex)[6 - d - 1] + ' - ' + _colorManager.getLegendDomains(treeIndex)[6 - d];
+                                } else if (attributeColumns.includes(model.state["selectedMetric"])) {
                                     return _colorManager.getLegendDomains(treeIndex)[i];
                                 }
                             });
@@ -1322,7 +1318,7 @@
                                 .attr('cursor', 'pointer')
                                 .transition()
                                 .duration(globals.duration)
-                                .style('fill', function (d) {
+                                .style('fill', function(d) {
                                     return _colorManager.calcColorScale(d.data, treeIndex);
                                 })
 
