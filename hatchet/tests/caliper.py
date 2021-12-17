@@ -265,7 +265,7 @@ def test_inclusive_time_calculation(lulesh_caliper_json):
 
 
 def test_groupby_aggregate_by_name(calc_pi_caliper_json):
-    gf = GraphFrame.from_caliper_json(str(calc_pi_caliper_json))
+    gf = GraphFrame.from_caliper(str(calc_pi_caliper_json))
 
     functions = gf.dataframe["name"].unique()
 
@@ -286,7 +286,7 @@ def test_groupby_aggregate_by_module(calc_pi_caliper_json):
     0-2 are [None, "foo.c", None]. The None values were added to the resulting
     dataframe since the profile contained no data for this node and rank.
     """
-    gf = GraphFrame.from_caliper_json(str(calc_pi_caliper_json))
+    gf = GraphFrame.from_caliper(str(calc_pi_caliper_json))
 
     modules = gf.dataframe["module"].unique()
 
@@ -309,7 +309,7 @@ def test_groupby_aggregate_by_file(calc_pi_caliper_json):
     0-2 are [None, "foo.c", None]. The None values were added to the resulting
     dataframe since the profile contained no data for this node and rank.
     """
-    gf = GraphFrame.from_caliper_json(str(calc_pi_caliper_json))
+    gf = GraphFrame.from_caliper(str(calc_pi_caliper_json))
 
     filenames = gf.dataframe["file"].unique()
 
