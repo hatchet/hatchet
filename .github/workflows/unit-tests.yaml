@@ -42,7 +42,7 @@ jobs:
     - name: Install Python3 dependencies
       if: ${{ matrix.python-version != 2.7 }}
       run: |
-        python -m pip install --upgrade pip flake8 pytest
+        python -m pip install --upgrade pip flake8 pytest jsbeautifier
         pip install -r requirements.txt
         # Optional Dependency for HDF Checkpointing
         pip install tables
@@ -60,6 +60,7 @@ jobs:
       run: |
         black --diff --check .
         flake8
+        find . -name '*.js' | xargs js-beautify
 
     - name: Basic Test with pytest
       run: |
