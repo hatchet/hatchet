@@ -832,14 +832,14 @@ class GraphFrame:
 
         return folded_stack
 
-    def to_literal(self, name="name", rank=0, thread=0):
+    def to_literal(self, name="name", rank=0, thread=0, cat_columns=[]):
         """Format this graph as a list of dictionaries for Roundtrip
         visualizations.
         """
         graph_literal = []
         visited = []
 
-        def metrics_to_dict(hnode):
+        def _get_df_index(hnode):
             if (
                 "rank" in self.dataframe.index.names
                 and "thread" in self.dataframe.index.names
@@ -852,6 +852,9 @@ class GraphFrame:
             else:
                 df_index = hnode
 
+            return df_index
+
+        def metrics_to_dict(df_index):
             metrics_dict = {}
             for m in sorted(self.inc_metrics + self.exc_metrics):
                 node_metric_val = self.dataframe.loc[df_index, m]
@@ -859,18 +862,20 @@ class GraphFrame:
 
             return metrics_dict
 
+        def attributes_to_dict(df_index):
+            valid_columns = [
+                col for col in cat_columns if col in self.dataframe.columns
+            ]
+
+            attributes_dict = {}
+            for m in sorted(valid_columns):
+                node_attr_val = self.dataframe.loc[df_index, m]
+                attributes_dict[m] = node_attr_val
+
+            return attributes_dict
+
         def add_nodes(hnode):
-            if (
-                "rank" in self.dataframe.index.names
-                and "thread" in self.dataframe.index.names
-            ):
-                df_index = (hnode, rank, thread)
-            elif "rank" in self.dataframe.index.names:
-                df_index = (hnode, rank)
-            elif "thread" in self.dataframe.index.names:
-                df_index = (hnode, thread)
-            else:
-                df_index = hnode
+            df_index = _get_df_index(hnode)
 
             node_dict = {}
 
@@ -878,8 +883,9 @@ class GraphFrame:
 
             node_dict["name"] = node_name
             node_dict["frame"] = hnode.frame.attrs
-            node_dict["metrics"] = metrics_to_dict(hnode)
+            node_dict["metrics"] = metrics_to_dict(df_index)
             node_dict["metrics"]["_hatchet_nid"] = hnode._hatchet_nid
+            node_dict["attributes"] = attributes_to_dict(df_index)
 
             if hnode.children and hnode not in visited:
                 visited.append(hnode)
