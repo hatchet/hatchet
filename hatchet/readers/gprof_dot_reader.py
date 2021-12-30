@@ -64,14 +64,15 @@ class GprofDotReader:
                     node_name = node_name.strip('"')
                     hnode = self.name_to_hnode.get(node_name)
                     if not hnode:
-                        # create a node if it doesn't exist yet
-                        hnode = Node(
-                            Frame({"type": "function", "name": node_name}), None
-                        )
-                        self.name_to_hnode[node_name] = hnode
+                        if node.obj_dict["attributes"].get("label") is None:
+                            continue
+                        else:
+                            # create a node if it doesn't exist yet
+                            hnode = Node(
+                                Frame({"type": "function", "name": node_name}), None
+                            )
+                            self.name_to_hnode[node_name] = hnode
 
-                    if node.obj_dict["attributes"].get("label") is None:
-                        continue
                     node_label = node.obj_dict["attributes"].get("label").strip('"')
 
                     module, _, inc, exc, _ = node_label.split(r"\n")
