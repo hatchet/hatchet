@@ -67,7 +67,7 @@
 
             return {
                 setColors: function(treeIndex) {
-                    const curMetric = _state["selectedMetric"];
+                    const curMetric = _state["primaryMetric"];
                     const colorScheme = _state["colorScheme"];
 
                     if (_metricColumns.includes(curMetric)) {
@@ -85,7 +85,7 @@
                      * @param {Int} treeIndex - The index of the current tree's legend being set
                      */
 
-                    const curMetric = _state["selectedMetric"];
+                    const curMetric = _state["primaryMetric"];
 
                     // so hacky: need to fix later
                     if (model.data["legends"][_state["legend"]].includes("Unified")) {
@@ -122,32 +122,14 @@
                     if (model.data["legends"][_state["legend"]].includes("Unified")) {
                         treeIndex = -1;
                     }
+                    console.log(treeIndex,this.setColors(treeIndex));
 
                     return this.setColors(treeIndex);
                 },
-                calcColorScale: function(nodeMetric, treeIndex) {
-                    var curMetric = _state["primaryMetric"];
-                    var colorSchemeUsed = this.setColors(treeIndex);
-                    
-                    if (treeIndex == -1) {
-                        var metric_range = _forestMinMax[curMetric].max - _forestMinMax[curMetric].min;
-                        var proportion_of_total = (nodeMetric - _forestMinMax[curMetric].min) / metric_range;
-                    } else {
-                        var metric_range = _modelForestStats[treeIndex][curMetric].max - _modelForestStats[treeIndex][curMetric].min;
-                        var proportion_of_total = nodeMetric / 1;
-    
-                        if (metric_range != 0) {
-                            proportion_of_total = (nodeMetric - _modelForestStats[treeIndex][curMetric].min) / metric_range;
-                        }
-                    }
-    
-                    if (proportion_of_total > 0.9) {
-                        return colorSchemeUsed[0];
-                    }
-
+                calcColorScale: function(nodeData, treeIndex) {
                     // Decide the color scheme for the settings.
                     const colorSchemeUsed = this.setColors(treeIndex);
-                    const curMetric = _state["selectedMetric"];
+                    const curMetric = _state["primaryMetric"];
 
                     // Get the suitable data based on the Legend settings.
                     let _d;
@@ -251,7 +233,7 @@
                             _model.updateLegends();
                             break;
                         case(globals.signals.ZOOM):
-                            _model.updateNodeLocations(evt.index, evt.transformation);
+                            // _model.updateNodeLocations(evt.index, evt.transformation);
                             break;
                         case(globals.signals.ENABLEMASSPRUNE):
                             _model.enablePruneTree(evt.checked, evt.threshold);
@@ -282,6 +264,7 @@
                             "rootNodeNames": [],
                             "numberOfTrees": 0,
                             "metricColumns": [],
+                            "attributeColumns": [],
                             "forestMinMax": [],
                             "aggregateMinMax": {},
                             "forestMetrics": [],
@@ -317,7 +300,7 @@
             _data.rootNodeNames.push("Show all trees");
             _data.numberOfTrees = _forestData.length;
             _data.metricColumns = d3.keys(_forestData[0].metrics);
-            
+            _data["attributeColumns"] = d3.keys(_forestData[0].attributes);            
             
             for(var metric = 0; metric < _data.metricColumns.length; metric++){
                 metricName = _data.metricColumns[metric];
@@ -1092,7 +1075,7 @@
             //---------------------------------
 
             htmlInputs.append('label').attr('for', 'primaryMetricSelect').text('Color by:');
-            var metricInput = d3.select(elem).append("select") 
+            var metricInput = htmlInputs.append("select") 
                     .attr("id", "primaryMetricSelect")
                     .selectAll('option')
                     .data(metricColumns)
@@ -1102,8 +1085,8 @@
                     .attr('value', d => d);
             document.getElementById("primaryMetricSelect").style.margin = "10px 10px 10px 0px";
 
-            d3.select(elem).append('label').attr('for', 'secondaryMetricSelect').text('Size:');
-            var metricInputRadius = d3.select(elem).append("select") 
+            htmlInputs.append('label').attr('for', 'secondaryMetricSelect').text('Size:');
+            var metricInputRadius = htmlInputs.append("select") 
                     .attr("id", "secondaryMetricSelect")
                     .selectAll('option')
                     .data(metricColumns)
@@ -1126,9 +1109,9 @@
                     .text(d => d)
                     .attr('value', (d, i) => i + "|" + d);
 
-            document.getElementById("treeRootSelect").style.margin = "10px 10px 10px 10px";
+            htmlInputs.select("#treeRootSelect").node().style.margin = "10px 10px 10px 10px";
 
-            d3.select(elem).select('#treeRootSelect')
+            htmlInputs.select('#treeRootSelect')
                     .on('change', function () {
                         _observers.notify({
                             type: globals.signals.TREECHANGE,
@@ -1136,12 +1119,9 @@
                         });
                     });
             
-            // ----------------------------------------------
-            // Create SVG and SVG-based interactables
-            // ----------------------------------------------
-
-            d3.select(elem).append('label').style('margin', '0 0 0 10px').attr('for', 'enable-pruning').text(' Enable Automatic Pruning:');
-            d3.select(elem)
+            
+            htmlInputs.append('label').style('margin', '0 0 0 10px').attr('for', 'enable-pruning').text(' Enable Automatic Pruning:');
+            htmlInputs
                 .append("div")
                 .style("display", "inline-block")
                 .append('input')
@@ -1157,8 +1137,8 @@
                 });
             
             
-            sliderText = d3.select(elem).append('label').style('margin', '0 0 0 10px').attr('for', 'pruning-slider').text(' Pruning Strictness (1.5):');
-            d3.select(elem)
+            sliderText = htmlInputs.append('label').style('margin', '0 0 0 10px').attr('for', 'pruning-slider').text(' Pruning Strictness (1.5):');
+            htmlInputs
                 .append("div")
                 .attr("class", "slide-container")
                 .style("width", "150px")
@@ -1172,7 +1152,7 @@
 
             document.getElementById("pruning-slider").style.marginLeft = "10px";
         
-            d3.select(elem).select('#pruning-slider')
+            htmlInputs.select('#pruning-slider')
                 .on('change', function(){
                     // Does not conform fully to MVC model
                     sliderText.text(()=>{
@@ -1184,14 +1164,22 @@
                         threshold: parseFloat(this.value)
                     });
                 })
+            
+            // ----------------------------------------------
+            // Create SVG and SVG-based interactables
+            // ----------------------------------------------
+
+            // 
+            //  NOTE TO FUTURE CONNOR --
+            //  YOU ARE TRYING TO ALIGN THE NEW SVG MODEL
+            //  FROM DEVELOP WITH THE OLD ONE ON OVERVIEW-DESIGNS
+            // 
+
 
             //make an svg in the scope of our current
             // element/drawing space
-            var _svg = d3.select(element).append("svg") //element
-                .attr("class", "canvas")
-                .attr("width", width + globals.layout.margin.right + globals.layout.margin.left)
-                .attr("height", height + globals.layout.margin.top + globals.layout.margin.bottom);
-
+            var _svg = d3.select(element).append("svg").attr("class", "inputCanvas");
+            
             //-----------------------------------
             // SVG Interactables
             //-----------------------------------
@@ -1229,10 +1217,8 @@
                         type: globals.signals.RESETVIEW
                     });
                 });
-
-            var mainG = _svg.append("g")
-                .attr('id', "mainG")
-                .attr("transform", "translate(" + globals.layout.margin.left + "," + globals.layout.margin.top + ")");
+            
+            _svg.attr('height', '15px').attr('width', width);
 
            // ----------------------------------------------
             // Define and set d3 callbacks for changes
@@ -1372,21 +1358,6 @@
         var createChartView = function(elem, model){
             let _observers = makeSignaller();
             var _colorManager = makeColorManager(model);
-            const metricColumns = model.data["metricColumns"];
-            const attributeColumns = model.data["attributeColumns"];
-            var forestData = model.data["forestData"];
-            var width = elem.clientWidth - globals.layout.margin.right - globals.layout.margin.left;
-            var height = globals.layout.margin.top + globals.layout.margin.bottom;
-            var _margin = globals.layout.margin;
-            var _nodeRadius = 30;
-            var treeLayoutHeights = [];
-
-
-            var svg = d3.select(elem)
-                        .append('svg')
-                        .attr("class", "canvas")
-                        .attr("width", width)
-                        .attr("height", height);
 
             //layout variables
             var _margin = globals.layout.margin;     
@@ -1395,10 +1366,15 @@
             var _maxNodeRadius = 20;
             var _treeLayoutHeights = [];
             var legendOffset = 0;
-            var maxHeight = 0;
             var chartOffset = _margin.top;
             var treeOffset = 0;
             var _minmax = [];
+
+            var svg = d3.select(elem)
+                        .append('svg')
+                        .attr("class", "canvas")
+                        .attr("width", width)
+                        .attr("height", height);
 
             //scales
             var _treeCanvasHeightScale = d3.scaleQuantize().range([250, 1000, 1250, 1500]).domain([1, 300]);
@@ -1411,6 +1387,8 @@
             var surrogates = [];
             var aggregates = [];
             var links = [];
+            const metricColumns = model.data["metricColumns"];
+            const attributeColumns = model.data["attributeColumns"];
 
             //-----------------------------------
             // Function Definitions
@@ -1505,14 +1483,6 @@
                 return brushedNodes;
 
             }
-            // --------------------------------------------------------------
-            // Initialize layout before first render
-            // --------------------------------------------------------------
-
-            var mainG = svg.append("g")
-                            .attr('id', "mainG")
-                            .attr("transform", "translate(" + globals.layout.margin.left + "," + 0 + ")");
-
             function _calcNodePositions(nodes, treeIndex){
                 /**
                  * Calculates the local and gloabal node positions for each tree in
@@ -1536,8 +1506,9 @@
             //------------------------------
             // Pre-Proecssing
             //------------------------------
-
-            var mainG = svg.select("#mainG");
+            var mainG = svg.append("g")
+            .attr('id', "mainG")
+            .attr("transform", "translate(" + globals.layout.margin.left + "," + globals.layout.margin.top + ")");
             
             // .nodeSize([_maxNodeRadius, _maxNodeRadius]);
             
@@ -1574,7 +1545,6 @@
                 let currentLayoutHeight = _getHeightFromTree(currentRoot);
                 let currentMinMax = _getMinxMaxxFromTree(currentRoot);
                 
-                var currentTree = model.getTree(treeIndex);
                 var newg = mainG.append("g")
                         .attr('class', 'group-' + treeIndex + ' subchart')
                         .attr('tree_id', treeIndex)
@@ -1613,7 +1583,7 @@
 
                 //make an invisible rectangle for zooming on
                 newg.append('rect')
-                    .attr('height', treeLayoutHeights[treeIndex])
+                    .attr('height', _treeLayoutHeights[treeIndex])
                     .attr('width', width)
                     .attr('fill', 'rgba(0,0,0,0)');
 
@@ -1625,23 +1595,10 @@
                     .attr('width', width)
                     .attr('fill', 'rgba(0,0,0,0)');
 
-                //Create d3 zoom element and affix to each tree individually
-                var zoom = d3.zoom().on("zoom", function (){
-                    let zoomObj = d3.select(this).selectAll(".chart");
+                treeOffset = 0 + legendOffset + _margin.top;
 
-                    zoomObj.attr("transform", d3.event.transform);
+                newg.style("display", "inline-block");
 
-                    //update for scale view
-                    _observers.notify({
-                        type: globals.signals.ZOOM,
-                        index: zoomObj.attr("chart-id"),
-                        transformation: zoomObj.node().getCTM()
-                    })
-                });
-
-                newg.call(zoom)
-                    .on("dblclick.zoom", null);
-                    
                 //store node and link layout data for use later
                 var treeLayout = tree(model.data.hierarchy[treeIndex]);
                 nodes.push(treeLayout.descendants());
@@ -1719,7 +1676,6 @@
                         //will need to optimize this redrawing
                         // by cacheing tree between calls
                         if(model.state.hierarchyUpdated == true){
-                            console.log(model.data.hierarchy[treeIndex].size, _treeCanvasHeightScale(model.data.hierarchy[treeIndex].size));
                             let tree = d3.tree().size([_treeCanvasHeightScale(model.data.hierarchy[treeIndex].size), width - _margin.left - 200]);
                             var treeLayout = tree(source);
                             nodes[treeIndex] = treeLayout.descendants().filter(d=>{return !d.dummy});
@@ -1765,19 +1721,21 @@
                         // ---------------------------------------------
                         // Update the nodes…
                         var i = 0;
+                        console.log("Nodes: ", nodes[treeIndex]);
                         var node = treeGroup.selectAll("g.node")
-                                .data(nodes[treeIndex], function (d) {
-                                    return d.data.metrics._hatchet_nid || d.id;
+                                .data(nodes[treeIndex], function (d, i) {
+                                    console.log("Node IDs:", d.data.metrics._hatchet_nid, d.id);
+                                    return d.data.metrics._hatchet_nid || d.id || i;
                                 });
                         
                         var dummyNodes = treeGroup.selectAll("g.fakeNode")
-                            .data(surrogates[treeIndex], function (d) {
-                                return d.data.metrics._hatchet_nid || d.id;
+                            .data(surrogates[treeIndex], function (d, i) {
+                                return d.data.metrics._hatchet_nid || d.id || i;
                             });
 
                         var aggBars = treeGroup.selectAll("g.aggBar")
-                            .data(aggregates[treeIndex], function (d) {
-                                return d.data.metrics._hatchet_nid || d.id;
+                            .data(aggregates[treeIndex], function (d, i) {
+                                return d.data.metrics._hatchet_nid || d.id || i;
                             });
                         
                         // Enter any new nodes at the parent's previous position.
@@ -1851,9 +1809,9 @@
                                 .attr("r", 1e-6)
                                 .style("fill", function (d) {
                                     if(model.state["legend"] == globals.UNIFIED){
-                                        return _colorManager.calcColorScale(d.data.metrics[primaryMetric], -1);
+                                        return _colorManager.calcColorScale(d.data, -1);
                                     }
-                                    return _colorManager.calcColorScale(d.data.metrics[primaryMetric], treeIndex);
+                                    return _colorManager.calcColorScale(d.data, treeIndex);
                                 })
                                 .style('stroke-width', '1px')
                                 .style('stroke', 'black');
@@ -1994,9 +1952,9 @@
                             .transition()
                             .duration(globals.duration)
                             .text((d, i) => {
-                                if (metricColumns.includes(model.state["selectedMetric"])) {
+                                if (metricColumns.includes(model.state["primaryMetric"])) {
                                     return _colorManager.getLegendDomains(treeIndex)[6 - d - 1].toFixed(2) + ' - ' + _colorManager.getLegendDomains(treeIndex)[6 - d].toFixed(2);
-                                } else if (attributeColumns.includes(model.state["selectedMetric"])) {
+                                } else if (attributeColumns.includes(model.state["primaryMetric"])) {
                                     return _colorManager.getLegendDomains(treeIndex)[i];
                                 }
                             });
@@ -2006,7 +1964,7 @@
                         linkUpdate.transition()
                                 .duration(globals.duration)
                                 .attr("d", function (d) {
-                                    return diagonal(d, d.parent);
+                                    return diagonal(d, d.parent, treeIndex);
                                 });
 
             
@@ -2055,9 +2013,9 @@
                             })
                             .style('fill', function (d) {
                                 if(model.state["legend"] == globals.UNIFIED){
-                                    return _colorManager.calcColorScale(d.data.metrics[primaryMetric], -1);
+                                    return _colorManager.calcColorScale(d.data, -1);
                                 }
-                                return _colorManager.calcColorScale(d.data.metrics[primaryMetric], treeIndex);
+                                return _colorManager.calcColorScale(d.data, treeIndex);
 
                             });
                         
@@ -2100,10 +2058,10 @@
                             .attr('height', (d) => {return  _barScale(d.data.aggregateMetrics[secondaryMetric]);})
                             .style('fill', function (d) {
                                 if(model.state["legend"] == globals.UNIFIED){
-                                    return _colorManager.calcColorScale(d.data.aggregateMetrics[primaryMetric], -1);
+                                    return _colorManager.calcColorScale(d.data, -1);
                                 }
-                                return _colorManager.calcColorScale(d.data.aggregateMetrics[primaryMetric], treeIndex);
-                            })
+                                return _colorManager.calcColorScale(d.data, treeIndex);
+                            });
 
                         aggNodeUpdate
                             .transition()
