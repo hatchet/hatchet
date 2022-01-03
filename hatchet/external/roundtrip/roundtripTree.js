@@ -300,7 +300,7 @@
             _data.rootNodeNames.push("Show all trees");
             _data.numberOfTrees = _forestData.length;
             _data.metricColumns = d3.keys(_forestData[0].metrics);
-            _data["attributeColumns"] = d3.keys(_forestData[0].attributes);            
+            _data["attributeColumns"] = d3.keys(_forestData[0].attributes);
             
             for(var metric = 0; metric < _data.metricColumns.length; metric++){
                 metricName = _data.metricColumns[metric];
@@ -1378,7 +1378,7 @@
 
             //scales
             var _treeCanvasHeightScale = d3.scaleQuantize().range([250, 1000, 1250, 1500]).domain([1, 300]);
-            var _treeDepthScale = d3.scaleLinear().range([0, element.offsetWidth-400]).domain([0, model.data.maxHeight])
+            var _treeDepthScale = d3.scaleLinear().range([0, element.offsetWidth-200]).domain([0, model.data.maxHeight])
             var _nodeScale = d3.scaleLinear().range([5, _maxNodeRadius]).domain([model.data.forestMinMax[model.state.secondaryMetric].min, model.data.forestMinMax[model.state.secondaryMetric].max]);
             var _barScale = d3.scaleLinear().range([5, 25]).domain([model.data.aggregateMinMax[model.state.secondaryMetric].min, model.data.aggregateMinMax[model.state.secondaryMetric].max]);
 
@@ -1721,21 +1721,20 @@
                         // ---------------------------------------------
                         // Update the nodes…
                         var i = 0;
-                        console.log("Nodes: ", nodes[treeIndex]);
                         var node = treeGroup.selectAll("g.node")
                                 .data(nodes[treeIndex], function (d, i) {
-                                    console.log("Node IDs:", d.data.metrics._hatchet_nid, d.id);
-                                    return d.data.metrics._hatchet_nid || d.id || i;
+                                    console.log("Node IDs:", d.data.metrics._hatchet_nid, d.id, i);
+                                    return d.data.metrics._hatchet_nid || i;
                                 });
                         
                         var dummyNodes = treeGroup.selectAll("g.fakeNode")
                             .data(surrogates[treeIndex], function (d, i) {
-                                return d.data.metrics._hatchet_nid || d.id || i;
+                                return d.data.metrics._hatchet_nid || i;
                             });
 
                         var aggBars = treeGroup.selectAll("g.aggBar")
                             .data(aggregates[treeIndex], function (d, i) {
-                                return d.data.metrics._hatchet_nid || d.id || i;
+                                return d.data.metrics._hatchet_nid || i;
                             });
                         
                         // Enter any new nodes at the parent's previous position.
@@ -1892,8 +1891,8 @@
 
                         // links
                         var link = treeGroup.selectAll("path.link")
-                        .data(links[treeIndex], function (d) {
-                            return d.data.metrics._hatchet_nid || d.id;
+                        .data(links[treeIndex], function (d, i) {
+                            return d.data.metrics._hatchet_nid || i;
                         });
         
                         // Enter any new links at the parent's previous position.
@@ -2127,7 +2126,7 @@
             var _tooltip = d3.select(elem).append("div")
                     .attr('id', 'tooltip')
                     .style('position', 'absolute')
-                    .style('top', '5px')
+                    .style('top', '50px')
                     .style('right', '15px')
                     .style('padding', '5px')
                     .style('border-radius', '5px')
