@@ -17,7 +17,6 @@
                 TREECHANGE: "TREECHANGE",
                 COLORCLICK: "COLORCLICK",
                 LEGENDCLICK: "LEGENDCLICK",
-                ZOOM: "ZOOM",
                 ENABLEMASSPRUNE: "ENABLEMASSPRUNE",
                 REQUESTMASSPRUNE: "REQUESTMASSPRUNE",
                 RESETVIEW: "RESET"
@@ -127,6 +126,11 @@
                     return this.setColors(treeIndex);
                 },
                 calcColorScale: function(nodeData, treeIndex) {
+                    /**
+                     * Calculates the bins for the color scheme based on the current, user-selected metric.
+                     *
+                     * @param {String} nodeData - the name of the current metric being mapped to a color range
+                     */
                     // Decide the color scheme for the settings.
                     const colorSchemeUsed = this.setColors(treeIndex);
                     const curMetric = _state["primaryMetric"];
@@ -232,9 +236,6 @@
                         case(globals.signals.LEGENDCLICK):
                             _model.updateLegends();
                             break;
-                        case(globals.signals.ZOOM):
-                            // _model.updateNodeLocations(evt.index, evt.transformation);
-                            break;
                         case(globals.signals.ENABLEMASSPRUNE):
                             _model.enablePruneTree(evt.checked, evt.threshold);
                             break;
@@ -261,7 +262,7 @@
                             "legends": ["Unified", "Indiv."],
                             "colors": ["Default", "Inverted"],
                             "forestData": null,
-                            "rootNodeNames": [],
+                            "rootNodeNames": ["Show all trees"],
                             "numberOfTrees": 0,
                             "metricColumns": [],
                             "attributeColumns": [],
@@ -270,7 +271,10 @@
                             "forestMetrics": [],
                             "metricLists":[],
                             "currentStrictness": 1.5,
-                            "treeSizes": []
+                            "treeSizes": [],
+                            "hierarchy": [],
+                            "immutableHierarchy": [],
+                            "maxHeight": 0
                         };
 
             var _state = {
@@ -289,15 +293,9 @@
                         };
 
             //setup model
-            var cleanTree = argList[0].replace(/'/g, '"');
-            var cleanTree = cleanTree.replace(/nan/g, '\"nan\"');
+            var cleanTree = argList[0].replace(/'/g, '"').replace(/nan/g, '\"nan\"');
             var _forestData = JSON.parse(cleanTree);
 
-            _data.hierarchy = [];
-            _data.immutableHierarchy = [];
-            _data.maxHeight = 0;
-            _data.rootNodeNames = [];
-            _data.rootNodeNames.push("Show all trees");
             _data.numberOfTrees = _forestData.length;
             _data.metricColumns = d3.keys(_forestData[0].metrics);
             _data["attributeColumns"] = d3.keys(_forestData[0].attributes);
@@ -320,12 +318,24 @@
             _state.activeTree = "Show all trees";
             _state.treeXOffsets = [];
             
+            let offset = 0;
             for (let treeIndex = 0; treeIndex < _forestData.length; treeIndex++) {
                 hierarchy = d3.hierarchy(_forestData[treeIndex], d => d.children);
                 hierarchy.size = hierarchy.descendants().length;
 
+                //add a surrogate id if _hatchet_nid is not present
+                if(!Object.keys(hierarchy.descendants()[0].data.metrics).includes("_hatchet_nid")){
+                    hierarchy.descendants().forEach(function(d, i){
+                        d.data.metrics.id = offset+i;
+                    })
+                    offset += hierarchy.size;
+                }
+
+                console.log(hierarchy)
+
                 _data.immutableHierarchy.push(hierarchy);
                 _data.hierarchy.push(hierarchy);
+
                 if (_data.immutableHierarchy[treeIndex].height > _data.maxHeight){
                     _data.maxHeight = _data.immutableHierarchy[treeIndex].height;
                 }
@@ -336,6 +346,7 @@
             _data.hierarchy.sort((a,b) => b.size - a.size);
 
             _state.lastClicked = _data.hierarchy[0];
+
 
             //Stats functions
             function _getListOfMetrics(h){
@@ -1722,19 +1733,20 @@
                         // Update the nodes…
                         var i = 0;
                         var node = treeGroup.selectAll("g.node")
-                                .data(nodes[treeIndex], function (d, i) {
-                                    console.log("Node IDs:", d.data.metrics._hatchet_nid, d.id, i);
-                                    return d.data.metrics._hatchet_nid || i;
+                                .data(nodes[treeIndex], function (d) {
+
+                                    console.log("Node IDs:", d.data.metrics._hatchet_nid, d.data.metrics.id);
+                                    return d.data.metrics._hatchet_nid || d.data.metrics.id;
                                 });
                         
                         var dummyNodes = treeGroup.selectAll("g.fakeNode")
-                            .data(surrogates[treeIndex], function (d, i) {
-                                return d.data.metrics._hatchet_nid || i;
+                            .data(surrogates[treeIndex], function (d) {
+                                return d.data.metrics._hatchet_nid || d.data.metrics.id;
                             });
 
                         var aggBars = treeGroup.selectAll("g.aggBar")
-                            .data(aggregates[treeIndex], function (d, i) {
-                                return d.data.metrics._hatchet_nid || i;
+                            .data(aggregates[treeIndex], function (d) {
+                                return d.data.metrics._hatchet_nid || d.data.metrics.id;
                             });
                         
                         // Enter any new nodes at the parent's previous position.
@@ -1891,8 +1903,8 @@
 
                         // links
                         var link = treeGroup.selectAll("path.link")
-                        .data(links[treeIndex], function (d, i) {
-                            return d.data.metrics._hatchet_nid || i;
+                        .data(links[treeIndex], function (d) {
+                            return d.data.metrics._hatchet_nid || d.data.metrics.id;
                         });
         
                         // Enter any new links at the parent's previous position.
