@@ -1,4 +1,4 @@
-# Copyright 2021 University of Maryland and other Hatchet Project
+# Copyright 2021-2022 University of Maryland and other Hatchet Project
 # Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
@@ -8,7 +8,7 @@ import hatchet.graphframe
 from hatchet.node import Node
 from hatchet.graph import Graph
 from hatchet.frame import Frame
-from pycubexr import CubexParser
+from pycubexr.parsers.tar_parser import CubexParser
 from pycubexr.utils.exceptions import MissingMetricError
 
 
@@ -18,10 +18,10 @@ class ScorepReader:
     def __init__(self, filename):
         self.filename = filename
         self.node_dicts = []
+        self.callpath_to_node_dict = {}
         self.callpath_to_node = {}
         self.inc_metrics = []
         self.exc_metrics = []
-        self.columns = []
         self.list_roots = []
         self.threads_per_rank = 0
         self.multiple_ranks = False
@@ -30,17 +30,57 @@ class ScorepReader:
     def create_graph(self, cubex):
         def _create_node_dict(
             node_dict,
-            callpath,
+            callpath_rank_thread,
             location,
             metric,
             metric_values,
             hatchet_node,
             pycubexr_cnode,
             name,
+            begin_line,
+            end_line,
+            # TODO: Uncomment the following
+            # line after pycubexr is fixed.
+            # file,
         ):
+
+            if callpath_rank_thread not in node_dict:
+                node_dict[callpath_rank_thread] = {
+                    "node": hatchet_node,
+                    "name": name,
+                    "rank": callpath_rank_thread[1],
+                    "thread": callpath_rank_thread[2],
+                    "line": begin_line,
+                    "end_line": end_line,
+                    # TODO: Uncomment the following
+                    # line after pycubexr is fixed.
+                    # "file": file,
+                }
+
+            # example metrics: 'name', 'visits', 'time', 'min_time',
+            # 'max_time', 'bytes_sent', 'bytes_received'.
+            metric_name = metric.name
+            metric_value = None
+            if metric_name == "min_time" or metric_name == "max_time":
+                metric_name = "{}{}".format(metric.name, " (inc)")
+                # pycubexr stores min and max values in MinValue and MaxValue
+                # format. We convert them to float.
+                metric_value = metric_values.location_value(
+                    pycubexr_cnode, location.id
+                ).value
+            else:
+                # Store the value as it is if it is not MinValue or MaxValue.
+                metric_value = metric_values.location_value(pycubexr_cnode, location.id)
+
+            if metric_name != "time" and metric.metric_type == "INCLUSIVE":
+                metric_name = "{}{}".format(metric.name, " (inc)")
+
+            node_dict[callpath_rank_thread].update({metric_name: metric_value})
+
+        def _calculate_rank_thread(location):
             # calculate rank and thread numbers.
-            # we should do this calculation for each node.
-            # location.id is a number from 0 to (# of rank) * (# of threads) - 1
+            # we should do this calculation for each location.id.
+            # location.id is a number from 0 to (# of ranks) * (# of threads) - 1
             rank = location.id // self.threads_per_rank
             # thread number is stored as rank in pyCubexR
             thread = int(location.rank)
@@ -48,30 +88,33 @@ class ScorepReader:
                 self.multiple_ranks = True
             if not self.multiple_threads and thread != 0:
                 self.multiple_threads = True
+            return (rank, thread)
 
-            callpath_rank_thread = tuple((callpath, rank, thread))
-            if callpath_rank_thread not in node_dict:
-                node_dict[callpath_rank_thread] = {
-                    "node": hatchet_node,
-                    "name": name,
-                    "rank": rank,
-                    "thread": thread,
-                }
-
-            # example metrics: 'name', 'visits', 'time (inc)', 'min_time',
-            # 'max_time', 'bytes_sent', 'bytes_received'.
-            metric_name = metric.name
-            if metric.metric_type == "INCLUSIVE":
-                metric_name = "{}{}".format(metric.name, " (inc)")
-            node_dict[callpath_rank_thread].update(
-                {metric_name: metric_values.location_value(pycubexr_cnode, location.id)}
-            )
+        # get node name, begin and end line, and file info of a node from pycubexr
+        def _get_node_info(pycubexr_cnode, node_name, begin_line, end_line):
+            node_name = cubex.get_region(pycubexr_cnode).name
+            begin_line = cubex.get_region(pycubexr_cnode).begin
+            end_line = cubex.get_region(pycubexr_cnode).end
+            # TODO: pycubexr should be updated to read
+            # file information. Uncomment all the lines
+            # related to file information after pycubexr
+            # is updated.
+            # file = cubex.get_region(pycubexr_cnode).mod
+            return node_name, begin_line, end_line
 
         def _get_callpath_all_info(pycubexr_cnode, parent_callpath):
+
             node_dict = {}
             parent_node = self.callpath_to_node[parent_callpath]
-            node_name = cubex.get_region(pycubexr_cnode).name
+            # TODO: add 'file' as a parameter to _get_node_info()
+            # function after pycubexr is fixed and can read it.
+            # node_name, begin_line, end_line, file = None, None, None, None
+            node_name, begin_line, end_line = None, None, None
+            node_name, begin_line, end_line = _get_node_info(
+                pycubexr_cnode, node_name, begin_line, end_line
+            )
             callpath = parent_callpath + (node_name,)
+            callpath_rank_thread = tuple()
 
             if callpath not in self.callpath_to_node:
                 # Create the root node since it doesn't exist
@@ -87,34 +130,65 @@ class ScorepReader:
                 # Don't create a new node since it is created earlier
                 hatchet_node = self.callpath_to_node.get(callpath)
 
-            # this for loop, try and except statements are taken from
+            # this for loop and try-except statements are taken from
             # pycubexr readme file on github.
             for metric in cubex.get_metrics():
                 try:
+                    # get metric values for each metric.
                     metric_values = cubex.get_metric_values(metric)
                     for location in cubex.get_locations():
+                        # get (callpath, rank, thread) tuple for each rank or thread
+                        callpath_rank_thread = (callpath,) + _calculate_rank_thread(
+                            location
+                        )
+
                         _create_node_dict(
                             node_dict,
-                            callpath,
+                            callpath_rank_thread,
                             location,
                             metric,
                             metric_values,
                             hatchet_node,
                             pycubexr_cnode,
                             node_name,
+                            begin_line,
+                            end_line,
+                            # TODO: Uncomment the following
+                            # line after pycubexr is fixed.
+                            # file,
                         )
                 except MissingMetricError:
                     # Ignore missing metrics
                     pass
 
-            self.node_dicts.extend(node_dict.values())
+            # Sometimes pyCubexR stores some nodes with the same
+            # callpath as different nodes even though the only
+            # different is their metric values. Here we check if
+            # we have already seen the (callpath, rank, thread) and
+            # aggregate their values if we have seen it instead of
+            # creating a new node not to get ambigous data error
+            # on the dataframe.
+            if callpath_rank_thread in self.callpath_to_node_dict:
+                for c_r_t in node_dict.keys():
+                    for key, value in node_dict[c_r_t].items():
+                        if key in self.inc_metrics or key in self.exc_metrics:
+                            self.callpath_to_node_dict[c_r_t][key] += value
+            else:
+                self.callpath_to_node_dict.update(node_dict)
 
             for child in pycubexr_cnode.get_children():
                 _get_callpath_all_info(child, callpath)
 
         root = cubex._anchor_result.cnodes[0]
-        root_name = cubex.get_region(root).name
-        callpath = tuple()
+        # TODO: add 'file' as a parameter to _get_node_info()
+        # function after pycubexr is fixed and can read it.
+        # root_name, root_begin, root_end, root_file = None, None, None, None
+        root_name, root_begin, root_end = None, None, None
+        root_name, root_begin, root_end = _get_node_info(
+            root, root_name, root_begin, root_end
+        )
+
+        callpath = (root_name,)
         if callpath not in self.callpath_to_node:
             # Create the root node since it doesn't exist
             root_node = Node(Frame({"name": root_name, "type": "function"}), None)
@@ -126,38 +200,47 @@ class ScorepReader:
             # Don't create a new node since it is created earlier
             root_node = self.callpath_to_node.get(callpath)
 
+        node_dict = {}
         # get_locations() gets all the rank/thread information.
         # last location refers to the last thread information.
-        # if there are 8 threads, it should return 7.
-        node_dict = {}
+        # if there are 8 threads, the last one should return 7.
         self.threads_per_rank = int(cubex.get_locations()[-1].rank) + 1
         for metric in cubex.get_metrics():
             try:
                 # example metrics: 'name', 'visits', 'time (inc)', 'min_time',
                 # 'max_time', 'bytes_sent', 'bytes_received'.
                 metric_values = cubex.get_metric_values(metric)
-                if metric.metric_type == "INCLUSIVE":
+                if metric.name == "min_time" or metric.name == "max_time":
                     self.inc_metrics.append(metric.name + " (inc)")
-                elif metric.metric_type == "EXCLUSIVE":
+                else:
                     self.exc_metrics.append(metric.name)
 
                 for location in cubex.get_locations():
+
+                    callpath_rank_thread = (callpath,) + _calculate_rank_thread(
+                        location
+                    )
                     _create_node_dict(
                         node_dict,
-                        callpath,
+                        callpath_rank_thread,
                         location,
                         metric,
                         metric_values,
                         root_node,
                         root,
                         root_name,
+                        root_begin,
+                        root_end,
+                        # TODO: Uncomment the
+                        # following line after
+                        # pycubexr is updated.
+                        # root_file,
                     )
             except MissingMetricError:
                 # Ignore missing metrics
                 pass
 
-        self.node_dicts.extend(node_dict.values())
-
+        self.callpath_to_node_dict.update(node_dict)
         for child in root.get_children():
             _get_callpath_all_info(child, callpath)
 
@@ -171,7 +254,7 @@ class ScorepReader:
         graph = Graph(roots)
         graph.enumerate_traverse()
 
-        dataframe = pd.DataFrame.from_dict(data=self.node_dicts)
+        dataframe = pd.DataFrame.from_dict(data=self.callpath_to_node_dict.values())
 
         indices = []
         # Set indices according to rank/thread numbers.
@@ -209,7 +292,7 @@ class ScorepReader:
             # Stack the dataframe
             dataframe = dataframe.stack()
 
-        default_metric = "time (inc)"
+        default_metric = "time"
 
         return hatchet.graphframe.GraphFrame(
             graph, dataframe, self.exc_metrics, self.inc_metrics, default_metric
