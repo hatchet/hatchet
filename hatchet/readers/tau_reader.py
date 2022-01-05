@@ -155,7 +155,7 @@ class TAUReader:
                 # Example 2: [UNWIND] [<file>.<line_number>] [@]
                 try:
                     start_line = int(node_info.split(".")[-1].split()[0].strip("]"))
-                except:
+                except ValueError:
                     pass
             return [start_line, end_line]
 
