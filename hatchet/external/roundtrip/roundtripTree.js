@@ -183,7 +183,6 @@
             }
         }
 
-        // This is the makeSignaller from class
         var makeSignaller = function() {
             let _subscribers = []; // Private member
 
@@ -202,8 +201,11 @@
             };
         }
 
-        // Create an object that handles user interaction and events
         var createController = function(model) {
+            /**
+             * Handles interaction and events by taking requests from the view
+             * and firing off functions in the model.
+             */
             var _model = model;
 
             return {
@@ -250,7 +252,6 @@
                 }
             };
         }
-
 
         var createModel = function() {
             var _observers = makeSignaller();
@@ -554,7 +555,7 @@
                         _data.aggregateMinMax[metric].min = aggregateMetrics[metric];
                     }
                 }
-                
+
                 dummyHolder.data.aggregateMetrics = aggregateMetrics;
                 dummyHolder.data.description = description;
 
@@ -668,13 +669,27 @@
                     nodeStr += "<tr>"
                     for (var j = 0; j < metricColumns.length; j++) {
                         if (j == 0) {
-                            nodeStr += `<td>${nodeList[i].data.frame.name}</td>`;
+                            if (nodeList[i].data.aggregateMetrics && nodeList[i].elided.length == 1){
+                                nodeStr += `<td>${nodeList[i].data.frame.name} Subtree </td>`
+                            }
+                            else if(nodeList[i].data.aggregateMetrics && nodeList[i].elided.length > 1){
+                                nodeStr += `<td>Children of: ${nodeList[i].parent.data.frame.name} </td>`
+                            }
+                            else{
+                                nodeStr += `<td>${nodeList[i].data.frame.name}</td>`;
+                            }
                         }
-                        nodeStr += `<td>${nodeList[i].data.metrics[metricColumns[j]]}</td>`
+                        if (nodeList[i].data.aggregateMetrics){
+                            nodeStr += `<td>${nodeList[i].data.aggregateMetrics[metricColumns[j]]}</td>`
+                        }
+                        else{
+                            nodeStr += `<td>${nodeList[i].data.metrics[metricColumns[j]]}</td>`
+                        }
                     }
                     nodeStr += '</tr>'
                 }
                 nodeStr = nodeStr + '</table>';
+
                 return nodeStr;
             }
 
@@ -942,6 +957,12 @@
                     
                 },
                 updateTooltip: function(nodes){
+                    /**
+                     * Updates the model with new tooltip information based on user selection
+                     * 
+                     * @param {Array} nodes - A list of selected nodes
+                     *
+                     */
                     if(nodes.length > 0 && nodes[0]){
                         var longestName = 0;
                         nodes.forEach(function (d) {
@@ -1181,13 +1202,6 @@
             // Create SVG and SVG-based interactables
             // ----------------------------------------------
 
-            // 
-            //  NOTE TO FUTURE CONNOR --
-            //  YOU ARE TRYING TO ALIGN THE NEW SVG MODEL
-            //  FROM DEVELOP WITH THE OLD ONE ON OVERVIEW-DESIGNS
-            // 
-
-
             //make an svg in the scope of our current
             // element/drawing space
             var _svg = d3.select(element).append("svg").attr("class", "inputCanvas");
@@ -1290,6 +1304,10 @@
                     _observers.add(s);
                 },
                 render: function(){
+                    /**
+                     * Core call for drawing menu related screen elements
+                     */
+
                     brushOn = model.state["brushOn"];
                     curColor = model.state["colorScheme"];
                     colors = model.data["colors"];
@@ -1804,13 +1822,8 @@
                                     type: globals.signals.DBLCLICK,
                                     node: d
                                 })
-                            })
-                            .on("mouseout", function(d){
-                                _observers.notify({
-                                    type: globals.signals.CLICK,
-                                    node: null
-                                })
                             });
+                     
 
                         nodeEnter.append("circle")
                                 .attr('class', 'circleNode')
@@ -1851,7 +1864,9 @@
                                     return d.children || model.state['collapsedNodes'].includes(d) ? "end" : "start";
                                 })
                                 .text(function (d) {
+                                    console.log(d.children, d.data.name);
                                     if(!d.children){
+                                        console.log("HERE");
                                         return d.data.name;
                                     }
                                     else if(d.children.length == 1){
@@ -1859,7 +1874,8 @@
                                     }
                                     return "";
                                 })
-                                .style("font", "12px monospace");
+                                .style("font", "12px monospace")
+                                .style('fill','rgba(0,0,0,.9)');
         
                         dNodeEnter.append("text")
                             .attr("x", function (d) {
@@ -1877,7 +1893,8 @@
                                     return `${d.data.name} Subtree`;
                                 }
                             })
-                            .style("font", "12px monospace");
+                            .style("font", "12px monospace")
+                            .style('fill','rgba(0,0,0,.9)');
 
                         aggNodeEnter.append("text")
                             .attr("x", function (d) {
@@ -1895,7 +1912,8 @@
                                     return `${d.data.name} Subtree`;
                                 }
                             })
-                            .style("font", "12px monospace");
+                            .style("font", "12px monospace")
+                            .style('fill','rgba(0,0,0,.9)');
 
 
                         // links
@@ -2015,7 +2033,7 @@
                             .attr("r", 
                             function(d){
                                 if (model.state['selectedNodes'].includes(d)){
-                                    return _nodeScale(d.data.metrics[secondaryMetric]) + 3;
+                                    return _nodeScale(d.data.metrics[secondaryMetric]) + 2;
                                 }
                                 return _nodeScale(d.data.metrics[secondaryMetric]);
                             })
@@ -2064,6 +2082,14 @@
                         aggNodeUpdate
                             .select('rect')
                             .attr('height', (d) => {return  _barScale(d.data.aggregateMetrics[secondaryMetric]);})
+                            .style('stroke-width', function(d){
+                                if (model.state['selectedNodes'].includes(d)){
+                                    return '3px';
+                                } 
+                                else {
+                                    return '1px';
+                                }
+                            })
                             .style('fill', function (d) {
                                 if(model.state["legend"] == globals.UNIFIED){
                                     return _colorManager.calcColorScale(d.data, -1);
