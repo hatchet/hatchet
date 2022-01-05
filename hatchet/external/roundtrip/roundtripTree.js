@@ -121,7 +121,6 @@
                     if (model.data["legends"][_state["legend"]].includes("Unified")) {
                         treeIndex = -1;
                     }
-                    console.log(treeIndex,this.setColors(treeIndex));
 
                     return this.setColors(treeIndex);
                 },
@@ -330,8 +329,6 @@
                     })
                     offset += hierarchy.size;
                 }
-
-                console.log(hierarchy)
 
                 _data.immutableHierarchy.push(hierarchy);
                 _data.hierarchy.push(hierarchy);
@@ -557,7 +554,7 @@
                         _data.aggregateMinMax[metric].min = aggregateMetrics[metric];
                     }
                 }
-
+                
                 dummyHolder.data.aggregateMetrics = aggregateMetrics;
                 dummyHolder.data.description = description;
 
@@ -881,11 +878,15 @@
                     else{
                         
                         if(d.elided.length == 1){
+                            // patch that clears aggregate metrics upon doubleclick
+                            delete d.elided[0].data.aggregateMetrics;
+
                             insIndex = d.parent.children.indexOf(d);
                             d.parent.children[insIndex] = d.elided[0];
                         }
                         else{
                             for(elided of d.elided){
+                                delete elided.data.aggregateMetrics;
                                 delIndex = d.parent._children.indexOf(elided);
                                 d.parent._children.splice(delIndex, 1);
 
@@ -1353,7 +1354,6 @@
 
                     d3.select(element).select('.slide-container')
                         .style('display', () =>{
-                            console.log(pruneEnabled);
                             if(pruneEnabled){
                                 return 'inline-block';
                             }
@@ -1391,7 +1391,7 @@
             var _treeCanvasHeightScale = d3.scaleQuantize().range([250, 1000, 1250, 1500]).domain([1, 300]);
             var _treeDepthScale = d3.scaleLinear().range([0, element.offsetWidth-200]).domain([0, model.data.maxHeight])
             var _nodeScale = d3.scaleLinear().range([5, _maxNodeRadius]).domain([model.data.forestMinMax[model.state.secondaryMetric].min, model.data.forestMinMax[model.state.secondaryMetric].max]);
-            var _barScale = d3.scaleLinear().range([5, 25]).domain([model.data.aggregateMinMax[model.state.secondaryMetric].min, model.data.aggregateMinMax[model.state.secondaryMetric].max]);
+            var _barScale = d3.scaleLinear().range([5, 25]).domain([model.data.forestMinMax[model.state.secondaryMetric].min, model.data.forestMinMax[model.state.secondaryMetric].max]);
 
             //view specific data stores
             var nodes = [];
@@ -1730,12 +1730,9 @@
                         // ---------------------------------------------
                         // ENTER 
                         // ---------------------------------------------
-                        // Update the nodes…
                         var i = 0;
                         var node = treeGroup.selectAll("g.node")
                                 .data(nodes[treeIndex], function (d) {
-
-                                    console.log("Node IDs:", d.data.metrics._hatchet_nid, d.data.metrics.id);
                                     return d.data.metrics._hatchet_nid || d.data.metrics.id;
                                 });
                         
