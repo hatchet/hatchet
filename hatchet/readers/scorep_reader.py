@@ -91,7 +91,7 @@ class ScorepReader:
             return (rank, thread)
 
         # get node name, begin and end line, and file info of a node from pycubexr
-        def _get_node_info(pycubexr_cnode, node_name, begin_line, end_line):
+        def _get_node_info(pycubexr_cnode, node_name, begin_line, end_line):  # , file):
             node_name = cubex.get_region(pycubexr_cnode).name
             begin_line = cubex.get_region(pycubexr_cnode).begin
             end_line = cubex.get_region(pycubexr_cnode).end
@@ -100,7 +100,7 @@ class ScorepReader:
             # related to file information after pycubexr
             # is updated.
             # file = cubex.get_region(pycubexr_cnode).mod
-            return node_name, begin_line, end_line
+            return node_name, begin_line, end_line  # , file
 
         def _get_callpath_all_info(pycubexr_cnode, parent_callpath):
 
@@ -109,6 +109,9 @@ class ScorepReader:
             # TODO: add 'file' as a parameter to _get_node_info()
             # function after pycubexr is fixed and can read it.
             # node_name, begin_line, end_line, file = None, None, None, None
+            # node_name, begin_line, end_line, file = _get_node_info(
+            #     pycubexr_cnode, node_name, begin_line, end_line, file
+            # )
             node_name, begin_line, end_line = None, None, None
             node_name, begin_line, end_line = _get_node_info(
                 pycubexr_cnode, node_name, begin_line, end_line
@@ -183,6 +186,9 @@ class ScorepReader:
         # TODO: add 'file' as a parameter to _get_node_info()
         # function after pycubexr is fixed and can read it.
         # root_name, root_begin, root_end, root_file = None, None, None, None
+        # root_name, root_begin, root_end, root_file = _get_node_info(
+        #     root, root_name, root_begin, root_end, root_file
+        # )
         root_name, root_begin, root_end = None, None, None
         root_name, root_begin, root_end = _get_node_info(
             root, root_name, root_begin, root_end
