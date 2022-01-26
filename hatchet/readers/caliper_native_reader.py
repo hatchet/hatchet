@@ -349,14 +349,14 @@ class CaliperNativeReader:
 
         # set the default metric
         if self.default_metric is None:
-            if "time" in dataframe.columns:
+            if "time (inc)" in dataframe.columns:
                 self.default_metric = "time"
             elif "avg#inclusive#sum#time.duration" in dataframe.columns:
                 self.default_metric = "avg#inclusive#sum#time.duration"
-            elif len(exc_metrics) > 0:
-                self.default_metric = exc_metrics[0]
             elif len(inc_metrics) > 0:
                 self.default_metric = inc_metrics[0]
+            elif len(exc_metrics) > 0:
+                self.default_metric = exc_metrics[0]
 
         metadata = self.filename_or_caliperreader.globals
 
