@@ -1170,15 +1170,21 @@ class GraphFrame:
         # traverse groupby_obj, determine old node to super node mapping
         # only create super nodes for each unique value in groupby column
         nid = 0
+        name_to_node = {}
         for k, v in groupby_obj.groups.items():
             if isinstance(k, tuple):
                 node_name = k[0]
             else:
                 node_name = k
 
-            super_node = Node(Frame({"name": node_name, "type": node_type}), None, nid)
-            node_dicts.append({"node": super_node, "name": node_name})
-            nid += 1
+            super_node = name_to_node.get(node_name)
+            if not super_node:
+                super_node = Node(
+                    Frame({"name": node_name, "type": node_type}), None, nid
+                )
+                node_dicts.append({"node": super_node, "name": node_name})
+                name_to_node[node_name] = super_node
+                nid += 1
 
             # if many old nodes map to the same super node
             for i in v:
