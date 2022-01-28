@@ -887,3 +887,11 @@ def mock_graph_inc_metric_only():
     ]
 
     return ldict
+
+
+@pytest.fixture
+def spotdb_data(data_dir):
+    import spotdb
+
+    db = spotdb.connect(os.path.join(data_dir, "spotdb"))
+    return db
