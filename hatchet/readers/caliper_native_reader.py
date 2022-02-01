@@ -38,6 +38,8 @@ class CaliperNativeReader:
         self.callpath_to_idx = {}
         self.global_nid = 0
 
+        self.default_metric = None
+
         self.timer = Timer()
 
         if isinstance(self.filename_or_caliperreader, str):
@@ -345,8 +347,24 @@ class CaliperNativeReader:
             dataframe.set_index(indices, inplace=True)
             dataframe.sort_index(inplace=True)
 
+        # set the default metric
+        if self.default_metric is None:
+            if "time (inc)" in dataframe.columns:
+                self.default_metric = "time"
+            elif "avg#inclusive#sum#time.duration" in dataframe.columns:
+                self.default_metric = "avg#inclusive#sum#time.duration"
+            elif len(inc_metrics) > 0:
+                self.default_metric = inc_metrics[0]
+            elif len(exc_metrics) > 0:
+                self.default_metric = exc_metrics[0]
+
         metadata = self.filename_or_caliperreader.globals
 
         return hatchet.graphframe.GraphFrame(
-            graph, dataframe, exc_metrics, inc_metrics, metadata=metadata
+            graph,
+            dataframe,
+            exc_metrics,
+            inc_metrics,
+            self.default_metric,
+            metadata=metadata,
         )
