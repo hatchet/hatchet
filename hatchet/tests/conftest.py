@@ -895,3 +895,27 @@ def spotdb_data(data_dir):
 
     db = spotdb.connect(os.path.join(data_dir, "spotdb"))
     return db
+
+
+@pytest.fixture
+def sw4_caliper_cuda_activity_profile_cali(data_dir, tmpdir):
+    cali_json_dir = os.path.join(data_dir, "caliper-sw4-cuda-activity-cali")
+    cali_json_file = os.path.join(cali_json_dir, "caliper_cuda_activity_profile.cali")
+
+    shutil.copy(cali_json_file, str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), "caliper_cuda_activity_profile.cali")
+
+    return tmpfile
+
+
+@pytest.fixture
+def sw4_caliper_cuda_activity_profile_summary_cali(data_dir, tmpdir):
+    cali_json_dir = os.path.join(data_dir, "caliper-sw4-cuda-activity-profile-cali")
+    cali_json_file = os.path.join(
+        cali_json_dir, "caliper_cuda_activity_profile_summary_v2.cali"
+    )
+
+    shutil.copy(cali_json_file, str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), "caliper_cuda_activity_profile_summary_v2.cali")
+
+    return tmpfile
