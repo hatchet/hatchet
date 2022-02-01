@@ -54,6 +54,7 @@ jobs:
       if: ${{ matrix.python-version == 3.7 }}
       run: |
         pip install black==21.12b0
+        pip install flake8-pytest-importorskip
 
     - name: Lint and Format Check with Flake8 and Black
       if: ${{ matrix.python-version == 3.7 }}
