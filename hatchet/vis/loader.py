@@ -1,6 +1,6 @@
 from sqlite3 import DataError
 from IPython.core.magic import Magics, magics_class, line_magic
-from hatchet.vis.external import Roundtrip as RT
+from hatchet.external import Roundtrip as RT
 from hatchet import GraphFrame
 from os import path
 from os.path import dirname
