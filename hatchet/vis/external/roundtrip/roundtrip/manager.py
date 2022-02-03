@@ -195,17 +195,7 @@ class RoundTrip:
             else:
                 output_html += self._file_formatter(file)
 
-<<<<<<< HEAD:hatchet/vis/external/roundtrip/roundtrip/manager.py
-
-
-
-        bdg = Bridge(output_html, scripts, self.shell)
-
-        # bdg.add_javascript("cells = Jupyter.notebook.get_cell_elements();")
-
-=======
         bdg = Bridge(output_html, scripts, self.shell, self.istest)
->>>>>>> Removed empty files, added build and watch commands to package.json, webpack minifies code by default, added readme:hatchet/external/roundtrip/roundtrip/manager.py
         self.bridges[bdg.id] = bdg
         self.last_id = bdg.id
 

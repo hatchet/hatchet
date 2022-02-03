@@ -16,6 +16,12 @@ def _gf_to_json(data):
             return json.dumps(data)
     except:
         raise "Input data is not of type graphframe or json serializable."
+
+
+def _query_to_dict(json_query):
+    import json
+
+    return json.loads(json_query)
         
 
 @magics_class
@@ -32,6 +38,13 @@ class CCT(Magics):
         RT.var_to_js(args[0], "hatchet_tree_def", watch=False, to_js_converter=_gf_to_json)
         
         RT.initialize()
+
+
+    @line_magic
+    def cct_fetch_query(self, line):
+        args = line.split(" ")
+
+        RT.fetch_data("jsNodeSelected", args[0], converter=_query_to_dict)
 
 
 def load_ipython_extension(ipython):
