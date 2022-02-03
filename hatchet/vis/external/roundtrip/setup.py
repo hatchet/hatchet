@@ -1,4 +1,3 @@
-
 from setuptools import setup
 from codecs import open
 from os import path
@@ -26,9 +25,7 @@ setup(
     author_email="cscullyallison@email.arizona.edu",
     license="MIT",
     keywords="",
-    packages=[
-        "roundtrip"
-    ],
+    packages=["roundtrip"],
     install_requires=[
         "numpy",
         "pandas",

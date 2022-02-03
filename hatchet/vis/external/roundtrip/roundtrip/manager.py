@@ -1,3 +1,4 @@
+from sqlite3 import DataError
 from IPython.display import Javascript, HTML, display
 from IPython import get_ipython
 from bs4 import BeautifulSoup
@@ -7,8 +8,6 @@ import tokenize
 import json
 import inspect
 import pathlib
-import os
-
 
 
 def _default_converter(data):
@@ -119,27 +118,25 @@ class RoundTrip:
         """
         output_html = ""
 
-        #use generic javascript loading for these now
-        if (cache is False or file not in self.relative_html_caches):
+        # use generic javascript loading for these now
+        if cache is False or file not in self.relative_html_caches:
             output_html += self._file_formatter(file)
-            html = BeautifulSoup(output_html, 'html.parser')
-            scripts = []
-            for tag in html.select('script'):
+            html = BeautifulSoup(output_html, "html.parser")
+            for tag in html.select("script"):
                 # TODO: Add option for server based loading with this
                 # So JS can be dynamically loaded
                 # tag['src'] = os.path.relpath(tag['src'], self.shell.user_ns['_dh'][0])
                 t = tag.extract()
-                with open(t['src']) as f:
+                with open(t["src"]) as f:
                     src = f.read()
-                    scrpt = html.new_tag('script')
+                    scrpt = html.new_tag("script")
                     scrpt.string = src
-                    html.select('head')[0].append(scrpt)
+                    html.select("head")[0].append(scrpt)
 
             output_html = str(html)
-            self.relative_html_caches[file] = {'html': output_html}
+            self.relative_html_caches[file] = {"html": output_html}
         else:
-            output_html = self.relative_html_caches[file]['html']
-        
+            output_html = self.relative_html_caches[file]["html"]
 
         # This line is needed to expose the current `element` to the webpack bundled scripts as though
         # the scripts were run using display(Javascript()).
@@ -182,7 +179,11 @@ class RoundTrip:
             id=self.scrid
         )
 
-        locator_script = 'var element = document.getElementById("locator-{id}").parentNode;'.format(id=self.scrid)
+        locator_script = (
+            'var element = document.getElementById("locator-{id}").parentNode;'.format(
+                id=self.scrid
+            )
+        )
 
         output_html += scope_tag
         scripts.append(locator_script)
@@ -287,7 +288,6 @@ class RoundTrip:
         if jup_var not in self.shell.user_ns:
             self.shell.user_ns[jup_var] = None
 
-
         data = self.shell.user_ns[jup_var]
 
         self.bridges[self.last_id].pass_to_js(
@@ -339,16 +339,14 @@ class RoundTrip:
                             }})();\n"""
         code = ""
 
-
         # TODO: FIX BUG WHICH MAKES THIS CODE BLOCK READ AS AN ASSIGNMENT
-        '''
+        """
         subselection = []
         rng = ranges
         for r in rng:
             subselection += rng[r]
-            
         subselection = np.array(subselection)
-        '''
+        """
         for var in self.watched.keys():
             for i, token in enumerate(tokens):
                 if token.string == var:
@@ -372,7 +370,6 @@ class RoundTrip:
                 code += update_hook.format(js_var=var, data=new_data, var=flag)
         if code != "":
             display(Javascript(code))
-        
 
     def fetch_data(self, js_var, ipy_var):
         """
@@ -399,7 +396,6 @@ class Bridge:
         self.display = display(HTML(""), display_id=True)
         self.id = self.display.display_id
         self.converter = _default_converter
-        args = []
 
     def _extract_simple_dt(self, dt_str):
         return dt_str.split("'")[1]
@@ -437,9 +433,9 @@ class Bridge:
             window.Roundtrip[\'{js_var}\'] = {{
                 \'origin\': \'INIT\',
                 \'two_way\': {binding},
-                \'python_var\':\'{py_var}\', 
-                \'type\':\'{type}\', 
-                \'data\':\'{data}\', 
+                \'python_var\':\'{py_var}\',
+                \'type\':\'{type}\',
+                \'data\':\'{data}\',
                 \'converter\':{converter},
             }};
         }})();\n"""
@@ -452,12 +448,12 @@ class Bridge:
             # some default conversion
             # we may want to push this off to the application
             # developer
-            if py_to_js_converter == None:
+            if py_to_js_converter is None:
                 data = self._default_converter(data)
             else:
                 data = py_to_js_converter(data)
                 self.converter = py_to_js_converter
-        except:
+        except DataError:
             pass
 
         # Patch: Ensure all ' and " are escaped
