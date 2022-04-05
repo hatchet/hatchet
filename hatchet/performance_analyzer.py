@@ -62,3 +62,60 @@ class PerformanceAnalyzer:
         # default metric will be imbalance when user print the tree
         graphframe2.default_metric = metric_columns[0] + ".imbalance"
         return graphframe2
+
+    # The starting node can be specified using the 'parent' parameter.
+    # Returns the hot node.
+    # Exp: analyzer.find_hot_node(graphframe, root_node)
+    def find_hot_node(self, graphframe, parent, metric="time (inc)", threshold=0.5):
+
+        parent_metric = graphframe.dataframe.loc[parent, metric]
+        sorted_child_metric = []
+        # Get all children nodes with their metric values and append
+        # them to a list.
+        for child in parent.children:
+            child_metric = graphframe.dataframe.loc[child, metric]
+            sorted_child_metric.append((child, child_metric))
+
+        if sorted_child_metric:
+            # sort children by their metric values.
+            sorted_child_metric.sort(key=lambda x: x[1], reverse=True)
+            child = sorted_child_metric[0][0]
+            child_metric = sorted_child_metric[0][1]
+            if child_metric < (threshold * parent_metric):
+                # return parent if its metric * threshold is
+                # greater than child metric.
+                return parent
+            else:
+                # continue from child if its metric is greater than
+                # threshold * parent's metric.
+                # For example, child_metric >= parent_metric/2
+                return self.find_hot_node(graphframe, child, metric)
+
+        return parent
+
+    # Returns a call path from given start node to end node.
+    # For example, this function can be used after getting the hot node.
+    # Exp: analyzer.get_call_path(graphframe, root_node, hot_node, callpath=[])
+    def get_call_path(self, graphframe, start_node, end_node, callpath=[]):
+        callpath.append(start_node)
+
+        # stop recursive calls if start_node == end_node
+        if start_node == end_node:
+            if len(callpath) == 1:
+                return callpath
+            else:
+                return True
+
+        # iteratively look at each child starting from the
+        # start node.
+        for child in start_node.children:
+            found = self.get_call_path(graphframe, child, end_node, callpath)
+            if found:
+                # create a graphframe that includes only the nodes
+                # from the call path.
+                hot_graphframe = graphframe.filter(
+                    lambda x: x.node in callpath, squash=True
+                )
+                return (callpath, hot_graphframe)
+            else:
+                callpath.pop()
