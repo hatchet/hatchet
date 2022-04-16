@@ -3,7 +3,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-from numpy import string_
 import pandas as pd
 
 import hatchet.graphframe
@@ -157,7 +156,7 @@ class SpotDBReader:
         Returns:
             List of GraphFrames, one for each entry that was found
         """
-        import spotdb
+        import spotdb  # noqa: F401
 
         if isinstance(self.db_key, str):
             db = spotdb.connect(self.db_key)
