@@ -77,7 +77,7 @@ class TAUReader:
                 # We don't need file and module information if it's a parent node.
                 if not is_parent:
                     file_or_module = node_info[0].split()[1].strip("][")
-                    # We put ".so" and ".S" to module the column.
+                    # We put ".so" and ".S" in the module column.
                     if ".so" in node_info[0] or ".S" in node_info[0]:
                         module = file_or_module
                     else:
