@@ -52,6 +52,7 @@ class TimemoryReader:
         self.multiple_threads = False
         self.callpath_to_node_dict = {}  # (callpath, rank, thread): <node_dict>
         self.callpath_to_node = {}  # (callpath): <node>
+        self.metadata = {"hatchet_inclusive_suffix": ".inc"}
 
         # the per_thread and per_rank settings make sure that
         # squashing doesn't collapse the threads/ranks
@@ -119,6 +120,8 @@ class TimemoryReader:
             for _pattern in [
                 # [func][file]
                 r"(^\[)(?P<func>.*)(\]\[)(?P<file>.*)(\]$)",
+                # label  [func][file:line]
+                r"(?P<head>.+)([ \t]+)\[(?P<func>\S+)\]\[(?P<file>\S+):(?P<line>[0-9]+)\]$",
                 # label  [func/file:line]
                 r"(?P<head>.+)([ \t]+)\[(?P<func>\S+)([/])(?P<file>\S+):(?P<line>[0-9]+)\]$",
                 # func@file:line/tail
@@ -178,13 +181,17 @@ class TimemoryReader:
             _ret = []
             if isinstance(_labels, str):
                 # put in a list if the label is a string.
-                _ret = [_labels]
+                _ret = [_labels.lower()]
             elif isinstance(_labels, dict):
                 for _key, _item in _labels.items():
-                    _ret.append(_key.strip().replace(" ", "-").replace("_", "-"))
+                    _ret.append(
+                        _key.strip().replace(" ", "-").replace("_", "-").lower()
+                    )
             elif isinstance(_labels, list) or isinstance(_labels, tuple):
                 for _item in _labels:
-                    _ret.append(_item.strip().replace(" ", "-").replace("_", "-"))
+                    _ret.append(
+                        _item.strip().replace(" ", "-").replace("_", "-").lower()
+                    )
             return _ret
 
         def match_labels_and_values(_metric_stats, _metric_label, _metric_type):
@@ -197,7 +204,7 @@ class TimemoryReader:
             _metric_label example 1: wall_clock
             _metric_label example 2: ['Total-cycles', 'Instr-completed', 'L2-cache-misses']
 
-            _metric_type: ' (inc)' or ''
+            _metric_type: '.inc' or ''
             """
             _ret = {}
             for _key, _item in _metric_stats.items():
@@ -325,7 +332,7 @@ class TimemoryReader:
             _exc_stats = remove_keys(_node_data["node"]["exclusive"]["stats"], _remove)
 
             # if multi-dimensions, create alternative "sum.<...>", etc. labels + data
-            # add " (inc)" to the end of every column that represents an inclusive stat
+            # add ".inc" to the end of every column that represents an inclusive stat
             if _metrics_in_vector:
                 # Example of a multi-dimensional output: if we have 3 papi events
                 # PAPI_TOT_CYC, PAPI_TOT_INS, PAPI_L2_TCM:
@@ -333,13 +340,11 @@ class TimemoryReader:
                 # _exc_stats -> "sum": [8301.0, 4910.0, 275.0],
                 _metric_labels = format_labels(_labels)
                 _exc_stats = match_labels_and_values(_exc_stats, _metric_labels, "")
-                _inc_stats = match_labels_and_values(
-                    _inc_stats, _metric_labels, " (inc)"
-                )
+                _inc_stats = match_labels_and_values(_inc_stats, _metric_labels, ".inc")
             else:
                 # add metric name and type.
-                # Example: sum -> sum.wall_clock (inc)
-                _inc_stats = match_labels_and_values(_inc_stats, _metric_name, " (inc)")
+                # Example: sum -> sum.wall_clock.inc
+                _inc_stats = match_labels_and_values(_inc_stats, _metric_name, ".inc")
                 # Example: sum -> sum.wallclock
                 _exc_stats = match_labels_and_values(_exc_stats, _metric_name, "")
 
@@ -492,7 +497,7 @@ class TimemoryReader:
         exc_metrics = []
         inc_metrics = []
         for column in self.metric_cols:
-            if column.endswith(" (inc)"):
+            if column.endswith(".inc"):
                 inc_metrics.append(column)
             else:
                 exc_metrics.append(column)
@@ -562,15 +567,66 @@ class TimemoryReader:
             dataframe = dataframe.stack()
 
         return GraphFrame(
-            graph, dataframe, exc_metrics, inc_metrics, self.default_metric
+            graph,
+            dataframe,
+            exc_metrics,
+            inc_metrics,
+            default_metric=self.default_metric,
+            metadata=self.metadata,
         )
+
+    def read_metadata(self, _inp):
+        _metadata = {}
+        # check if the input is a dictionary.
+        if isinstance(_inp, dict):
+            _metadata = _inp if "timemory" not in _inp else _inp["timemory"]
+        # check if the input is a directory and get '.tree.json' files if true.
+        elif os.path.isdir(_inp):
+            tree_files = glob.glob(_inp + "/*metadata*.json")
+            for file in tree_files:
+                # read all files that end with .tree.json.
+                with open(file, "r") as f:
+                    # add all metrics to the same dict even though timemory
+                    # creates a separate file for each metric.
+                    _metadata = {**_metadata, **json.load(f)["timemory"]}
+        # check if the input is a filename that ends in json
+        elif isinstance(_inp, str) and _inp.endswith("json"):
+            with open(_inp, "r") as f:
+                _metadata = json.load(f)["timemory"]
+        elif not isinstance(_inp, str):
+            _metadata = json.loads(_inp.read())["timemory"]
+        else:
+            raise TypeError("input must be dict, directory, json file, or string")
+
+        if "metadata" in _metadata:
+            for _key, _item in _metadata["metadata"].items():
+                if _key == "info":
+                    for _entry, _value in _item.items():
+                        self.metadata[_entry] = _value
+                elif _key == "environment":
+                    for itr in _item:
+                        self.metadata[_item["key"]] = _item["value"]
+                elif _key == "settings":
+                    self.metadata["settings"] = _item
+        elif "metadata_file" in _metadata:
+            with open(_metadata["metadata_file"], "r") as f:
+                self.read_metadata(json.load(f))
 
     def read(self):
         """Read timemory json."""
 
+        def _read_metadata(_inp, _data):
+            _mfile = os.path.join(os.path.basename(_inp), "metadata.json")
+            if os.path.exists(_mfile) and os.path.isfile(_mfile):
+                with open(_mfile, "r") as f:
+                    self.read_metadata(json.load(f))
+            elif _data is not None:
+                self.read_metadata(_data)
+
         # check if the input is a dictionary.
         if isinstance(self.input, dict):
             self.graph_dict = self.input
+            self.read_metadata(self.input)
         # check if the input is a directory and get '.tree.json' files if true.
         elif os.path.isdir(self.input):
             tree_files = glob.glob(self.input + "/*.tree.json")
@@ -579,13 +635,19 @@ class TimemoryReader:
                 with open(file, "r") as f:
                     # add all metrics to the same dict even though timemory
                     # creates a separate file for each metric.
-                    self.graph_dict["timemory"].update(json.load(f)["timemory"])
+                    _data = json.load(f)
+                    self.graph_dict["timemory"].update(_data["timemory"])
+                    _read_metadata(file, _data)
         # check if the input is a filename that ends in json
         elif isinstance(self.input, str) and self.input.endswith("json"):
             with open(self.input, "r") as f:
-                self.graph_dict = json.load(f)
+                _data = json.load(f)
+                self.graph_dict = _data
+                _read_metadata(self.input, _data)
         elif not isinstance(self.input, str):
-            self.graph_dict = json.loads(self.input.read())
+            _data = json.loads(self.input.read())
+            self.graph_dict = _data
+            self.read_metadata(_data)
         else:
             raise TypeError("input must be dict, directory, json file, or string")
 
