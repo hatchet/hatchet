@@ -579,7 +579,7 @@ class TimemoryReader:
         _metadata = {}
         # check if the input is a dictionary.
         if isinstance(_inp, dict):
-            _metadata = _inp if not "timemory" in _inp else _inp["timemory"]
+            _metadata = _inp if "timemory" not in _inp else _inp["timemory"]
         # check if the input is a directory and get '.tree.json' files if true.
         elif os.path.isdir(_inp):
             tree_files = glob.glob(_inp + "/*metadata*.json")
