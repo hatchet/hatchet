@@ -4,7 +4,7 @@ on:
   push:
     branches: [ develop ]
   pull_request:
-    branches: [ develop, releases/** ]
+    branches: [ develop, add-python-3.9, releases/** ]
 
 jobs:
   build:
