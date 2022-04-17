@@ -69,34 +69,24 @@ class TAUReader:
             # There might be file, line, and module information.
             # The following if-else block covers all possible output
             # formats. Example formats are given in comments.
-            if symbol == " [@] ":
+            if symbol == " [@]":
                 # Check if there is a [@] symbol.
+                # Example: [UNWIND] <file> [@] <name> [{<file_or_module>} {<line>}]
+                # Example: [UNWIND] <file> [@] <name> <module>
                 node_info = node_info.split(symbol)
                 # We don't need file and module information if it's a parent node.
                 if not is_parent:
-                    file = node_info[0].split()[1]
-                    if "[{" in node_info[1]:
-                        # Sometimes we see file and module information inside of [{}]
-                        # Example: [UNWIND] <file> [@] <name> [{<file_or_module>} {<line>}]
-                        name_and_module = node_info[1].split(" [{")
-                        module = name_and_module[1].split()[0].strip("}")
+                    file_or_module = node_info[0].split()[1].strip("][")
+                    # We put ".so" and ".S" in the module column.
+                    if ".so" in node_info[0] or ".S" in node_info[0]:
+                        module = file_or_module
                     else:
-                        # Example: [UNWIND] <file> [@] <name> <module>
-                        name_and_module = node_info[1].split()
-                        module = name_and_module[1]
+                        file = file_or_module
 
-                    # Check if module is in file.
-                    # Assign None to file if it's .so.
-                    # Assign None to module if it's .c.
-                    if module in file:
-                        if ".so" in file:
-                            file = None
-                        if ".c" in module:
-                            module = None
-                    name = "[UNWIND] " + name_and_module[0]
+                    name = node_info[0].split()[0] + " " + file_or_module
                 else:
                     # We just need to take name if it is a parent
-                    name = "[UNWIND] " + node_info[1].split()[0]
+                    name = node_info[0]
             elif symbol == " C ":
                 # Check if there is a C symbol.
                 # "C" symbol means it's a C function.
@@ -110,13 +100,16 @@ class TAUReader:
                         file = node_info[0].strip("}[{")
             else:
                 if "[{" in node_info:
-                    # If there isn't C or [@]
+                    # If there isn't "C" or "[@]"
                     # Example: [<type>] <name> [{} {}]
                     node_info = node_info.split(" [{")
                     name = node_info[0]
                     # We don't need file and module information if it's a parent node.
                     if not is_parent:
-                        file = node_info[1].split()[0].strip("}{")
+                        if ".so" in node_info[1]:
+                            module = node_info[1].split()[0].strip("}{")
+                        else:
+                            file = node_info[1].split()[0].strip("}{")
                 else:
                     # Example 1: [<type>] <name> <module>
                     # Example 2: [<type>] <name>
@@ -136,11 +129,12 @@ class TAUReader:
 
         def _get_line_numbers(node_info):
             start_line, end_line = 0, 0
-            # There should be [{}] symbols if there is line number information.
+            # There should be "[{}]" symbols if there is line number information.
             if "[{" in node_info:
                 tmp_module_or_file_line = (
-                    re.search(r"\{.*\}\]", node_info).group(0).split()
+                    re.search(r"\{.*\}\]", node_info).group(0).split(" {")
                 )
+
                 line_numbers = tmp_module_or_file_line[1].strip("}]").replace("{", "")
                 start_line = line_numbers
                 if "-" in line_numbers:
@@ -155,6 +149,14 @@ class TAUReader:
                         # Example: {15,0}
                         start_line = line_numbers.split(",")[0]
                         end_line = line_numbers.split(",")[1]
+            else:
+                # Some [UNWIND] nodes have the following formats.
+                # Example 1: [UNWIND] <file>.<line_number> [@]
+                # Example 2: [UNWIND] [<file>.<line_number>] [@]
+                try:
+                    start_line = int(node_info.split(".")[-1].split()[0].strip("]"))
+                except ValueError:
+                    pass
             return [start_line, end_line]
 
         def _create_parent(child_node, parent_callpath):
@@ -188,7 +190,7 @@ class TAUReader:
                 if " C " in parent_info:
                     parent_name = _get_name_file_module(True, parent_info, " C ")[0]
                 elif " [@] " in parent_info:
-                    parent_name = _get_name_file_module(True, parent_info, " [@] ")[0]
+                    parent_name = _get_name_file_module(True, parent_info, " [@]")[0]
                 else:
                     parent_name = _get_name_file_module(True, parent_info, "")[0]
 
@@ -363,9 +365,9 @@ class TAUReader:
                         leaf_name_file_module = _get_name_file_module(
                             False, leaf_name, " C "
                         )
-                    elif " [@] " in leaf_name:
+                    elif " [@]" in leaf_name:
                         leaf_name_file_module = _get_name_file_module(
-                            False, leaf_name, " [@] "
+                            False, leaf_name, " [@]"
                         )
                     else:
                         leaf_name_file_module = _get_name_file_module(
@@ -475,8 +477,12 @@ class TAUReader:
         # rank that has notna value and use it for other rows/ranks
         # of the multiindex.
         # TODO: iterrows() is not the best way to iterate over rows.
-        if self.multiple_ranks or self.multiple_threads:
-            dataframe = dataframe.unstack()
+        num_of_indices = len(indices)
+        if num_of_indices > 1:
+            if num_of_indices == 2:
+                dataframe = dataframe.unstack()
+            elif num_of_indices == 3:
+                dataframe = dataframe.unstack().unstack()
             for idx, row in dataframe.iterrows():
                 # There is always a valid name for an index.
                 # Take that valid name and assign to other ranks/rows.
@@ -497,10 +503,13 @@ class TAUReader:
                 dataframe.fillna(0, inplace=True)
 
             # Stack the dataframe
-            dataframe = dataframe.stack()
+            if num_of_indices == 2:
+                dataframe = dataframe.stack()
+            elif num_of_indices == 3:
+                dataframe = dataframe.stack().stack()
 
         default_metric = "time (inc)"
-
+        dataframe = dataframe.astype({"line": int, "end_line": int})
         return hatchet.graphframe.GraphFrame(
             graph, dataframe, self.exc_metrics, self.inc_metrics, default_metric
         )
