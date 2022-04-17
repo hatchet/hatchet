@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+import sys
 import subprocess
 import numpy as np
 
