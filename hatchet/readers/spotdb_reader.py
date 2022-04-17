@@ -52,7 +52,7 @@ class SpotDatasetReader:
     def create_graph(self):
         """Create the graph. Fills in df_data and metric_columns."""
 
-        self.df_data.clear()
+        self.df_data[:] = []  # clear the list
 
         for pathstr, vals in self.regionprofile.items():
             # parse { "a/b/c": { "metric": val, ... }, ... } records
