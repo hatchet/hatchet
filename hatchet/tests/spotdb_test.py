@@ -10,7 +10,7 @@ from hatchet.readers.spotdb_reader import SpotDatasetReader, SpotDBReader
 
 spotdb_avail = True
 try:
-    import spotdb
+    import spotdb  # noqa: F401
 except ImportError:
     spotdb_avail = False
 
