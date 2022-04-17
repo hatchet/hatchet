@@ -3,11 +3,11 @@
 #
 # SPDX-License-Identifier: MIT
 
-import sys
 import subprocess
 import numpy as np
 
 import pytest
+import sys
 
 from hatchet import GraphFrame
 from hatchet.readers.caliper_reader import CaliperReader
