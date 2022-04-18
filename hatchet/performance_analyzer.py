@@ -96,9 +96,11 @@ class PerformanceAnalyzer:
 
         return (parent, callpath)
 
-    # Returns a call path from given start node to end node.
+    # Returns the corresponding filtered graphframe from given start node
+    # to end node or from a callpath.
     # For example, this function can be used after getting the hot node.
-    # Exp: analyzer.get_call_path(graphframe, root_node, hot_node, callpath=[])
+    # Exp 1: analyzer.get_call_path(graphframe, start_node=root_node, end_node=hot_node)
+    # Exp 2: analyzer.get_call_path(graphframe, callpath_list)
     def get_call_graphframe(
         self, graphframe, start_node=None, end_node=None, callpath=[]
     ):
