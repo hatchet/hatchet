@@ -64,9 +64,11 @@ class PerformanceAnalyzer:
         return graphframe2
 
     # The starting node can be specified using the 'parent' parameter.
-    # Returns the hot node.
-    # Exp: analyzer.find_hot_node(graphframe, root_node)
-    def find_hot_node(self, graphframe, parent, metric="time (inc)", threshold=0.5):
+    # Returns the hot node and hot path in a tuple.
+    # Exp: analyzer.find_hot_node(graphframe, root_node, callpath=[root_node])
+    def find_hot_path(
+        self, graphframe, parent, callpath=[], metric="time (inc)", threshold=0.5
+    ):
 
         parent_metric = graphframe.dataframe.loc[parent, metric]
         sorted_child_metric = []
@@ -84,38 +86,54 @@ class PerformanceAnalyzer:
             if child_metric < (threshold * parent_metric):
                 # return parent if its metric * threshold is
                 # greater than child metric.
-                return parent
+                return (parent, callpath)
             else:
                 # continue from child if its metric is greater than
                 # threshold * parent's metric.
                 # For example, child_metric >= parent_metric/2
-                return self.find_hot_node(graphframe, child, metric)
+                callpath.append(child)
+                return self.find_hot_path(graphframe, child, callpath, metric)
 
-        return parent
+        return (parent, callpath)
 
     # Returns a call path from given start node to end node.
     # For example, this function can be used after getting the hot node.
     # Exp: analyzer.get_call_path(graphframe, root_node, hot_node, callpath=[])
-    def get_call_path(self, graphframe, start_node, end_node, callpath=[]):
-        callpath.append(start_node)
+    def get_call_graphframe(
+        self, graphframe, start_node=None, end_node=None, callpath=[]
+    ):
+        if start_node and end_node:
+            callpath.append(start_node)
 
-        # stop recursive calls if start_node == end_node
-        if start_node == end_node:
-            if len(callpath) == 1:
-                return callpath
-            else:
-                return True
+            # stop recursive calls if start_node == end_node
+            if start_node == end_node:
+                if len(callpath) == 1:
+                    return callpath
+                else:
+                    return True
 
-        # iteratively look at each child starting from the
-        # start node.
-        for child in start_node.children:
-            found = self.get_call_path(graphframe, child, end_node, callpath)
-            if found:
-                # create a graphframe that includes only the nodes
-                # from the call path.
-                hot_graphframe = graphframe.filter(
-                    lambda x: x.node in callpath, squash=True
-                )
-                return (callpath, hot_graphframe)
-            else:
-                callpath.pop()
+            # iteratively look at each child starting from the
+            # start node.
+            for child in start_node.children:
+                found = self.get_call_graphframe(graphframe, child, end_node, callpath)
+                if found:
+                    # create a graphframe that includes only the nodes
+                    # from the call path.
+                    filtered_graphframe = graphframe.filter(
+                        lambda x: x.node in callpath, squash=True
+                    )
+                    return (callpath, filtered_graphframe)
+                else:
+                    callpath.pop()
+        # if the user entered None for start_node and/or end_node
+        # but entered a callpath as a list of nodes.
+        elif callpath:
+            filtered_graphframe = graphframe.filter(
+                lambda x: x.node in callpath, squash=True
+            )
+            return (callpath, filtered_graphframe)
+        else:
+            raise TypeError(
+                "This function requrires both start_node and end_node or only a "
+                + "callpath as a list of nodes."
+            )
