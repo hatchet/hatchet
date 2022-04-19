@@ -20,6 +20,7 @@ from .external.console import ConsoleRenderer
 from .util.dot import trees_to_dot
 from .util.logger import Logger
 from .util.deprecated import deprecated_params
+from .performance_analyzer import PerformanceAnalyzer
 
 try:
     from .cython_modules.libs import graphframe_modules as _gfm_cy
@@ -1216,6 +1217,51 @@ class GraphFrame:
         )
         new_gf.drop_index_levels()
         return new_gf
+
+    @Logger.loggable
+    def flat_profile(
+        self,
+        groupby_column="time",
+        drop_ranks=True,
+        drop_threads=True,
+        agg_function=np.mean,
+    ):
+        """Generates flat profile for a given graphframe.
+        Returns a new dataframe."""
+        return PerformanceAnalyzer().flat_profile(
+            self, groupby_column, drop_ranks, drop_threads, agg_function
+        )
+
+    @Logger.loggable
+    def calculate_load_imbalance(self, metric_columns=["time (inc)"]):
+        """Calculates load imbalance for given metric column(s)
+        Takes a graphframe and a list of metric column(s), and
+        returns a new graphframe with metric.imbalance column(s).
+        """
+        return PerformanceAnalyzer().calculate_load_imbalance(self, metric_columns)
+
+    @Logger.loggable
+    def hot_path(self, start_node, metric="time (inc)", threshold=0.5):
+        """Returns the hot_path function.
+        Inputs:
+         - start_node: Start node of the hot path should be given.
+         - metric: A numerical metric on the dataframe
+         - threshold: Threshold for parent-child comparison (parent <= child/2).
+        Output:
+         - hot_path: list of nodes, starting from the start node to the hot node.
+
+        Example:
+        root_node = graphframe.graph.roots[0]
+        graphframe.hot_path(root_node)
+        """
+        # copy the graphframe not to modify the original graph
+        gf_copy = self.deepcopy()
+        gf_copy.drop_index_levels()
+        # call hot_path function on high-level API
+        hot_path = PerformanceAnalyzer().hot_path(
+            gf_copy, start_node, metric, threshold, callpath=[start_node]
+        )
+        return hot_path
 
     @Logger.loggable
     def add(self, other):
