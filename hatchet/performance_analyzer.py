@@ -22,15 +22,16 @@ class PerformanceAnalyzer:
 
         # TODO: change drop_index_levels(). Drop only ranks or threads.
         graphframe2.drop_index_levels()
+        graphframe2.dataframe = graphframe2.dataframe.reset_index()
 
-        grouped_dataframe = graphframe2.dataframe.groupby(groupby_column).agg(
-            agg_function
+        grouped_dataframe = graphframe2.dataframe.groupby("name").agg(
+            {groupby_column: agg_function}
         )
 
         return grouped_dataframe
 
     # Outputs the max to avg values for user specified column.
-    def calculate_load_imbalance(self, graphframe, metric_columns=["time"]):
+    def calculate_load_imbalance(self, graphframe, metric_columns=["time (inc)"]):
         # Create a copy of the GraphFrame.
         graphframe2 = graphframe.deepcopy()
         graphframe3 = graphframe.deepcopy()
@@ -67,9 +68,8 @@ class PerformanceAnalyzer:
     # Returns the hot node and hot path in a tuple.
     # Exp: analyzer.find_hot_node(graphframe, root_node, callpath=[root_node])
     def hot_path(
-        self, graphframe, parent, callpath=[], metric="time (inc)", threshold=0.5
+        self, graphframe, parent, metric="time (inc)", threshold=0.5, callpath=[]
     ):
-
         parent_metric = graphframe.dataframe.loc[parent, metric]
         sorted_child_metric = []
         # Get all children nodes with their metric values and append
@@ -92,6 +92,6 @@ class PerformanceAnalyzer:
                 # threshold * parent's metric.
                 # For example, child_metric >= parent_metric/2
                 callpath.append(child)
-                return self.hot_path(graphframe, child, callpath, metric)
+                return self.hot_path(graphframe, child, metric, threshold, callpath)
 
         return callpath
