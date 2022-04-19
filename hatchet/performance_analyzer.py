@@ -30,7 +30,7 @@ class PerformanceAnalyzer:
         return grouped_dataframe
 
     # Outputs the max to avg values for user specified column.
-    def find_load_imbalance(self, graphframe, metric_columns=["time"]):
+    def calculate_load_imbalance(self, graphframe, metric_columns=["time"]):
         # Create a copy of the GraphFrame.
         graphframe2 = graphframe.deepcopy()
         graphframe3 = graphframe.deepcopy()
@@ -54,7 +54,7 @@ class PerformanceAnalyzer:
                 graphframe2.dataframe[column + ".max"] = graphframe3.dataframe[column]
 
             if column in metric_columns:
-                # divide metric columns: max/min
+                # divide metric columns: max/mean
                 graphframe2.dataframe[column + ".imbalance"] = graphframe2.dataframe[
                     column + ".max"
                 ].div(graphframe2.dataframe[column + ".mean"])
@@ -66,7 +66,7 @@ class PerformanceAnalyzer:
     # The starting node can be specified using the 'parent' parameter.
     # Returns the hot node and hot path in a tuple.
     # Exp: analyzer.find_hot_node(graphframe, root_node, callpath=[root_node])
-    def find_hot_path(
+    def hot_path(
         self, graphframe, parent, callpath=[], metric="time (inc)", threshold=0.5
     ):
 
@@ -86,56 +86,12 @@ class PerformanceAnalyzer:
             if child_metric < (threshold * parent_metric):
                 # return parent if its metric * threshold is
                 # greater than child metric.
-                return (parent, callpath)
+                return callpath
             else:
                 # continue from child if its metric is greater than
                 # threshold * parent's metric.
                 # For example, child_metric >= parent_metric/2
                 callpath.append(child)
-                return self.find_hot_path(graphframe, child, callpath, metric)
+                return self.hot_path(graphframe, child, callpath, metric)
 
-        return (parent, callpath)
-
-    # Returns the corresponding filtered graphframe from given start node
-    # to end node or from a callpath.
-    # For example, this function can be used after getting the hot node.
-    # Exp 1: analyzer.get_call_path(graphframe, start_node=root_node, end_node=hot_node)
-    # Exp 2: analyzer.get_call_path(graphframe, callpath_list)
-    def get_call_graphframe(
-        self, graphframe, start_node=None, end_node=None, callpath=[]
-    ):
-        if start_node and end_node:
-            callpath.append(start_node)
-
-            # stop recursive calls if start_node == end_node
-            if start_node == end_node:
-                if len(callpath) == 1:
-                    return callpath
-                else:
-                    return True
-
-            # iteratively look at each child starting from the
-            # start node.
-            for child in start_node.children:
-                found = self.get_call_graphframe(graphframe, child, end_node, callpath)
-                if found:
-                    # create a graphframe that includes only the nodes
-                    # from the call path.
-                    filtered_graphframe = graphframe.filter(
-                        lambda x: x.node in callpath, squash=True
-                    )
-                    return (callpath, filtered_graphframe)
-                else:
-                    callpath.pop()
-        # if the user entered None for start_node and/or end_node
-        # but entered a callpath as a list of nodes.
-        elif callpath:
-            filtered_graphframe = graphframe.filter(
-                lambda x: x.node in callpath, squash=True
-            )
-            return (callpath, filtered_graphframe)
-        else:
-            raise TypeError(
-                "This function requrires both start_node and end_node or only a "
-                + "callpath as a list of nodes."
-            )
+        return callpath
