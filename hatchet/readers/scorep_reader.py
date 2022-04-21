@@ -8,6 +8,11 @@ import hatchet.graphframe
 from hatchet.node import Node
 from hatchet.graph import Graph
 from hatchet.frame import Frame
+
+# We should install the following commit to be able to get
+# the file information until Score-P releases a new version.
+# pip install git+https://github.com/extra-p/pycubexr@4b5d58f0bd23e0d2c6e277b10bf1ad189bc6fdca
+# Commit: https://github.com/extra-p/pycubexr/commit/4b5d58f0bd23e0d2c6e277b10bf1ad189bc6fdca
 from pycubexr.parsers.tar_parser import CubexParser
 from pycubexr.utils.exceptions import MissingMetricError
 
@@ -39,9 +44,7 @@ class ScorepReader:
             name,
             begin_line,
             end_line,
-            # TODO: Uncomment the following
-            # line after pycubexr is fixed.
-            # file,
+            file,
         ):
 
             if callpath_rank_thread not in node_dict:
@@ -52,9 +55,7 @@ class ScorepReader:
                     "thread": callpath_rank_thread[2],
                     "line": begin_line,
                     "end_line": end_line,
-                    # TODO: Uncomment the following
-                    # line after pycubexr is fixed.
-                    # "file": file,
+                    "file": file,
                 }
 
             # example metrics: 'name', 'visits', 'time', 'min_time',
@@ -91,30 +92,20 @@ class ScorepReader:
             return (rank, thread)
 
         # get node name, begin and end line, and file info of a node from pycubexr
-        def _get_node_info(pycubexr_cnode, node_name, begin_line, end_line):  # , file):
+        def _get_node_info(pycubexr_cnode, node_name, begin_line, end_line, file):
             node_name = cubex.get_region(pycubexr_cnode).name
             begin_line = cubex.get_region(pycubexr_cnode).begin
             end_line = cubex.get_region(pycubexr_cnode).end
-            # TODO: pycubexr should be updated to read
-            # file information. Uncomment all the lines
-            # related to file information after pycubexr
-            # is updated.
-            # file = cubex.get_region(pycubexr_cnode).mod
-            return node_name, begin_line, end_line  # , file
+            file = cubex.get_region(pycubexr_cnode).mod
+            return node_name, begin_line, end_line, file
 
         def _get_callpath_all_info(pycubexr_cnode, parent_callpath):
 
             node_dict = {}
             parent_node = self.callpath_to_node[parent_callpath]
-            # TODO: add 'file' as a parameter to _get_node_info()
-            # function after pycubexr is fixed and can read it.
-            # node_name, begin_line, end_line, file = None, None, None, None
-            # node_name, begin_line, end_line, file = _get_node_info(
-            #     pycubexr_cnode, node_name, begin_line, end_line, file
-            # )
-            node_name, begin_line, end_line = None, None, None
-            node_name, begin_line, end_line = _get_node_info(
-                pycubexr_cnode, node_name, begin_line, end_line
+            node_name, begin_line, end_line, file = None, None, None, None
+            node_name, begin_line, end_line, file = _get_node_info(
+                pycubexr_cnode, node_name, begin_line, end_line, file
             )
             callpath = parent_callpath + (node_name,)
             callpath_rank_thread = tuple()
@@ -156,12 +147,10 @@ class ScorepReader:
                             node_name,
                             begin_line,
                             end_line,
-                            # TODO: Uncomment the following
-                            # line after pycubexr is fixed.
-                            # file,
+                            file,
                         )
                 except MissingMetricError:
-                    # Ignore missing metrics
+                    # Ignore missing metrics on Score-P
                     pass
 
             # Sometimes pyCubexR stores some nodes with the same
@@ -183,15 +172,9 @@ class ScorepReader:
                 _get_callpath_all_info(child, callpath)
 
         root = cubex._anchor_result.cnodes[0]
-        # TODO: add 'file' as a parameter to _get_node_info()
-        # function after pycubexr is fixed and can read it.
-        # root_name, root_begin, root_end, root_file = None, None, None, None
-        # root_name, root_begin, root_end, root_file = _get_node_info(
-        #     root, root_name, root_begin, root_end, root_file
-        # )
-        root_name, root_begin, root_end = None, None, None
-        root_name, root_begin, root_end = _get_node_info(
-            root, root_name, root_begin, root_end
+        root_name, root_begin, root_end, root_file = None, None, None, None
+        root_name, root_begin, root_end, root_file = _get_node_info(
+            root, root_name, root_begin, root_end, root_file
         )
 
         callpath = (root_name,)
@@ -237,10 +220,7 @@ class ScorepReader:
                         root_name,
                         root_begin,
                         root_end,
-                        # TODO: Uncomment the
-                        # following line after
-                        # pycubexr is updated.
-                        # root_file,
+                        root_file,
                     )
             except MissingMetricError:
                 # Ignore missing metrics

@@ -177,6 +177,18 @@ def tau_profile_dir(data_dir, tmpdir):
 
 
 @pytest.fixture
+def scorep_profile_cubex(data_dir, tmpdir):
+    """Builds a temporary directory containing the Score-P profiles."""
+    scorep_cubex_dir = os.path.join(data_dir, "scorep-cpi-cubex")
+    scorep_cubex__file = os.path.join(scorep_cubex_dir, "profile.cubex")
+
+    shutil.copy(scorep_cubex__file, str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), "profile.cubex")
+
+    return tmpfile
+
+
+@pytest.fixture
 def mock_graph_literal():
     """Creates a mock tree
 

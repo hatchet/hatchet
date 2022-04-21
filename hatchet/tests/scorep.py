@@ -1,0 +1,94 @@
+import numpy as np
+
+from hatchet import GraphFrame
+from hatchet.external.console import ConsoleRenderer
+
+procedures = [
+    "cpi",
+    "main",
+    "MPI_Init",
+    "MPI_Comm_size",
+    "MPI_Comm_rank",
+    "iteration",
+    "MPI_Bcast",
+    "MPI_Reduce",
+    "iteration.cold.1",
+    "MPI_Finalize",
+]
+
+
+def test_graphframe(scorep_profile_cubex):
+    gf = GraphFrame.from_scorep(str(scorep_profile_cubex))
+
+    assert len(gf.dataframe.groupby("name")) == 10
+
+    for col in gf.dataframe.columns:
+        if col in (
+            "max time (inc)",
+            "min time (inc)",
+            "time",
+        ):
+            assert gf.dataframe[col].dtype == np.float64
+        elif col in (
+            "hits",
+            "end_line",
+            "line",
+            "visits",
+            "bytes_sent",
+            "bytes_received",
+        ):
+            assert gf.dataframe[col].dtype == np.int64
+        elif col in ("name", "file", "node"):
+            assert gf.dataframe[col].dtype == object
+
+
+def test_tree(scorep_profile_cubex):
+    """Sanity test a GraphFrame object with known data."""
+    gf = GraphFrame.from_scorep(str(scorep_profile_cubex))
+
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf.graph.roots,
+        gf.dataframe,
+        metric_column="max_time (inc)",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
+        rank=0,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        colormap="RdYlGn",
+        invert_colormap=False,
+    )
+    assert "5.056 cpi" in output
+    assert "0.507 main /p/lustre1/cankur1/test/scorep/cpi.c" in output
+    assert "0.003 iteration /p/lustre1/cankur1/test/scorep/cpi.c" in output
+
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf.graph.roots,
+        gf.dataframe,
+        metric_column="visits",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
+        rank=0,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        colormap="RdYlGn",
+        invert_colormap=False,
+    )
+    assert "1.000 cpi" in output
+    assert "100082.000 iteration /p/lustre1/cankur1/test/scorep/cpi.c" in output
+
+
+def test_graphframe_to_literal(scorep_profile_cubex):
+    """Sanity test a GraphFrame object with known data."""
+    gf = GraphFrame.from_scorep(str(scorep_profile_cubex))
+    graph_literal = gf.to_literal()
+
+    gf2 = GraphFrame.from_literal(graph_literal)
+
+    assert len(gf.graph) == len(gf2.graph)
