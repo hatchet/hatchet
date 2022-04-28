@@ -20,7 +20,7 @@ from .external.console import ConsoleRenderer
 from .util.dot import trees_to_dot
 from .util.logger import Logger
 from .util.deprecated import deprecated_params
-from .performance_analyzer import PerformanceAnalyzer
+from .chopper import Chopper
 
 try:
     from .cython_modules.libs import graphframe_modules as _gfm_cy
@@ -1228,7 +1228,7 @@ class GraphFrame:
     ):
         """Generates flat profile for a given graphframe.
         Returns a new dataframe."""
-        return PerformanceAnalyzer().flat_profile(
+        return Chopper().flat_profile(
             self, groupby_column, drop_ranks, drop_threads, agg_function
         )
 
@@ -1238,7 +1238,7 @@ class GraphFrame:
         Takes a graphframe and a list of metric column(s), and
         returns a new graphframe with metric.imbalance column(s).
         """
-        return PerformanceAnalyzer().calculate_load_imbalance(self, metric_columns)
+        return Chopper().calculate_load_imbalance(self, metric_columns)
 
     @Logger.loggable
     def hot_path(self, start_node, metric="time (inc)", threshold=0.5):
@@ -1258,7 +1258,7 @@ class GraphFrame:
         gf_copy = self.deepcopy()
         gf_copy.drop_index_levels()
         # call hot_path function on high-level API
-        hot_path = PerformanceAnalyzer().hot_path(
+        hot_path = Chopper().hot_path(
             gf_copy, start_node, metric, threshold, callpath=[start_node]
         )
         return hot_path

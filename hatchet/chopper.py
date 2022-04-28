@@ -6,7 +6,7 @@
 import numpy as np
 
 
-class PerformanceAnalyzer:
+class Chopper:
     """High-level API for performance analysis."""
 
     # Converts a tree/graph to a flat profile on any column.

@@ -8,4 +8,4 @@
 
 from .graphframe import GraphFrame
 from .query import QueryMatcher
-from .performance_analyzer import PerformanceAnalyzer
+from .chopper import Chopper
