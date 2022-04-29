@@ -61,6 +61,7 @@ class ConsoleRenderer:
         self.highlight = kwargs["highlight_name"]
         self.colormap = kwargs["colormap"]
         self.invert_colormap = kwargs["invert_colormap"]
+        self.hotpath = kwargs["hotpath"]
 
         if self.color:
             self.colors = self.colors_enabled
@@ -243,6 +244,16 @@ class ConsoleRenderer:
         df_index = _set_dataframe_index(node)
         node_metric = dataframe.loc[df_index, self.primary_metric]
 
+        # The indents that will be used to change the nodes according to hoth paths nodes found
+        hotpath_indents = {
+            "├": self.colors.left + u"├─ " + self.colors.end,
+            "│": self.colors.left + u"│ " + self.colors.end,
+            "└": self.colors.left + u"└─ " + self.colors.end,
+            " ": u"   ",
+        }
+        # if self.hotpath:
+        #     hotpath = hotpaths(graphframe)
+
         metric_precision = "{:." + str(self.precision) + "f}"
         metric_str = (
             self._ansi_color_for_metric(node_metric)
@@ -261,7 +272,14 @@ class ConsoleRenderer:
         if self.expand is False:
             if len(node_name) > 39:
                 node_name = node_name[:18] + "..." + node_name[(len(node_name) - 18) :]
-        name_str = self._ansi_color_for_name(node_name) + node_name + self.colors.end
+        # If the user wants hotpaths to be shown then this will mark the nodes which are in the hotpaths
+        if len(self.hotpath) > 0 and node_name in self.hotpath:
+            name_str = self.colors.left + node_name + self.colors.end
+        # This will render the tree with no changes in the nodes whether its a regular tree or one that uses hotpaths
+        else:
+            name_str = (
+                self._ansi_color_for_name(node_name) + node_name + self.colors.end
+            )
 
         # Print the graph based on the depth of a node and check if its
         # below the default or user specified depth.
@@ -304,14 +322,57 @@ class ConsoleRenderer:
                 sorted_children = sorted(node.children, key=lambda n: n.frame)
                 if sorted_children:
                     last_child = sorted_children[-1]
-
+                # this is a variable that's defined to stop the hotpath to mark the nodes when
+                # finished visiting all the nodes in a hotpath
+                found = False
                 for child in sorted_children:
                     if child is not last_child:
-                        c_indent = child_indent + indents["├"]
                         cc_indent = child_indent + indents["│"]
+                        c_indent = child_indent + indents["├"]
+                        # For Hotpaths: This condition will determine id the child of a node is present in
+                        # the hotpath, if it is present then it will mark the indent adjacent to the node
+                        if (
+                            len(self.hotpath) > 0
+                            and child.frame.get("name") in self.hotpath
+                        ):
+                            c_indent = child_indent + hotpath_indents["├"]
+                            found = True
+                        # For Hotpaths: This condition will mark the indents thats are path of the hotpath
+                        # between the current node and the next child in the hotpath
+                        elif (
+                            len(self.hotpath) > 0
+                            and node_name in self.hotpath
+                            and self.hotpath[-1] != node_name
+                        ):
+                            c_indent = child_indent + hotpath_indents["├"]
+                            cc_indent = child_indent + hotpath_indents["│"]
+                            if self.hotpath[-1] == node_name:
+                                found = True
+                        # This is the default condition if in case the user doesnt want to use the hotpath function
+                        # Or For Hotpaths: this is also the condition to render the tree without marking its indent
+                        # if its not present in the hotpath
+                        else:
+                            cc_indent = child_indent + indents["│"]
+                            c_indent = child_indent + indents["├"]
                     else:
+                        # default condition to print indents of the tree
                         c_indent = child_indent + indents["└"]
                         cc_indent = child_indent + indents[" "]
+                        # For Hotpaths: this is to mark the node of the child node of the last node in the hotpath
+                        if (
+                            len(self.hotpath) > 0
+                            and node_name in self.hotpath
+                            and child.frame.get("name") in self.hotpath
+                        ):
+                            c_indent = child_indent + hotpath_indents["└"]
+                            if self.hotpath[-1] == child.frame.get("name"):
+                                found = True
+                        elif (
+                            len(self.hotpath) > 0
+                            and child.frame.get("name") in self.hotpath
+                            and not found
+                        ):
+                            c_indent = child_indent + hotpath_indents["└"]
                     result += self.render_frame(
                         child, dataframe, indent=c_indent, child_indent=cc_indent
                     )
@@ -322,19 +383,16 @@ class ConsoleRenderer:
                 )
             else:
                 _get_subtree_info(node, subtree_info)
-                result = (
-                    u"{indent}{metric_str} {name_str}".format(
-                        indent=indent, metric_str=metric_str, name_str=name_str
-                    )
-                    + "\n{child_indent}└─".format(child_indent=child_indent)
-                    + u"\u2B24"
-                    + "  Subtree Info (Total Metric: "
-                    + str(subtree_info["sum_metric"])
-                    + ", # Descendants: "
-                    + str(subtree_info["descendants"])
-                    + ", # Remaining Levels: "
-                    + str(subtree_info["levels"] - node_depth)
-                    + ")\n"
+                summary_string = "{indent}{metric_str} {name_str}\n{child_indent}└─\u25C0\u25AE Subtree Info (Total Metric: {metric}, # Descendants: {desc}, # Remaining Levels {levels})\n"
+
+                result = summary_string.format(
+                    indent=indent,
+                    metric_str=metric_str,
+                    name_str=name_str,
+                    child_indent=child_indent,
+                    metric=str(subtree_info["sum_metric"]),
+                    desc=str(subtree_info["descendants"]),
+                    levels=str(subtree_info["levels"] - node_depth),
                 )
         return result
 
