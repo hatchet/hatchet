@@ -9,29 +9,32 @@ import numpy as np
 class Chopper:
     """High-level API for performance analysis."""
 
-    # Converts a tree/graph to a flat profile on any column.
     def flat_profile(
         self,
         graphframe,
-        groupby_column="time",
-        drop_ranks=True,
-        drop_threads=True,
-        agg_function=np.mean,
+        groupby_column=None,
     ):
+        """Generates flat profile for a given graphframe.
+        Returns a new dataframe."""
         graphframe2 = graphframe.deepcopy()
+
+        if groupby_column is None:
+            groupby_column = graphframe.default_metric
 
         # TODO: change drop_index_levels(). Drop only ranks or threads.
         graphframe2.drop_index_levels()
-        graphframe2.dataframe = graphframe2.dataframe.reset_index()
 
         grouped_dataframe = graphframe2.dataframe.groupby("name").agg(
-            {groupby_column: agg_function}
+            {groupby_column: np.sum}
         )
 
         return grouped_dataframe
 
-    # Outputs the max to avg values for user specified column.
-    def calculate_load_imbalance(self, graphframe, metric_columns=["time (inc)"]):
+    def calculate_load_imbalance(self, graphframe, metric_columns=None):
+        """Calculates load imbalance for given metric column(s)
+        Takes a graphframe and a list of metric column(s), and
+        returns a new graphframe with metric.imbalance column(s).
+        """
         # Create a copy of the GraphFrame.
         graphframe2 = graphframe.deepcopy()
         graphframe3 = graphframe.deepcopy()
@@ -43,6 +46,9 @@ class Chopper:
         # Drop all index levels in a copy of gf3's DataFrame except 'node', this
         # time computing the max time spent in each node.
         graphframe3.drop_index_levels(function=np.max)
+
+        if metric_columns is None:
+            metric_columns = [graphframe.default_metric]
 
         for column in graphframe3.dataframe.columns:
             # don't rename or create if column is not in inc/exc metrics.
@@ -64,34 +70,68 @@ class Chopper:
         graphframe2.default_metric = metric_columns[0] + ".imbalance"
         return graphframe2
 
-    # The starting node can be specified using the 'parent' parameter.
-    # Returns the hot node and hot path in a tuple.
-    # Exp: analyzer.find_hot_node(graphframe, root_node, callpath=[root_node])
     def hot_path(
-        self, graphframe, parent, metric="time (inc)", threshold=0.5, callpath=[]
+        self, graphframe, start_node=None, metric=None, threshold=0.5, callpath=[]
     ):
-        parent_metric = graphframe.dataframe.loc[parent, metric]
-        sorted_child_metric = []
-        # Get all children nodes with their metric values and append
-        # them to a list.
-        for child in parent.children:
-            child_metric = graphframe.dataframe.loc[child, metric]
-            sorted_child_metric.append((child, child_metric))
+        """Returns the hot_path function.
+        Inputs:
+         - start_node: Start node of the hot path should be given.
+         - metric: A numerical metric on the dataframe
+         - threshold: Threshold for parent-child comparison (parent <= child/2).
+        Output:
+         - hot_path: list of nodes, starting from the start node to the hot node.
 
-        if sorted_child_metric:
-            # sort children by their metric values.
-            sorted_child_metric.sort(key=lambda x: x[1], reverse=True)
-            child = sorted_child_metric[0][0]
-            child_metric = sorted_child_metric[0][1]
-            if child_metric < (threshold * parent_metric):
-                # return parent if its metric * threshold is
-                # greater than child metric.
-                return callpath
-            else:
-                # continue from child if its metric is greater than
-                # threshold * parent's metric.
-                # For example, child_metric >= parent_metric/2
-                callpath.append(child)
-                return self.hot_path(graphframe, child, metric, threshold, callpath)
+        Example:
+        root_node = graphframe.graph.roots[0]
+        graphframe.hot_path(root_node)
+        """
 
-        return callpath
+        def find_hot_path(graphframe, parent, metric, threshold, callpath):
+            parent_metric = graphframe.dataframe.loc[parent, metric]
+            sorted_child_metric = []
+            # Get all children nodes with their metric values and append
+            # them to a list.
+            for child in parent.children:
+                child_metric = graphframe.dataframe.loc[child, metric]
+                sorted_child_metric.append((child, child_metric))
+
+            if sorted_child_metric:
+                # in-place sort children by their metric values.
+                sorted_child_metric.sort(key=lambda x: x[1], reverse=True)
+                child = sorted_child_metric[0][0]
+                child_metric = sorted_child_metric[0][1]
+                if child_metric < (threshold * parent_metric):
+                    # return parent if its metric * threshold is
+                    # greater than child metric.
+                    return callpath
+                else:
+                    # continue from child if its metric is greater than
+                    # threshold * parent's metric.
+                    # For example, child_metric >= parent_metric/2
+                    callpath.append(child)
+                    return find_hot_path(graphframe, child, metric, threshold, callpath)
+
+            return callpath
+
+        # copy the graphframe not to modify the original graph
+        gf_copy = graphframe.deepcopy()
+        gf_copy.drop_index_levels()
+
+        # choose the default metric if metric is not set
+        if metric is None:
+            metric = graphframe.default_metric
+
+        # choose the root node that has the greatest metric value
+        # if a start node is not specified
+        if start_node is None:
+            roots_metrics = []
+            for root in gf_copy.graph.roots:
+                roots_metrics.append((root, gf_copy.dataframe.loc[root, metric]))
+
+            # in-place sort
+            roots_metrics.sort(key=lambda x: x[1], reverse=True)
+            start_node = roots_metrics[0][0]
+
+        return find_hot_path(
+            gf_copy, start_node, metric, threshold, callpath=[start_node]
+        )

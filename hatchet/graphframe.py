@@ -1221,15 +1221,13 @@ class GraphFrame:
     @Logger.loggable
     def flat_profile(
         self,
-        groupby_column="time",
-        drop_ranks=True,
-        drop_threads=True,
-        agg_function=np.mean,
+        groupby_column=None,
     ):
         """Generates flat profile for a given graphframe.
         Returns a new dataframe."""
         return Chopper().flat_profile(
-            self, groupby_column, drop_ranks, drop_threads, agg_function
+            self,
+            groupby_column,
         )
 
     @Logger.loggable
@@ -1254,12 +1252,9 @@ class GraphFrame:
         root_node = graphframe.graph.roots[0]
         graphframe.hot_path(root_node)
         """
-        # copy the graphframe not to modify the original graph
-        gf_copy = self.deepcopy()
-        gf_copy.drop_index_levels()
         # call hot_path function on high-level API
         hot_path = Chopper().hot_path(
-            gf_copy, start_node, metric, threshold, callpath=[start_node]
+            self, start_node, metric, threshold, callpath=[start_node]
         )
         return hot_path
 

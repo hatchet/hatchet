@@ -8,9 +8,6 @@ def test_flat_profile(calc_pi_hpct_db):
     original_rows = graphframe.dataframe["name"].unique()
     flat_profile = graphframe.flat_profile(
         groupby_column="time (inc)",
-        drop_ranks=True,
-        drop_threads=True,
-        agg_function=np.mean,
     )
 
     # Check if the node names are exactly the same
@@ -70,7 +67,6 @@ def test_calculate_load_imbalance(calc_pi_hpct_db):
 def test_hot_path(calc_pi_hpct_db):
     """Validate the hot path with known data from HPCToolkit."""
     graphframe = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
-    program_root = graphframe.graph.roots[0]
 
     # Correctness of this list is check
     # via HPCViewer.
@@ -87,7 +83,13 @@ def test_hot_path(calc_pi_hpct_db):
         "<unknown procedure>",
     ]
 
-    hot_path = graphframe.hot_path(program_root)
+    hot_path = graphframe.hot_path(metric="time (inc)")
 
     for node in hot_path:
         assert node.frame["name"] in hpctoolkit_hot_path
+
+    # test if parameters override.
+    # should return the root if threshold equals 2
+    hot_path = graphframe.hot_path(metric="time (inc)", threshold=2)
+    assert len(hot_path) == 1
+    assert hot_path[0].frame["name"] == "<program root>"
