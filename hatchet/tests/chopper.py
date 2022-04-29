@@ -68,7 +68,7 @@ def test_hot_path(calc_pi_hpct_db):
     """Validate the hot path with known data from HPCToolkit."""
     graphframe = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
 
-    # Correctness of this list is check
+    # Correctness of this list is validated
     # via HPCViewer.
     hpctoolkit_hot_path = [
         "<program root>",
