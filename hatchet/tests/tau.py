@@ -43,7 +43,7 @@ def test_tree(tau_profile_dir):
         highlight_name=False,
         colormap="RdYlGn",
         invert_colormap=False,
-        hotpath=[]
+        hotpath=[],
     )
     assert "449.000 .TAU application" in output
     assert "4458.000 MPI_Finalize()" in output

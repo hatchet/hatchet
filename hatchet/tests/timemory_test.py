@@ -59,6 +59,7 @@ def test_tree(timemory_json_data):
         highlight_name=False,
         colormap="RdYlGn",
         invert_colormap=False,
+        hotpath=[],
     )
 
     print(output)
@@ -77,6 +78,7 @@ def test_tree(timemory_json_data):
         highlight_name=False,
         colormap="RdYlGn",
         invert_colormap=False,
+        hotpath=[]
     )
 
     print(output)

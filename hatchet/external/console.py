@@ -334,6 +334,8 @@ class ConsoleRenderer:
                         if (
                             len(self.hotpath) > 0
                             and child.frame.get("name") in self.hotpath
+                            and self.hotpath[-1] != child.frame.get("name")
+                            and not found
                         ):
                             c_indent = child_indent + hotpath_indents["├"]
                             found = True
@@ -343,6 +345,7 @@ class ConsoleRenderer:
                             len(self.hotpath) > 0
                             and node_name in self.hotpath
                             and self.hotpath[-1] != node_name
+                            and not found
                         ):
                             c_indent = child_indent + hotpath_indents["├"]
                             cc_indent = child_indent + hotpath_indents["│"]
@@ -363,9 +366,10 @@ class ConsoleRenderer:
                             len(self.hotpath) > 0
                             and node_name in self.hotpath
                             and child.frame.get("name") in self.hotpath
+                            and not found
                         ):
                             c_indent = child_indent + hotpath_indents["└"]
-                            if self.hotpath[-1] == child.frame.get("name"):
+                            if self.hotpath[-1] == node_name:
                                 found = True
                         elif (
                             len(self.hotpath) > 0
