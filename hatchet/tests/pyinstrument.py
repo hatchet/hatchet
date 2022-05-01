@@ -91,8 +91,7 @@ def test_tree(hatchet_pyinstrument_json):
         highlight_name=False,
         colormap="RdYlGn",
         invert_colormap=False,
-        hotpath=[],        
-
+        hotpath=[],
     )
     assert "0.000 <module> examples.py" in output
     assert "0.025 read hatchet/readers/caliper_reader.py" in output
