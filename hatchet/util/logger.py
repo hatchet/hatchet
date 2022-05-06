@@ -15,7 +15,7 @@ def isJsonable(var):
 
 
 class Log(object):
-    def __init__(self, filename="hatchet.log", active=None):
+    def __init__(self, filename="hatchet.log", active=False):
         self._log_file = filename
         self._active = active
 
