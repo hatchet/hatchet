@@ -32,7 +32,7 @@ def test_output(calc_pi_hpct_db):
     ]
     log_lines = []
 
-    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db), logging=True)
+    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
     assert Logger._active is True
 
     gf2 = gf.copy()
