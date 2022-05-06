@@ -1,3 +1,8 @@
+# Copyright 2022 The University of Arizona and other Hatchet Project
+# Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: MIT
+
 import inspect
 import os
 import getpass
