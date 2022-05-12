@@ -78,15 +78,10 @@ class Chopper:
             _update_metric_lists(graphframe2.exc_metrics)
 
         for column in metric_columns:
-            if column + ".max" not in graphframe2.dataframe.columns:
-                raise ValueError(column + ".max is not in the dataframe")
-            elif column + ".mean" not in graphframe2.dataframe.columns:
-                raise ValueError(column + ".mean is not in the dataframe")
-            else:
-                # divide metric columns: max/mean
-                graphframe2.dataframe[column + ".imbalance"] = graphframe2.dataframe[
-                    column + ".max"
-                ].div(graphframe2.dataframe[column + ".mean"])
+            # divide metric columns: max/mean
+            graphframe2.dataframe[column + ".imbalance"] = graphframe2.dataframe[
+                column + ".max"
+            ].div(graphframe2.dataframe[column + ".mean"])
 
         # default metric will be imbalance when user print the tree
         graphframe2.default_metric = metric_columns[0] + ".imbalance"
@@ -139,7 +134,7 @@ class Chopper:
         gf_copy = graphframe.deepcopy()
         gf_copy.drop_index_levels()
 
-        # choose the default metric if metric is not set
+        # choose the default metric if metric has not set
         if metric is None:
             metric = graphframe.default_metric
 
