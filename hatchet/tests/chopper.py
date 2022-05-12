@@ -6,9 +6,7 @@ def test_flat_profile(calc_pi_hpct_db):
     """Validate that the flat profile works correctly."""
     graphframe = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
     original_rows = graphframe.dataframe["name"].unique()
-    flat_profile = graphframe.flat_profile(
-        groupby_column="time (inc)",
-    )
+    flat_profile = graphframe.flat_profile()
 
     # Check if the node names are exactly the same
     assert sorted(flat_profile.index.tolist()) == sorted(original_rows)
