@@ -1236,7 +1236,7 @@ class GraphFrame:
         """
         return Chopper().calculate_load_imbalance(self, metric_columns)
 
-    def hot_path(self, start_node, metric="time (inc)", threshold=0.5):
+    def hot_path(self, start_node=None, metric="time (inc)", threshold=0.5):
         """Returns the hot_path function.
         Inputs:
          - start_node: Start node of the hot path should be given.
