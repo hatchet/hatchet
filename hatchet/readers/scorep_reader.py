@@ -9,10 +9,7 @@ from hatchet.node import Node
 from hatchet.graph import Graph
 from hatchet.frame import Frame
 
-# We should install the following commit to be able to get
-# the file information until Score-P releases a new version.
-# pip install git+https://github.com/extra-p/pycubexr@4b5d58f0bd23e0d2c6e277b10bf1ad189bc6fdca
-# Commit: https://github.com/extra-p/pycubexr/commit/4b5d58f0bd23e0d2c6e277b10bf1ad189bc6fdca
+# Requires pycubexr >= v1.2.0
 from pycubexr.parsers.tar_parser import CubexParser
 from pycubexr.utils.exceptions import MissingMetricError
 
