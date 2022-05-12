@@ -1218,7 +1218,6 @@ class GraphFrame:
         new_gf.drop_index_levels()
         return new_gf
 
-    @Logger.loggable
     def flat_profile(
         self,
         groupby_column=None,
@@ -1230,7 +1229,6 @@ class GraphFrame:
             groupby_column,
         )
 
-    @Logger.loggable
     def calculate_load_imbalance(self, metric_columns=["time (inc)"]):
         """Calculates load imbalance for given metric column(s)
         Takes a graphframe and a list of metric column(s), and
@@ -1238,7 +1236,6 @@ class GraphFrame:
         """
         return Chopper().calculate_load_imbalance(self, metric_columns)
 
-    @Logger.loggable
     def hot_path(self, start_node, metric="time (inc)", threshold=0.5):
         """Returns the hot_path function.
         Inputs:
