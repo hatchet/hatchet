@@ -19,14 +19,12 @@ class Chopper:
         graphframe2 = graphframe.deepcopy()
 
         if groupby_column is None:
-            groupby_column = graphframe.default_metric
+            groupby_column = "name"
 
         # TODO: change drop_index_levels(). Drop only ranks or threads.
         graphframe2.drop_index_levels()
 
-        grouped_dataframe = graphframe2.dataframe.groupby("name").agg(
-            {groupby_column: np.sum}
-        )
+        grouped_dataframe = graphframe2.dataframe.groupby(groupby_column).sum()
 
         return grouped_dataframe
 
