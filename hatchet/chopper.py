@@ -33,6 +33,20 @@ class Chopper:
         Takes a graphframe and a list of metric column(s), and
         returns a new graphframe with metric.imbalance column(s).
         """
+
+        def _update_columns(dataframe, old_column_name, new_column):
+            """Rename some existing columns and create new ones."""
+            # rename columns: '<metric>.mean'
+            dataframe.rename(columns={column: old_column_name + ".mean"}, inplace=True)
+            # create columns: '<metric>.max'
+            dataframe[old_column_name + ".max"] = new_column
+
+        def _update_metric_lists(metric_types):
+            """Update graphframe.inc_metrics and graphframe.exc_metrics
+            lists after renaming/creating columns"""
+            metric_types.append(column + ".mean")
+            metric_types.append(column + ".max")
+
         # Create a copy of the GraphFrame.
         graphframe2 = graphframe.deepcopy()
         graphframe3 = graphframe.deepcopy()
@@ -41,24 +55,34 @@ class Chopper:
         # average time spent in each node.
         graphframe2.drop_index_levels(function=np.mean)
 
-        # Drop all index levels in a copy of gf3's DataFrame except 'node', this
-        # time computing the max time spent in each node.
+        # Drop all index levels in a copy of gf3's DataFrame except 'node',
+        # computing the max time spent in each node.
         graphframe3.drop_index_levels(function=np.max)
 
         if metric_columns is None:
             metric_columns = [graphframe.default_metric]
 
-        for column in graphframe3.dataframe.columns:
-            # don't rename or create if column is not in inc/exc metrics.
-            if column in graphframe3.inc_metrics or column in graphframe3.exc_metrics:
-                # rename columns: '<metric>.mean'
-                graphframe2.dataframe.rename(
-                    columns={column: column + ".mean"}, inplace=True
-                )
-                # create columns: '<metric>.max'
-                graphframe2.dataframe[column + ".max"] = graphframe3.dataframe[column]
+        graphframe2.inc_metrics = []
+        graphframe2.exc_metrics = []
 
-            if column in metric_columns:
+        for column in graphframe3.inc_metrics:
+            _update_columns(
+                graphframe2.dataframe, column, graphframe3.dataframe[column]
+            )
+            _update_metric_lists(graphframe2.inc_metrics)
+
+        for column in graphframe3.exc_metrics:
+            _update_columns(
+                graphframe2.dataframe, column, graphframe3.dataframe[column]
+            )
+            _update_metric_lists(graphframe2.exc_metrics)
+
+        for column in metric_columns:
+            if column + ".max" not in graphframe2.dataframe.columns:
+                raise ValueError(column + ".max is not in the dataframe")
+            elif column + ".mean" not in graphframe2.dataframe.columns:
+                raise ValueError(column + ".mean is not in the dataframe")
+            else:
                 # divide metric columns: max/mean
                 graphframe2.dataframe[column + ".imbalance"] = graphframe2.dataframe[
                     column + ".max"
