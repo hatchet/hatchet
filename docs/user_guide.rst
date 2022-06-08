@@ -75,7 +75,7 @@ the ``from_caliper`` method:
   import hatchet as ht
 
   if __name__ == "__main__":
-      filename = ("hatchet/tests/data/caliper-lulesh-json/lulesh-sample-annotation-profile.json")
+      filename = ("hatchet/tests/data/caliper-lulesh-json/lulesh-annotation-profile.json")
       gf = ht.GraphFrame.from_caliper(filename)
 
 Examples of reading in other file formats can be found in
