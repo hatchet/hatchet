@@ -24,9 +24,12 @@ class Chopper:
         # TODO: change drop_index_levels(). Drop only ranks or threads.
         graphframe2.drop_index_levels()
 
-        grouped_dataframe = graphframe2.dataframe.groupby(groupby_column).sum()
+        result_dataframe = graphframe2.dataframe.groupby(groupby_column).sum()
+        result_dataframe = result_dataframe.sort_values(
+            by=[graphframe.default_metric], ascending=False
+        )
 
-        return grouped_dataframe
+        return result_dataframe
 
     def calculate_load_imbalance(self, graphframe, metric_columns=None):
         """Calculates load imbalance for given metric column(s)
