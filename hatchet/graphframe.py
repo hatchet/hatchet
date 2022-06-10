@@ -290,6 +290,14 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
+    def from_apex(dirname):
+        """Create a GraphFrame from a list of dictionaries."""
+        # import this lazily to avoid circular dependencies
+        from .readers.apex_reader import ApexReader
+
+        return ApexReader(dirname).read()
+
+    @staticmethod
     def from_lists(*lists):
         """Make a simple GraphFrame from lists.
 
