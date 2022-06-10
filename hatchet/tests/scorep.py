@@ -5,7 +5,9 @@ from hatchet.external.console import ConsoleRenderer
 
 import pytest
 
-
+# check if the pycubexr package is available
+# without importing the package.
+# there are other ways to do it for python 3+
 import imp
 
 pycubexr_avail = True
