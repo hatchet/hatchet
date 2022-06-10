@@ -3,6 +3,14 @@ import numpy as np
 from hatchet import GraphFrame
 from hatchet.external.console import ConsoleRenderer
 
+import pytest
+
+pycubexr_avail = True
+try:
+    import pycubexr
+except ImportError:
+    pycubexr_avail = False
+
 procedures = [
     "cpi",
     "main",
@@ -17,6 +25,7 @@ procedures = [
 ]
 
 
+@pytest.mark.skipif(not pycubexr_avail, reason="pycubexr package not available")
 def test_graphframe(scorep_profile_cubex):
     gf = GraphFrame.from_scorep(str(scorep_profile_cubex))
 
@@ -42,6 +51,7 @@ def test_graphframe(scorep_profile_cubex):
             assert gf.dataframe[col].dtype == object
 
 
+@pytest.mark.skipif(not pycubexr_avail, reason="pycubexr package not available")
 def test_tree(scorep_profile_cubex):
     """Sanity test a GraphFrame object with known data."""
     gf = GraphFrame.from_scorep(str(scorep_profile_cubex))
@@ -84,6 +94,7 @@ def test_tree(scorep_profile_cubex):
     assert "100082.000 iteration /p/lustre1/cankur1/test/scorep/cpi.c" in output
 
 
+@pytest.mark.skipif(not pycubexr_avail, reason="pycubexr package not available")
 def test_graphframe_to_literal(scorep_profile_cubex):
     """Sanity test a GraphFrame object with known data."""
     gf = GraphFrame.from_scorep(str(scorep_profile_cubex))
