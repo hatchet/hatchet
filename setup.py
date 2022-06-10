@@ -51,8 +51,10 @@ setup(
         "textX",
         "multiprocess",
         "caliper-reader",
-        "pycubexr; python_version >= '3.6'",
     ],
+    extras_require={
+        ":python_version>='3.6'": ["pycubexr"],
+    },
     ext_modules=[
         Extension(
             "hatchet.cython_modules.libs.reader_modules",
