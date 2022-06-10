@@ -11,4 +11,4 @@ cython
 multiprocess
 textX
 caliper-reader
-pycubexr
+pycubexr; python_version >= '3.6'
