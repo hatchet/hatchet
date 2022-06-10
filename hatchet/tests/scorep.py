@@ -5,11 +5,15 @@ from hatchet.external.console import ConsoleRenderer
 
 import pytest
 
+
+import imp
+
 pycubexr_avail = True
 try:
-    import pycubexr
+    imp.find_module("pycubexr")
 except ImportError:
     pycubexr_avail = False
+
 
 procedures = [
     "cpi",
