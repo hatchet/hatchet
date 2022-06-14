@@ -62,8 +62,12 @@ class Chopper:
         # computing the max time spent in each node.
         graphframe3.drop_index_levels(function=np.max)
 
+        # Use default_metric if not given.
         if metric_columns is None:
             metric_columns = [graphframe.default_metric]
+        # Handle if the metric is given as a string.
+        if isinstance(metric_columns, str):
+            metric_columns = [metric_columns]
 
         graphframe2.inc_metrics = []
         graphframe2.exc_metrics = []

@@ -1231,7 +1231,7 @@ class GraphFrame:
         )
 
     @Logger.loggable
-    def calculate_load_imbalance(self, metric_columns=["time (inc)"]):
+    def load_imbalance(self, metric_columns=None):
         """Calculates load imbalance for given metric column(s)
         Takes a graphframe and a list of metric column(s), and
         returns a new graphframe with metric.imbalance column(s).
@@ -1239,7 +1239,7 @@ class GraphFrame:
         return Chopper().calculate_load_imbalance(self, metric_columns)
 
     @Logger.loggable
-    def hot_path(self, start_node=None, metric="time (inc)", threshold=0.5):
+    def hot_path(self, start_node=None, metric=None, threshold=0.5):
         """Returns the hot_path function.
         Inputs:
          - start_node: Start node of the hot path should be given.

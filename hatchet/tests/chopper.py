@@ -17,7 +17,7 @@ def test_flat_profile(calc_pi_hpct_db):
         graphframe.dataframe.loc[root]["time (inc)"].to_numpy()
     )
 
-    # Check if load imbalance is correct for the the node '__GI_sched_yield'.
+    # Validate the load imbalance value of the '__GI_sched_yield' node.
     another = graphframe.dataframe[
         graphframe.dataframe["name"] == "__GI_sched_yield"
     ].index[0][0]
@@ -30,7 +30,7 @@ def test_calculate_load_imbalance(calc_pi_hpct_db):
     """Validate that the load imbalance is calculated correctly."""
 
     graphframe = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
-    load_imb_gf = graphframe.calculate_load_imbalance(metric_columns=["time (inc)"])
+    load_imb_gf = graphframe.load_imbalance(metric_columns=["time (inc)"])
 
     # Check if load imbalance is correct for the root node.
     root = graphframe.graph.roots[0]
