@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 import pandas as pd
+import sys
 
 import hatchet.graphframe
 from hatchet.node import Node
@@ -134,10 +135,12 @@ class ApexReader:
         frame = None
         top_node = None
 
-        print('Parsing trees',end='')
+        if sys.version_info[0] >= 3:
+            print('Parsing trees',end='')
         # start with creating a node_dict for each root
         for i in range(len(self.graph_dict)):
-            print('.', end='',flush=True)
+            if sys.version_info[0] >= 3:
+                print('.', end='',flush=True)
             rank = self.ranks[i]
             if "rank" in self.graph_dict[i]["frame"]:
                 rank = self.graph_dict[i]["frame"]["rank"]
