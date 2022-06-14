@@ -37,7 +37,7 @@ class Chopper:
         returns a new graphframe with metric.imbalance column(s).
         """
 
-        def _update_columns(dataframe, old_column_name, new_column):
+        def _update_and_add_columns(dataframe, old_column_name, new_column):
             """Rename some existing columns and create new ones."""
             # rename columns: '<metric>.mean'
             dataframe.rename(columns={column: old_column_name + ".mean"}, inplace=True)
@@ -68,26 +68,35 @@ class Chopper:
         graphframe2.inc_metrics = []
         graphframe2.exc_metrics = []
 
-        for column in graphframe3.inc_metrics:
-            _update_columns(
-                graphframe2.dataframe, column, graphframe3.dataframe[column]
-            )
-            _update_metric_lists(graphframe2.inc_metrics)
-
-        for column in graphframe3.exc_metrics:
-            _update_columns(
-                graphframe2.dataframe, column, graphframe3.dataframe[column]
-            )
-            _update_metric_lists(graphframe2.exc_metrics)
-
+        # For each column/metric for which we want to
+        # calculate load imbalance
         for column in metric_columns:
-            # divide metric columns: max/mean
+            # Update/rename existing columns on graphframe2.dataframe
+            # by adding .mean for already existing columns and create
+            # new columns by adding .max to the corresponding
+            # columns on graphframe3.
+            _update_and_add_columns(
+                graphframe2.dataframe, column, graphframe3.dataframe[column]
+            )
+
+            # Add new columns to .inc_metrics or .exc_metrics
+            if column in graphframe3.inc_metrics:
+                _update_metric_lists(graphframe2.inc_metrics)
+            elif column in graphframe3.exc_metrics:
+                _update_metric_lists(graphframe2.exc_metrics)
+
+            # Calculate load imbalance for every given column
+            # by dividing corresponding .max and .mean columns.
             graphframe2.dataframe[column + ".imbalance"] = graphframe2.dataframe[
                 column + ".max"
             ].div(graphframe2.dataframe[column + ".mean"])
 
         # default metric will be imbalance when user print the tree
         graphframe2.default_metric = metric_columns[0] + ".imbalance"
+        # sort by default_metric's load imbalance
+        graphframe2.dataframe = graphframe2.dataframe.sort_values(
+            by=[graphframe2.default_metric], ascending=False
+        )
         return graphframe2
 
     def hot_path(
@@ -95,9 +104,12 @@ class Chopper:
     ):
         """Returns the hot_path function.
         Inputs:
-         - start_node: Start node of the hot path should be given.
-         - metric: A numerical metric on the dataframe
+         - start_node (optional): Start node of the hot path can be given.
+         Default: the root node that has the largest metric value.
+         - metric: A numerical metric on the dataframe.
+         Default: graphframe.default_metric
          - threshold: Threshold for parent-child comparison (parent <= child/2).
+         Default: 0.5
         Output:
          - hot_path: list of nodes, starting from the start node to the hot node.
 
