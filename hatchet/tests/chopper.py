@@ -11,13 +11,13 @@ def test_flat_profile(calc_pi_hpct_db):
     # Check if the node names are exactly the same
     assert sorted(flat_profile.index.tolist()) == sorted(original_rows)
 
-    # Check if value is correct for the root node.
+    # Check if the aggregated time is correct for the root node.
     root = graphframe.graph.roots[0]
     assert flat_profile.loc[root.frame["name"]]["time (inc)"] == np.mean(
         graphframe.dataframe.loc[root]["time (inc)"].to_numpy()
     )
 
-    # Validate the load imbalance value of the '__GI_sched_yield' node.
+    # Check if the aggregated time is correct for the '__GI_sched_yield' node.
     another = graphframe.dataframe[
         graphframe.dataframe["name"] == "__GI_sched_yield"
     ].index[0][0]
