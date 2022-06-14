@@ -20,6 +20,7 @@ from .external.console import ConsoleRenderer
 from .util.dot import trees_to_dot
 from .util.logger import Logger
 from .util.deprecated import deprecated_params
+from .chopper import Chopper
 
 try:
     from .cython_modules.libs import graphframe_modules as _gfm_cy
@@ -1216,6 +1217,46 @@ class GraphFrame:
         )
         new_gf.drop_index_levels()
         return new_gf
+
+    @Logger.loggable
+    def flat_profile(
+        self,
+        groupby_column=None,
+    ):
+        """Generates flat profile for a given graphframe.
+        Returns a new dataframe."""
+        return Chopper().flat_profile(
+            self,
+            groupby_column,
+        )
+
+    @Logger.loggable
+    def load_imbalance(self, metric_columns=None):
+        """Calculates load imbalance for given metric column(s)
+        Takes a graphframe and a list of metric column(s), and
+        returns a new graphframe with metric.imbalance column(s).
+        """
+        return Chopper().calculate_load_imbalance(self, metric_columns)
+
+    @Logger.loggable
+    def hot_path(self, start_node=None, metric=None, threshold=0.5):
+        """Returns the hot_path function.
+        Inputs:
+         - start_node: Start node of the hot path should be given.
+         - metric: A numerical metric on the dataframe
+         - threshold: Threshold for parent-child comparison (parent <= child/2).
+        Output:
+         - hot_path: list of nodes, starting from the start node to the hot node.
+
+        Example:
+        root_node = graphframe.graph.roots[0]
+        graphframe.hot_path(root_node)
+        """
+        # call hot_path function on high-level API
+        hot_path = Chopper().hot_path(
+            self, start_node, metric, threshold, callpath=[start_node]
+        )
+        return hot_path
 
     @Logger.loggable
     def add(self, other):
