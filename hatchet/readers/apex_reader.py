@@ -49,8 +49,8 @@ class ApexReader:
         self.rank = 0
         self.ranks = []
         all_data = []
-        files = sorted(glob.glob(dirname + '/tasktree.*.json'))
-        print('Parsing', len(files), 'files...')
+        files = sorted(glob.glob(dirname + "/tasktree.*.json"))
+        print("Parsing", len(files), "files...")
         for f in files:
             # get the rank number
             self.rank = f.split(".")[1]
@@ -71,8 +71,8 @@ class ApexReader:
         if "rank" in child_dict["frame"]:
             rank = child_dict["frame"]["rank"]
             del child_dict["frame"]["rank"]
-        if "type" not in child_dict['frame']:
-            child_dict['frame']['type'] = 'function'
+        if "type" not in child_dict["frame"]:
+            child_dict["frame"]["type"] = "function"
         frame = Frame(child_dict["frame"])
         hnode = None
         found = False
@@ -91,7 +91,8 @@ class ApexReader:
         if not node_name:
             node_name = child_dict["name"]
         node_dict = dict(
-            {"node": hnode, "rank": rank, "name": node_name}, **child_dict["metrics"]
+            {"node": hnode, "rank": rank, "name": node_name},
+            **child_dict["metrics"]
         )
 
         node_dicts.append(node_dict)
@@ -111,14 +112,20 @@ class ApexReader:
                 # library with no debug information, and there is no line number.
                 # As a best effort, make the child name unique. It might not match
                 # trees from multiple processes, though - the ordering might be different.
-                c_name = child['frame']['name']
+                c_name = child["frame"]["name"]
                 if c_name in child_set.keys():
                     if not self.warning:
-                        print(rank, ": WARNING! Duplicate child: ", c_name, "of parent", child_dict['frame']['name'])
+                        print(
+                            rank,
+                            ": WARNING! Duplicate child: ",
+                            c_name,
+                            "of parent",
+                            child_dict["frame"]["name"]
+                        )
                         self.warning = True
                     count = child_set[c_name] + 1
                     c_name = c_name + str(count)
-                    child['frame']['name'] = c_name
+                    child["frame"]["name"] = c_name
                     child_set[c_name] = count
                 else:
                     child_set[c_name] = 1
@@ -134,17 +141,17 @@ class ApexReader:
         top_node = None
 
         if sys.version_info[0] >= 3:
-            print('Parsing trees', end='')
+            print("Parsing trees", end="")
         # start with creating a node_dict for each root
         for i in range(len(self.graph_dict)):
             if sys.version_info[0] >= 3:
-                print('.', end='', flush=True)
+                print(".", end="", flush=True)
             rank = self.ranks[i]
             if "rank" in self.graph_dict[i]["frame"]:
                 rank = self.graph_dict[i]["frame"]["rank"]
                 del self.graph_dict[i]["frame"]["rank"]
-            if "type" not in self.graph_dict[i]['frame']:
-                self.graph_dict[i]['frame']['type'] = 'function'
+            if "type" not in self.graph_dict[i]["frame"]:
+                self.graph_dict[i]["frame"]["type"] = "function"
             frame = Frame(self.graph_dict[i]["frame"])
             graph_root = Node(frame, None, hnid=-1)
             if graph_root in list_roots:
@@ -156,7 +163,8 @@ class ApexReader:
                 node_name = self.graph_dict[i]["name"]
 
             node_dict = dict(
-                {"node": graph_root, "rank": rank, "name": node_name}, **self.graph_dict[i]["metrics"]
+                {"node": graph_root, "rank": rank, "name": node_name},
+                **self.graph_dict[i]["metrics"]
             )
             node_dicts.append(node_dict)
 
@@ -180,14 +188,20 @@ class ApexReader:
                     # library with no debug information, and there is no line number.
                     # As a best effort, make the child name unique. It might not match
                     # trees from multiple processes, though - the ordering might be different.
-                    c_name = child['frame']['name']
+                    c_name = child["frame"]["name"]
                     if c_name in child_set.keys():
                         if not self.warning:
-                            print(rank, ": WARNING! Duplicate child: ", c_name, "of parent", node_name)
+                            print(
+                                rank,
+                                ": WARNING! Duplicate child: ",
+                                c_name,
+                                "of parent",
+                                node_name
+                            )
                             self.warning = True
                         count = child_set[c_name] + 1
                         c_name = c_name + str(count)
-                        child['frame']['name'] = c_name
+                        child["frame"]["name"] = c_name
                         child_set[c_name] = count
                     else:
                         child_set[c_name] = 1
@@ -195,7 +209,7 @@ class ApexReader:
                         frame_to_node_dict, node_dicts, child, graph_root, rank
                     )
 
-        print('\nEnumerating graph...')
+        print("\nEnumerating graph...")
         graph = Graph(list_roots)
         graph.enumerate_traverse()
 
@@ -207,28 +221,33 @@ class ApexReader:
             else:
                 exc_metrics.append(key)
 
-        print('Creating dataframe...')
+        print("Creating dataframe...")
         dataframe = pd.DataFrame(data=node_dicts)
-        print('Creating MultiIndex...')
+        print("Creating MultiIndex...")
         # Make an index of all unique combinations of node, rank
-        new_index = pd.MultiIndex.from_product([dataframe['node'].unique(), dataframe['rank'].unique()], names=["node", "rank"])
-        print('Making MultiIndex...')
+        new_index = pd.MultiIndex.from_product(
+            [dataframe["node"].unique(), dataframe["rank"].unique()],
+            names=["node", "rank"]
+        )
+        print("Making MultiIndex...")
         dataframe.set_index(["node", "rank"], inplace=True)
         dataframe.sort_index(inplace=True)
-        print('Adding missing default values to the tree...')
+        print("Adding missing default values to the tree...")
         # For all missing values of [node, rank], add zero values for all columns
         dataframe = dataframe.reindex(new_index, fill_value=0)
         # Make our multi-index
-        print('Fixing new timer names...')
+        print("Fixing new timer names...")
         # Select rows where name is 0, we need to fix that.
-        zeros = dataframe.loc[dataframe['name'] == 0]
+        zeros = dataframe.loc[dataframe["name"] == 0]
         # For all columns with name '0', replace it with name from node.
-        for row in zeros.itertuples(name='graphnodes'):
-            name = row[0][0].frame['name']
+        for row in zeros.itertuples(name="graphnodes"):
+            name = row[0][0].frame["name"]
             index = row[0]
-            dataframe.at[index, 'name'] = name
+            dataframe.at[index, "name"] = name
 
         default_metric = "time (inc)"
 
-        print('Done!')
-        return hatchet.graphframe.GraphFrame(graph, dataframe, exc_metrics, inc_metrics, default_metric)
+        print("Done!")
+        return hatchet.graphframe.GraphFrame(
+            graph, dataframe, exc_metrics, inc_metrics, default_metric
+        )
