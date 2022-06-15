@@ -13,6 +13,7 @@ from hatchet.frame import Frame
 import glob
 import json
 
+
 class ApexReader:
     """Create a GraphFrame from a directory of APEX tasktree output JSON files.
     Example input:
@@ -47,15 +48,14 @@ class ApexReader:
         self.dirname = dirname
         self.rank = 0
         self.ranks = []
-            # make a list
         all_data = []
-        files = sorted(glob.glob(dirname+'/tasktree.*.json'))
+        files = sorted(glob.glob(dirname + '/tasktree.*.json'))
         print('Parsing', len(files), 'files...')
         for f in files:
             # get the rank number
             self.rank = f.split(".")[1]
             self.ranks.append(self.rank)
-            #open text file in read mode
+            # open text file in read mode
             with open(f) as json_file:
                 data = json.load(json_file)
                 all_data.append(data)
@@ -83,7 +83,7 @@ class ApexReader:
                 found = True
                 break
         # Doesn't exist, so add it
-        if found == False:
+        if found is False:
             hnode = Node(frame, hparent, hnid=-1)
 
         # depending on the node type, the name may not be in the frame
@@ -93,7 +93,6 @@ class ApexReader:
         node_dict = dict(
             {"node": hnode, "rank": rank, "name": node_name}, **child_dict["metrics"]
         )
-        #node_dict["rank"] = rank
 
         node_dicts.append(node_dict)
         frame_to_node_dict[frame] = hnode
@@ -117,9 +116,8 @@ class ApexReader:
                     if not self.warning:
                         print(rank, ": WARNING! Duplicate child: ", c_name, "of parent", child_dict['frame']['name'])
                         self.warning = True
-                    count = child_set[c_name]+1
+                    count = child_set[c_name] + 1
                     c_name = c_name + str(count)
-                    #print(rank, ": Changing name to: ", c_name)
                     child['frame']['name'] = c_name
                     child_set[c_name] = count
                 else:
@@ -136,11 +134,11 @@ class ApexReader:
         top_node = None
 
         if sys.version_info[0] >= 3:
-            print('Parsing trees',end='')
+            print('Parsing trees', end='')
         # start with creating a node_dict for each root
         for i in range(len(self.graph_dict)):
             if sys.version_info[0] >= 3:
-                print('.', end='',flush=True)
+                print('.', end='', flush=True)
             rank = self.ranks[i]
             if "rank" in self.graph_dict[i]["frame"]:
                 rank = self.graph_dict[i]["frame"]["rank"]
@@ -160,7 +158,6 @@ class ApexReader:
             node_dict = dict(
                 {"node": graph_root, "rank": rank, "name": node_name}, **self.graph_dict[i]["metrics"]
             )
-            #node_dict["rank"] = rank
             node_dicts.append(node_dict)
 
             # Add the graph root to the list of roots, and save it
@@ -188,9 +185,8 @@ class ApexReader:
                         if not self.warning:
                             print(rank, ": WARNING! Duplicate child: ", c_name, "of parent", node_name)
                             self.warning = True
-                        count = child_set[c_name]+1
+                        count = child_set[c_name] + 1
                         c_name = c_name + str(count)
-                        #print(rank, ": Changing name to: ", c_name)
                         child['frame']['name'] = c_name
                         child_set[c_name] = count
                     else:
@@ -221,7 +217,6 @@ class ApexReader:
         dataframe.sort_index(inplace=True)
         print('Adding missing default values to the tree...')
         # For all missing values of [node, rank], add zero values for all columns
-        #dataframe = dataframe.set_index(new_index).reindex(new_index, fill_value=0).reset_index()
         dataframe = dataframe.reindex(new_index, fill_value=0)
         # Make our multi-index
         print('Fixing new timer names...')
@@ -231,7 +226,7 @@ class ApexReader:
         for row in zeros.itertuples(name='graphnodes'):
             name = row[0][0].frame['name']
             index = row[0]
-            dataframe.at[index,'name'] = name
+            dataframe.at[index, 'name'] = name
 
         default_metric = "time (inc)"
 
