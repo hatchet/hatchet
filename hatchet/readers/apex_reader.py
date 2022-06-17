@@ -50,13 +50,12 @@ class ApexReader:
         self.ranks = []
         all_data = []
         files = sorted(glob.glob(dirname + "/tasktree.*.json"))
-        print("Parsing", len(files), "files...")
-        for f in files:
+        for file in files:
             # get the rank number
-            self.rank = f.split(".")[1]
+            self.rank = file.split(".")[1]
             self.ranks.append(self.rank)
             # open text file in read mode
-            with open(f) as json_file:
+            with open(file) as json_file:
                 data = json.load(json_file)
                 all_data.append(data)
         self.graph_dict = all_data
@@ -137,12 +136,8 @@ class ApexReader:
         frame = None
         top_node = None
 
-        if sys.version_info[0] >= 3:
-            print("Parsing trees", end="")
         # start with creating a node_dict for each root
         for i in range(len(self.graph_dict)):
-            if sys.version_info[0] >= 3:
-                print(".", end="", flush=True)
             rank = self.ranks[i]
             if "rank" in self.graph_dict[i]["frame"]:
                 rank = self.graph_dict[i]["frame"]["rank"]
@@ -206,7 +201,6 @@ class ApexReader:
                         frame_to_node_dict, node_dicts, child, graph_root, rank
                     )
 
-        print("\nEnumerating graph...")
         graph = Graph(list_roots)
         graph.enumerate_traverse()
 
@@ -218,22 +212,18 @@ class ApexReader:
             else:
                 exc_metrics.append(key)
 
-        print("Creating dataframe...")
         dataframe = pd.DataFrame(data=node_dicts)
-        print("Creating MultiIndex...")
+
         # Make an index of all unique combinations of node, rank
         new_index = pd.MultiIndex.from_product(
             [dataframe["node"].unique(), dataframe["rank"].unique()],
             names=["node", "rank"],
         )
-        print("Making MultiIndex...")
         dataframe.set_index(["node", "rank"], inplace=True)
         dataframe.sort_index(inplace=True)
-        print("Adding missing default values to the tree...")
         # For all missing values of [node, rank], add zero values for all columns
         dataframe = dataframe.reindex(new_index, fill_value=0)
         # Make our multi-index
-        print("Fixing new timer names...")
         # Select rows where name is 0, we need to fix that.
         zeros = dataframe.loc[dataframe["name"] == 0]
         # For all columns with name '0', replace it with name from node.
@@ -244,7 +234,6 @@ class ApexReader:
 
         default_metric = "time (inc)"
 
-        print("Done!")
         return hatchet.graphframe.GraphFrame(
             graph, dataframe, exc_metrics, inc_metrics, default_metric
         )
