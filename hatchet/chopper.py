@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+from matplotlib.cbook import flatten
 import numpy as np
 
 
@@ -30,6 +31,40 @@ class Chopper:
         )
 
         return result_dataframe
+    
+    def flatten(self, graphframe, groupby_column=None):
+        """
+        Flattens the graphframe by changing its graph structure and the dataframe.
+        Returns a new graphframe.
+        """
+        graphframe2 = graphframe.deepcopy()
+
+        if groupby_column is None:
+            groupby_column = "name"
+        
+        # TODO: change drop_index_levels(). Drop only ranks or threads.
+        graphframe2.drop_index_levels()
+
+        result_graphframe = graphframe2.group_by_aggregate(groupby_column, 'sum')
+        result_graphframe = result_graphframe.dataframe.sort_values(
+            by=[graphframe.default_metric], ascending=False
+        )
+
+        return result_graphframe
+
+    def to_callgraph(self, graphframe):
+        """
+        Converts a CCT to a callgraph.
+        Returns a new graphframe.
+        """
+        graphframe2 = graphframe.deepcopy()
+
+        assert graphframe2.graph.is_tree(), "input graph is not a tree"
+
+        # TODO: how to find hierarchy used for input nodes
+        result_graphframe = self.flatten(graphframe, "name")
+            
+        return result_graphframe
 
     def calculate_load_imbalance(self, graphframe, metric_columns=None):
         """Calculates load imbalance for given metric column(s)
