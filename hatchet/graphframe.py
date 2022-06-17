@@ -1101,7 +1101,7 @@ class GraphFrame:
         return self
 
     @Logger.loggable
-    def groupby_aggregate(self, groupby_function, agg_function):
+    def groupby_aggregate(self, groupby_column, agg_function):
         """Groupby-aggregate dataframe and reindex the Graph.
 
         Reindex the graph to match the groupby-aggregated dataframe.
@@ -1110,7 +1110,7 @@ class GraphFrame:
 
         Arguments:
             self (graphframe): self's graphframe
-            groupby_function: groupby function on dataframe
+            groupby_column: groupby column on dataframe
             agg_function: aggregate function on dataframe
 
         Return:
@@ -1169,7 +1169,7 @@ class GraphFrame:
                     reindex(child, super_node, visited)
 
         # groupby-aggregate dataframe based on user-supplied functions
-        groupby_obj = self.dataframe.groupby(groupby_function)
+        groupby_obj = self.dataframe.groupby(groupby_column)
         agg_df = groupby_obj.agg(agg_function)
 
         # traverse groupby_obj, determine old node to super node mapping
