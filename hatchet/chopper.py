@@ -3,7 +3,6 @@
 #
 # SPDX-License-Identifier: MIT
 
-from matplotlib.cbook import flatten
 import numpy as np
 
 
