@@ -1231,19 +1231,19 @@ class GraphFrame:
         )
     
     @Logger.loggable
-    def flatten(self, graphframe, groupby_column=None):
+    def flatten(self, groupby_column=None):
         """
         Flattens the graphframe by changing its graph structure and the dataframe.
         """
-        return Chopper().flatten(self, graphframe, groupby_column)
+        return Chopper().flatten(self, groupby_column)
     
     @Logger.loggable
-    def to_callgraph(self, graphframe):
+    def to_callgraph(self):
         """
         Converts a CCT to a callgraph.
         Returns a new graphframe.
         """
-        return Chopper().to_callgraph(self, graphframe)
+        return Chopper().to_callgraph(self)
 
     @Logger.loggable
     def load_imbalance(self, metric_columns=None):
