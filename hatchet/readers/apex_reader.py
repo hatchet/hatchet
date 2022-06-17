@@ -4,7 +4,6 @@
 # SPDX-License-Identifier: MIT
 
 import pandas as pd
-import sys
 
 import hatchet.graphframe
 from hatchet.node import Node
