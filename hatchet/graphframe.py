@@ -298,6 +298,7 @@ class GraphFrame:
         return ApexReader(dirname).read()
 
     @staticmethod
+    @Logger.loggable
     def from_lists(*lists):
         """Make a simple GraphFrame from lists.
 

@@ -1,5 +1,5 @@
-# Copyright 2017-2022 Lawrence Livermore National Security, LLC and other
-# Hatchet Project Developers. See the top-level LICENSE file for details.
+# Copyright 2022 University of Oregon and other Hatchet Project Developers. See
+# the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
 
@@ -91,8 +91,7 @@ class ApexReader:
         if not node_name:
             node_name = child_dict["name"]
         node_dict = dict(
-            {"node": hnode, "rank": rank, "name": node_name},
-            **child_dict["metrics"]
+            {"node": hnode, "rank": rank, "name": node_name}, **child_dict["metrics"]
         )
 
         node_dicts.append(node_dict)
@@ -120,7 +119,7 @@ class ApexReader:
                             ": WARNING! Duplicate child: ",
                             c_name,
                             "of parent",
-                            child_dict["frame"]["name"]
+                            child_dict["frame"]["name"],
                         )
                         self.warning = True
                     count = child_set[c_name] + 1
@@ -129,9 +128,7 @@ class ApexReader:
                     child_set[c_name] = count
                 else:
                     child_set[c_name] = 1
-                self.parse_node_apex(
-                    frame_to_node_dict, node_dicts, child, hnode, rank
-                )
+                self.parse_node_apex( frame_to_node_dict, node_dicts, child, hnode, rank)
 
     def read(self):
         list_roots = []
@@ -196,7 +193,7 @@ class ApexReader:
                                 ": WARNING! Duplicate child: ",
                                 c_name,
                                 "of parent",
-                                node_name
+                                node_name,
                             )
                             self.warning = True
                         count = child_set[c_name] + 1
@@ -227,7 +224,7 @@ class ApexReader:
         # Make an index of all unique combinations of node, rank
         new_index = pd.MultiIndex.from_product(
             [dataframe["node"].unique(), dataframe["rank"].unique()],
-            names=["node", "rank"]
+            names=["node", "rank"],
         )
         print("Making MultiIndex...")
         dataframe.set_index(["node", "rank"], inplace=True)
