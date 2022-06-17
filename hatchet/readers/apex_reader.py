@@ -127,7 +127,7 @@ class ApexReader:
                     child_set[c_name] = count
                 else:
                     child_set[c_name] = 1
-                self.parse_node_apex( frame_to_node_dict, node_dicts, child, hnode, rank)
+                self.parse_node_apex(frame_to_node_dict, node_dicts, child, hnode, rank)
 
     def read(self):
         list_roots = []
