@@ -44,7 +44,7 @@ class Chopper:
         # TODO: change drop_index_levels(). Drop only ranks or threads.
         graphframe2.drop_index_levels()
 
-        result_graphframe = graphframe2.groupby_aggregate(groupby_column, 'sum')
+        result_graphframe = graphframe2.groupby_aggregate(groupby_column, "sum")
         result_graphframe = result_graphframe.dataframe.sort_values(
             by=[graphframe.default_metric], ascending=False
         )
