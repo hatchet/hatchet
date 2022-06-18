@@ -1229,14 +1229,14 @@ class GraphFrame:
             self,
             groupby_column,
         )
-    
+
     @Logger.loggable
     def flatten(self, groupby_column=None):
         """
         Flattens the graphframe by changing its graph structure and the dataframe.
         """
         return Chopper().flatten(self, groupby_column)
-    
+
     @Logger.loggable
     def to_callgraph(self):
         """
