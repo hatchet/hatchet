@@ -14,13 +14,12 @@ from pycubexr.parsers.tar_parser import CubexParser
 from pycubexr.utils.exceptions import MissingMetricError
 
 
-class ScorepReader:
+class ScorePReader:
     """Read in cubex files generated using Scorep."""
 
     def __init__(self, filename):
         self.filename = filename
-        self.node_dicts = []
-        self.callpath_to_node_dict = {}
+        self.callpath_to_node_dicts = {}
         self.callpath_to_node = {}
         self.inc_metrics = []
         self.exc_metrics = []
@@ -43,7 +42,9 @@ class ScorepReader:
             end_line,
             file,
         ):
-
+            """Gets all the related information about a node
+            and creates a node dictionary to be added to
+            the dataframe"""
             if callpath_rank_thread not in node_dict:
                 node_dict[callpath_rank_thread] = {
                     "node": hatchet_node,
@@ -76,6 +77,11 @@ class ScorepReader:
             node_dict[callpath_rank_thread].update({metric_name: metric_value})
 
         def _calculate_rank_thread(location):
+            """Calculates and returns the rank and thread number using
+            the location information stored in Score-P. Location ID is
+            a number between 0 and (# of ranks) * (# of threads) - 1.
+            Also, checks if multiple ranks or threads exists to be
+            able to create the dataframe accordingly."""
             # calculate rank and thread numbers.
             # we should do this calculation for each location.id.
             # location.id is a number from 0 to (# of ranks) * (# of threads) - 1
@@ -88,16 +94,21 @@ class ScorepReader:
                 self.multiple_threads = True
             return (rank, thread)
 
-        # get node name, begin and end line, and file info of a node from pycubexr
         def _get_node_info(pycubexr_cnode, node_name, begin_line, end_line, file):
+            """Gets the node name, begin and end line, and file info
+            of a node from pycubexr."""
             node_name = cubex.get_region(pycubexr_cnode).name
             begin_line = cubex.get_region(pycubexr_cnode).begin
             end_line = cubex.get_region(pycubexr_cnode).end
             file = cubex.get_region(pycubexr_cnode).mod
             return node_name, begin_line, end_line, file
 
-        def _get_callpath_all_info(pycubexr_cnode, parent_callpath):
-
+        def _get_callpath_info(pycubexr_cnode, parent_callpath):
+            """Gets the callpath information by traversing the
+            tree created by pycubexr.
+            Checks if callpath of a node is already existing.
+            If yes, does not create a new node. Otherwise, creates
+            a new node and sets parent-child relationships."""
             node_dict = {}
             parent_node = self.callpath_to_node[parent_callpath]
             node_name, begin_line, end_line, file = None, None, None, None
@@ -157,16 +168,16 @@ class ScorepReader:
             # aggregate their values if we have seen it instead of
             # creating a new node not to get ambigous data error
             # on the dataframe.
-            if callpath_rank_thread in self.callpath_to_node_dict:
+            if callpath_rank_thread in self.callpath_to_node_dicts:
                 for c_r_t in node_dict.keys():
                     for key, value in node_dict[c_r_t].items():
                         if key in self.inc_metrics or key in self.exc_metrics:
-                            self.callpath_to_node_dict[c_r_t][key] += value
+                            self.callpath_to_node_dicts[c_r_t][key] += value
             else:
-                self.callpath_to_node_dict.update(node_dict)
+                self.callpath_to_node_dicts.update(node_dict)
 
             for child in pycubexr_cnode.get_children():
-                _get_callpath_all_info(child, callpath)
+                _get_callpath_info(child, callpath)
 
         root = cubex._anchor_result.cnodes[0]
         root_name, root_begin, root_end, root_file = None, None, None, None
@@ -223,9 +234,9 @@ class ScorepReader:
                 # Ignore missing metrics
                 pass
 
-        self.callpath_to_node_dict.update(node_dict)
+        self.callpath_to_node_dicts.update(node_dict)
         for child in root.get_children():
-            _get_callpath_all_info(child, callpath)
+            _get_callpath_info(child, callpath)
 
         return self.list_roots
 
@@ -237,7 +248,7 @@ class ScorepReader:
         graph = Graph(roots)
         graph.enumerate_traverse()
 
-        dataframe = pd.DataFrame.from_dict(data=self.callpath_to_node_dict.values())
+        dataframe = pd.DataFrame.from_dict(data=self.callpath_to_node_dicts.values())
 
         indices = []
         # Set indices according to rank/thread numbers.

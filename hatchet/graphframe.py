@@ -195,12 +195,14 @@ class GraphFrame:
 
         return TAUReader(dirname).read()
 
+    @staticmethod
+    @Logger.loggable
     def from_scorep(filename):
-        """Read in a profile generated using TAU."""
+        """Read in a profile generated using Score-P."""
         # import this lazily to avoid circular dependencies
-        from .readers.scorep_reader import ScorepReader
+        from .readers.scorep_reader import ScorePReader
 
-        return ScorepReader(filename).read()
+        return ScorePReader(filename).read()
 
     @staticmethod
     @Logger.loggable
