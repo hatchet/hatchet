@@ -30,7 +30,7 @@ class Chopper:
         )
 
         return result_dataframe
-    
+
     def flatten(self, graphframe, groupby_column=None):
         """
         Flattens the graphframe by changing its graph structure and the dataframe.
@@ -40,7 +40,7 @@ class Chopper:
 
         if groupby_column is None:
             groupby_column = "name"
-        
+
         # TODO: change drop_index_levels(). Drop only ranks or threads.
         graphframe2.drop_index_levels()
 
@@ -62,7 +62,7 @@ class Chopper:
 
         # TODO: how to find hierarchy used for input nodes
         result_graphframe = self.flatten(graphframe, "name")
-            
+
         return result_graphframe
 
     def calculate_load_imbalance(self, graphframe, metric_columns=None):
