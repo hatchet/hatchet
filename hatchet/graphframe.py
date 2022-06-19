@@ -197,6 +197,15 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
+    def from_scorep(filename):
+        """Read in a profile generated using Score-P."""
+        # import this lazily to avoid circular dependencies
+        from .readers.scorep_reader import ScorePReader
+
+        return ScorePReader(filename).read()
+
+    @staticmethod
+    @Logger.loggable
     def from_timemory(input=None, select=None, **_kwargs):
         """Read in timemory data.
 

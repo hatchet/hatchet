@@ -51,6 +51,7 @@ setup(
         "textX",
         "multiprocess",
         "caliper-reader",
+        "pycubexr; python_version >= '3.6'",
     ],
     ext_modules=[
         Extension(
