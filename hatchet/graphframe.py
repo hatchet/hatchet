@@ -1110,7 +1110,7 @@ class GraphFrame:
 
         Arguments:
             self (graphframe): self's graphframe
-            groupby_column: groupby column on dataframe
+            groupby_column: column to groupby on dataframe
             agg_function: aggregate function on dataframe
 
         Return:
