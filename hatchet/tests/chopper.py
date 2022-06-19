@@ -1,3 +1,8 @@
+# Copyright 2021-2022 University of Maryland and other Hatchet Project
+# Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: MIT
+
 import numpy as np
 from hatchet.graphframe import GraphFrame
 
