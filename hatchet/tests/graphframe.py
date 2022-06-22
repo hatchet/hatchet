@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Copyright 2017-2021 Lawrence Livermore National Security, LLC and other
+# Copyright 2017-2022 Lawrence Livermore National Security, LLC and other
 # Hatchet Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
@@ -867,9 +867,9 @@ def test_groupby_aggregate_simple(mock_dag_literal_module):
 
     gf = GraphFrame.from_literal(mock_dag_literal_module)
 
-    groupby_func = ["module"]
+    groupby_col = ["module"]
     agg_func = {"time (inc)": np.max, "time": np.max}
-    out_gf = gf.groupby_aggregate(groupby_func, agg_func)
+    out_gf = gf.groupby_aggregate(groupby_col, agg_func)
 
     assert all(m in out_gf.dataframe.name.values for m in modules)
     assert len(out_gf.graph) == len(modules)
@@ -898,9 +898,9 @@ def test_groupby_aggregate_complex(mock_dag_literal_module_complex):
 
     gf = GraphFrame.from_literal(mock_dag_literal_module_complex)
 
-    groupby_func = ["module"]
+    groupby_col = ["module"]
     agg_func = {"time (inc)": np.sum, "time": np.sum}
-    out_gf = gf.groupby_aggregate(groupby_func, agg_func)
+    out_gf = gf.groupby_aggregate(groupby_col, agg_func)
 
     assert all(m in out_gf.dataframe.name.values for m in modules)
     assert len(out_gf.graph) == len(modules)
@@ -930,9 +930,9 @@ def test_groupby_aggregate_more_complex(mock_dag_literal_module_more_complex):
 
     gf = GraphFrame.from_literal(mock_dag_literal_module_more_complex)
 
-    groupby_func = ["module"]
+    groupby_col = ["module"]
     agg_func = {"time (inc)": np.sum, "time": np.sum}
-    out_gf = gf.groupby_aggregate(groupby_func, agg_func)
+    out_gf = gf.groupby_aggregate(groupby_col, agg_func)
 
     assert all(m in out_gf.dataframe.name.values for m in modules)
     assert len(out_gf.graph) == len(modules)

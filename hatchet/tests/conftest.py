@@ -1,4 +1,4 @@
-# Copyright 2017-2021 Lawrence Livermore National Security, LLC and other
+# Copyright 2017-2022 Lawrence Livermore National Security, LLC and other
 # Hatchet Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
@@ -174,6 +174,18 @@ def tau_profile_dir(data_dir, tmpdir):
         shutil.copy(f, str(tmpdir))
 
     return tau_dir
+
+
+@pytest.fixture
+def scorep_profile_cubex(data_dir, tmpdir):
+    """Builds a temporary directory containing the Score-P profiles."""
+    scorep_cubex_dir = os.path.join(data_dir, "scorep-cpi-cubex")
+    scorep_cubex__file = os.path.join(scorep_cubex_dir, "profile.cubex")
+
+    shutil.copy(scorep_cubex__file, str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), "profile.cubex")
+
+    return tmpfile
 
 
 @pytest.fixture

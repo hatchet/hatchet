@@ -1,4 +1,4 @@
-# Copyright 2017-2021 Lawrence Livermore National Security, LLC and other
+# Copyright 2017-2022 Lawrence Livermore National Security, LLC and other
 # Hatchet Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
@@ -194,6 +194,15 @@ class GraphFrame:
         from .readers.tau_reader import TAUReader
 
         return TAUReader(dirname).read()
+
+    @staticmethod
+    @Logger.loggable
+    def from_scorep(filename):
+        """Read in a profile generated using Score-P."""
+        # import this lazily to avoid circular dependencies
+        from .readers.scorep_reader import ScorePReader
+
+        return ScorePReader(filename).read()
 
     @staticmethod
     @Logger.loggable
@@ -1101,7 +1110,7 @@ class GraphFrame:
         return self
 
     @Logger.loggable
-    def groupby_aggregate(self, groupby_function, agg_function):
+    def groupby_aggregate(self, groupby_column, agg_function):
         """Groupby-aggregate dataframe and reindex the Graph.
 
         Reindex the graph to match the groupby-aggregated dataframe.
@@ -1110,7 +1119,7 @@ class GraphFrame:
 
         Arguments:
             self (graphframe): self's graphframe
-            groupby_function: groupby function on dataframe
+            groupby_column: column to groupby on dataframe
             agg_function: aggregate function on dataframe
 
         Return:
@@ -1169,7 +1178,7 @@ class GraphFrame:
                     reindex(child, super_node, visited)
 
         # groupby-aggregate dataframe based on user-supplied functions
-        groupby_obj = self.dataframe.groupby(groupby_function)
+        groupby_obj = self.dataframe.groupby(groupby_column)
         agg_df = groupby_obj.agg(agg_function)
 
         # traverse groupby_obj, determine old node to super node mapping
