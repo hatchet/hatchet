@@ -855,9 +855,7 @@ class GraphFrame:
                             )
 
                             # add value to the dataframe.
-                            self.dataframe.at[
-                                [node_index_tuple], new_column
-                            ] = exc_value
+                            self.dataframe.at[node_index_tuple, new_column] = exc_value
                 # if not multiindex
                 else:
                     # calculate exclusive metric.
