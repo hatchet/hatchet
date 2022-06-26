@@ -770,6 +770,104 @@ class GraphFrame:
         ]
         self.subgraph_sum(self.exc_metrics, self.inc_metrics)
 
+    def create_exclusive_columns(self, columns=None):
+        """Create exclusive column using inclusive column of the corresponding
+        metric.
+
+        Uses default_metric if columns==None. If default_metric is exclusive,
+        creates exclusive column for each inclusive.
+
+        Skips if the given column is exclusive.
+        If the given columns is inclusive:
+        If ' (inc)' is in the given column, name of the new column will be
+        the given column without ' (inc)' at the end.
+        If ' (inc)' is not in the given column, name of the new column will be
+        the given column with ' (exc)' at the end.
+        """
+
+        # check if a column is given as parameter.
+        if columns is None:
+            # if not given, use default metric if it is
+            # inclusive.
+            if self.default_metric in self.inc_metrics:
+                columns = [self.default_metric]
+            # if default metric is not inclusive, create
+            # an exclusive column for each inc metric.
+            else:
+                columns = self.inc_metrics
+
+        # convert to a list of str is given.
+        if isinstance(columns, str):
+            columns = [columns]
+
+        for node in self.graph.traverse():
+            for column in columns:
+                # skip if given column is not inclusive.
+                if column not in self.inc_metrics:
+                    continue
+
+                new_column = ""
+                # name the new column removing ' (inc)' from
+                # the inclusive column
+                if " (inc)" in column:
+                    new_column = column.replace(" (inc)", "")
+                # add ' (exc)' if ' (inc)' doesn't exists.
+                else:
+                    new_column = column + " (exc)"
+                # add new column to exc_metrics
+                self.exc_metrics.append(new_column)
+
+                if isinstance(self.dataframe.index, pd.MultiIndex):
+                    # for each index in the dataframe
+                    for idx in self.dataframe.loc[node].index:
+                        # if 1D multiindex
+                        if isinstance(idx, int):
+                            node_index_tuple = (node, idx)
+
+                            # calculate exclusive metric.
+                            child_inc_sum = 0
+                            for child in node.children:
+                                child_index_tuple = (child, idx)
+                                child_inc_sum += self.dataframe.loc[child_index_tuple][
+                                    column
+                                ]
+
+                            exc_value = (
+                                self.dataframe.loc[node_index_tuple][column]
+                                - child_inc_sum
+                            )
+                            # add value to the dataframe.
+                            self.dataframe.at[node_index_tuple, new_column] = exc_value
+                        # if 2D multiindex
+                        elif isinstance(idx, tuple):
+                            node_index_tuple = (node,) + idx
+
+                            # calculate exclusive metric.
+                            child_inc_sum = 0
+                            for child in node.children:
+                                child_index_tuple = (child,) + idx
+                                child_inc_sum += self.dataframe.loc[child_index_tuple][
+                                    column
+                                ]
+                            exc_value = (
+                                self.dataframe.loc[node_index_tuple][column]
+                                - child_inc_sum
+                            )
+
+                            # add value to the dataframe.
+                            self.dataframe.at[
+                                [node_index_tuple], new_column
+                            ] = exc_value
+                # if not multiindex
+                else:
+                    # calculate exclusive metric.
+                    child_inc_sum = 0
+                    for child in node.children:
+                        child_inc_sum += self.dataframe.loc[child][column]
+                    exc_value = self.dataframe.loc[node][column] - child_inc_sum
+                    # add value to the dataframe.
+                    self.dataframe.at[[node], new_column] = exc_value
+
     @Logger.loggable
     def show_metric_columns(self):
         """Returns a list of dataframe column labels."""
