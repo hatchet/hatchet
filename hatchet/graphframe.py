@@ -866,7 +866,7 @@ class GraphFrame:
                         child_inc_sum += self.dataframe.loc[child][column]
                     exc_value = self.dataframe.loc[node][column] - child_inc_sum
                     # add value to the dataframe.
-                    self.dataframe.at[[node], new_column] = exc_value
+                    self.dataframe.at[node, new_column] = exc_value
 
     @Logger.loggable
     def show_metric_columns(self):
