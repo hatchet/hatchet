@@ -837,7 +837,7 @@ class GraphFrame:
                                 - child_inc_sum
                             )
                             # add value to the dataframe.
-                            self.dataframe.at[node_index_tuple, new_column] = exc_value
+                            self.dataframe.loc[node_index_tuple, new_column] = exc_value
                         # if 2D multiindex
                         elif isinstance(idx, tuple):
                             node_index_tuple = (node,) + idx
@@ -855,7 +855,9 @@ class GraphFrame:
                             )
 
                             # add value to the dataframe.
-                            self.dataframe.at[node_index_tuple, new_column] = exc_value
+                            self.dataframe.loc[
+                                [node_index_tuple], new_column
+                            ] = exc_value
                 # if not multiindex
                 else:
                     # calculate exclusive metric.
@@ -864,7 +866,7 @@ class GraphFrame:
                         child_inc_sum += self.dataframe.loc[child][column]
                     exc_value = self.dataframe.loc[node][column] - child_inc_sum
                     # add value to the dataframe.
-                    self.dataframe.at[node, new_column] = exc_value
+                    self.dataframe.loc[node, new_column] = exc_value
 
     @Logger.loggable
     def show_metric_columns(self):
