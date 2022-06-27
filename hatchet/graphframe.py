@@ -349,7 +349,7 @@ class GraphFrame:
             list(self.exc_metrics),
             list(self.inc_metrics),
             self.default_metric,
-            self.metadata,
+            dict(self.metadata),
         )
 
     @Logger.loggable
@@ -372,7 +372,7 @@ class GraphFrame:
             list(self.exc_metrics),
             list(self.inc_metrics),
             self.default_metric,
-            self.metadata,
+            dict(self.metadata),
         )
 
     def drop_index_levels(self, function=np.mean):
@@ -473,11 +473,7 @@ class GraphFrame:
 
         filtered_df.set_index(index_names, inplace=True)
 
-        filtered_gf = GraphFrame(self.graph, filtered_df)
-        filtered_gf.exc_metrics = self.exc_metrics
-        filtered_gf.inc_metrics = self.inc_metrics
-        filtered_gf.default_metric = self.default_metric
-        filtered_gf.metadata = self.metadata
+        filtered_gf = GraphFrame(self.graph, filtered_df, self.exc_metrics, self.inc_metrics, self.default_metric, self.metadata)
 
         if squash:
             return filtered_gf.squash()
@@ -575,10 +571,10 @@ class GraphFrame:
         new_gf = GraphFrame(
             graph,
             agg_df,
-            self.exc_metrics,
-            self.inc_metrics,
+            list(self.exc_metrics),
+            list(self.inc_metrics),
             self.default_metric,
-            self.metadata,
+            dict(self.metadata),
         )
         new_gf.update_inclusive_columns()
         return new_gf
@@ -1219,10 +1215,10 @@ class GraphFrame:
         new_gf = GraphFrame(
             graph,
             tmp_df,
-            self.exc_metrics,
-            self.inc_metrics,
+            list(self.exc_metrics),
+            list(self.inc_metrics),
             self.default_metric,
-            self.metadata,
+            dict(self.metadata),
         )
         new_gf.drop_index_levels()
         return new_gf

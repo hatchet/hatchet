@@ -81,7 +81,7 @@ class SpotDatasetReader:
 
             self.df_data.append(dict({"name": name, "node": node}, **metrics))
 
-    def read(self, default_metric="Total time (inc)"):
+    def read(self, default_metric="Total time"):
         """Create GraphFrame for the given Spot dataset."""
 
         with self.timer.phase("graph construction"):
@@ -101,13 +101,19 @@ class SpotDatasetReader:
             else:
                 exc_metrics.append(m)
 
+        if default_metric not in dataframe.columns:
+             if len(exc_metrics) > 0:
+                 default_metric = exc_metrics[0]
+             elif len(inc_metrics) > 0:
+                 default_metric = inc_metrics[0]
+
         return hatchet.graphframe.GraphFrame(
             graph,
             dataframe,
             exc_metrics,
             inc_metrics,
-            metadata=self.metadata,
             default_metric=default_metric,
+            metadata=self.metadata,
         )
 
     def _create_node(self, path):
