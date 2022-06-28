@@ -31,15 +31,12 @@ class Chopper:
 
         return result_dataframe
 
-    def flatten(self, graphframe, groupby_column=None):
+    def flatten(self, graphframe, groupby_column="name"):
         """
         Flattens the graphframe by changing its graph structure and the dataframe.
         Returns a new graphframe.
         """
         graphframe2 = graphframe.deepcopy()
-
-        if groupby_column is None:
-            groupby_column = "name"
 
         # TODO: change drop_index_levels(). Drop only ranks or threads.
         graphframe2.drop_index_levels()
@@ -60,7 +57,8 @@ class Chopper:
 
         assert graphframe2.graph.is_tree(), "input graph is not a tree"
 
-        # TODO: how to find hierarchy used for input nodes
+        # TODO: provide hierarchy information in the graphframe metadata to access the
+        #       hierarchy of the input nodes - currently using function name
         result_graphframe = self.flatten(graphframe, "name")
 
         return result_graphframe
@@ -205,3 +203,89 @@ class Chopper:
         return find_hot_path(
             gf_copy, start_node, metric, threshold, callpath=[start_node]
         )
+
+    def calculate_speedup_efficiency(
+        self,
+        graphframes_pes=[],
+        metric_columns=["time", "time (inc)"],
+        speedup=True,
+        efficiency=False,
+        weak_scaling=False,
+        inplace=False,
+    ):
+        def _calculate(graphframe1, graphframe2, pe1, pe2):
+            """Calculates speedup and efficiency.
+            Creates a new graphframe and adds <metric>-<spdup/efc/wk_scl>(pe1xpe2)
+            columns to its dataframe.
+            """
+            graphframe_spdup_efc = graphframe1 / graphframe2
+
+            for metric in metric_columns:
+                if speedup:
+                    graphframe_spdup_efc.dataframe[
+                        "{}-{}({}x{})".format(metric, "spdup", pe1, pe2)
+                    ] = (graphframe2.dataframe[metric] - graphframe1.dataframe[metric])
+
+                if efficiency:
+                    graphframe_spdup_efc.dataframe[
+                        "{}-{}({}x{})".format(metric, "efc", pe1, pe2)
+                    ] = (graphframe_spdup_efc.dataframe[metric] / pe2)
+
+                if weak_scaling:
+                    graphframe_spdup_efc.dataframe[
+                        "{}-{}({}x{})".format(metric, "wk_scl", pe1, pe2)
+                    ] = (graphframe1.dataframe[metric] / graphframe2.dataframe[metric])
+
+            return graphframe_spdup_efc
+
+        def _merge_columns(graphframe_from, graphframes_to, columns):
+            """Merge two dataframes. This function is used only if
+            inplace=True. Adds speedup, efficiency, and weak scaling columns to the
+            original graphframe without ading/removing any index (how=left).
+            """
+            for graphframe in graphframes_to:
+                graphframe.dataframe = graphframe.dataframe.join(
+                    graphframe_from.dataframe[columns], how="left"
+                )
+
+        if graphframes_pes:
+            # Sort the graphframes by their pes before the division operation.
+            graphframes_pes = sorted(graphframes_pes, key=lambda x: x[1])
+            graphframe1 = graphframes_pes[0][0].deepcopy()
+            graphframe2 = graphframes_pes[1][0].deepcopy()
+            graphframe1_pe = graphframes_pes[0][1]
+            graphframe2_pe = graphframes_pes[1][1]
+
+            # Original graph structures won't be changed even when inplace=True.
+            graphframe_spdup_efc = _calculate(
+                graphframe1,
+                graphframe2,
+                graphframe1_pe,
+                graphframe2_pe,
+            )
+
+            # add speedup and efficiency columns to original graphframes.
+            # we don't change the graph structure, just adding columns to the
+            # dataframe.
+            if inplace:
+                merge_metric_columns = []
+                for metric_column in graphframe_spdup_efc.dataframe.columns:
+                    if (
+                        "spdup" in metric_column
+                        or "efc" in metric_column
+                        or "wk_scl" in metric_column
+                    ):
+                        merge_metric_columns.append(metric_column)
+
+                _merge_columns(
+                    graphframe_spdup_efc,
+                    [graphframes_pes[0][0], graphframes_pes[1][0]],
+                    merge_metric_columns,
+                )
+
+            return graphframe_spdup_efc
+        else:
+            raise ValueError(
+                "graphframes_pes cannot be empty. It "
+                + "should be list of two tuples: [(graphframe, <num_pes>), (...)]"
+            )
