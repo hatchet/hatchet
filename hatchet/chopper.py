@@ -204,8 +204,7 @@ class Chopper:
             gf_copy, start_node, metric, threshold, callpath=[start_node]
         )
 
-    def calculate_speedup_efficiency(
-        self,
+    def analyze_scaling(
         graphframes_pes=[],
         metric_columns=["time", "time (inc)"],
         speedup=True,
