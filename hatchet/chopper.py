@@ -218,7 +218,7 @@ class Chopper:
             Creates a new graphframe and adds <metric>-<spdup/efc/wk_scl>(pe1xpe2)
             columns to its dataframe.
             """
-            graphframe_spdup_efc = graphframe1 / graphframe2
+            graphframe_spdup_efc = graphframe1.div(graphframe2)
 
             for metric in metric_columns:
                 if speedup:
