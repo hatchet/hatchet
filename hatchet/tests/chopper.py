@@ -108,7 +108,7 @@ def test_analyze_scaling(small_mock1):
     # program with a different number of processing elements
     gf2.dataframe["time"] = gf2.dataframe["time"].apply(lambda x: x / 2)
 
-    gf_test = gf1 / gf2
+    gf_test = gf1.div(gf2)
 
     # use analyze_scaling function with all bool args set to True
     pes = [(gf1, 1), (gf2, 2)]
