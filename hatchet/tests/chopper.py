@@ -118,7 +118,7 @@ def test_analyze_scaling(small_mock1):
     # add all analysis information as new columns to the original and test dataframes
     gfs = [gf1, gf2, gf_test]
     for gf in gfs:
-        gf.dataframe["time-spdup(1x2)"] = gf2.dataframe[metric] - gf1.dataframe[metric]
+        gf.dataframe["time-spdup(1x2)"] = gf1.dataframe[metric] / gf2.dataframe[metric]
         gf.dataframe["time-efc(1x2)"] = gf_test.dataframe[metric] / 2
         gf.dataframe["time-wk_scl(1x2)"] = gf1.dataframe[metric] / gf2.dataframe[metric]
 
