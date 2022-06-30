@@ -36,15 +36,7 @@ class Chopper:
         Flattens the graphframe by changing its graph structure and the dataframe.
         Returns a new graphframe.
         """
-        graphframe2 = graphframe.deepcopy()
-
-        # TODO: change drop_index_levels(). Drop only ranks or threads.
-        graphframe2.drop_index_levels()
-
-        result_graphframe = graphframe2.groupby_aggregate(groupby_column, "sum")
-        result_graphframe = result_graphframe.dataframe.sort_values(
-            by=[graphframe.default_metric], ascending=False
-        )
+        result_graphframe = graphframe.groupby_aggregate(groupby_column, "sum")
 
         return result_graphframe
 
@@ -53,13 +45,11 @@ class Chopper:
         Converts a CCT to a callgraph.
         Returns a new graphframe.
         """
-        graphframe2 = graphframe.deepcopy()
-
-        assert graphframe2.graph.is_tree(), "input graph is not a tree"
+        assert graphframe.graph.is_tree(), "input graph is not a tree"
 
         # TODO: provide hierarchy information in the graphframe metadata to access the
         #       hierarchy of the input nodes - currently using function name
-        result_graphframe = self.flatten(graphframe, "name")
+        result_graphframe = graphframe.groupby_aggregate("name", "sum")
 
         return result_graphframe
 
