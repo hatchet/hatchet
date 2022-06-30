@@ -5,7 +5,6 @@
 
 import numpy as np
 from hatchet.graphframe import GraphFrame
-from hatchet.chopper import Chopper
 
 
 def test_flat_profile(calc_pi_hpct_db):
@@ -97,33 +96,3 @@ def test_hot_path(calc_pi_hpct_db):
     hot_path = graphframe.hot_path(metric="time (inc)", threshold=2)
     assert len(hot_path) == 1
     assert hot_path[0].frame["name"] == "<program root>"
-
-
-def test_analyze_scaling(small_mock1):
-    """Validate that the analyze scaling works correctly."""
-    gf1 = GraphFrame.from_literal(small_mock1)
-    gf2 = GraphFrame.from_literal(small_mock1)
-
-    # halve the time of the original data to produce a dummy profile of the same
-    # program with a different number of processing elements
-    gf2.dataframe["time"] = gf2.dataframe["time"].apply(lambda x: x / 2)
-
-    gf_test = gf1.div(gf2)
-
-    # use analyze_scaling function with all bool args set to True
-    pes = [(gf1, 1), (gf2, 2)]
-    metric = ["time"]
-    gf_result = Chopper.analyze_scaling(pes, metric, 1, 1, 1, 1)
-
-    # add all analysis information as new columns to the original and test dataframes
-    gfs = [gf1, gf2, gf_test]
-    for gf in gfs:
-        gf.dataframe["time-spdup(1x2)"] = gf2.dataframe[metric] - gf1.dataframe[metric]
-        gf.dataframe["time-efc(1x2)"] = gf_test.dataframe[metric] / 2
-        gf.dataframe["time-wk_scl(1x2)"] = gf1.dataframe[metric] / gf2.dataframe[metric]
-
-    # check if the new dataframe returned by analyze_scaling matches the test dataframe
-    assert gf_test.dataframe.equals(gf_result.dataframe)
-
-    # check if the analysis columns of the original two dataframes match each other
-    assert gf1.dataframe.iloc[:, -3:].equals(gf2.dataframe.iloc[:, -3:])
