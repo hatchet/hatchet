@@ -479,7 +479,7 @@ class GraphFrame:
             self.exc_metrics,
             self.inc_metrics,
             self.default_metric,
-            self.metadata
+            self.metadata,
         )
 
         if squash:
