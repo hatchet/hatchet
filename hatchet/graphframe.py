@@ -473,7 +473,14 @@ class GraphFrame:
 
         filtered_df.set_index(index_names, inplace=True)
 
-        filtered_gf = GraphFrame(self.graph, filtered_df, self.exc_metrics, self.inc_metrics, self.default_metric, self.metadata)
+        filtered_gf = GraphFrame(
+            self.graph,
+            filtered_df,
+            self.exc_metrics,
+            self.inc_metrics,
+            self.default_metric,
+            self.metadata
+        )
 
         if squash:
             return filtered_gf.squash()

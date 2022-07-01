@@ -102,10 +102,10 @@ class SpotDatasetReader:
                 exc_metrics.append(m)
 
         if default_metric not in dataframe.columns:
-             if len(exc_metrics) > 0:
-                 default_metric = exc_metrics[0]
-             elif len(inc_metrics) > 0:
-                 default_metric = inc_metrics[0]
+            if len(exc_metrics) > 0:
+                default_metric = exc_metrics[0]
+            elif len(inc_metrics) > 0:
+                default_metric = inc_metrics[0]
 
         return hatchet.graphframe.GraphFrame(
             graph,
