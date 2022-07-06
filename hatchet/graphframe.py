@@ -51,8 +51,8 @@ class GraphFrame:
         self,
         graph,
         dataframe,
-        exc_metrics=None,
-        inc_metrics=None,
+        exc_metrics,
+        inc_metrics,
         default_metric="time",
         metadata={},
     ):
@@ -74,6 +74,8 @@ class GraphFrame:
             raise ValueError("GraphFrame() requires a Graph")
         if dataframe is None:
             raise ValueError("GraphFrame() requires a DataFrame")
+        if exc_metrics is None and inc_metrics is None:
+            raise ValueError("GraphFrame() requires atleast one exclusive or inclusive metric")
 
         if "node" not in list(dataframe.index.names):
             raise ValueError(
@@ -476,10 +478,10 @@ class GraphFrame:
         filtered_gf = GraphFrame(
             self.graph,
             filtered_df,
-            self.exc_metrics,
-            self.inc_metrics,
+            list(self.exc_metrics),
+            list(self.inc_metrics),
             self.default_metric,
-            self.metadata,
+            dict(self.metadata),
         )
 
         if squash:

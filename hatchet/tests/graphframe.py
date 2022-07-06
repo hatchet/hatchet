@@ -78,15 +78,15 @@ def test_unify_hpctoolkit_data(calc_pi_hpct_db):
 def test_invalid_constructor():
     # bad Graph
     with pytest.raises(ValueError):
-        GraphFrame(None, None)
+        GraphFrame(None, None, None, None)
 
     # bad dataframe
     with pytest.raises(ValueError):
-        GraphFrame(Graph([]), None)
+        GraphFrame(Graph([]), None, None, None)
 
     # dataframe has no "node" index
     with pytest.raises(ValueError):
-        GraphFrame(Graph([]), pd.DataFrame())
+        GraphFrame(Graph([]), pd.DataFrame(), None, None)
 
 
 def test_from_lists():
