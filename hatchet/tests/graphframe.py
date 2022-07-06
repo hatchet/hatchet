@@ -31,6 +31,8 @@ def test_copy(mock_graph_literal):
     assert gf.dataframe.equals(other.dataframe)
     assert gf.inc_metrics == other.inc_metrics
     assert gf.exc_metrics == other.exc_metrics
+    assert gf.default_metric == other.default_metric
+    assert gf.metadata == other.metadata
 
 
 def test_deepcopy(mock_graph_literal):
@@ -41,6 +43,8 @@ def test_deepcopy(mock_graph_literal):
     assert gf.dataframe is not other.dataframe
     assert gf.inc_metrics == other.inc_metrics
     assert gf.exc_metrics == other.exc_metrics
+    assert gf.default_metric == other.default_metric
+    assert gf.metadata == other.metadata
 
 
 def test_drop_index_levels(calc_pi_hpct_db):
@@ -74,15 +78,15 @@ def test_unify_hpctoolkit_data(calc_pi_hpct_db):
 def test_invalid_constructor():
     # bad Graph
     with pytest.raises(ValueError):
-        GraphFrame(None, None)
+        GraphFrame(None, None, None, None)
 
     # bad dataframe
     with pytest.raises(ValueError):
-        GraphFrame(Graph([]), None)
+        GraphFrame(Graph([]), None, None, None)
 
     # dataframe has no "node" index
     with pytest.raises(ValueError):
-        GraphFrame(Graph([]), pd.DataFrame())
+        GraphFrame(Graph([]), pd.DataFrame(), None, None)
 
 
 def test_from_lists():

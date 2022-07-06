@@ -51,8 +51,8 @@ class GraphFrame:
         self,
         graph,
         dataframe,
-        exc_metrics=None,
-        inc_metrics=None,
+        exc_metrics,
+        inc_metrics,
         default_metric="time",
         metadata={},
     ):
@@ -74,6 +74,10 @@ class GraphFrame:
             raise ValueError("GraphFrame() requires a Graph")
         if dataframe is None:
             raise ValueError("GraphFrame() requires a DataFrame")
+        if exc_metrics is None and inc_metrics is None:
+            raise ValueError(
+                "GraphFrame() requires atleast one exclusive or inclusive metric"
+            )
 
         if "node" not in list(dataframe.index.names):
             raise ValueError(
@@ -358,7 +362,7 @@ class GraphFrame:
             list(self.exc_metrics),
             list(self.inc_metrics),
             self.default_metric,
-            self.metadata,
+            dict(self.metadata),
         )
 
     @Logger.loggable
@@ -381,7 +385,7 @@ class GraphFrame:
             list(self.exc_metrics),
             list(self.inc_metrics),
             self.default_metric,
-            self.metadata,
+            dict(self.metadata),
         )
 
     def drop_index_levels(self, function=np.mean):
@@ -482,11 +486,14 @@ class GraphFrame:
 
         filtered_df.set_index(index_names, inplace=True)
 
-        filtered_gf = GraphFrame(self.graph, filtered_df)
-        filtered_gf.exc_metrics = self.exc_metrics
-        filtered_gf.inc_metrics = self.inc_metrics
-        filtered_gf.default_metric = self.default_metric
-        filtered_gf.metadata = self.metadata
+        filtered_gf = GraphFrame(
+            self.graph,
+            filtered_df,
+            list(self.exc_metrics),
+            list(self.inc_metrics),
+            self.default_metric,
+            dict(self.metadata),
+        )
 
         if squash:
             return filtered_gf.squash()
@@ -584,10 +591,10 @@ class GraphFrame:
         new_gf = GraphFrame(
             graph,
             agg_df,
-            self.exc_metrics,
-            self.inc_metrics,
+            list(self.exc_metrics),
+            list(self.inc_metrics),
             self.default_metric,
-            self.metadata,
+            dict(self.metadata),
         )
         new_gf.update_inclusive_columns()
         return new_gf
@@ -1228,10 +1235,10 @@ class GraphFrame:
         new_gf = GraphFrame(
             graph,
             tmp_df,
-            self.exc_metrics,
-            self.inc_metrics,
+            list(self.exc_metrics),
+            list(self.inc_metrics),
             self.default_metric,
-            self.metadata,
+            dict(self.metadata),
         )
         new_gf.drop_index_levels()
         return new_gf
