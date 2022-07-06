@@ -31,6 +31,28 @@ class Chopper:
 
         return result_dataframe
 
+    def flatten(self, graphframe, groupby_column="name"):
+        """
+        Flattens the graphframe by changing its graph structure and the dataframe.
+        Returns a new graphframe.
+        """
+        result_graphframe = graphframe.groupby_aggregate(groupby_column, "sum")
+
+        return result_graphframe
+
+    def to_callgraph(self, graphframe):
+        """
+        Converts a CCT to a callgraph.
+        Returns a new graphframe.
+        """
+        assert graphframe.graph.is_tree(), "input graph is not a tree"
+
+        # TODO: provide hierarchy information in the graphframe metadata to access the
+        #       hierarchy of the input nodes - currently using function name
+        result_graphframe = graphframe.groupby_aggregate("name", "sum")
+
+        return result_graphframe
+
     def calculate_load_imbalance(self, graphframe, metric_columns=None):
         """Calculates load imbalance for given metric column(s)
         Takes a graphframe and a list of metric column(s), and
