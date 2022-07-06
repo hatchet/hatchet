@@ -75,7 +75,9 @@ class GraphFrame:
         if dataframe is None:
             raise ValueError("GraphFrame() requires a DataFrame")
         if exc_metrics is None and inc_metrics is None:
-            raise ValueError("GraphFrame() requires atleast one exclusive or inclusive metric")
+            raise ValueError(
+                "GraphFrame() requires atleast one exclusive or inclusive metric"
+            )
 
         if "node" not in list(dataframe.index.names):
             raise ValueError(
