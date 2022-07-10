@@ -775,6 +775,161 @@ class GraphFrame:
         """Returns a list of dataframe column labels."""
         return list(self.exc_metrics + self.inc_metrics)
 
+    def unify_multiple_graphframes(self, others):
+        def _transform_path(path, graphframe):
+            """Takes a tuple of nodes and converts it
+            to a tuple of only node names"""
+            callpath_with_names = tuple()
+            for node in path:
+                callpath_with_names += (graphframe.dataframe.loc[node]["name"],)
+            return callpath_with_names
+
+        def _rename_colums(graphframe, metrics, suffix):
+            for idx in range(len(metrics)):
+                graphframe.dataframe.rename(
+                    columns={metrics[idx]: "{}{}".format(metrics[idx], suffix)},
+                    inplace=True,
+                )
+
+                metrics[idx] = metrics[idx] + suffix
+
+        def _create_node(result_graphframe, graphframe, node, callpath):
+            new_node = node.copy()
+            result_graphframe.dataframe.loc[new_node] = graphframe.dataframe.loc[node]
+
+            parent_callpath = callpath[:-1]
+            parent_callpath_names = _transform_path(callpath, graphframe)
+
+            if not parent_callpath:
+                result_graphframe.graph.roots.append(new_node)
+                return new_node
+
+            if parent_callpath_names in biggest_gf_callpath_to_node.keys():
+                parent = biggest_gf_callpath_to_node[parent_callpath_names]
+                parent.add_child(new_node)
+                new_node.add_parent(parent)
+                return new_node
+
+            parent = _create_node(
+                result_graphframe,
+                graphframe,
+                parent_callpath[-1],
+                parent_callpath,
+            )
+            biggest_gf_callpath_to_node[callpath] = new_node
+            parent.add_child(new_node)
+            new_node.add_parent(parent)
+            return new_node
+
+        # check if a list is given.
+        # if not, make it a list.
+        if not isinstance(others, list):
+            others = list(others)
+
+        # append the gf that calls to the function.
+        others.append(self)
+
+        dropped_gfs = []
+        max_num_of_idx = 0
+        biggest_gf = None
+        gf_to_visited_node = {}
+        for idx in range(len(others)):
+            # do not change the given gfs.
+            gf_copy = others[idx].deepcopy()
+            gf_copy.drop_index_levels()
+            if idx == len(others) - 1:
+                old_default_metric = gf_copy.default_metric
+                _rename_colums(gf_copy, gf_copy.inc_metrics, "-gf0")
+                _rename_colums(gf_copy, gf_copy.exc_metrics, "-gf0")
+                gf_to_visited_node[gf_copy] = (0, [])
+                gf_copy.default_metric = old_default_metric + "-gf0"
+            else:
+                old_default_metric = gf_copy.default_metric
+                _rename_colums(gf_copy, gf_copy.inc_metrics, "-gf{}".format(idx + 1))
+                _rename_colums(gf_copy, gf_copy.exc_metrics, "-gf{}".format(idx + 1))
+                gf_to_visited_node[gf_copy] = (idx + 1, [])
+                gf_copy.default_metric = old_default_metric + "-gf{}".format(idx + 1)
+            # find the biggest gf.
+            size_of_df = len(gf_copy.dataframe)
+            if size_of_df > max_num_of_idx:
+                biggest_gf = gf_copy
+                max_num_of_idx = size_of_df
+
+        gf_to_visited_node.pop(biggest_gf)
+
+        biggest_gf_callpath_to_node = {}
+        # test_dict = {"type": "function", "name": "<program root>"}
+        # traverse the biggest graphframe given.
+        for node_in_biggest in biggest_gf.graph.traverse():
+            #    if node_in_biggest.frame.attrs == test_dict:
+            # look at the paths of each node.
+            for path in node_in_biggest.paths():
+                # store call paths as tuples of node names.
+                callpath = _transform_path(path, biggest_gf)
+                # store callpaths to use later.
+                biggest_gf_callpath_to_node[callpath] = node_in_biggest
+                # iterate over all other graphframes.
+                for gf in gf_to_visited_node.keys():
+                    # check if there are indices that have the
+                    # same name value (possible indices).
+                    possible_indices = gf.dataframe.loc[
+                        gf.dataframe["name"]
+                        == biggest_gf.dataframe.loc[node_in_biggest]["name"]
+                    ].index
+                    # iterate over possible indices which will
+                    # give us nodes.
+                    for node in possible_indices:
+                        # get all the paths of each possible node.
+                        possible_paths = node.paths()
+                        num_of_paths = len(possible_paths)
+                        found_count = 0
+                        # for each possible path
+                        for possible_path in possible_paths:
+                            possible_callpath = _transform_path(possible_path, gf)
+                            # check if callpath equals to the node in the
+                            # biggest gf.
+                            if callpath == possible_callpath:
+                                found_count += 1
+                        # if we visited all the paths and if they are equal to
+                        # the callpath of the node in the biggest gf, add node
+                        # to the visited list to be removed later.
+                        if found_count == num_of_paths:
+                            gf_to_visited_node[gf][1].append(node)
+                            for metric_column in gf.inc_metrics + gf.exc_metrics:
+                                biggest_gf.dataframe.loc[
+                                    node_in_biggest, metric_column
+                                ] = gf.dataframe.loc[node, metric_column]
+
+        # drop the visited nodes.
+        # for gf, values in gf_to_visited_node.items():
+        #     # values[0] is the index of the gf. It'll be used later.
+        #     visited_nodes = values[1]
+        #     gf.dataframe.drop(visited_nodes, axis=0, inplace=True)
+        # print(biggest_gf.dataframe)
+        # print(biggest_gf.tree())
+
+        # iterate over the remaining nodes in gfs.
+        for gf in gf_to_visited_node.keys():
+            for node in gf.dataframe.index:
+                # if node is not visited
+                if node not in gf_to_visited_node[gf][1]:
+                    for path in node.paths():
+                        callpath = _transform_path(path, gf)
+                        if callpath not in biggest_gf_callpath_to_node.keys():
+                            if node.parents:
+                                _create_node(biggest_gf, gf, node, path)
+                    gf_to_visited_node[gf][1].append(node)
+
+        # print(biggest_gf.dataframe)
+        # print(biggest_gf.tree())
+        # print(biggest_gf.dataframe.columns)
+        # print(biggest_gf.inc_metrics)
+        # print(biggest_gf.exc_metrics)
+        # for gf in gf_to_visited_node.keys():
+        #     print(gf.dataframe.columns)
+        #     print(gf.inc_metrics)
+        #     print(gf.exc_metrics)
+
     def unify(self, other):
         """Returns a unified graphframe.
 
