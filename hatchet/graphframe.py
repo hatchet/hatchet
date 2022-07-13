@@ -346,7 +346,7 @@ class GraphFrame:
         HDF5Writer(filename).write(self, key=key, **kwargs)
 
     @Logger.loggable
-    def update_metadata(self, num_processes=None, num_threads=None, update_dict=None):
+    def update_metadata(self, num_processes=None, num_threads=None, metadata=None):
         """Update a GraphFrame object's metadata."""
         if num_processes is not None:
             if not isinstance(num_processes, int):
@@ -360,9 +360,8 @@ class GraphFrame:
                 raise TypeError("The number of threads must be of type integer.")
             self.metadata["num_threads"] = num_threads
 
-        if update_dict is not None:
-            for key in update_dict:
-                self.metadata[key] = update_dict[key]
+        if metadata is not None:
+            self.metadata.update(metadata)
 
         return self
 
