@@ -5,6 +5,8 @@
 
 import pandas as pd
 import numpy as np
+import os
+import matplotlib.pyplot as plt
 
 
 class Chopper:
@@ -236,7 +238,23 @@ class Chopper:
 
         pivot_df = result.pivot(index=index, columns=columns, values=metric)
 
-        # Make a stacked bar chart using the data in the pivot table above.
-        pivot_df.loc[:, :].plot.bar(stacked=True, figsize=(10, 7))
-
         return pivot_df
+
+    def scaling_plot(pivot_df, plot_type="bar", title=None, save_path=os.getcwd()):
+        """Creates a scaling plot with an ability to use all matplotlib parameters and
+           save it as a file.
+        Inputs:
+         - pivot_df: A pivot table, like one returned by multirun_analysis().
+         - plot_type: The type of plot, whether bar or line.
+         Default: bar
+         - title: The title of the plot.
+         Default: None
+         - save_path: The path where the plot will be saved as a png file.
+         Default: current working directory
+        """
+        if plot_type == "line":
+            pivot_df.loc[:, :].plot.line(figsize=(10, 7), title=title)
+        elif plot_type == "bar":
+            pivot_df.loc[:, :].plot.bar(stacked=True, figsize=(10, 7), title=title)
+
+        plt.savefig(save_path)
