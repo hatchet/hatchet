@@ -228,7 +228,8 @@ class Chopper:
             # column in the DataFrame.
             assert (
                 pivot_index in gf.metadata.keys()
-            ), f"'{pivot_index}' missing from GraphFrame metadata: use update_metadata() to specify."
+            ), f"'{pivot_index}' missing from GraphFrame metadata: use update_metadata()"
+            " to specify."
             pivot_val = gf.metadata[pivot_index]
             gf.dataframe[pivot_index] = pivot_val
 
