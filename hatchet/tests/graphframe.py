@@ -1176,3 +1176,23 @@ def test_hdf_load_store(mock_graph_literal):
 
     if os.path.exists("test_gframe.hdf"):
         os.remove("test_gframe.hdf")
+
+
+def test_update_metadata(mock_graph_literal):
+    # initialize test and dummy graphframes
+    gf_test = GraphFrame.from_literal(mock_graph_literal)
+    gf_dummy = GraphFrame.from_literal(mock_graph_literal)
+
+    # update metadata of dummy graphframe
+    gf_dummy.metadata["num_processes"] = 1
+    gf_dummy.metadata["num_threads"] = 1
+    gf_dummy.metadata["input_hierarchy"] = "function"
+
+    # initialize dict with same "input_hierarchy" metadata
+    update_dict = {"input_hierarchy": "function"}
+
+    # update test graphframe using function
+    gf_test = gf_test.update_metadata(1, 1, update_dict)
+
+    # check if both graphframes contain the same metadata
+    assert gf_test.metadata == gf_dummy.metadata
