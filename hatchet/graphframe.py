@@ -1277,36 +1277,55 @@ class GraphFrame:
         return hot_path
 
     @Logger.loggable
-    def calculate_exclusive_metrics(self, metric_columns):
+    def calculate_exclusive_metrics(self, metric_columns, inplace=False):
         """Calculates exclusive metrics on the user specified metric columns."""
 
-        def _calculate_inclusive(metric_columns, node):
+        def _calculate_exclusive(gf, metric_columns, node):
+            """Calculate exclusive metrics for a root and its children."""
             if len(node.children) == 0:
                 return
             for metric in metric_columns:
                 # value of inclusive metric for the current node
-                node_inc = self.dataframe.at[node, metric + " (inc)"]
+                node_inc = gf.dataframe.at[node, metric + " (inc)"]
                 child_inc = 0
                 # calculate sum of inclusive metrics of the current node's children
                 for child in node.children:
-                    child_inc += self.dataframe.at[child, metric + " (inc)"]
+                    child_inc += gf.dataframe.at[child, metric + " (inc)"]
                 # exclusive metric of a node = inclusive metric of that node - sum of
                 # inclusive metrics of its children
                 node_exc = node_inc - child_inc
                 # add exclusive metric value for the node in the dataframe
-                self.dataframe.at[node, metric + " (exc)"] = node_exc
+                gf.dataframe.at[node, metric + " (exc)"] = node_exc
             # set node variable to its child and recurse through all children of root
             node = node.children[0]
-            _calculate_inclusive(metric_columns, node)
+            _calculate_exclusive(gf, metric_columns, node)
+
+        def _merge_columns(graphframe_from, graphframe_to, columns):
+            """Merge two dataframes. This function is used only if
+            inplace=True. Adds exclusive metric columns to the original graphframe
+            without ading/removing any index (how=left).
+            """
+            graphframe_to.dataframe = graphframe_to.dataframe.join(
+                graphframe_from.dataframe[columns], how="left"
+            )
+
+        gf_copy = self.deepcopy()
 
         # add new column for every metric
         for metric in metric_columns:
-            self.dataframe[metric + " (exc)"] = ""
+            gf_copy.dataframe[metric + " (exc)"] = ""
 
         for root in self.graph.roots:
-            _calculate_inclusive(metric_columns, root)
+            _calculate_exclusive(gf_copy, metric_columns, root)
 
-        return self
+        if inplace:
+            merge_metric_columns = []
+            for metric_column in gf_copy.dataframe.columns:
+                if metric_column not in self.dataframe.columns:
+                    merge_metric_columns.append(metric_column)
+            _merge_columns(gf_copy, self, merge_metric_columns)
+
+        return gf_copy
 
     @Logger.loggable
     def add(self, other):
