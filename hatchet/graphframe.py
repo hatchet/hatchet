@@ -350,6 +350,26 @@ class GraphFrame:
         HDF5Writer(filename).write(self, key=key, **kwargs)
 
     @Logger.loggable
+    def update_metadata(self, num_processes=None, num_threads=None, metadata=None):
+        """Update a GraphFrame object's metadata."""
+        if num_processes is not None:
+            if not isinstance(num_processes, int):
+                raise TypeError(
+                    "The number of processing elements must be of type integer."
+                )
+            self.metadata["num_processes"] = num_processes
+
+        if num_threads is not None:
+            if not isinstance(num_threads, int):
+                raise TypeError("The number of threads must be of type integer.")
+            self.metadata["num_threads"] = num_threads
+
+        if metadata is not None:
+            self.metadata.update(metadata)
+
+        return self
+
+    @Logger.loggable
     def copy(self):
         """Return a shallow copy of the graphframe.
 
