@@ -201,12 +201,26 @@ class Chopper:
         )
 
     def multirun_analysis(graphframes=[], metric="time", index="pes", columns="name"):
+        """Creates a pivot table.
+        Inputs:
+         - graphframes: A list of graphframes.
+         - metric: The numerical metric on the dataframe for the y-axis of the plot.
+         Default: time
+         - index: The numerical metric on the dataframe for the x-axis of the plot.
+         Default: pes
+         - columns: The hierarchy of the dataframe's nodes for the color-coded key.
+         Default: name
+        Output:
+         - a pivot table
+        """
         dataframes = []
         for gf in graphframes:
             gf.drop_index_levels()
 
             # Grab the number of processes from the metadata, store this as a new
             # column in the DataFrame.
+            assert "num_processes" in gf.metadata.keys(), "'num_processes' missing from"
+            " GraphFrame metadata: use update_metadata() to specify."
             num_pes = gf.metadata["num_processes"]
             gf.dataframe["pes"] = num_pes
 
@@ -214,7 +228,7 @@ class Chopper:
             # than 1e6.
             filtered_gf = gf.filter(lambda x: x["time"] > 1e6)
 
-            # Insert the filtered GraphFrame into a list.
+            # Insert the graphframe's dataframe into a list.
             dataframes.append(filtered_gf.dataframe)
 
         # Concatenate all DataFrames into a single DataFrame called result.
