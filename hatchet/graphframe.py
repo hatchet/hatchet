@@ -1321,11 +1321,11 @@ class GraphFrame:
 
     @Logger.loggable
     def multirun_analysis(graphframes=[], metric="time", index="pes", columns="name"):
-        return Chopper().multirun_analysis(graphframes, metric, index, columns)
+        return Chopper.multirun_analysis(graphframes, metric, index, columns)
 
     @Logger.loggable
     def scaling_plot(pivot_df, plot_type="bar", title=None, save_path=os.getcwd()):
-        return Chopper().scaling_plot(pivot_df, plot_type, title, save_path)
+        return Chopper.scaling_plot(pivot_df, plot_type, title, save_path)
 
     @Logger.loggable
     def add(self, other):
