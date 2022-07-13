@@ -238,3 +238,5 @@ class Chopper:
 
         # Make a stacked bar chart using the data in the pivot table above.
         pivot_df.loc[:, :].plot.bar(stacked=True, figsize=(10, 7))
+
+        return pivot_df
