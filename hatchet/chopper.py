@@ -5,8 +5,6 @@
 
 import pandas as pd
 import numpy as np
-import os
-import matplotlib.pyplot as plt
 
 
 class Chopper:
@@ -202,16 +200,23 @@ class Chopper:
             gf_copy, start_node, metric, threshold, callpath=[start_node]
         )
 
-    def multirun_analysis(graphframes=[], metric="time", index="pes", columns="name"):
+    def multirun_analysis(
+        graphframes=[],
+        metric="time",
+        pivot_index="num_processes",
+        columns=["name"],
+        threshold=None,
+    ):
         """Creates a pivot table.
         Inputs:
          - graphframes: A list of graphframes.
          - metric: The numerical metric on the dataframe for the y-axis of the plot.
          Default: time
          - index: The numerical metric on the dataframe for the x-axis of the plot.
-         Default: pes
-         - columns: The hierarchy of the dataframe's nodes for the color-coded key.
+         Default: num_processes
+         - columns: The non-numerical metric for the columns of the table.
          Default: name
+         - threshold: The threshold for filtering metric rows of the graphframes.
         Output:
          - a pivot table
         """
@@ -219,42 +224,23 @@ class Chopper:
         for gf in graphframes:
             gf.drop_index_levels()
 
-            # Grab the number of processes from the metadata, store this as a new
+            # Grab the pivot_index from the metadata, store this as a new
             # column in the DataFrame.
-            assert "num_processes" in gf.metadata.keys(), "'num_processes' missing from"
+            assert pivot_index in gf.metadata.keys(), f"'{pivot_index}' missing from"
             " GraphFrame metadata: use update_metadata() to specify."
-            num_pes = gf.metadata["num_processes"]
-            gf.dataframe["pes"] = num_pes
+            pivot_val = gf.metadata[pivot_index]
+            gf.dataframe[pivot_index] = pivot_val
 
-            # Filter the GraphFrame keeping only those rows with time greater
-            # than 1e6.
-            filtered_gf = gf.filter(lambda x: x["time"] > 1e6)
+            # Filter the GraphFrame, keeping only the rows that are above the threshold
+            if threshold is not None:
+                gf = gf.filter(lambda x: x[metric] > threshold)
 
             # Insert the graphframe's dataframe into a list.
-            dataframes.append(filtered_gf.dataframe)
+            dataframes.append(gf.dataframe)
 
         # Concatenate all DataFrames into a single DataFrame called result.
         result = pd.concat(dataframes)
 
-        pivot_df = result.pivot(index=index, columns=columns, values=metric)
+        pivot_df = result.pivot(index=pivot_index, columns=columns, values=metric)
 
         return pivot_df
-
-    def scaling_plot(pivot_df, plot_type="bar", title=None, save_path=os.getcwd()):
-        """Creates a scaling plot with an ability to use all matplotlib parameters and
-           save it as a file.
-        Inputs:
-         - pivot_df: A pivot table, like one returned by multirun_analysis().
-         - plot_type: The type of plot, whether bar or line.
-         Default: bar
-         - title: The title of the plot.
-         Default: None
-         - save_path: The path where the plot will be saved as a png file.
-         Default: current working directory
-        """
-        if plot_type == "line":
-            pivot_df.loc[:, :].plot.line(figsize=(10, 7), title=title)
-        elif plot_type == "bar":
-            pivot_df.loc[:, :].plot.bar(stacked=True, figsize=(10, 7), title=title)
-
-        plt.savefig(save_path)
