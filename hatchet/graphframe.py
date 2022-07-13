@@ -1306,6 +1306,8 @@ class GraphFrame:
         for root in self.graph.roots:
             _calculate_inclusive(metric_columns, root)
 
+        return self
+
     @Logger.loggable
     def add(self, other):
         """Returns the column-wise sum of two graphframes as a new graphframe.
