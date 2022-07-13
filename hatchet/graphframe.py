@@ -1319,6 +1319,10 @@ class GraphFrame:
         return hot_path
 
     @Logger.loggable
+    def multirun_analysis(graphframes=[], metric="time", index="pes", columns="name"):
+        return Chopper().multirun_analysis(graphframes, metric, index, columns)
+
+    @Logger.loggable
     def add(self, other):
         """Returns the column-wise sum of two graphframes as a new graphframe.
 

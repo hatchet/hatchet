@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+import pandas as pd
 import numpy as np
 
 
@@ -198,3 +199,28 @@ class Chopper:
         return find_hot_path(
             gf_copy, start_node, metric, threshold, callpath=[start_node]
         )
+
+    def multirun_analysis(graphframes=[], metric="time", index="pes", columns="name"):
+        dataframes = []
+        for gf in graphframes:
+            gf.drop_index_levels()
+
+            # Grab the number of processes from the metadata, store this as a new
+            # column in the DataFrame.
+            num_pes = gf.metadata["num_processes"]
+            gf.dataframe["pes"] = num_pes
+
+            # Filter the GraphFrame keeping only those rows with time greater
+            # than 1e6.
+            filtered_gf = gf.filter(lambda x: x["time"] > 1e6)
+
+            # Insert the filtered GraphFrame into a list.
+            dataframes.append(filtered_gf.dataframe)
+
+        # Concatenate all DataFrames into a single DataFrame called result.
+        result = pd.concat(dataframes)
+
+        pivot_df = result.pivot(index=index, columns=columns, values=metric)
+
+        # Make a stacked bar chart using the data in the pivot table above.
+        pivot_df.loc[:, :].plot.bar(stacked=True, figsize=(10, 7))
