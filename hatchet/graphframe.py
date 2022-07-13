@@ -1277,6 +1277,36 @@ class GraphFrame:
         return hot_path
 
     @Logger.loggable
+    def calculate_exclusive_metrics(self, metric_columns):
+        """Calculates exclusive metrics on the user specified metric columns."""
+
+        def _calculate_inclusive(metric_columns, node):
+            if len(node.children) == 0:
+                return
+            for metric in metric_columns:
+                # value of inclusive metric for the current node
+                node_inc = self.dataframe.at[node, metric + " (inc)"]
+                child_inc = 0
+                # calculate sum of inclusive metrics of the current node's children
+                for child in node.children:
+                    child_inc += self.dataframe.at[child, metric + " (inc)"]
+                # exclusive metric of a node = inclusive metric of that node - sum of
+                # inclusive metrics of its children
+                node_exc = node_inc - child_inc
+                # add exclusive metric value for the node in the dataframe
+                self.dataframe.at[node, metric + " (exc)"] = node_exc
+            # set node variable to its child and recurse through all children of root
+            node = node.children[0]
+            _calculate_inclusive(metric_columns, node)
+
+        # add new column for every metric
+        for metric in metric_columns:
+            self.dataframe[metric + " (exc)"] = ""
+
+        for root in self.graph.roots:
+            _calculate_inclusive(metric_columns, root)
+
+    @Logger.loggable
     def add(self, other):
         """Returns the column-wise sum of two graphframes as a new graphframe.
 
