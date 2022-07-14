@@ -331,7 +331,7 @@ class GraphFrame:
         df.sort_index(inplace=True)
 
         gf = GraphFrame(graph, df, ["time"], [])
-        gf.update_inclusive_columns()
+        gf.calculate_inclusive_metrics()
         return gf
 
     @staticmethod
@@ -616,7 +616,7 @@ class GraphFrame:
             self.default_metric,
             dict(self.metadata),
         )
-        new_gf.update_inclusive_columns()
+        new_gf.calculate_inclusive_metrics()
         return new_gf
 
     def _init_sum_columns(self, columns, out_columns):
@@ -756,7 +756,7 @@ class GraphFrame:
                     function(self.dataframe.loc[(subgraph_nodes), columns])
                 )
 
-    def update_inclusive_columns(self):
+    def calculate_inclusive_metrics(self):
         """Update inclusive columns (typically after operations that rewire the
         graph.
         """
