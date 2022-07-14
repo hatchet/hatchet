@@ -116,14 +116,14 @@ def test_calculate_inclusive_metrics():
     assert gf.dataframe.loc[e, "time (inc)"] == 1
 
 
-def test_create_exclusive_columns(calc_pi_hpct_db):
+def test_calculate_exclusive_metrics(calc_pi_hpct_db):
     # test without multiindex.
     gf_drop = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
     gf_drop.drop_index_levels()
     # rename the existing columns so we have the ground truth.
     gf_drop.dataframe.rename(columns={"time": "time (ground)"}, inplace=True)
     assert "time" not in gf_drop.dataframe.columns
-    gf_drop.create_exclusive_columns(columns="time (inc)")
+    gf_drop.calculate_exclusive_metrics(columns="time (inc)")
 
     # check if new created "time" column matches with the grount truth
     assert gf_drop.dataframe["time"].equals(gf_drop.dataframe["time (ground)"])
@@ -133,7 +133,7 @@ def test_create_exclusive_columns(calc_pi_hpct_db):
     # rename the existing columns so we have the ground truth.
     gf.dataframe.rename(columns={"time": "time (ground)"}, inplace=True)
     assert "time" not in gf.dataframe.columns
-    gf.create_exclusive_columns(columns="time (inc)")
+    gf.calculate_exclusive_metrics(columns="time (inc)")
 
     # check if new created "time" column matches with the grount truth
     assert gf.dataframe["time"].equals(gf.dataframe["time (ground)"])
@@ -147,7 +147,7 @@ def test_create_exclusive_columns(calc_pi_hpct_db):
     # rename the existing columns so we have the ground truth.
     gf_dummy_2D.dataframe.rename(columns={"time": "time (ground)"}, inplace=True)
     assert "time" not in gf_dummy_2D.dataframe.columns
-    gf_dummy_2D.create_exclusive_columns(columns="time (inc)")
+    gf_dummy_2D.calculate_exclusive_metrics(columns="time (inc)")
 
     # check if new created "time" column matches with the grount truth
     assert gf_dummy_2D.dataframe["time"].equals(gf_dummy_2D.dataframe["time (ground)"])
@@ -156,7 +156,7 @@ def test_create_exclusive_columns(calc_pi_hpct_db):
     gf_no_params = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
     gf_no_params.dataframe.rename(columns={"time": "time (ground)"}, inplace=True)
     assert "time" not in gf_no_params.dataframe.columns
-    gf_no_params.create_exclusive_columns()
+    gf_no_params.calculate_exclusive_metrics()
 
     assert gf_no_params.dataframe["time"].equals(
         gf_no_params.dataframe["time (ground)"]

@@ -770,12 +770,10 @@ class GraphFrame:
         ]
         self.subgraph_sum(self.exc_metrics, self.inc_metrics)
 
-    def create_exclusive_columns(self, columns=None):
-        """Create exclusive column using inclusive column of the corresponding
-        metric.
+    def calculate_exclusive_metrics(self, columns=None):
+        """Calculates exclusive metrics using the corresponding inclusive metric.
 
-        Uses default_metric if columns==None. If default_metric is exclusive,
-        creates exclusive column for each inclusive.
+        Uses all inclusive metrics if columns==None.
 
         Skips if the given column is exclusive.
         If the given columns is inclusive:
