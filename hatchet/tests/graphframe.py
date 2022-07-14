@@ -101,14 +101,14 @@ def test_from_lists():
     assert all(node in list(gf.dataframe["node"]) for node in nodes)
 
 
-def test_update_inclusive_metrics():
+def test_calculate_inclusive_metrics():
     gf = GraphFrame.from_lists(("a", ("b", "c"), ("d", "e")))
     (a, b, c, d, e) = gf.graph.traverse()
 
     # this is computed automatically by from_lists -- drop it for this test.
     del gf.dataframe["time (inc)"]
 
-    gf.update_inclusive_columns()
+    gf.calculate_inclusive_metrics()
     assert gf.dataframe.loc[a, "time (inc)"] == 5
     assert gf.dataframe.loc[b, "time (inc)"] == 2
     assert gf.dataframe.loc[c, "time (inc)"] == 1

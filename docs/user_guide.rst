@@ -296,7 +296,7 @@ at the per-node granularity.
 
   gf.drop_index_levels(function=np.max)
 
-**update_inclusive_columns**: When a graph is rewired (i.e., the
+**calculate_inclusive_metrics**: When a graph is rewired (i.e., the
 parent-child connections are modified), all the columns in the DataFrame that
 store inclusive values of a metric become inaccurate. This function performs a
 post-order traversal of the graph to update all columns that store inclusive
@@ -329,7 +329,7 @@ new DataFrame contains all rows from the original DataFrame, but its index
 points to nodes in the new graph. Additionally, a squash operation will make
 the values in all columns containing inclusive metrics inaccurate, since the
 parent-child relationships have changed. Hence, the squash operation also calls
-``update_inclusive_columns`` to make all inclusive columns in the DataFrame
+``calculate_inclusive_metrics`` to make all inclusive columns in the DataFrame
 accurate again.
 
 .. code-block:: python
