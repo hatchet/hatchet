@@ -833,24 +833,29 @@ class GraphFrame:
                             function(self.dataframe.loc[df_index2, col])
                         ]
             else:
-                # TODO: if you take the list constructor away from the
-                # TODO: assignment below, this assignment gives NaNs. Why?
-                self.dataframe.loc[(node), out_columns] = list(
-                    function(self.dataframe.loc[(subgraph_nodes), columns])
-                )
+                for col in out_columns:
+                    self.dataframe.loc[node, col] = function(
+                        self.dataframe.loc[subgraph_nodes, col]
+                    )
 
+    @Logger.loggable
     def calculate_inclusive_metrics(self):
         """Update inclusive columns (typically after operations that rewire the
         graph.
         """
-        # we should update inc metric only if exc metric exist
+        # FIXME: we should calculate exc metrics even if they don't exist
         if not self.exc_metrics:
             return
 
-        self.inc_metrics = [
+        current_inc_metrics = list(self.inc_metrics)
+
+        new_inc_metrics = [
             "%s%s" % (s, self.metadata["hatchet_inclusive_suffix"])
             for s in self.exc_metrics
         ]
+
+        self.inc_metrics = list(set(current_inc_metrics + new_inc_metrics))
+
         self.subgraph_sum(self.exc_metrics, self.inc_metrics)
 
     @Logger.loggable
