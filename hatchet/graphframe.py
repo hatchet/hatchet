@@ -1267,12 +1267,14 @@ class GraphFrame:
     def flat_profile(
         self,
         groupby_column=None,
+        as_index=True
     ):
         """Generates flat profile for a given graphframe.
         Returns a new dataframe."""
         return Chopper().flat_profile(
             self,
             groupby_column,
+            as_index
         )
 
     @Logger.loggable
