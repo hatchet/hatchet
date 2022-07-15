@@ -5,7 +5,6 @@
 
 import pandas as pd
 import numpy as np
-from random import randint
 from hatchet.graphframe import GraphFrame
 from hatchet.chopper import Chopper
 
@@ -101,24 +100,16 @@ def test_hot_path(calc_pi_hpct_db):
     assert hot_path[0].frame["name"] == "<program root>"
 
 
-def test_multirun_analysis(lulesh_caliper_json):
+def test_multirun_analysis_lulesh(lulesh_caliper_json):
+    """Validate that multirun_analysis works correctly with data containing
+    non-repeating functions."""
     gf1 = GraphFrame.from_caliper(lulesh_caliper_json)
-
     gf2, gf4, gf8 = gf1.deepcopy(), gf1.deepcopy(), gf1.deepcopy()
 
     gf1.update_metadata(1)
     gf2.update_metadata(2)
     gf4.update_metadata(4)
     gf8.update_metadata(8)
-
-    # assign random time values to each graphframe
-    for gf in [gf2, gf4, gf8]:
-        gf.dataframe["time"] = [randint(0, 10) for x in range(len(gf.dataframe))]
-
-    # recalculate all inclusive metrics for graphframes with modified exclusive times
-    gf2.calculate_inclusive_metrics()
-    gf4.calculate_inclusive_metrics()
-    gf8.calculate_inclusive_metrics()
 
     gf1_copy, gf2_copy, gf4_copy, gf8_copy = (
         gf1.deepcopy(),
@@ -127,79 +118,77 @@ def test_multirun_analysis(lulesh_caliper_json):
         gf8.deepcopy(),
     )
 
-    # drop index levels, group nodes by name, add num_processes column,
-    # and filter time based on threshold
+    # group nodes by name, remove all columns except time, and replace time column with
+    # num_processes for each dataframe
     for gf in [gf1, gf2, gf4, gf8]:
-        gf.drop_index_levels()
-        gf.dataframe = gf.dataframe.groupby("name", as_index=False).sum()
-        gf.dataframe["num_processes"] = gf.metadata["num_processes"]
-        gf.dataframe = gf.dataframe[gf.dataframe["time (inc)"] > 0]
+        gf.dataframe = gf.dataframe.groupby("name").sum()
+        gf.dataframe = gf.dataframe[["time"]]
+        gf.dataframe = gf.dataframe.rename(
+            {"time": gf.metadata["num_processes"]}, axis="columns"
+        )
 
-    # join the dataframes containing the dummy data and create a pivot table using
-    # the inclusive times
-    df_dummy_inc = pd.concat(
-        [gf1.dataframe, gf2.dataframe, gf4.dataframe, gf8.dataframe]
+    # join the dataframes column-wise, transpose the dataframe, and set the index name
+    # to num_processes
+    df_dummy = pd.concat(
+        [gf1.dataframe, gf2.dataframe, gf4.dataframe, gf8.dataframe], axis=1
     )
-    df_dummy_inc = df_dummy_inc.pivot(
-        index="num_processes", columns="name", values="time (inc)"
-    )
+    df_dummy = df_dummy.transpose()
+    df_dummy.index.name = "num_processes"
 
-    # run multirun analysis on the inclusive times
-    df_test_inc = Chopper().multirun_analysis(
-        graphframes=[gf1_copy, gf2_copy, gf4_copy, gf8_copy],
-        pivot_index="num_processes",
-        columns="name",
-        metric="time (inc)",
-        threshold=0,
-    )
-
-    # check if the test and dummy dataframes match
-    assert df_test_inc.equals(df_dummy_inc)
-
-    # reset all graphframes for next check
-    gf1 = GraphFrame.from_caliper(lulesh_caliper_json)
-    gf2, gf4, gf8 = gf1.deepcopy(), gf1.deepcopy(), gf1.deepcopy()
-    gf1.update_metadata(1)
-    gf2.update_metadata(2)
-    gf4.update_metadata(4)
-    gf8.update_metadata(8)
-    for gf in [gf2, gf4, gf8]:
-        gf.dataframe["time"] = [randint(0, 10) for x in range(len(gf.dataframe))]
-    gf2.calculate_inclusive_metrics()
-    gf4.calculate_inclusive_metrics()
-    gf8.calculate_inclusive_metrics()
-    gf1_copy, gf2_copy, gf4_copy, gf8_copy = (
-        gf1.deepcopy(),
-        gf2.deepcopy(),
-        gf4.deepcopy(),
-        gf8.deepcopy(),
-    )
-
-    # drop index levels, group nodes by name, add num_processes column,
-    # and filter time based on threshold
-    for gf in [gf1, gf2, gf4, gf8]:
-        gf.drop_index_levels()
-        gf.dataframe = gf.dataframe.groupby("name", as_index=False).sum()
-        gf.dataframe["num_processes"] = gf.metadata["num_processes"]
-        gf.dataframe = gf.dataframe[gf.dataframe["time"] > 0]
-
-    # join the dataframes containing the dummy data and create a pivot table using
-    # the exclusive times
-    df_dummy_exc = pd.concat(
-        [gf1.dataframe, gf2.dataframe, gf4.dataframe, gf8.dataframe]
-    )
-    df_dummy_exc = df_dummy_exc.pivot(
-        index="num_processes", columns="name", values="time"
-    )
-
-    # run multirun_analyis on the exclusive times
-    df_test_exc = Chopper().multirun_analysis(
+    # run multirun_analyis
+    df_test = Chopper().multirun_analysis(
         graphframes=[gf1_copy, gf2_copy, gf4_copy, gf8_copy],
         pivot_index="num_processes",
         columns="name",
         metric="time",
-        threshold=0,
     )
 
     # check if the test and dummy dataframes match
-    assert df_test_exc.equals(df_dummy_exc)
+    assert df_test.equals(df_dummy)
+
+
+def test_multirun_analysis_literal(mock_graph_literal):
+    """Validate that multirun_analysis works correctly with data containing
+    repeating functions."""
+    gf1 = GraphFrame.from_literal(mock_graph_literal)
+    gf2, gf4, gf8 = gf1.deepcopy(), gf1.deepcopy(), gf1.deepcopy()
+
+    gf1.update_metadata(1)
+    gf2.update_metadata(2)
+    gf4.update_metadata(4)
+    gf8.update_metadata(8)
+
+    gf1_copy, gf2_copy, gf4_copy, gf8_copy = (
+        gf1.deepcopy(),
+        gf2.deepcopy(),
+        gf4.deepcopy(),
+        gf8.deepcopy(),
+    )
+
+    # group nodes by name, remove all columns except time, and replace time column with
+    # num_processes for each dataframe
+    for gf in [gf1, gf2, gf4, gf8]:
+        gf.dataframe = gf.dataframe.groupby("name").sum()
+        gf.dataframe = gf.dataframe[["time"]]
+        gf.dataframe = gf.dataframe.rename(
+            {"time": gf.metadata["num_processes"]}, axis="columns"
+        )
+
+    # join the dataframes column-wise, transpose the dataframe, and set the index name
+    # to num_processes
+    df_dummy = pd.concat(
+        [gf1.dataframe, gf2.dataframe, gf4.dataframe, gf8.dataframe], axis=1
+    )
+    df_dummy = df_dummy.transpose()
+    df_dummy.index.name = "num_processes"
+
+    # run multirun_analyis
+    df_test = Chopper().multirun_analysis(
+        graphframes=[gf1_copy, gf2_copy, gf4_copy, gf8_copy],
+        pivot_index="num_processes",
+        columns="name",
+        metric="time",
+    )
+
+    # check if the test and dummy dataframes match
+    assert df_test.equals(df_dummy)

@@ -204,7 +204,7 @@ class Chopper:
         self,
         graphframes=[],
         pivot_index="num_processes",
-        columns=["name"],
+        columns="name",
         metric="time",
         threshold=None,
     ):
@@ -221,10 +221,13 @@ class Chopper:
         Output:
          - a pivot table
         """
+        if isinstance(columns, str):
+            columns = [columns]
+
         dataframes = []
         for gf in graphframes:
-            gf.drop_index_levels()
-            gf.dataframe = gf.dataframe.groupby(columns, as_index=False).sum()
+            dataframe_copy = gf.dataframe.copy()
+            dataframe_copy = dataframe_copy.groupby(columns, as_index=False).sum()
 
             # Grab the pivot_index from the metadata, store this as a new
             # column in the DataFrame.
@@ -234,14 +237,17 @@ class Chopper:
                 pivot_index
             )
             pivot_val = gf.metadata[pivot_index]
-            gf.dataframe[pivot_index] = pivot_val
+            dataframe_copy[pivot_index] = pivot_val
 
             # Filter the GraphFrame, keeping only the rows that are above the threshold
             if threshold is not None:
-                gf.dataframe = gf.dataframe[gf.dataframe[metric] > threshold]
+                filtered_rows = dataframe_copy.apply(
+                    lambda x: x[metric] > threshold, axis=1
+                )
+                dataframe_copy = dataframe_copy[filtered_rows]
 
             # Insert the graphframe's dataframe into a list.
-            dataframes.append(gf.dataframe)
+            dataframes.append(dataframe_copy)
 
         # Concatenate all DataFrames into a single DataFrame called result.
         result = pd.concat(dataframes)
