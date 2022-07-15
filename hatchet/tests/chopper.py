@@ -101,8 +101,8 @@ def test_hot_path(calc_pi_hpct_db):
     assert hot_path[0].frame["name"] == "<program root>"
 
 
-def test_multirun_analysis(mock_graph_literal):
-    gf1 = GraphFrame.from_literal(mock_graph_literal)
+def test_multirun_analysis(lulesh_caliper_json):
+    gf1 = GraphFrame.from_caliper(lulesh_caliper_json)
 
     gf2, gf4, gf8 = gf1.deepcopy(), gf1.deepcopy(), gf1.deepcopy()
 
@@ -127,8 +127,10 @@ def test_multirun_analysis(mock_graph_literal):
         gf8.deepcopy(),
     )
 
-    # group nodes by name, add num_processes column, and filter time based on threshold
+    # drop index levels, group nodes by name, add num_processes column,
+    # and filter time based on threshold
     for gf in [gf1, gf2, gf4, gf8]:
+        gf.drop_index_levels()
         gf.dataframe = gf.dataframe.groupby("name", as_index=False).sum()
         gf.dataframe["num_processes"] = gf.metadata["num_processes"]
         gf.dataframe = gf.dataframe[gf.dataframe["time (inc)"] > 0]
@@ -155,7 +157,7 @@ def test_multirun_analysis(mock_graph_literal):
     assert df_test_inc.equals(df_dummy_inc)
 
     # reset all graphframes for next check
-    gf1 = GraphFrame.from_literal(mock_graph_literal)
+    gf1 = GraphFrame.from_caliper(lulesh_caliper_json)
     gf2, gf4, gf8 = gf1.deepcopy(), gf1.deepcopy(), gf1.deepcopy()
     gf1.update_metadata(1)
     gf2.update_metadata(2)
@@ -173,8 +175,10 @@ def test_multirun_analysis(mock_graph_literal):
         gf8.deepcopy(),
     )
 
-    # group nodes by name, add num_processes column, and filter time based on threshold
+    # drop index levels, group nodes by name, add num_processes column,
+    # and filter time based on threshold
     for gf in [gf1, gf2, gf4, gf8]:
+        gf.drop_index_levels()
         gf.dataframe = gf.dataframe.groupby("name", as_index=False).sum()
         gf.dataframe["num_processes"] = gf.metadata["num_processes"]
         gf.dataframe = gf.dataframe[gf.dataframe["time"] > 0]
