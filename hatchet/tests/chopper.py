@@ -3,8 +3,10 @@
 #
 # SPDX-License-Identifier: MIT
 
+import pandas as pd
 import numpy as np
 from hatchet.graphframe import GraphFrame
+from hatchet.chopper import Chopper
 
 
 def test_flat_profile(calc_pi_hpct_db):
@@ -96,3 +98,66 @@ def test_hot_path(calc_pi_hpct_db):
     hot_path = graphframe.hot_path(metric="time (inc)", threshold=2)
     assert len(hot_path) == 1
     assert hot_path[0].frame["name"] == "<program root>"
+
+
+def test_multirun_analysis(small_mock1):
+    gf1 = GraphFrame.from_literal(small_mock1)
+
+    gf2, gf4, gf8 = gf1.deepcopy(), gf1.deepcopy(), gf1.deepcopy()
+
+    gf1.update_metadata(1)
+    gf2.update_metadata(2)
+    gf4.update_metadata(4)
+    gf8.update_metadata(8)
+
+    # assign different time values to each graphframe
+    gf2.dataframe["time"] = [0, 4, 4, 8, 7, 8]
+    gf4.dataframe["time"] = [0, 2, 2, 4, 5, 4]
+    gf8.dataframe["time"] = [0, 1, 1, 2, 3, 2]
+
+    # recalculate all inclusive metrics for graphframes with modified exclusive times
+    gf2.calculate_inclusive_metrics()
+    gf4.calculate_inclusive_metrics()
+    gf8.calculate_inclusive_metrics()
+
+    # run multirun_analyis function on the exclusive times
+    df_test_exc = Chopper.multirun_analysis(
+        graphframes=[gf1, gf2, gf4, gf8],
+        metric="time",
+        pivot_index="num_processes",
+        columns="name",
+        threshold=0,
+    )
+
+    # join the dataframes containing the dummy data and create a pivot table
+    df_dummy_exc = pd.concat(
+        [gf1.dataframe, gf2.dataframe, gf4.dataframe, gf8.dataframe]
+    )
+    df_dummy_exc = df_dummy_exc.pivot(
+        index="num_processes", columns="name", values="time"
+    )
+
+    # drop the time data for function A because it does not satisfy the threshold of 0
+    df_dummy_exc = df_dummy_exc.drop("A", axis="columns")
+
+    # check if the test and dummy dataframes match
+    assert df_test_exc.equals(df_dummy_exc)
+
+    # run multirun analysis on the inclusive times
+    df_test_inc = Chopper.multirun_analysis(
+        graphframes=[gf1, gf2, gf4, gf8],
+        metric="time (inc)",
+        pivot_index="num_processes",
+        columns="name",
+    )
+
+    # join the dataframes containing the dummy data and create a pivot table
+    df_dummy_inc = pd.concat(
+        [gf1.dataframe, gf2.dataframe, gf4.dataframe, gf8.dataframe]
+    )
+    df_dummy_inc = df_dummy_inc.pivot(
+        index="num_processes", columns="name", values="time (inc)"
+    )
+
+    # check if the test and dummy dataframes match
+    assert df_test_inc.equals(df_dummy_inc)
