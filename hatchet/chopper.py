@@ -201,6 +201,7 @@ class Chopper:
         )
 
     def multirun_analysis(
+        self,
         graphframes=[],
         metric="time",
         pivot_index="num_processes",

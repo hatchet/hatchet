@@ -1320,7 +1320,7 @@ class GraphFrame:
 
     @Logger.loggable
     def multirun_analysis(graphframes=[], metric="time", index="pes", columns="name"):
-        return Chopper.multirun_analysis(graphframes, metric, index, columns)
+        return Chopper().multirun_analysis(graphframes, metric, index, columns)
 
     @Logger.loggable
     def add(self, other):

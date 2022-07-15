@@ -121,7 +121,7 @@ def test_multirun_analysis(small_mock1):
     gf8.calculate_inclusive_metrics()
 
     # run multirun_analyis function on the exclusive times
-    df_test_exc = Chopper.multirun_analysis(
+    df_test_exc = Chopper().multirun_analysis(
         graphframes=[gf1, gf2, gf4, gf8],
         metric="time",
         pivot_index="num_processes",
@@ -144,7 +144,7 @@ def test_multirun_analysis(small_mock1):
     assert df_test_exc.equals(df_dummy_exc)
 
     # run multirun analysis on the inclusive times
-    df_test_inc = Chopper.multirun_analysis(
+    df_test_inc = Chopper().multirun_analysis(
         graphframes=[gf1, gf2, gf4, gf8],
         metric="time (inc)",
         pivot_index="num_processes",
