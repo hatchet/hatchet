@@ -203,20 +203,20 @@ class Chopper:
     def multirun_analysis(
         self,
         graphframes=[],
-        metric="time",
         pivot_index="num_processes",
         columns=["name"],
+        metric="time",
         threshold=None,
     ):
         """Creates a pivot table.
         Inputs:
          - graphframes: A list of graphframes.
-         - metric: The numerical metric on the dataframe for the y-axis of the plot.
-         Default: time
-         - index: The numerical metric on the dataframe for the x-axis of the plot.
+         - pivot_index: The numerical metric on the dataframe for the x-axis of the plot.
          Default: num_processes
          - columns: The non-numerical metric for the columns of the table.
          Default: name
+         - metric: The numerical metric on the dataframe for the y-axis of the plot.
+         Default: time
          - threshold: The threshold for filtering metric rows of the graphframes.
         Output:
          - a pivot table
@@ -224,6 +224,7 @@ class Chopper:
         dataframes = []
         for gf in graphframes:
             gf.drop_index_levels()
+            gf.dataframe = gf.dataframe.groupby(columns, as_index=False).sum()
 
             # Grab the pivot_index from the metadata, store this as a new
             # column in the DataFrame.
@@ -237,7 +238,7 @@ class Chopper:
 
             # Filter the GraphFrame, keeping only the rows that are above the threshold
             if threshold is not None:
-                gf = gf.filter(lambda x: x[metric] > threshold)
+                gf.dataframe = gf.dataframe[gf.dataframe[metric] > threshold]
 
             # Insert the graphframe's dataframe into a list.
             dataframes.append(gf.dataframe)

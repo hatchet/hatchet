@@ -1319,8 +1319,16 @@ class GraphFrame:
         return hot_path
 
     @Logger.loggable
-    def multirun_analysis(graphframes=[], metric="time", index="num_processes", columns=["name"], threshold=None):
-        return Chopper().multirun_analysis(graphframes, metric, index, columns, threshold)
+    def multirun_analysis(
+        graphframes=[],
+        pivot_index="num_processes",
+        columns=["name"],
+        metric="time",
+        threshold=None,
+    ):
+        return Chopper().multirun_analysis(
+            graphframes, pivot_index, columns, metric, threshold
+        )
 
     @Logger.loggable
     def add(self, other):

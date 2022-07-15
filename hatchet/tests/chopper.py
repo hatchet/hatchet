@@ -5,6 +5,7 @@
 
 import pandas as pd
 import numpy as np
+from random import randint
 from hatchet.graphframe import GraphFrame
 from hatchet.chopper import Chopper
 
@@ -100,8 +101,8 @@ def test_hot_path(calc_pi_hpct_db):
     assert hot_path[0].frame["name"] == "<program root>"
 
 
-def test_multirun_analysis(small_mock1):
-    gf1 = GraphFrame.from_literal(small_mock1)
+def test_multirun_analysis(mock_graph_literal):
+    gf1 = GraphFrame.from_literal(mock_graph_literal)
 
     gf2, gf4, gf8 = gf1.deepcopy(), gf1.deepcopy(), gf1.deepcopy()
 
@@ -110,48 +111,30 @@ def test_multirun_analysis(small_mock1):
     gf4.update_metadata(4)
     gf8.update_metadata(8)
 
-    # assign different time values to each graphframe
-    gf2.dataframe["time"] = [0, 4, 4, 8, 7, 8]
-    gf4.dataframe["time"] = [0, 2, 2, 4, 5, 4]
-    gf8.dataframe["time"] = [0, 1, 1, 2, 3, 2]
+    # assign random time values to each graphframe
+    for gf in [gf2, gf4, gf8]:
+        gf.dataframe["time"] = [randint(0, 10) for x in range(len(gf.dataframe))]
 
     # recalculate all inclusive metrics for graphframes with modified exclusive times
     gf2.calculate_inclusive_metrics()
     gf4.calculate_inclusive_metrics()
     gf8.calculate_inclusive_metrics()
 
-    # run multirun_analyis function on the exclusive times
-    df_test_exc = Chopper().multirun_analysis(
-        graphframes=[gf1, gf2, gf4, gf8],
-        metric="time",
-        pivot_index="num_processes",
-        columns="name",
-        threshold=0,
+    gf1_copy, gf2_copy, gf4_copy, gf8_copy = (
+        gf1.deepcopy(),
+        gf2.deepcopy(),
+        gf4.deepcopy(),
+        gf8.deepcopy(),
     )
 
-    # join the dataframes containing the dummy data and create a pivot table
-    df_dummy_exc = pd.concat(
-        [gf1.dataframe, gf2.dataframe, gf4.dataframe, gf8.dataframe]
-    )
-    df_dummy_exc = df_dummy_exc.pivot(
-        index="num_processes", columns="name", values="time"
-    )
+    # group nodes by name, add num_processes column, and filter time based on threshold
+    for gf in [gf1, gf2, gf4, gf8]:
+        gf.dataframe = gf.dataframe.groupby("name", as_index=False).sum()
+        gf.dataframe["num_processes"] = gf.metadata["num_processes"]
+        gf.dataframe = gf.dataframe[gf.dataframe["time (inc)"] > 0]
 
-    # drop the time data for function A because it does not satisfy the threshold of 0
-    df_dummy_exc = df_dummy_exc.drop("A", axis="columns")
-
-    # check if the test and dummy dataframes match
-    assert df_test_exc.equals(df_dummy_exc)
-
-    # run multirun analysis on the inclusive times
-    df_test_inc = Chopper().multirun_analysis(
-        graphframes=[gf1, gf2, gf4, gf8],
-        metric="time (inc)",
-        pivot_index="num_processes",
-        columns="name",
-    )
-
-    # join the dataframes containing the dummy data and create a pivot table
+    # join the dataframes containing the dummy data and create a pivot table using
+    # the inclusive times
     df_dummy_inc = pd.concat(
         [gf1.dataframe, gf2.dataframe, gf4.dataframe, gf8.dataframe]
     )
@@ -159,5 +142,60 @@ def test_multirun_analysis(small_mock1):
         index="num_processes", columns="name", values="time (inc)"
     )
 
+    # run multirun analysis on the inclusive times
+    df_test_inc = Chopper().multirun_analysis(
+        graphframes=[gf1_copy, gf2_copy, gf4_copy, gf8_copy],
+        pivot_index="num_processes",
+        columns="name",
+        metric="time (inc)",
+        threshold=0,
+    )
+
     # check if the test and dummy dataframes match
     assert df_test_inc.equals(df_dummy_inc)
+
+    # reset all graphframes for next check
+    gf1 = GraphFrame.from_literal(mock_graph_literal)
+    gf2, gf4, gf8 = gf1.deepcopy(), gf1.deepcopy(), gf1.deepcopy()
+    gf1.update_metadata(1)
+    gf2.update_metadata(2)
+    gf4.update_metadata(4)
+    gf8.update_metadata(8)
+    for gf in [gf2, gf4, gf8]:
+        gf.dataframe["time"] = [randint(0, 10) for x in range(len(gf.dataframe))]
+    gf2.calculate_inclusive_metrics()
+    gf4.calculate_inclusive_metrics()
+    gf8.calculate_inclusive_metrics()
+    gf1_copy, gf2_copy, gf4_copy, gf8_copy = (
+        gf1.deepcopy(),
+        gf2.deepcopy(),
+        gf4.deepcopy(),
+        gf8.deepcopy(),
+    )
+
+    # group nodes by name, add num_processes column, and filter time based on threshold
+    for gf in [gf1, gf2, gf4, gf8]:
+        gf.dataframe = gf.dataframe.groupby("name", as_index=False).sum()
+        gf.dataframe["num_processes"] = gf.metadata["num_processes"]
+        gf.dataframe = gf.dataframe[gf.dataframe["time"] > 0]
+
+    # join the dataframes containing the dummy data and create a pivot table using
+    # the exclusive times
+    df_dummy_exc = pd.concat(
+        [gf1.dataframe, gf2.dataframe, gf4.dataframe, gf8.dataframe]
+    )
+    df_dummy_exc = df_dummy_exc.pivot(
+        index="num_processes", columns="name", values="time"
+    )
+
+    # run multirun_analyis on the exclusive times
+    df_test_exc = Chopper().multirun_analysis(
+        graphframes=[gf1_copy, gf2_copy, gf4_copy, gf8_copy],
+        pivot_index="num_processes",
+        columns="name",
+        metric="time",
+        threshold=0,
+    )
+
+    # check if the test and dummy dataframes match
+    assert df_test_exc.equals(df_dummy_exc)
