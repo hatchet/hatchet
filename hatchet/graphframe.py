@@ -92,8 +92,8 @@ class GraphFrame:
         self.metadata = metadata
         if "hatchet_inclusive_suffix" not in self.metadata:
             self.metadata["hatchet_inclusive_suffix"] = " (inc)"
-        if "hatchet_inclusive_suffix" not in self.metadata:
-            self.metadata["hatchet_inclusive_suffix"] = " (exc)"
+        if "hatchet_exclusive_suffix" not in self.metadata:
+            self.metadata["hatchet_exclusive_suffix"] = " (exc)"
 
     @staticmethod
     @Logger.loggable
