@@ -92,6 +92,8 @@ class GraphFrame:
         self.metadata = {} if metadata is None else metadata
         if "hatchet_inclusive_suffix" not in self.metadata:
             self.metadata["hatchet_inclusive_suffix"] = " (inc)"
+        if "hatchet_inclusive_suffix" not in self.metadata:
+            self.metadata["hatchet_inclusive_suffix"] = " (exc)"
 
     @staticmethod
     @Logger.loggable
@@ -802,16 +804,25 @@ class GraphFrame:
                 columns.remove(column)
                 continue
 
-            # name the new column removing ' (inc)' from
+            # name the new column removing 'hatchet_inc_suffix' from
             # the inclusive column
             new_column = ""
-            if " (inc)" in column:
-                new_column = column.replace(" (inc)", "")
-            # add ' (exc)' if ' (inc)' doesn't exists.
+            if self.metadata["hatchet_inclusive_suffix"] in column:
+                new_column = column.replace(
+                    self.metadata["hatchet_inclusive_suffix"], ""
+                )
+            # add 'hatchet_ex_suffix' if 'hatchet_inc_suffix' doesn't exists.
             else:
-                new_column = column + " (exc)"
-            # add new column to exc_metrics
-            self.exc_metrics.append(new_column)
+                new_column = column + self.metadata["hatchet_exclusive_suffix"]
+
+            # check if exc metric already exists
+            if new_column in self.dataframe:
+                # drop if it exists
+                self.dataframe.drop(new_column, axis=1)
+            else:
+                # add to exc_metric if it doesn't exist
+                self.exc_metrics.append(new_column)
+
             # keep the columns as a list of (inc_metric, exc_metric)
             inc_exc_pairs.append((column, new_column))
             # create a dict for the new data
