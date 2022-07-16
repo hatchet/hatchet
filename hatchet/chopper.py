@@ -239,7 +239,7 @@ class Chopper:
             pivot_val = gf.metadata[pivot_index]
             dataframe_copy[pivot_index] = pivot_val
 
-            # Filter the GraphFrame, keeping only the rows that are above the threshold
+            # Filter the dataframe, keeping only the rows that are above the threshold
             if threshold is not None:
                 filtered_rows = dataframe_copy.apply(
                     lambda x: x[metric] > threshold, axis=1

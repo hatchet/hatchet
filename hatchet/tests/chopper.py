@@ -118,11 +118,13 @@ def test_multirun_analysis_lulesh(lulesh_caliper_json):
         gf8.deepcopy(),
     )
 
-    # group nodes by name, remove all columns except time, and replace time column with
-    # num_processes for each dataframe
+    # group nodes by name, remove all columns except time, filter values below threshold
+    # of 500000, and replace time column with num_processes for each dataframe
     for gf in [gf1, gf2, gf4, gf8]:
         gf.dataframe = gf.dataframe.groupby("name").sum()
         gf.dataframe = gf.dataframe[["time"]]
+        filtered_rows = gf.dataframe.apply(lambda x: x["time"] > 500000, axis=1)
+        gf.dataframe = gf.dataframe[filtered_rows]
         gf.dataframe = gf.dataframe.rename(
             {"time": gf.metadata["num_processes"]}, axis="columns"
         )
@@ -141,6 +143,7 @@ def test_multirun_analysis_lulesh(lulesh_caliper_json):
         pivot_index="num_processes",
         columns="name",
         metric="time",
+        threshold=500000,
     )
 
     # check if the test and dummy dataframes match
@@ -165,11 +168,13 @@ def test_multirun_analysis_literal(mock_graph_literal):
         gf8.deepcopy(),
     )
 
-    # group nodes by name, remove all columns except time, and replace time column with
-    # num_processes for each dataframe
+    # group nodes by name, remove all columns except time, filter values below threshold
+    # of 5, and replace time column with num_processes for each dataframe
     for gf in [gf1, gf2, gf4, gf8]:
         gf.dataframe = gf.dataframe.groupby("name").sum()
         gf.dataframe = gf.dataframe[["time"]]
+        filtered_rows = gf.dataframe.apply(lambda x: x["time"] > 5, axis=1)
+        gf.dataframe = gf.dataframe[filtered_rows]
         gf.dataframe = gf.dataframe.rename(
             {"time": gf.metadata["num_processes"]}, axis="columns"
         )
@@ -188,6 +193,7 @@ def test_multirun_analysis_literal(mock_graph_literal):
         pivot_index="num_processes",
         columns="name",
         metric="time",
+        threshold=5,
     )
 
     # check if the test and dummy dataframes match
