@@ -14,7 +14,7 @@ from csv import DictReader
 
 
 class NsightReader:
-    def __init__(self, nsys_trace):
+    def __init__(self, nsys_trace, ncu_metrics=None):
         fileObject = open(nsys_trace)
         self.nsys_trace = list(DictReader(fileObject))
         fileObject.close()
@@ -25,15 +25,13 @@ class NsightReader:
     def create_graph(self):
         for i in range(len(self.nsys_trace)):
             if len(self.node_call_stack) == 0:
-                graph_root = Node(
-                    Frame(name=self.nsys_trace[i]["Name"], type="function"), None
-                )
+                graph_root = Node(Frame(name=self.nsys_trace[i]["Name"]), None)
                 node_dict = dict(
                     {
                         "node": graph_root,
                         "name": graph_root.frame.get("name"),
-                        "time": self.nsys_trace[i]["DurNonChild (ns)"],
-                        "time (inc)": self.nsys_trace[i]["Duration (ns)"],
+                        "time": int(self.nsys_trace[i]["DurNonChild (ns)"]),
+                        "time (inc)": int(self.nsys_trace[i]["Duration (ns)"]),
                     }
                 )
                 self.list_roots.append(graph_root)
@@ -48,15 +46,14 @@ class NsightReader:
                     ):
                         self.node_call_stack.pop()
                 parent = self.node_call_stack[-1][1]
-                child = Node(
-                    Frame(name=self.nsys_trace[i]["Name"], type="function"), parent
-                )
+                child = Node(Frame(name=self.nsys_trace[i]["Name"]), parent)
+                parent.add_child(child)
                 node_dict = dict(
                     {
                         "node": child,
                         "name": child.frame.get("name"),
-                        "time": self.nsys_trace[i]["DurNonChild (ns)"],
-                        "time (inc)": self.nsys_trace[i]["Duration (ns)"],
+                        "time": int(self.nsys_trace[i]["DurNonChild (ns)"]),
+                        "time (inc)": int(self.nsys_trace[i]["Duration (ns)"]),
                     }
                 )
                 self.node_dicts.append(node_dict)
