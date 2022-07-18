@@ -811,9 +811,15 @@ class GraphFrame:
                 new_column = column.replace(
                     self.metadata["hatchet_inclusive_suffix"], ""
                 )
+                # do nothing if the exc column already exists
+                if new_column in self.exc_metrics:
+                    continue
             # add 'hatchet_ex_suffix' if 'hatchet_inc_suffix' doesn't exists.
             else:
                 new_column = column + self.metadata["hatchet_exclusive_suffix"]
+                # do nothing if the exc column already exists
+                if new_column in self.exc_metrics:
+                    continue
 
             # check if exc metric already exists
             if new_column in self.dataframe:
