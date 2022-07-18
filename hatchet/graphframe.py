@@ -54,7 +54,7 @@ class GraphFrame:
         exc_metrics,
         inc_metrics,
         default_metric="time",
-        metadata={},
+        metadata=None,
     ):
         """Create a new GraphFrame from a graph and a dataframe.
 
@@ -89,7 +89,7 @@ class GraphFrame:
         self.exc_metrics = [] if exc_metrics is None else exc_metrics
         self.inc_metrics = [] if inc_metrics is None else inc_metrics
         self.default_metric = default_metric
-        self.metadata = metadata
+        self.metadata = {} if metadata is None else metadata
         if "hatchet_inclusive_suffix" not in self.metadata:
             self.metadata["hatchet_inclusive_suffix"] = " (inc)"
 
