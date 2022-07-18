@@ -997,8 +997,6 @@ class GraphFrame:
             new_node.add_parent(parent)
             return new_node
 
-        for gf in others:
-            print(gf.metadata[graphframe_identifier])
         # check if a list is given.
         # if not, make it a list.
         if not isinstance(others, list):
@@ -1015,37 +1013,30 @@ class GraphFrame:
             # do not change the given gfs.
             gf_copy = others[idx].deepcopy()
             gf_copy.drop_index_levels()
-            # if idx == len(others) - 1:
+
             old_default_metric = gf_copy.default_metric
             _rename_colums(
-                gf_copy, gf_copy.inc_metrics, self.metadata[graphframe_identifier]
+                gf_copy, gf_copy.inc_metrics, gf_copy.metadata[graphframe_identifier]
             )
             _rename_colums(
-                gf_copy, gf_copy.exc_metrics, self.metadata[graphframe_identifier]
+                gf_copy, gf_copy.exc_metrics, gf_copy.metadata[graphframe_identifier]
             )
             gf_to_visited_node[gf_copy] = (idx, [])
             gf_copy.default_metric = "{}-{}".format(
-                old_default_metric, str(self.metadata[graphframe_identifier])
+                old_default_metric, str(gf_copy.metadata[graphframe_identifier])
             )
-            # else:
-            #     old_default_metric = gf_copy.default_metric
-            #     _rename_colums(gf_copy, gf_copy.inc_metrics, self.metadata[graphframe_identifier])
-            #     _rename_colums(gf_copy, gf_copy.exc_metrics, self.metadata[graphframe_identifier])
-            #     gf_to_visited_node[gf_copy] = (idx + 1, [])
-            #     gf_copy.default_metric = old_default_metric + self.metadata[graphframe_identifier]
-            # find the biggest gf.
-            size_of_df = len(gf_copy.dataframe)
+
+            size_of_df = len(gf_copy.dataframe.index)
             if size_of_df > max_num_of_idx:
                 biggest_gf = gf_copy
                 max_num_of_idx = size_of_df
 
         gf_to_visited_node.pop(biggest_gf)
-        print(gf_to_visited_node)
+
         biggest_gf_callpath_to_node = {}
         # test_dict = {"type": "function", "name": "<program root>"}
         # traverse the biggest graphframe given.
         for node_in_biggest in biggest_gf.graph.traverse():
-            #    if node_in_biggest.frame.attrs == test_dict:
             # look at the paths of each node.
             for path in node_in_biggest.paths():
                 # convert call paths to tuples of node names.
@@ -1054,7 +1045,6 @@ class GraphFrame:
                 biggest_gf_callpath_to_node[callpath] = node_in_biggest
                 # iterate over all other graphframes.
                 for gf in gf_to_visited_node.keys():
-                    # print(gf.metadata["num_processes"])
                     # check if there are indices that have the
                     # same name value (possible indices).
                     possible_indices = gf.dataframe.loc[
@@ -1080,7 +1070,6 @@ class GraphFrame:
                         if found_count == num_of_paths:
                             gf_to_visited_node[gf][1].append(node)
                             for metric_column in gf.inc_metrics + gf.exc_metrics:
-                                # print(metric_column)
                                 biggest_gf.dataframe.loc[
                                     node_in_biggest, metric_column
                                 ] = gf.dataframe.loc[node, metric_column]
@@ -1105,15 +1094,6 @@ class GraphFrame:
                                 _create_node(biggest_gf, gf, node, path)
                     gf_to_visited_node[gf][1].append(node)
 
-        # print(biggest_gf.dataframe)
-        # print(biggest_gf.tree())
-        # print(biggest_gf.dataframe.columns)
-        # print(biggest_gf.inc_metrics)
-        # print(biggest_gf.exc_metrics)
-        # for gf in gf_to_visited_node.keys():
-        #     print(gf.dataframe.columns)
-        #     print(gf.inc_metrics)
-        #     print(gf.exc_metrics)
         return biggest_gf
 
     def unify(self, other):
