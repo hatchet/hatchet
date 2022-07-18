@@ -950,7 +950,8 @@ class GraphFrame:
         """Returns a list of dataframe column labels."""
         return list(self.exc_metrics + self.inc_metrics)
 
-    def unify_multiple_graphframes(self, others):
+    @Logger.loggable
+    def unify_multiple_graphframes(self, others, graphframe_identifier="num_processes"):
         def _transform_path(path, graphframe):
             """Takes a tuple of nodes and converts it
             to a tuple of only node names"""
@@ -962,11 +963,11 @@ class GraphFrame:
         def _rename_colums(graphframe, metrics, suffix):
             for idx in range(len(metrics)):
                 graphframe.dataframe.rename(
-                    columns={metrics[idx]: "{}{}".format(metrics[idx], suffix)},
+                    columns={metrics[idx]: "{}-{}".format(metrics[idx], suffix)},
                     inplace=True,
                 )
 
-                metrics[idx] = metrics[idx] + suffix
+                metrics[idx] = "{}-{}".format(metrics[idx], str(suffix))
 
         def _create_node(result_graphframe, graphframe, node, callpath):
             new_node = node.copy()
@@ -996,6 +997,8 @@ class GraphFrame:
             new_node.add_parent(parent)
             return new_node
 
+        for gf in others:
+            print(gf.metadata[graphframe_identifier])
         # check if a list is given.
         # if not, make it a list.
         if not isinstance(others, list):
@@ -1012,18 +1015,24 @@ class GraphFrame:
             # do not change the given gfs.
             gf_copy = others[idx].deepcopy()
             gf_copy.drop_index_levels()
-            if idx == len(others) - 1:
-                old_default_metric = gf_copy.default_metric
-                _rename_colums(gf_copy, gf_copy.inc_metrics, "-gf0")
-                _rename_colums(gf_copy, gf_copy.exc_metrics, "-gf0")
-                gf_to_visited_node[gf_copy] = (0, [])
-                gf_copy.default_metric = old_default_metric + "-gf0"
-            else:
-                old_default_metric = gf_copy.default_metric
-                _rename_colums(gf_copy, gf_copy.inc_metrics, "-gf{}".format(idx + 1))
-                _rename_colums(gf_copy, gf_copy.exc_metrics, "-gf{}".format(idx + 1))
-                gf_to_visited_node[gf_copy] = (idx + 1, [])
-                gf_copy.default_metric = old_default_metric + "-gf{}".format(idx + 1)
+            # if idx == len(others) - 1:
+            old_default_metric = gf_copy.default_metric
+            _rename_colums(
+                gf_copy, gf_copy.inc_metrics, self.metadata[graphframe_identifier]
+            )
+            _rename_colums(
+                gf_copy, gf_copy.exc_metrics, self.metadata[graphframe_identifier]
+            )
+            gf_to_visited_node[gf_copy] = (idx, [])
+            gf_copy.default_metric = "{}-{}".format(
+                old_default_metric, str(self.metadata[graphframe_identifier])
+            )
+            # else:
+            #     old_default_metric = gf_copy.default_metric
+            #     _rename_colums(gf_copy, gf_copy.inc_metrics, self.metadata[graphframe_identifier])
+            #     _rename_colums(gf_copy, gf_copy.exc_metrics, self.metadata[graphframe_identifier])
+            #     gf_to_visited_node[gf_copy] = (idx + 1, [])
+            #     gf_copy.default_metric = old_default_metric + self.metadata[graphframe_identifier]
             # find the biggest gf.
             size_of_df = len(gf_copy.dataframe)
             if size_of_df > max_num_of_idx:
@@ -1031,7 +1040,7 @@ class GraphFrame:
                 max_num_of_idx = size_of_df
 
         gf_to_visited_node.pop(biggest_gf)
-
+        print(gf_to_visited_node)
         biggest_gf_callpath_to_node = {}
         # test_dict = {"type": "function", "name": "<program root>"}
         # traverse the biggest graphframe given.
@@ -1039,38 +1048,39 @@ class GraphFrame:
             #    if node_in_biggest.frame.attrs == test_dict:
             # look at the paths of each node.
             for path in node_in_biggest.paths():
-                # store call paths as tuples of node names.
+                # convert call paths to tuples of node names.
                 callpath = _transform_path(path, biggest_gf)
                 # store callpaths to use later.
                 biggest_gf_callpath_to_node[callpath] = node_in_biggest
                 # iterate over all other graphframes.
                 for gf in gf_to_visited_node.keys():
+                    # print(gf.metadata["num_processes"])
                     # check if there are indices that have the
                     # same name value (possible indices).
                     possible_indices = gf.dataframe.loc[
                         gf.dataframe["name"]
                         == biggest_gf.dataframe.loc[node_in_biggest]["name"]
                     ].index
-                    # iterate over possible indices which will
-                    # give us nodes.
+                    # iterate over possible indices (nodes).
                     for node in possible_indices:
                         # get all the paths of each possible node.
                         possible_paths = node.paths()
                         num_of_paths = len(possible_paths)
                         found_count = 0
-                        # for each possible path
+                        # for each possible path of a node
                         for possible_path in possible_paths:
                             possible_callpath = _transform_path(possible_path, gf)
                             # check if callpath equals to the node in the
                             # biggest gf.
                             if callpath == possible_callpath:
                                 found_count += 1
-                        # if we visited all the paths and if they are equal to
-                        # the callpath of the node in the biggest gf, add node
+                        # if we visited all the paths and if they are the same with
+                        # the callpaths of the node in the biggest gf, add node
                         # to the visited list to be removed later.
                         if found_count == num_of_paths:
                             gf_to_visited_node[gf][1].append(node)
                             for metric_column in gf.inc_metrics + gf.exc_metrics:
+                                # print(metric_column)
                                 biggest_gf.dataframe.loc[
                                     node_in_biggest, metric_column
                                 ] = gf.dataframe.loc[node, metric_column]
@@ -1104,6 +1114,7 @@ class GraphFrame:
         #     print(gf.dataframe.columns)
         #     print(gf.inc_metrics)
         #     print(gf.exc_metrics)
+        return biggest_gf
 
     def unify(self, other):
         """Returns a unified graphframe.
