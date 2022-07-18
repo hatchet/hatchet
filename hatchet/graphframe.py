@@ -772,6 +772,7 @@ class GraphFrame:
         ]
         self.subgraph_sum(self.exc_metrics, self.inc_metrics)
 
+    @Logger.loggable
     def calculate_exclusive_metrics(self, columns=None):
         """Calculates exclusive metrics using the corresponding inclusive metric.
 
