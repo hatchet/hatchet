@@ -221,8 +221,6 @@ class Chopper:
         Output:
          - a pivot table
         """
-        # if isinstance(columns, str):
-        #     columns = [columns]
 
         if metric is None:
             metric = graphframes[0].default_metric
