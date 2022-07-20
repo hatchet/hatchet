@@ -204,7 +204,7 @@ class Chopper:
         self,
         graphframes=[],
         pivot_index="num_processes",
-        columns="name",
+        columns=["name"],
         metric=None,
         threshold=None,
     ):
