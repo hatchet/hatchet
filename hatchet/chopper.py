@@ -205,7 +205,7 @@ class Chopper:
         graphframes=[],
         pivot_index="num_processes",
         columns="name",
-        metric="time",
+        metric=None,
         threshold=None,
     ):
         """Creates a pivot table.
@@ -223,6 +223,9 @@ class Chopper:
         """
         if isinstance(columns, str):
             columns = [columns]
+
+        if metric is None:
+            metric = graphframes[0].default_metric
 
         dataframes = []
         for gf in graphframes:

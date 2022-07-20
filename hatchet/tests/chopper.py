@@ -143,7 +143,7 @@ def test_multirun_analysis_lulesh(lulesh_caliper_json):
         pivot_index="num_processes",
         columns="name",
         metric="time",
-        threshold=500000,
+        threshold=500000.0,
     )
 
     # check if the test and dummy dataframes match
@@ -193,7 +193,7 @@ def test_multirun_analysis_literal(mock_graph_literal):
         pivot_index="num_processes",
         columns="name",
         metric="time",
-        threshold=5,
+        threshold=5.0,
     )
 
     # check if the test and dummy dataframes match

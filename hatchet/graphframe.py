@@ -1323,7 +1323,7 @@ class GraphFrame:
         graphframes=[],
         pivot_index="num_processes",
         columns="name",
-        metric="time",
+        metric=None,
         threshold=None,
     ):
         return Chopper().multirun_analysis(
