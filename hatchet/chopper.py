@@ -204,7 +204,7 @@ class Chopper:
         self,
         graphframes=[],
         pivot_index="num_processes",
-        columns=["name"],
+        columns="name",
         metric=None,
         threshold=None,
     ):
@@ -221,8 +221,8 @@ class Chopper:
         Output:
          - a pivot table
         """
-        if isinstance(columns, str):
-            columns = [columns]
+        # if isinstance(columns, str):
+        #     columns = [columns]
 
         if metric is None:
             metric = graphframes[0].default_metric
