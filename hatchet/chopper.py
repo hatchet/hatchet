@@ -6,6 +6,8 @@
 import pandas as pd
 import numpy as np
 
+from hatchet.graphframe import GraphFrame
+
 
 class Chopper:
     """High-level API for performance analysis."""
@@ -221,6 +223,21 @@ class Chopper:
         Output:
          - a pivot table
         """
+
+        assert (
+            graphframes is not None and len(graphframes) != 0
+        ), "function param 'graphframes' requires at least one graphframe object"
+        if isinstance(graphframes, GraphFrame):
+            graphframes = [graphframes]
+
+        if pivot_index is None:
+            pivot_index = "num_processes"
+
+        if columns is None:
+            columns = ["name"]
+
+        if isinstance(columns, str):
+            columns = [columns]
 
         if metric is None:
             metric = graphframes[0].default_metric
