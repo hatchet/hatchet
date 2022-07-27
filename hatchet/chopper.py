@@ -6,8 +6,6 @@
 import pandas as pd
 import numpy as np
 
-from .graphframe import GraphFrame
-
 
 class Chopper:
     """High-level API for performance analysis."""
@@ -227,7 +225,7 @@ class Chopper:
         assert (
             graphframes is not None and len(graphframes) != 0
         ), "function param 'graphframes' requires at least one graphframe object"
-        if isinstance(graphframes, GraphFrame):
+        if not isinstance(graphframes, list):
             graphframes = [graphframes]
 
         if pivot_index is None:
@@ -236,7 +234,7 @@ class Chopper:
         if columns is None:
             columns = ["name"]
 
-        if isinstance(columns, str):
+        if not isinstance(columns, list):
             columns = [columns]
 
         if metric is None:
