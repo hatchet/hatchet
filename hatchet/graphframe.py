@@ -3,8 +3,11 @@
 #
 # SPDX-License-Identifier: MIT
 
+import os
 import sys
+import json
 import traceback
+import jsonschema
 
 from collections import defaultdict
 
@@ -125,6 +128,176 @@ class GraphFrame:
                     )
                 )
             setattr(self, x, y)
+
+    @staticmethod
+    def detect_profile_format(dirname_or_data):
+        """Detect the profile format for the given data.
+        Arguments:
+            dirname_or_data (str): Data directory or data (lists or dicts)
+        Returns:
+            "hpctoolkit": if .metric-db and experiment.xml is found inside
+            directory.
+            "caliper": if file extension is .cali
+            "caliper_json": if file extension is .json and matches schema
+        """
+
+        def _json_schema_validate(data, schema):
+            try:
+                jsonschema.validate(instance=data, schema=schema)
+                return True
+            except jsonschema.ValidationError:
+                return False
+
+        # Find identifiers
+        # Caliper has meta-data section (cali version is available)
+        # Add feedback if the format matching fails.
+        SCHEMA_CALIPER_JSON = {
+            "type": "object",
+            "properties": {
+                "data": {"type": "array"},
+                "columns": {"type": "array"},
+                "column_metadata": {"type": "array"},
+                "nodes": {"type": "array"},
+            },
+            "required": ["data", "columns", "column_metadata", "nodes"],
+        }
+
+        SCHEMA_PYINSTRUMENT = {
+            "type": "object",
+            "properties": {
+                "start_time": {"type": "number"},
+                "duration": {"type": "number"},
+                "sample_count": {"type": "number"},
+                "program": {"type": "string"},
+                "cpu_time": {"type": "number"},
+                "root_frame": {},
+            },
+            "required": [
+                "start_time",
+                "duration",
+                "sample_count",
+                "program",
+                "cpu_time",
+            ],
+        }
+
+        SCHEMA_TIMEMORY = {
+            "type": "object",
+            "properties": {"timemory": {"type": "object"}},
+            "required": ["timemory"],
+        }
+
+        if isinstance(dirname_or_data, list):
+            return "literal"
+
+        if isinstance(dirname_or_data, str):
+            # Formats in directory: apex, hpctoolkit, TAU
+            if os.path.isdir(dirname_or_data):
+                # apex
+                tasktree_json_files = [
+                    f
+                    for f in os.listdir(dirname_or_data)
+                    if "tasktree" in f and f.endswith(".json")
+                ]
+                if len(tasktree_json_files) == len(os.listdir(dirname_or_data)):
+                    return "apex"
+
+                # hpctoolkit
+                metric_db_files = [
+                    f for f in os.listdir(dirname_or_data) if f.endswith(".metric-db")
+                ]
+                experiment_xml_files = [
+                    f
+                    for f in os.listdir(dirname_or_data)
+                    if f.endswith("experiment.xml")
+                ]
+                if len(metric_db_files) > 0 and len(experiment_xml_files) > 0:
+                    return "hpctoolkit"
+
+                tau_profiles = [
+                    f
+                    for f in os.listdir(dirname_or_data)
+                    if "profile" in f and f.endswith(".0.0")
+                ]
+                if len(tau_profiles) > 0:
+                    return "tau"
+
+            # check if it is a file
+            if os.path.isfile(dirname_or_data):
+                file_name, file_ext = os.path.splitext(dirname_or_data)
+
+                # TODO: How to differentiate SPOT .cali from caliper .cali?
+                if file_ext == ".cali":
+                    return "caliper"
+                if file_ext == ".pstats":
+                    return "cprofile"
+                if file_ext == ".dot" or "dot" in file_name.split("."):
+                    return "gprof_dot"
+                if file_ext == ".h5":
+                    return "hdf5"
+                if file_ext == ".cubex":
+                    return "scorep"
+                if file_ext == ".json":
+                    # TODO: Check if we can just load the key and dtype of JSON.
+                    # We could also be unnecessarily read the data again.
+                    try:
+                        with open(dirname_or_data, "r") as f:
+                            data = json.loads(f.read())
+                    except ValueError as err:
+                        print(err)
+                        return False
+
+                    if _json_schema_validate(data, SCHEMA_CALIPER_JSON):
+                        return "caliper_json"
+                    if _json_schema_validate(data, SCHEMA_PYINSTRUMENT):
+                        return "pyinstrument"
+                    if _json_schema_validate(data, SCHEMA_TIMEMORY):
+                        return "timemory"
+        return None
+
+    @staticmethod
+    def from_path(dirname_or_data, *args):
+        """Read a database directory or file and automatically detect the data format.
+        Arguments:
+            dirname_or_data (str): path to the database directory or file
+            args (str): args need to be provided based on the respective function signature of GraphFrame.from_*profile_format*.
+        """
+        assert isinstance(dirname_or_data, (str, list, dict))
+
+        FROM_DATABASE_MAPPER = {
+            "apex": GraphFrame.from_apex,
+            "caliper": GraphFrame.from_caliperreader,
+            "caliper_json": GraphFrame.from_caliper,
+            "cprofile": GraphFrame.from_cprofile,
+            "gprof_dot": GraphFrame.from_gprof_dot,
+            "hdf5": GraphFrame.from_hdf,
+            "hpctoolkit": GraphFrame.from_hpctoolkit,
+            "literal": GraphFrame.from_literal,
+            "pyinstrument": GraphFrame.from_pyinstrument,
+            "scorep": GraphFrame.from_scorep,
+            "spotdb": GraphFrame.from_spotdb,
+            "tau": GraphFrame.from_tau,
+            "timemory": GraphFrame.from_timemory,
+        }
+
+        profile_format = GraphFrame.detect_profile_format(dirname_or_data)
+
+        if profile_format in FROM_DATABASE_MAPPER:
+            return FROM_DATABASE_MAPPER[profile_format](dirname_or_data, *args)
+        else:
+            raise ValueError(
+                "'GraphFrame.from_path' failed to recognize the data format. Please fallback to respective `GraphFrame.from_*`, where * is the data format."
+            )
+
+    @staticmethod
+    def from_paths(datasets=[]):
+        assert len(datasets) != 0, "list 'datasets' must contain at least 1 dataset"
+
+        graphframes = []
+        for data in datasets:
+            graphframes.append(GraphFrame.from_path(data))
+
+        return graphframes
 
     @staticmethod
     @Logger.loggable
