@@ -18,11 +18,65 @@ class NsightReader:
         fileObject = open(nsys_trace)
         self.nsys_trace = list(DictReader(fileObject))
         fileObject.close()
+        self.ncu_metrics = ncu_metrics
         self.list_roots = []
         self.callpath_to_node_dicts = {}
         self.node_call_stack = []
 
     def create_graph(self):
+        def _add_metrics():
+            metrics_df = pd.read_csv(self.ncu_metrics)
+            metrics_df = metrics_df.drop("Domain", axis=1)
+            metrics_df.rename(
+                columns={
+                    "Range:PL_Type:PL_Value:CLR_Type:Color:Msg_Type:Msg": "Callstack"
+                },
+                inplace=True,
+            )
+            filter_cpu = metrics_df["Kernel Name"].str.contains("_kernel_agent")
+            metrics_df = metrics_df[~filter_cpu]
+            metrics_df["Callstack"] = metrics_df["Callstack"].apply(
+                lambda x: x.replace(":none:none:none:none:none:none", "")
+                .replace('"', "")
+                .split()
+            )
+            metrics_df["Callstack"] = metrics_df["Callstack"].apply(lambda x: tuple(x))
+            filter = metrics_df["Metric Name"].str.contains("device__attribute")
+            metrics_df = metrics_df[~filter]
+            kernels = metrics_df.Callstack.unique()
+            for kernel in kernels:
+                kernel_metrics = metrics_df.loc[metrics_df["Callstack"] == kernel][
+                    ["Metric Name", "Average", "Minimum", "Maximum"]
+                ]
+                kernel_path = "("
+                for k in kernel:
+                    kernel_path += "Node({{'name': '{}', 'type': 'None'}}), ".format(k)
+                kernel_path = kernel_path[:-2] + ")"
+                self.callpath_to_node_dicts[kernel_path]["is_kernel"] = True
+                metrics = kernel_metrics["Metric Name"].unique()
+                for metric in metrics:
+                    self.callpath_to_node_dicts[kernel_path][
+                        metric
+                    ] = kernel_metrics.loc[kernel_metrics["Metric Name"] == metric][
+                        "Average"
+                    ].values[
+                        0
+                    ]
+                    self.callpath_to_node_dicts[kernel_path][
+                        metric
+                    ] = kernel_metrics.loc[kernel_metrics["Metric Name"] == metric][
+                        "Minimum"
+                    ].values[
+                        0
+                    ]
+                    self.callpath_to_node_dicts[kernel_path][
+                        metric
+                    ] = kernel_metrics.loc[kernel_metrics["Metric Name"] == metric][
+                        "Maximum"
+                    ].values[
+                        0
+                    ]
+
         for i in range(len(self.nsys_trace)):
             if len(self.node_call_stack) == 0:
                 graph_root = Node(Frame(name=self.nsys_trace[i]["Name"]), None)
@@ -72,6 +126,9 @@ class NsightReader:
                     )
                     self.callpath_to_node_dicts[child_path] = node_dict
 
+        if self.ncu_metrics:
+            _add_metrics()
+
         graph = Graph(self.list_roots)
 
         # test if nids are already loaded
@@ -87,5 +144,6 @@ class NsightReader:
 
         dataframe = pd.DataFrame(data=self.callpath_to_node_dicts.values())
         dataframe.set_index(["node"], inplace=True)
+        dataframe.sort_index(inplace=True)
 
         return hatchet.graphframe.GraphFrame(graph, dataframe, ["time"], ["time (inc)"])
