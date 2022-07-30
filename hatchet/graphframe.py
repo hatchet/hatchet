@@ -133,12 +133,7 @@ class GraphFrame:
     def detect_profile_format(dirname_or_data):
         """Detect the profile format for the given data.
         Arguments:
-            dirname_or_data (str): Data directory or data (lists or dicts)
-        Returns:
-            "hpctoolkit": if .metric-db and experiment.xml is found inside
-            directory.
-            "caliper": if file extension is .cali
-            "caliper_json": if file extension is .json and matches schema
+            dirname_or_data (str): Data directory or data (str, list, or dict)
         """
 
         def _json_schema_validate(data, schema):
@@ -191,7 +186,11 @@ class GraphFrame:
             return "literal"
 
         if isinstance(dirname_or_data, str):
-            # Formats in directory: apex, hpctoolkit, TAU
+            # check if it is a SQL database URL
+            if "mysql://" in dirname_or_data:
+                return "spotdb"
+
+            # Formats in directory: apex, hpctoolkit, spotdb, tau
             if os.path.isdir(dirname_or_data):
                 # apex
                 tasktree_json_files = [
@@ -214,6 +213,14 @@ class GraphFrame:
                 if len(metric_db_files) > 0 and len(experiment_xml_files) > 0:
                     return "hpctoolkit"
 
+                # spotdb
+                cali_files = [
+                    f for f in os.listdir(dirname_or_data) if f.endswith(".cali")
+                ]
+                if len(cali_files) == len(os.listdir(dirname_or_data)):
+                    return "spotdb"
+
+                # tau
                 tau_profiles = [
                     f
                     for f in os.listdir(dirname_or_data)
@@ -226,7 +233,6 @@ class GraphFrame:
             if os.path.isfile(dirname_or_data):
                 file_name, file_ext = os.path.splitext(dirname_or_data)
 
-                # TODO: How to differentiate SPOT .cali from caliper .cali?
                 if file_ext == ".cali":
                     return "caliper"
                 if file_ext == ".pstats":
@@ -237,6 +243,8 @@ class GraphFrame:
                     return "hdf5"
                 if file_ext == ".cubex":
                     return "scorep"
+                if file_ext == ".sqlite":
+                    return "spotdb"
                 if file_ext == ".json":
                     # TODO: Check if we can just load the key and dtype of JSON.
                     # We could also be unnecessarily read the data again.
