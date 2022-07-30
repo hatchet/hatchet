@@ -131,9 +131,9 @@ class GraphFrame:
 
     @staticmethod
     def detect_profile_format(dirname_or_data):
-        """Detect the profile format for the given data.
+        """Read a database directory or file and automatically detect the data format.
         Arguments:
-            dirname_or_data (str): Data directory or data (str, list, or dict)
+            dirname_or_data (str): path to the database directory or file
         """
 
         def _json_schema_validate(data, schema):
@@ -264,46 +264,68 @@ class GraphFrame:
         return None
 
     @staticmethod
-    def from_path(dirname_or_data, *args):
-        """Read a database directory or file and automatically detect the data format.
-        Arguments:
-            dirname_or_data (str): path to the database directory or file
-            args (str): args need to be provided based on the respective function signature of GraphFrame.from_*profile_format*.
-        """
-        assert isinstance(dirname_or_data, (str, list, dict))
-
-        FROM_DATABASE_MAPPER = {
-            "apex": GraphFrame.from_apex,
-            "caliper": GraphFrame.from_caliperreader,
-            "caliper_json": GraphFrame.from_caliper,
-            "cprofile": GraphFrame.from_cprofile,
-            "gprof_dot": GraphFrame.from_gprof_dot,
-            "hdf5": GraphFrame.from_hdf,
-            "hpctoolkit": GraphFrame.from_hpctoolkit,
-            "literal": GraphFrame.from_literal,
-            "pyinstrument": GraphFrame.from_pyinstrument,
-            "scorep": GraphFrame.from_scorep,
-            "spotdb": GraphFrame.from_spotdb,
-            "tau": GraphFrame.from_tau,
-            "timemory": GraphFrame.from_timemory,
-        }
-
-        profile_format = GraphFrame.detect_profile_format(dirname_or_data)
-
-        if profile_format in FROM_DATABASE_MAPPER:
-            return FROM_DATABASE_MAPPER[profile_format](dirname_or_data, *args)
-        else:
-            raise ValueError(
-                "'GraphFrame.from_path' failed to recognize the data format. Please fallback to respective `GraphFrame.from_*`, where * is the data format."
-            )
-
-    @staticmethod
     def from_paths(datasets=[]):
+        """Construct GraphFrame objects from a list of datasets.
+
+        Arguments:
+            datasets (list): contains list of data
+                Each item in the list is either a string path to a file or directory,
+                or a list object.
+                    ex. "path/to/file"
+                For data that require additional parameters, use a tuple containing
+                the path and a dictionary of parameters.
+                    ex. ("path/to/file", {"per_thread": True})
+            Example input:
+                ["path/to/file", "path/to/dir", ("path/to/file", {"select": "cpu_clock", "per_rank": True, "per_thread": True})]
+
+        Returns:
+            A list of respective GraphFrame objects
+        """
+
+        def from_path(data):
+            assert isinstance(
+                data, (str, list, tuple)
+            ), "each item in list 'datasets' may only be of type 'str', 'list', or 'tuple'"
+
+            FROM_DATABASE_MAPPER = {
+                "apex": GraphFrame.from_apex,
+                "caliper": GraphFrame.from_caliperreader,
+                "caliper_json": GraphFrame.from_caliper,
+                "cprofile": GraphFrame.from_cprofile,
+                "gprof_dot": GraphFrame.from_gprof_dot,
+                "hdf5": GraphFrame.from_hdf,
+                "hpctoolkit": GraphFrame.from_hpctoolkit,
+                "literal": GraphFrame.from_literal,
+                "pyinstrument": GraphFrame.from_pyinstrument,
+                "scorep": GraphFrame.from_scorep,
+                "spotdb": GraphFrame.from_spotdb,
+                "tau": GraphFrame.from_tau,
+                "timemory": GraphFrame.from_timemory,
+            }
+
+            if isinstance(data, tuple):
+                profile_format = GraphFrame.detect_profile_format(data[0])
+            else:
+                profile_format = GraphFrame.detect_profile_format(data)
+
+            if profile_format in FROM_DATABASE_MAPPER:
+                if isinstance(data, tuple):
+                    return FROM_DATABASE_MAPPER[profile_format](data[0], **data[1])
+                else:
+                    return FROM_DATABASE_MAPPER[profile_format](data)
+            else:
+                raise ValueError(
+                    "'GraphFrame.from_path' failed to recognize the data format. Please fallback to respective `GraphFrame.from_*`, where * is the data format."
+                )
+
         assert len(datasets) != 0, "list 'datasets' must contain at least 1 dataset"
+
+        if not isinstance(datasets, list):
+            datasets = [datasets]
 
         graphframes = []
         for data in datasets:
-            graphframes.append(GraphFrame.from_path(data))
+            graphframes.append(from_path(data))
 
         return graphframes
 
