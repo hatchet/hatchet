@@ -77,3 +77,16 @@ def test_from_spotdb(spotdb_data):
     assert metrics < set(gfs[0].dataframe.columns)
 
     assert "launchdate" in gfs[0].metadata.keys()
+
+
+@pytest.mark.skipif(not spotdb_avail, reason="spotdb module not available")
+def test_graphframe_constructor_spotdb(spotdb_data):
+    """Validate that the graphframe constructor function is working correctly."""
+    db = spotdb_data
+    runs = db.get_all_run_ids()
+    gfs_test = GraphFrame.construct_from((str(spotdb_data), {"list_of_ids": runs[0:2]}))
+    gfs_actual = GraphFrame.from_spotdb(spotdb_data, runs[0:2])
+
+    for i in range(len(gfs_test)):
+        assert gfs_actual[i].dataframe.equals(gfs_test[i].dataframe)
+        assert gfs_actual[i].graph == gfs_test[i].graph

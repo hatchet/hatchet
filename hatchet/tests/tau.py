@@ -98,3 +98,12 @@ def test_graphframe_to_literal(tau_profile_dir):
     gf_literal = GraphFrame.from_literal(graph_literal)
 
     assert len(gf.graph) == len(gf_literal.graph)
+
+
+def test_graphframe_constructor_tau(tau_profile_dir):
+    """Validate that the graphframe constructor function is working correctly."""
+    gf_test = GraphFrame.construct_from(str(tau_profile_dir))
+    gf_actual = GraphFrame.from_tau(str(tau_profile_dir))
+
+    assert gf_actual.dataframe.equals(gf_test.dataframe)
+    assert gf_actual.graph == gf_test.graph

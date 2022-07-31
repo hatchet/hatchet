@@ -44,3 +44,12 @@ def test_read_calc_pi_database(calc_pi_callgrind_dot):
         root_names.append(root.frame.attrs["name"])
 
     assert all(rt in root_names for rt in roots)
+
+
+def test_graphframe_constructor_gprof(calc_pi_callgrind_dot):
+    """Validate that the graphframe constructor function is working correctly."""
+    gf_test = GraphFrame.construct_from(str(calc_pi_callgrind_dot))
+    gf_actual = GraphFrame.from_gprof_dot(str(calc_pi_callgrind_dot))
+
+    assert gf_actual.dataframe.equals(gf_test.dataframe)
+    assert gf_actual.graph == gf_test.graph

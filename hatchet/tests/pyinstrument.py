@@ -121,3 +121,12 @@ def test_graphframe_to_literal(hatchet_pyinstrument_json):
     gf2 = GraphFrame.from_literal(graph_literal)
 
     assert len(gf.graph) == len(gf2.graph)
+
+
+def test_graphframe_constructor_pyinstrument(hatchet_pyinstrument_json):
+    """Validate that the graphframe constructor function is working correctly."""
+    gf_test = GraphFrame.construct_from(str(hatchet_pyinstrument_json))
+    gf_actual = GraphFrame.from_pyinstrument(str(hatchet_pyinstrument_json))
+
+    assert gf_actual.dataframe.equals(gf_test.dataframe)
+    assert gf_actual.graph == gf_test.graph

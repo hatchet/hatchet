@@ -134,3 +134,12 @@ def test_inclusive_time_calculation_mock_dag_modules(
     assert all(
         gf8.dataframe["time (inc)"].values == gf8.dataframe["orig_inc_time"].values
     )
+
+
+def test_graphframe_constructor_literal(mock_graph_literal):
+    """Validate that the graphframe constructor function is working correctly."""
+    gf_test = GraphFrame.construct_from(mock_graph_literal)
+    gf_actual = GraphFrame.from_literal(mock_graph_literal)
+
+    assert gf_actual.dataframe.equals(gf_test.dataframe)
+    assert gf_actual.graph == gf_test.graph

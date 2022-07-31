@@ -145,7 +145,7 @@ class GraphFrame:
 
         def _parse_json(filename):
             with open(str(filename), "r") as f:
-                return json.loads(f.read())
+                return json.load(f)
 
         JSON_SCHEMAS = {
             "caliper_json": {
@@ -183,7 +183,7 @@ class GraphFrame:
                     "sample_count": {"type": "number"},
                     "program": {"type": "string"},
                     "cpu_time": {"type": "number"},
-                    "root_frame": {},
+                    "root_frame": {"type": "object"},
                 },
                 "required": [
                     "start_time",
@@ -191,6 +191,7 @@ class GraphFrame:
                     "sample_count",
                     "program",
                     "cpu_time",
+                    "root_frame",
                 ],
             },
             "timemory": {
@@ -203,12 +204,15 @@ class GraphFrame:
         if isinstance(dirname_or_data, list):
             return "literal"
 
+        if isinstance(dirname_or_data, dict):
+            return "timemory"
+
         if isinstance(dirname_or_data, str):
             # check if it is a SQL database URL
             if "mysql://" in dirname_or_data:
                 return "spotdb"
 
-            # Formats in directory: apex, hpctoolkit, spotdb, tau, papi
+            # Formats in directory: apex, hpctoolkit, spotdb, tau, timemory, papi
             if os.path.isdir(dirname_or_data):
                 # apex
                 tasktree_json_files = [
@@ -249,6 +253,13 @@ class GraphFrame:
                 ]
                 if len(papi_report_files) == len(os.listdir(dirname_or_data)):
                     return "papi"
+
+                # timemory
+                timemory_files = [
+                    f for f in os.listdir(dirname_or_data) if f.endswith(".tree.json")
+                ]
+                if len(timemory_files) == len(os.listdir(dirname_or_data)):
+                    return "timemory"
 
                 # tau
                 tau_profiles = [
@@ -307,7 +318,7 @@ class GraphFrame:
             A list of respective GraphFrame objects (if input contained multiple datasets, else a single GraphFrame object)
         """
 
-        def from_path(data):
+        def _from_path(data):
             assert isinstance(
                 data, (str, list, tuple)
             ), "each item in list 'datasets' may only be of type 'str', 'list', or 'tuple'"
@@ -329,13 +340,13 @@ class GraphFrame:
                 "timemory": GraphFrame.from_timemory,
             }
 
-            if isinstance(data, tuple):
+            if isinstance(data, tuple) and len(data) == 2:
                 profile_format = GraphFrame.detect_profile_format(data[0])
             else:
                 profile_format = GraphFrame.detect_profile_format(data)
 
             if profile_format in FROM_DATABASE_MAPPER:
-                if isinstance(data, tuple):
+                if isinstance(data, tuple) and len(data) == 2:
                     return FROM_DATABASE_MAPPER[profile_format](data[0], **data[1])
                 else:
                     return FROM_DATABASE_MAPPER[profile_format](data)
@@ -350,10 +361,12 @@ class GraphFrame:
 
         if not isinstance(datasets, list):
             datasets = [datasets]
+        if isinstance(datasets, list) and isinstance(datasets[0], dict):
+            datasets = [datasets]
 
         graphframes = []
         for data in datasets:
-            graphframes.append(from_path(data))
+            graphframes.append(_from_path(data))
 
         if len(graphframes) == 1:
             return graphframes[0]
