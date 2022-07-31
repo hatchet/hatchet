@@ -286,22 +286,25 @@ class GraphFrame:
         return None
 
     @staticmethod
-    def from_paths(datasets=[]):
+    def construct_from(datasets=[]):
         """Construct GraphFrame objects from a list of datasets.
 
         Arguments:
-            datasets (list): contains list of data
-                Each item in the list is either a string path to a file or directory,
-                or a list object.
+            datasets (list, str, tuple):
+                * list:
+                    Each item in the list is either a string path to a file or directory, or a list object. The input may also be a single list object.
+                    For data that require additional parameters, use a tuple containing the path and a dictionary of parameters.
+                    ex. ["path/to/file", "path/to/directory", [{"frame":...}], ("path/to/file", {"per_thread": True, "select": "cpu_clock"})]
+                    [
+                * str:
+                    The input may be a single string path to a file or directory.
                     ex. "path/to/file"
-                For data that require additional parameters, use a tuple containing
-                the path and a dictionary of parameters.
-                    ex. ("path/to/file", {"per_thread": True})
-            Example input:
-                ["path/to/file", "path/to/dir", ("path/to/file", {"select": "cpu_clock", "per_rank": True, "per_thread": True})]
+                * tuple:
+                    The input may be a single tuple containing the path and a dictionary of parameters.
+                    ex. ("path/to/file", {"per_rank": True})
 
         Returns:
-            A list of respective GraphFrame objects
+            A list of respective GraphFrame objects (if input contained multiple datasets, else a single GraphFrame object)
         """
 
         def from_path(data):
@@ -341,7 +344,9 @@ class GraphFrame:
                     "'GraphFrame.from_path' failed to recognize the data format. Please fallback to respective `GraphFrame.from_*`, where * is the data format."
                 )
 
-        assert len(datasets) != 0, "list 'datasets' must contain at least 1 dataset"
+        assert (
+            len(datasets) != 0 and datasets is not None
+        ), "list 'datasets' must contain at least 1 dataset"
 
         if not isinstance(datasets, list):
             datasets = [datasets]
@@ -349,6 +354,9 @@ class GraphFrame:
         graphframes = []
         for data in datasets:
             graphframes.append(from_path(data))
+
+        if len(graphframes) == 1:
+            return graphframes[0]
 
         return graphframes
 
