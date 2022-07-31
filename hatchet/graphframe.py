@@ -136,50 +136,68 @@ class GraphFrame:
             dirname_or_data (str): path to the database directory or file
         """
 
-        def _json_schema_validate(data, schema):
+        def _validate_json_schema(data, schema):
             try:
                 jsonschema.validate(instance=data, schema=schema)
                 return True
             except jsonschema.ValidationError:
                 return False
 
-        # Find identifiers
-        # Caliper has meta-data section (cali version is available)
-        # Add feedback if the format matching fails.
-        SCHEMA_CALIPER_JSON = {
-            "type": "object",
-            "properties": {
-                "data": {"type": "array"},
-                "columns": {"type": "array"},
-                "column_metadata": {"type": "array"},
-                "nodes": {"type": "array"},
-            },
-            "required": ["data", "columns", "column_metadata", "nodes"],
-        }
+        def _parse_json(filename):
+            with open(str(filename), "r") as f:
+                return json.loads(f.read())
 
-        SCHEMA_PYINSTRUMENT = {
-            "type": "object",
-            "properties": {
-                "start_time": {"type": "number"},
-                "duration": {"type": "number"},
-                "sample_count": {"type": "number"},
-                "program": {"type": "string"},
-                "cpu_time": {"type": "number"},
-                "root_frame": {},
+        JSON_SCHEMAS = {
+            "caliper_json": {
+                "type": "object",
+                "properties": {
+                    "data": {"type": "array"},
+                    "columns": {"type": "array"},
+                    "column_metadata": {"type": "array"},
+                    "nodes": {"type": "array"},
+                },
+                "required": ["data", "columns", "column_metadata", "nodes"],
             },
-            "required": [
-                "start_time",
-                "duration",
-                "sample_count",
-                "program",
-                "cpu_time",
-            ],
-        }
-
-        SCHEMA_TIMEMORY = {
-            "type": "object",
-            "properties": {"timemory": {"type": "object"}},
-            "required": ["timemory"],
+            "papi": {
+                "type": "object",
+                "properties": {
+                    "papi_version": {"type": "string"},
+                    "cpu_info": {"type": "string"},
+                    "max_cpu_rate_mhz": {"type": "string"},
+                    "event_definitions": {"type": "object"},
+                    "threads": {"type": "object"},
+                },
+                "required": [
+                    "papi_version",
+                    "cpu_info",
+                    "max_cpu_rate_mhz",
+                    "event_definitions",
+                    "threads",
+                ],
+            },
+            "pyinstrument": {
+                "type": "object",
+                "properties": {
+                    "start_time": {"type": "number"},
+                    "duration": {"type": "number"},
+                    "sample_count": {"type": "number"},
+                    "program": {"type": "string"},
+                    "cpu_time": {"type": "number"},
+                    "root_frame": {},
+                },
+                "required": [
+                    "start_time",
+                    "duration",
+                    "sample_count",
+                    "program",
+                    "cpu_time",
+                ],
+            },
+            "timemory": {
+                "type": "object",
+                "properties": {"timemory": {"type": "object"}},
+                "required": ["timemory"],
+            },
         }
 
         if isinstance(dirname_or_data, list):
@@ -190,7 +208,7 @@ class GraphFrame:
             if "mysql://" in dirname_or_data:
                 return "spotdb"
 
-            # Formats in directory: apex, hpctoolkit, spotdb, tau
+            # Formats in directory: apex, hpctoolkit, spotdb, tau, papi
             if os.path.isdir(dirname_or_data):
                 # apex
                 tasktree_json_files = [
@@ -220,6 +238,18 @@ class GraphFrame:
                 if len(cali_files) == len(os.listdir(dirname_or_data)):
                     return "spotdb"
 
+                # papi
+                papi_report_files = [
+                    f
+                    for f in os.listdir(dirname_or_data)
+                    if f.endswith(".json")
+                    and _validate_json_schema(
+                        _parse_json(dirname_or_data + "/" + f), JSON_SCHEMAS["papi"]
+                    )
+                ]
+                if len(papi_report_files) == len(os.listdir(dirname_or_data)):
+                    return "papi"
+
                 # tau
                 tau_profiles = [
                     f
@@ -248,19 +278,11 @@ class GraphFrame:
                 if file_ext == ".json":
                     # TODO: Check if we can just load the key and dtype of JSON.
                     # We could also be unnecessarily read the data again.
-                    try:
-                        with open(dirname_or_data, "r") as f:
-                            data = json.loads(f.read())
-                    except ValueError as err:
-                        print(err)
-                        return False
+                    data = _parse_json(dirname_or_data)
 
-                    if _json_schema_validate(data, SCHEMA_CALIPER_JSON):
-                        return "caliper_json"
-                    if _json_schema_validate(data, SCHEMA_PYINSTRUMENT):
-                        return "pyinstrument"
-                    if _json_schema_validate(data, SCHEMA_TIMEMORY):
-                        return "timemory"
+                    for format, schema in JSON_SCHEMAS.items():
+                        if _validate_json_schema(data, schema):
+                            return format
         return None
 
     @staticmethod
@@ -296,6 +318,7 @@ class GraphFrame:
                 "hdf5": GraphFrame.from_hdf,
                 "hpctoolkit": GraphFrame.from_hpctoolkit,
                 "literal": GraphFrame.from_literal,
+                # "papi": GraphFrame.from_papi,
                 "pyinstrument": GraphFrame.from_pyinstrument,
                 "scorep": GraphFrame.from_scorep,
                 "spotdb": GraphFrame.from_spotdb,
