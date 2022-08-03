@@ -145,7 +145,7 @@ class GraphFrame:
 
         def _parse_json(filename):
             with open(str(filename), "r") as f:
-                return json.load(f)
+                return json.loads(f.read())
 
         JSON_SCHEMAS = {
             "caliper_json": {
