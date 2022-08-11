@@ -1318,6 +1318,7 @@ class GraphFrame:
         )
         return hot_path
 
+    @staticmethod
     @Logger.loggable
     def multirun_analysis(
         graphframes=[],
@@ -1326,7 +1327,20 @@ class GraphFrame:
         metric=None,
         threshold=None,
     ):
-        return Chopper().multirun_analysis(
+        """Creates a pivot table.
+        Inputs:
+         - graphframes: A list of graphframes.
+         - pivot_index: The numerical metric on the dataframe for the x-axis of the plot.
+         Default: num_processes
+         - columns: The non-numerical metric for the columns of the table.
+         Default: name
+         - metric: The numerical metric on the dataframe for the y-axis of the plot.
+         Default: time
+         - threshold: The threshold for filtering metric rows of the graphframes.
+        Output:
+         - a pivot table
+        """
+        return Chopper.multirun_analysis(
             graphframes, pivot_index, columns, metric, threshold
         )
 

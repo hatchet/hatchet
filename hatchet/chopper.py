@@ -200,8 +200,8 @@ class Chopper:
             gf_copy, start_node, metric, threshold, callpath=[start_node]
         )
 
+    @staticmethod
     def multirun_analysis(
-        self,
         graphframes=[],
         pivot_index="num_processes",
         columns="name",
