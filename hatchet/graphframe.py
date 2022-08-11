@@ -1318,6 +1318,24 @@ class GraphFrame:
         )
         return hot_path
 
+    @staticmethod
+    @Logger.loggable
+    def analyze_scaling(
+        graphframes_pes=[],
+        metric_columns=["time", "time (inc)"],
+        speedup=True,
+        efficiency=False,
+        weak_scaling=False,
+        inplace=False,
+    ):
+        """
+        Calculates speedup and efficiency for a set of graphframes.
+        Returns a new graphframe.
+        """
+        return Chopper.analyze_scaling(
+            graphframes_pes, metric_columns, speedup, efficiency, weak_scaling, inplace
+        )
+
     @Logger.loggable
     def add(self, other):
         """Returns the column-wise sum of two graphframes as a new graphframe.
