@@ -775,151 +775,350 @@ class GraphFrame:
         """Returns a list of dataframe column labels."""
         return list(self.exc_metrics + self.inc_metrics)
 
+    @staticmethod
     @Logger.loggable
-    def unify_multiple_graphframes(self, others, graphframe_identifier="num_processes"):
-        def _transform_path(path, graphframe):
-            """Takes a tuple of nodes and converts it
-            to a tuple of only node names"""
-            callpath_with_names = tuple()
+    def unify_multiple_graphframes(graphframes, num_procs="num_processes"):
+        def _groupby_callpath(graphframe, callpath_to_node_dicts):
+            """ "Merges the callpaths in a graphframe when the callpaths
+            are exactly the same. Returns a new graphframe.
+            'callpath_to_node_dicts' parameter is passed by reference
+            so it can be used after calling this function.
+
+            Merging is done using bottom-up approach. It merges starting
+            from the longest callpath (the bottom) and goes upward.
+            """
+            # traverse the graph
+            for node in graphframe.graph.traverse():
+                # check each path
+                for path in node.paths():
+                    if path:
+                        # transform path from tuple of node objects
+                        # to tuple of strings.
+                        callpath = _transform_path(path)
+
+                        # get the metric information (a row from the
+                        # dataframe) and store them in a dict.
+                        node_dict = dict()
+                        for key, value in (
+                            graphframe.dataframe.loc[node].to_dict().items()
+                        ):
+                            node_dict[key] = value
+                        # row info doesn't contain node since it's index,
+                        # so we add the node to the node dict.
+                        node_dict["node"] = node
+
+                        # if the callpath was seen before, append the
+                        # new node dict. this will be used later for
+                        # aggregation
+                        if callpath in callpath_to_node_dicts.keys():
+                            previous = [callpath_to_node_dicts[callpath]]
+                            previous.append(node_dict)
+                            callpath_to_node_dicts[callpath] = previous
+                        # if the callpath was not seen before, keep the
+                        # related node dict
+                        else:
+                            callpath_to_node_dicts[callpath] = dict()
+                            callpath_to_node_dicts[callpath] = node_dict
+
+            same_paths = {}
+            # keep the same paths and only work on them.
+            for callpath, node_dicts in callpath_to_node_dicts.items():
+                # only the duplicate callpaths are stored as list.
+                if isinstance(node_dicts, list):
+                    same_paths[callpath] = node_dicts
+
+            # sort the duplicate callpaths.
+            # we merge them starting from the longest callpath,
+            # means that we start from the bottom.
+            same_paths = sorted(
+                same_paths.items(), key=lambda k: len(k[0]), reverse=True
+            )
+
+            # iterate over the duplicate paths
+            for items in same_paths:
+                callpath = items[0]
+                node_dicts = items[1]
+
+                # create new node without parent-child
+                # relationships. this will be the 'unified node'.
+                # copy the first node. it doesn't make any difference.
+                new_node = node_dicts[0]["node"].copy()
+                # deep copy the corresponding node_dict.
+                new_node_dict = dict()
+                for key, value in node_dicts[0].items():
+                    new_node_dict[key] = value
+                new_node_dict["node"] = new_node
+
+                # since we copied the node_dict (metric values) of
+                # the first duplicate node, we add the metric values
+                # of the second node.
+                for node_dict in node_dicts[1:]:
+                    for metric in graphframe.inc_metrics + graphframe.exc_metrics:
+                        # aggregate the metric values.
+                        new_node_dict[metric] += graphframe.dataframe.loc[
+                            node_dict["node"], metric
+                        ]
+
+                # set the parent-child relationships for the
+                # new node.
+                for node_dict in node_dicts:
+                    # add the chilren of the nodes that have
+                    # the same callpath to the new node.
+                    for child in node_dict["node"].children:
+                        if child not in new_node.children:
+                            new_node.add_child(child)
+                            child.add_parent(new_node)
+                        child.parents.remove(node_dict["node"])
+
+                    # add the parent of the nodes that have
+                    # the same callpath to the new node.
+                    for parent in node_dict["node"].parents:
+                        if parent not in new_node.parents:
+                            new_node.add_parent(parent)
+                            parent.add_child(new_node)
+                        parent.children.remove(node_dict["node"])
+
+                # store new node dict after doing aggregation and
+                # setting the relationships.
+                callpath_to_node_dicts[callpath] = new_node_dict
+
+            # create a new graph by using the updated
+            # relationships.
+            roots = graphframe.graph.roots
+            graph = Graph(roots)
+            graph.enumerate_traverse()
+
+            # create a new dataframe that has the aggregate values
+            # for the duplicate callpaths.
+            dataframe = pd.DataFrame(callpath_to_node_dicts.values())
+            dataframe.set_index("node", inplace=True)
+            dataframe.sort_index(inplace=True)
+
+            # create a new graphframe.
+            graphframe_new = GraphFrame(
+                graph,
+                dataframe,
+                graphframe.inc_metrics,
+                graphframe.exc_metrics,
+                graphframe.default_metric,
+            )
+
+            return graphframe_new
+
+        def _transform_path(path):
+            """Takes a tuple of node objects and
+            converts it to a tuple of strings"""
+            callpath_str = tuple()
             for node in path:
-                callpath_with_names += (graphframe.dataframe.loc[node]["name"],)
-            return callpath_with_names
+                callpath_str += (node.__str__(),)
+            return callpath_str
 
         def _rename_colums(graphframe, metrics, suffix):
+            "Renames columns and updates inc/exc columns lists."
             for idx in range(len(metrics)):
                 graphframe.dataframe.rename(
                     columns={metrics[idx]: "{}-{}".format(metrics[idx], suffix)},
                     inplace=True,
                 )
 
+                # update inclusive and exclusive metrics lists.
                 metrics[idx] = "{}-{}".format(metrics[idx], str(suffix))
 
-        def _create_node(result_graphframe, graphframe, node, callpath):
+        def _create_node(biggest_gf, graphframe, node, callpath, callpath_to_node_dict):
+            """Recursively creates the missing nodes from bottom to up."""
+            # copy and create the new node. it will be added
+            # to the 'biggest graphframe'.
             new_node = node.copy()
-            result_graphframe.dataframe.loc[new_node] = graphframe.dataframe.loc[node]
-
+            # convert callpaths from the tuple of node objects to
+            # tuple of strings.
+            callpath_names = _transform_path(callpath)
+            # convert parent's callpath.
             parent_callpath = callpath[:-1]
-            parent_callpath_names = _transform_path(callpath, graphframe)
+            parent_callpath_names = _transform_path(parent_callpath)
 
+            # keep as root if the node has no parent.
             if not parent_callpath:
-                result_graphframe.graph.roots.append(new_node)
+                biggest_gf.graph.roots.append(new_node)
                 return new_node
 
-            if parent_callpath_names in biggest_gf_callpath_to_node.keys():
-                parent = biggest_gf_callpath_to_node[parent_callpath_names]
+            # if parent is found, add child-parent relationships and
+            # create a new node dict to store metric values.
+            if parent_callpath_names in callpath_to_node_dict.keys():
+                # store metric values.
+                node_dict = graphframe.dataframe.loc[node].to_dict()
+                node_dict["node"] = new_node
+                callpath_to_node_dict[callpath_names] = node_dict
+
+                # set parent-child relationships.
+                parent = callpath_to_node_dict[parent_callpath_names]["node"]
                 parent.add_child(new_node)
                 new_node.add_parent(parent)
                 return new_node
 
+            # if parent is not found, recursively go up on the tree
+            # by creating parents until finding one.
             parent = _create_node(
-                result_graphframe,
+                biggest_gf,
                 graphframe,
                 parent_callpath[-1],
                 parent_callpath,
+                callpath_to_node_dict,
             )
-            biggest_gf_callpath_to_node[callpath] = new_node
+            # create the new node and set its parent-child
+            # relationships.
+            node_dict = graphframe.dataframe.loc[node].to_dict()
+            node_dict["node"] = new_node
+            callpath_to_node_dict[callpath_names] = node_dict
+
             parent.add_child(new_node)
             new_node.add_parent(parent)
             return new_node
 
-        # check if a list is given.
-        # if not, make it a list.
-        if not isinstance(others, list):
-            others = list(others)
+        # check if a list of graphframes
+        # is given. if not, make it a list.
+        if not isinstance(graphframes, list):
+            graphframes = list(graphframes)
 
-        # append the gf that calls to the function.
-        others.append(self)
-
-        dropped_gfs = []
+        # chose the biggest graphframe and start with
+        # it. no need to recreate nodes and relationships
+        # for the biggest gf.
         max_num_of_idx = 0
         biggest_gf = None
         gf_to_visited_node = {}
-        for idx in range(len(others)):
+        for idx in range(len(graphframes)):
             # do not change the given gfs.
-            gf_copy = others[idx].deepcopy()
+            gf_copy = graphframes[idx].deepcopy()
             gf_copy.drop_index_levels()
+            gf_to_visited_node[gf_copy] = []
 
+            # rename inc/exc metrics. update dataframe, default metric,
+            # and inc/exc lists.
             old_default_metric = gf_copy.default_metric
-            _rename_colums(
-                gf_copy, gf_copy.inc_metrics, gf_copy.metadata[graphframe_identifier]
-            )
-            _rename_colums(
-                gf_copy, gf_copy.exc_metrics, gf_copy.metadata[graphframe_identifier]
-            )
-            gf_to_visited_node[gf_copy] = (idx, [])
+            _rename_colums(gf_copy, gf_copy.inc_metrics, gf_copy.metadata[num_procs])
+            _rename_colums(gf_copy, gf_copy.exc_metrics, gf_copy.metadata[num_procs])
             gf_copy.default_metric = "{}-{}".format(
-                old_default_metric, str(gf_copy.metadata[graphframe_identifier])
+                old_default_metric, str(gf_copy.metadata[num_procs])
             )
 
+            # find the biggest graphframe by using the number
+            # of indices.
             size_of_df = len(gf_copy.dataframe.index)
             if size_of_df > max_num_of_idx:
                 biggest_gf = gf_copy
                 max_num_of_idx = size_of_df
 
+        # keep the biggest graphframe separate.
         gf_to_visited_node.pop(biggest_gf)
+        callpath_to_node_biggest = {}
+        # merge the nodes that have the exact same callpaths.
+        # now we have a graphframe in which all the nodes have
+        # unique callpaths.
+        biggest_gf = _groupby_callpath(biggest_gf, callpath_to_node_biggest)
 
-        biggest_gf_callpath_to_node = {}
-        # test_dict = {"type": "function", "name": "<program root>"}
-        # traverse the biggest graphframe given.
-        for node_in_biggest in biggest_gf.graph.traverse():
-            # look at the paths of each node.
-            for path in node_in_biggest.paths():
-                # convert call paths to tuples of node names.
-                callpath = _transform_path(path, biggest_gf)
-                # store callpaths to use later.
-                biggest_gf_callpath_to_node[callpath] = node_in_biggest
-                # iterate over all other graphframes.
-                for gf in gf_to_visited_node.keys():
-                    # check if there are indices that have the
-                    # same name value (possible indices).
-                    possible_indices = gf.dataframe.loc[
-                        gf.dataframe["name"]
-                        == biggest_gf.dataframe.loc[node_in_biggest]["name"]
-                    ].index
-                    # iterate over possible indices (nodes).
-                    for node in possible_indices:
-                        # get all the paths of each possible node.
-                        possible_paths = node.paths()
-                        num_of_paths = len(possible_paths)
-                        found_count = 0
-                        # for each possible path of a node
-                        for possible_path in possible_paths:
-                            possible_callpath = _transform_path(possible_path, gf)
-                            # check if callpath equals to the node in the
-                            # biggest gf.
-                            if callpath == possible_callpath:
-                                found_count += 1
-                        # if we visited all the paths and if they are the same with
-                        # the callpaths of the node in the biggest gf, add node
-                        # to the visited list to be removed later.
-                        if found_count == num_of_paths:
-                            gf_to_visited_node[gf][1].append(node)
-                            for metric_column in gf.inc_metrics + gf.exc_metrics:
-                                biggest_gf.dataframe.loc[
-                                    node_in_biggest, metric_column
-                                ] = gf.dataframe.loc[node, metric_column]
+        # for each callpath (i.e. node), looks at the other graphframes
+        # and finds possible indices (i.e. nodes).
+        for callpath, node_dict in callpath_to_node_biggest.items():
+            node_in_biggest = node_dict["node"]
+            for gf in gf_to_visited_node.keys():
+                # check if there are indices that have the
+                # same name value (possible indices).
+                possible_indices = gf.dataframe.loc[
+                    gf.dataframe["name"]
+                    == biggest_gf.dataframe.loc[node_in_biggest]["name"]
+                ].index
+                # iterate over possible indices (nodes).
+                for node in possible_indices:
+                    # get all the paths of each possible node.
+                    possible_paths = node.paths()
+                    num_of_paths = len(possible_paths)
+                    found_count = 0
+                    # for each possible path of a node
+                    for possible_path in possible_paths:
+                        possible_callpath = _transform_path(possible_path)
+                        # check if the possible callpath is the same with the
+                        # callpath of the node in the biggest graphframe.
+                        if callpath == possible_callpath:
+                            found_count += 1
+                    # if we visited all the paths of a node and if they are
+                    # the same with the callpaths of the node in the
+                    # biggest graphframe, add node to the visited list to
+                    # be removed later.
+                    if found_count == num_of_paths:
+                        gf_to_visited_node[gf].append(node)
+                        # there might be multiple nodes that have the same
+                        # callpath in other graphframes as well. if we already
+                        # stored any if the inc_metrics of the other graphframe
+                        # before, that means we have already seen the same callpath.
+                        if gf.inc_metrics[0] in node_dict:
+                            # aggregate the metric values.
+                            for metric in gf.inc_metrics + gf.exc_metrics:
+                                node_dict[metric] += gf.dataframe.loc[
+                                    node_dict["node"], metric
+                                ]
+                        # if not, update the node dicts (i.e. metric values) by
+                        # including the metrics from the other graphframes.
+                        else:
+                            tmp_dict = gf.dataframe.loc[node].to_dict()
+                            tmp_dict["node"] = node_in_biggest
+                            callpath_to_node_biggest[callpath].update(tmp_dict)
 
-        # drop the visited nodes.
-        # for gf, values in gf_to_visited_node.items():
-        #     # values[0] is the index of the gf. It'll be used later.
-        #     visited_nodes = values[1]
-        #     gf.dataframe.drop(visited_nodes, axis=0, inplace=True)
-        # print(biggest_gf.dataframe)
-        # print(biggest_gf.tree())
+        # drop the visited nodes from each graphframe
+        for graphframe, visited_nodes in gf_to_visited_node.items():
+            graphframe.dataframe.drop(index=visited_nodes, inplace=True)
 
-        # iterate over the remaining nodes in gfs.
-        for gf in gf_to_visited_node.keys():
-            for node in gf.dataframe.index:
-                # if node is not visited
-                if node not in gf_to_visited_node[gf][1]:
-                    for path in node.paths():
-                        callpath = _transform_path(path, gf)
-                        if callpath not in biggest_gf_callpath_to_node.keys():
-                            if node.parents:
-                                _create_node(biggest_gf, gf, node, path)
-                    gf_to_visited_node[gf][1].append(node)
+        # iterate over the remaining nodes in other graphframes.
+        # the remaining nodes should be created since the biggest
+        # graphframe doesn't have them.
+        for graphframe in gf_to_visited_node.keys():
+            # for each node that is not visited in the biggest
+            # graphframe.
+            for node in graphframe.dataframe.index:
+                # for each path of the node.
+                for path in node.paths():
+                    # convert the callpath from list of node objects
+                    # to the list of strings.
+                    callpath = _transform_path(path)
+                    # the other graphframes might contain the same
+                    # callpath, so we still need to check if the
+                    # callpath was seen before.
+                    if callpath not in callpath_to_node_biggest.keys():
+                        # if not seen before, create the node and
+                        # its parents if needed.
+                        _create_node(
+                            biggest_gf,
+                            graphframe,
+                            node,
+                            path,
+                            callpath_to_node_biggest,
+                        )
+                    # if already seen, update the node dicts
+                    # (i.e. metric values) by including the
+                    # metrics from the other graphframes.
+                    else:
+                        tmp_dict = graphframe.dataframe.loc[node].to_dict()
+                        callpath_to_node_biggest[callpath].update(tmp_dict)
+                gf_to_visited_node[graphframe].append(node)
 
-        return biggest_gf
+        # create a new dataframe.
+        dataframe = pd.DataFrame(callpath_to_node_biggest.values())
+        dataframe.set_index("node", inplace=True)
+        dataframe.sort_index(inplace=True)
+
+        # create a new graph.
+        roots = biggest_gf.graph.roots
+        graph = Graph(roots)
+        graph.enumerate_traverse()
+
+        # create the unified graphframe.
+        unified_gf = GraphFrame(
+            graph,
+            dataframe,
+            biggest_gf.exc_metrics,
+            biggest_gf.inc_metrics,
+            biggest_gf.default_metric,
+        )
+
+        return unified_gf
 
     def unify(self, other):
         """Returns a unified graphframe.
