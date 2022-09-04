@@ -778,6 +778,22 @@ class GraphFrame:
     @staticmethod
     @Logger.loggable
     def unify_multiple_graphframes(graphframes, num_procs="num_processes"):
+        """Unifies multiple graphframes.
+        Follows these main steps:
+          1. Finds the biggest graphframe (i.e. the graphframe that has more
+          indices in the dataframe).
+          2. Merges all the nodes that have the same callpath in the biggest
+          graphframe.
+          3. For each node in the biggest graphframe, checks if other
+          graphframes contains some nodes that have the same callpath.
+          4. If yes, adds metrics from the other graphframes.
+          5. If no, create the corresponding nodes.
+
+        Returns a new 'unified' graphframe that contains all the metrics of
+        every graphframe given.
+        Adds '-<num_procs>' suffix if columns in different graphframes have
+        the same name. For example: time-32, time-64."""
+
         def _groupby_callpath(graphframe, callpath_to_node_dicts):
             """ "Merges the callpaths in a graphframe when the callpaths
             are exactly the same. Returns a new graphframe.
