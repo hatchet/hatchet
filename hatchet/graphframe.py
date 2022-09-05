@@ -1029,11 +1029,17 @@ class GraphFrame:
             for items in same_paths:
                 callpath = items[0]
                 node_dicts = items[1]
+                print()
+                print(callpath)
+                print(node_dicts)
 
                 # create new node without parent-child
                 # relationships. this will be the 'unified node'.
                 # copy the first node. it doesn't make any difference.
                 new_node = node_dicts[0]["node"].copy()
+                # print("NEW NODE: ", new_node)
+                # print("Parents: ", new_node.parents)
+                # print("Children: ", new_node.children)
                 # deep copy the corresponding node_dict.
                 new_node_dict = dict()
                 for key, value in node_dicts[0].items():
@@ -1056,15 +1062,15 @@ class GraphFrame:
                     # add the chilren of the nodes that have
                     # the same callpath to the new node.
                     for child in node_dict["node"].children:
-                        if child not in new_node.children:
-                            new_node.add_child(child)
-                            child.add_parent(new_node)
+                        new_node.add_child(child)
+                        child.add_parent(new_node)
                         child.parents.remove(node_dict["node"])
-
                     # add the parent of the nodes that have
                     # the same callpath to the new node.
                     for parent in node_dict["node"].parents:
-                        if parent not in new_node.parents:
+                        if parent not in new_node.parents and parent.__str__() not in [
+                            par.__str__() for par in new_node.parents
+                        ]:
                             new_node.add_parent(parent)
                             parent.add_child(new_node)
                         parent.children.remove(node_dict["node"])
