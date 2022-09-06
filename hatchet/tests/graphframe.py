@@ -814,6 +814,51 @@ def test_to_dot(mock_graph_literal):
             assert '"%s" -> "%s"' % (node._hatchet_nid, child._hatchet_nid) in output
 
 
+def test_unify_multiple_graphframes():
+    tuple1 = ["a", ("b", "c"), ("d", "e")]
+    tuple2 = ["a", ("b", "c", "d"), ("e", "f"), "g"]
+    tuple3 = ["a", ("b", "c", "d"), ("e", "f"), ("g", "h1")]
+    tuple4 = [
+        "a",
+        ("b", "c", "d"),
+        ("b", "c", "d"),
+        ("d", "e"),
+        ("e", "f"),
+        "g",
+        "h",
+        ("g", "h"),
+    ]
+
+    tuple_truth = [
+        "a",
+        ("b", "c", "d"),
+        ("e", "f"),
+        ("g", "h1", "h"),
+        ("d", "e"),
+        "h",
+    ]
+
+    gf1 = GraphFrame.from_lists(tuple1)
+    gf2 = GraphFrame.from_lists(tuple2)
+    gf3 = GraphFrame.from_lists(tuple3)
+    # the biggest graphframe is gf4.
+    gf4 = GraphFrame.from_lists(tuple4)
+
+    gf1.update_metadata(1)
+    gf2.update_metadata(2)
+    gf3.update_metadata(3)
+    gf4.update_metadata(4)
+
+    gfs = [gf1, gf2, gf3, gf4]
+    unified_gf = GraphFrame.unify_multiple_graphframes(gfs)
+    gf_truth = GraphFrame.from_lists(tuple_truth)
+    truth_traverse = [node.frame.attrs["name"] for node in gf_truth.graph.traverse()]
+    unified_traverse = [
+        node.frame.attrs["name"] for node in unified_gf.graph.traverse()
+    ]
+    assert truth_traverse == unified_traverse
+
+
 def test_unify_diff_graphs():
     gf1 = GraphFrame.from_lists(("a", ("b", "c"), ("d", "e")))
     gf2 = GraphFrame.from_lists(("a", ("b", "c", "d"), ("e", "f"), "g"))
