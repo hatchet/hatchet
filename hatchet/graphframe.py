@@ -951,7 +951,7 @@ class GraphFrame:
         return list(self.exc_metrics + self.inc_metrics)
 
     @Logger.loggable
-    def groupby_callpath(self, callpath_to_node_dicts={}):
+    def groupby_callpath(self, callpath_to_node_dicts=None):
         """ "Merges the callpaths in a graphframe when the callpaths
         are exactly the same. Returns a new graphframe.
         'callpath_to_node_dicts' parameter is passed by reference
@@ -960,8 +960,11 @@ class GraphFrame:
         Merging is done using bottom-up approach. It merges starting
         from the longest callpath (the bottom) and goes upward.
         """
+        if callpath_to_node_dicts is None:
+            callpath_to_node_dicts = {}
+
         graphframe_cp = self.deepcopy()
-        graphframe_cp.drop_index_levels
+        graphframe_cp.drop_index_levels()
 
         # traverse the graph
         for node in graphframe_cp.graph.traverse():
