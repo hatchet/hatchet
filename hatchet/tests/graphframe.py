@@ -829,6 +829,20 @@ def test_unify_multiple_graphframes():
         ("g", "h"),
     ]
 
+    gf1 = GraphFrame.from_lists(tuple1)
+    gf2 = GraphFrame.from_lists(tuple2)
+    gf3 = GraphFrame.from_lists(tuple3)
+    # the biggest graphframe is gf4.
+    gf4 = GraphFrame.from_lists(tuple4)
+    gf1.update_metadata(1)
+    gf2.update_metadata(2)
+    gf3.update_metadata(3)
+    gf4.update_metadata(4)
+    gfs = [gf1, gf2, gf3, gf4]
+    unified_gf = GraphFrame.unify_multiple_graphframes(gfs)
+
+    # The final output should look like this.
+    # We merge the nodes if they have the same callpaths.
     tuple_truth = [
         "a",
         ("b", "c", "d"),
@@ -837,26 +851,42 @@ def test_unify_multiple_graphframes():
         ("d", "e"),
         "h",
     ]
-
-    gf1 = GraphFrame.from_lists(tuple1)
-    gf2 = GraphFrame.from_lists(tuple2)
-    gf3 = GraphFrame.from_lists(tuple3)
-    # the biggest graphframe is gf4.
-    gf4 = GraphFrame.from_lists(tuple4)
-
-    gf1.update_metadata(1)
-    gf2.update_metadata(2)
-    gf3.update_metadata(3)
-    gf4.update_metadata(4)
-
-    gfs = [gf1, gf2, gf3, gf4]
-    unified_gf = GraphFrame.unify_multiple_graphframes(gfs)
     gf_truth = GraphFrame.from_lists(tuple_truth)
+
     truth_traverse = [node.frame.attrs["name"] for node in gf_truth.graph.traverse()]
     unified_traverse = [
         node.frame.attrs["name"] for node in unified_gf.graph.traverse()
     ]
     assert truth_traverse == unified_traverse
+
+    unified_paths = {}
+    for node in unified_gf.graph.traverse():
+        for path in node.paths():
+            callpath = node.convert_path_to_str(path)
+            unified_paths[callpath] = node
+
+    for gf in gfs:
+        gf = gf.groupby_callpath()
+        for node in gf.graph.traverse():
+            for path in node.paths():
+                callpath = node.convert_path_to_str(path)
+                # check if the unified graphframe contains all
+                # the callpaths in every graphframe
+                assert callpath in unified_paths.keys()
+
+                # check if the metrics are the same in all graphframes.
+                for metric in gf.inc_metrics + gf.exc_metrics:
+                    metric_in_unified = unified_gf.dataframe.loc[
+                        unified_paths[callpath],
+                        "{}-{}".format(metric, gf.metadata["num_processes"]),
+                    ]
+                    metric_in_gf = (
+                        gf.dataframe.loc[
+                            node,
+                            metric,
+                        ],
+                    )
+                    assert metric_in_unified == metric_in_gf
 
 
 def test_unify_diff_graphs():

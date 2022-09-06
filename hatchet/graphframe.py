@@ -1081,6 +1081,8 @@ class GraphFrame:
             graphframe_cp.default_metric,
         )
 
+        graphframe_new.metadata = self.metadata
+
         return graphframe_new
 
     @staticmethod
