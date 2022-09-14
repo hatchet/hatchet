@@ -72,9 +72,10 @@ class Chopper:
             metric_types.append(column + ".mean")
             metric_types.append(column + ".max")
 
+        graphframe_temp = graphframe.deepcopy()
         # Create a copy of the GraphFrame.
-        graphframe2 = graphframe.deepcopy()
-        graphframe3 = graphframe.deepcopy()
+        graphframe2 = graphframe_temp.copy()
+        graphframe3 = graphframe_temp.copy()
 
         # Drop all index levels in gf2's DataFrame except 'node', computing the
         # average time spent in each node.
