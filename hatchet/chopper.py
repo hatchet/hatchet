@@ -73,8 +73,13 @@ class Chopper:
             metric_types.append(column + ".max")
 
         # Create a copy of the GraphFrame.
+        # 'graphframe2' and 'graphframe3' should
+        # have the same graph (with the same
+        # node references) for div() function to
+        # work properly. For that, 'graphframe3'
+        # should be the 'shallow' copy of grapframe2.
         graphframe2 = graphframe.deepcopy()
-        graphframe3 = graphframe.deepcopy()
+        graphframe3 = graphframe2.copy()
 
         # Drop all index levels in gf2's DataFrame except 'node', computing the
         # average time spent in each node.
