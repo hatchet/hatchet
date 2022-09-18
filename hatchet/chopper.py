@@ -242,8 +242,8 @@ class Chopper:
 
         dataframes = []
         for gf in graphframes:
-            dataframe_copy = gf.dataframe.copy()
-            dataframe_copy = dataframe_copy.groupby(columns, as_index=False).sum()
+            gf_copy = gf.deepcopy()
+            gf_copy.drop_index_levels()
 
             # Grab the pivot_index from the metadata, store this as a new
             # column in the DataFrame.
@@ -253,21 +253,21 @@ class Chopper:
                 pivot_index
             )
             pivot_val = gf.metadata[pivot_index]
-            dataframe_copy[pivot_index] = pivot_val
+            gf_copy.dataframe[pivot_index] = pivot_val
 
             # Filter the dataframe, keeping only the rows that are above the threshold
             if threshold is not None:
-                filtered_rows = dataframe_copy.apply(
+                filtered_rows = gf_copy.dataframe.apply(
                     lambda x: x[metric] > threshold, axis=1
                 )
-                dataframe_copy = dataframe_copy[filtered_rows]
+                gf_copy.dataframe = gf_copy.dataframe[filtered_rows]
 
             # Insert the graphframe's dataframe into a list.
-            dataframes.append(dataframe_copy)
+            dataframes.append(gf_copy.dataframe)
 
         # Concatenate all DataFrames into a single DataFrame called result.
         result = pd.concat(dataframes)
 
-        pivot_df = result.pivot(index=pivot_index, columns=columns, values=metric)
+        pivot_df = result.pivot_table(index=pivot_index, columns=columns, values=metric)
 
         return pivot_df
