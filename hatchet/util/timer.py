@@ -7,7 +7,6 @@ from collections import OrderedDict
 from contextlib import contextmanager
 from datetime import datetime
 from io import StringIO
-import statistics
 
 
 class Timer(object):
