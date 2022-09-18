@@ -162,8 +162,9 @@ class Chopper:
                 child = sorted_child_metric[0][0]
                 child_metric = sorted_child_metric[0][1]
                 if child_metric < (threshold * parent_metric):
-                    # return parent if its metric * threshold is
-                    # greater than child metric.
+                    # return hotpath since child's metric value is
+                    # not greater than threshold * parent's metric.
+                    callpath.append(child)
                     return callpath
                 else:
                     # continue from child if its metric is greater than
