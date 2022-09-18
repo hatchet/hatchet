@@ -90,6 +90,7 @@ def test_hot_path(calc_pi_hpct_db):
         "36:<unknown procedure>",
         "<unknown procedure>",
         "<unknown procedure>",
+        "<unknown procedure>",
     ]
 
     hot_path = graphframe.hot_path(metric="time (inc)")
@@ -100,7 +101,7 @@ def test_hot_path(calc_pi_hpct_db):
     # test if parameters override.
     # should return the root if threshold equals 2
     hot_path = graphframe.hot_path(metric="time (inc)", threshold=2)
-    assert len(hot_path) == 1
+    assert len(hot_path) == 2
     assert hot_path[0].frame["name"] == "<program root>"
 
 
