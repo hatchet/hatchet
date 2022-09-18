@@ -6,7 +6,6 @@
 import pandas as pd
 import numpy as np
 from hatchet.graphframe import GraphFrame
-from hatchet.chopper import Chopper
 
 
 def test_flat_profile(calc_pi_hpct_db):
@@ -118,13 +117,15 @@ def test_multirun_analysis_lulesh(lulesh_caliper_json):
         gf8.deepcopy(),
     )
 
-    # group nodes by name, remove all columns except time, filter values below threshold
-    # of 500000, and replace time column with num_processes for each dataframe
+    # drop index levels, filter values below threshold of 500000, group nodes by name,
+    # remove all columns except time, and replace time column with num_processes
+    # for each dataframe
     for gf in [gf1, gf2, gf4, gf8]:
-        gf.dataframe = gf.dataframe.groupby("name").sum()
-        gf.dataframe = gf.dataframe[["time"]]
+        gf.drop_index_levels()
         filtered_rows = gf.dataframe.apply(lambda x: x["time"] > 500000.0, axis=1)
         gf.dataframe = gf.dataframe[filtered_rows]
+        gf.dataframe = gf.dataframe.groupby("name").sum()
+        gf.dataframe = gf.dataframe[["time"]]
         gf.dataframe = gf.dataframe.rename(
             {"time": gf.metadata["num_processes"]}, axis="columns"
         )
@@ -138,7 +139,7 @@ def test_multirun_analysis_lulesh(lulesh_caliper_json):
     df_dummy.index.name = "num_processes"
 
     # run multirun_analyis
-    df_test = Chopper().multirun_analysis(
+    df_test = GraphFrame.multirun_analysis(
         graphframes=[gf1_copy, gf2_copy, gf4_copy, gf8_copy],
         pivot_index="num_processes",
         columns="name",
@@ -168,13 +169,15 @@ def test_multirun_analysis_literal(mock_graph_literal):
         gf8.deepcopy(),
     )
 
-    # group nodes by name, remove all columns except time, filter values below threshold
-    # of 5, and replace time column with num_processes for each dataframe
+    # filter values below threshold of 5.0, group nodes by name,
+    # remove all columns except time, and replace time column with num_processes
+    # for each dataframe
     for gf in [gf1, gf2, gf4, gf8]:
-        gf.dataframe = gf.dataframe.groupby("name").sum()
-        gf.dataframe = gf.dataframe[["time"]]
         filtered_rows = gf.dataframe.apply(lambda x: x["time"] > 5.0, axis=1)
         gf.dataframe = gf.dataframe[filtered_rows]
+        gf.dataframe = gf.dataframe.drop_duplicates()
+        gf.dataframe = gf.dataframe.groupby("name").sum()
+        gf.dataframe = gf.dataframe[["time"]]
         gf.dataframe = gf.dataframe.rename(
             {"time": gf.metadata["num_processes"]}, axis="columns"
         )
@@ -188,7 +191,7 @@ def test_multirun_analysis_literal(mock_graph_literal):
     df_dummy.index.name = "num_processes"
 
     # run multirun_analyis
-    df_test = Chopper().multirun_analysis(
+    df_test = GraphFrame.multirun_analysis(
         graphframes=[gf1_copy, gf2_copy, gf4_copy, gf8_copy],
         pivot_index="num_processes",
         columns="name",
