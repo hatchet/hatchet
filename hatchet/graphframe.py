@@ -1751,19 +1751,21 @@ class GraphFrame:
     @Logger.loggable
     def groupby_aggregate(self, groupby_column, agg_function):
         """Groupby-aggregate dataframe and reindex the Graph.
-
         Reindex the graph to match the groupby-aggregated dataframe.
-
         Update the frame attributes to contain those columns in the dataframe index.
-
         Arguments:
             self (graphframe): self's graphframe
-            groupby_column: column to groupby on dataframe
+            groupby_column (str): column to be used for groupby
             agg_function: aggregate function on dataframe
-
         Return:
             (GraphFrame): new graphframe with reindexed graph and groupby-aggregated dataframe
         """
+        if groupby_column not in self.dataframe.columns:
+            raise ValueError("Specified groupby column does not exist.")
+
+        if groupby_column in self.inc_metrics or groupby_column in self.exc_metrics:
+            raise ValueError("Groupby column must be non-numeric.")
+
         # create new nodes for each unique node in the old dataframe
         # length is equal to number of nodes in original graph
         old_to_new = {}
@@ -1777,7 +1779,6 @@ class GraphFrame:
 
         def reindex(node, parent, visited):
             """Reindex the graph.
-
             Connect super nodes to children according to relationships from old graph.
             """
             # grab the super node corresponding to original node
@@ -1816,55 +1817,97 @@ class GraphFrame:
                 for child in node.children:
                     reindex(child, super_node, visited)
 
+        index_names = list(self.dataframe.index.names)
+
+        # determine if groupby_column has missing data, if it does insert str
+        # None so that super nodes are still created
+        contains_null_values = self.dataframe[groupby_column].isnull().values.any()
+        if contains_null_values:
+            self.dataframe.fillna(value={groupby_column: "None"}, inplace=True)
+
+        if "rank" in index_names and "thread" in index_names:
+            groupby_column = [groupby_column, "rank", "thread"]
+        elif "rank" in index_names:
+            groupby_column = [groupby_column, "rank"]
+        elif "thread" in index_names:
+            groupby_column = [groupby_column, "thread"]
+
         # groupby-aggregate dataframe based on user-supplied functions
         groupby_obj = self.dataframe.groupby(groupby_column)
         agg_df = groupby_obj.agg(agg_function)
 
+        # rename the groupby_column to name, node is first level in the case of
+        # a multi-index
+        if isinstance(self.dataframe.index, pd.MultiIndex):
+            agg_df.index.rename("name", level=0, inplace=True)
+        else:
+            agg_df.index.rename("name", inplace=True)
+        agg_df.reset_index(inplace=True)
+
+        # set the node type for the new hierarchy by using the existing node
+        # types or using the specified groupby column
+        if groupby_column == "name":
+            node_type = self.graph.roots[0].frame["type"]
+        else:
+            node_type = (
+                groupby_column[0]
+                if isinstance(groupby_column, list)
+                else groupby_column
+            )
+
         # traverse groupby_obj, determine old node to super node mapping
+        # only create super nodes for each unique value in groupby column
         nid = 0
+        name_to_node = {}
         for k, v in groupby_obj.groups.items():
-            node_name = k
-            node_type = agg_df.index.name
-            super_node = Node(Frame({"name": node_name, "type": node_type}), None, nid)
-            n = {"node": super_node, "nid": nid, "name": node_name}
-            node_dicts.append(n)
-            nid += 1
+            if isinstance(k, tuple):
+                node_name = k[0]
+            else:
+                node_name = k
+
+            super_node = name_to_node.get(node_name)
+            if not super_node:
+                super_node = Node(
+                    Frame({"name": node_name, "type": node_type}), None, nid
+                )
+                node_dicts.append({"node": super_node, "name": node_name})
+                name_to_node[node_name] = super_node
+                nid += 1
 
             # if many old nodes map to the same super node
             for i in v:
-                old_to_new[i] = super_node
+                if isinstance(v, pd.MultiIndex):
+                    old_to_new[i[0]] = super_node
+                else:
+                    old_to_new[i] = super_node
 
         # reindex graph by traversing old graph
         visited = set()
         for root in self.graph.roots:
             reindex(root, None, visited)
 
+        # create a dataframe with all nodes in the call graph
         # append super nodes to groupby-aggregate dataframe
-        df_index = list(agg_df.index.names)
-        agg_df.reset_index(inplace=True)
         df_nodes = pd.DataFrame.from_dict(data=node_dicts)
-        tmp_df = pd.concat([agg_df, df_nodes], axis=1)
-        # add node to dataframe index if it doesn't exist
-        if "node" not in df_index:
-            df_index.append("node")
-        # reset index
-        tmp_df.set_index(df_index, inplace=True)
 
-        # update _hatchet_nid in reindexed graph and groupby-aggregate dataframe
+        tmp_df = agg_df.merge(df_nodes, on="name")
+
+        indices = ["node"]
+        if "rank" in index_names and "thread" in index_names:
+            indices.append(["rank", "thread"])
+        elif "rank" in index_names:
+            indices.append("rank")
+        elif "thread" in index_names:
+            indices.append("thread")
+
+        tmp_df.set_index(indices, inplace=True)
+        tmp_df.sort_index(inplace=True)
+
         graph = Graph(new_roots)
         graph.enumerate_traverse()
 
         # put it all together
-        new_gf = GraphFrame(
-            graph,
-            tmp_df,
-            list(self.exc_metrics),
-            list(self.inc_metrics),
-            self.default_metric,
-            dict(self.metadata),
-            attributes=dict([[x, getattr(self, x)] for x in self.attributes]),
-        )
-        new_gf.drop_index_levels()
+        new_gf = GraphFrame(graph, tmp_df, self.exc_metrics, self.inc_metrics)
         return new_gf
 
     @Logger.loggable
