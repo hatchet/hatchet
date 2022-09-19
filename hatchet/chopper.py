@@ -50,7 +50,7 @@ class Chopper:
 
         return result_graphframe
 
-    def calculate_load_imbalance(self, graphframe, metric_columns=None):
+    def calculate_load_imbalance(self, graphframe, metric_columns=None, threshold=None):
         """Calculates load imbalance for given metric column(s)
         Takes a graphframe and a list of metric column(s), and
         returns a new graphframe with metric.imbalance column(s).
@@ -59,15 +59,17 @@ class Chopper:
         def _update_and_add_columns(dataframe, old_column_name, new_column):
             """Rename some existing columns and create new ones."""
             # rename columns: '<metric>.mean'
-            dataframe.rename(columns={column: old_column_name + ".mean"}, inplace=True)
+            dataframe.rename(
+                columns={old_column_name: old_column_name + ".mean"}, inplace=True
+            )
             # create columns: '<metric>.max'
             dataframe[old_column_name + ".max"] = new_column
 
-        def _update_metric_lists(metric_types):
+        def _update_metric_lists(metric_types, metric):
             """Update graphframe.inc_metrics and graphframe.exc_metrics
             lists after renaming/creating columns"""
-            metric_types.append(column + ".mean")
-            metric_types.append(column + ".max")
+            metric_types.append(metric + ".mean")
+            metric_types.append(metric + ".max")
 
         # Create a copy of the GraphFrame.
         # 'graphframe2' and 'graphframe3' should
@@ -90,34 +92,61 @@ class Chopper:
         if metric_columns is None:
             metric_columns = [graphframe.default_metric]
         # Handle if the metric is given as a string.
-        if isinstance(metric_columns, str):
+        elif not isinstance(metric_columns, list):
             metric_columns = [metric_columns]
+
+        # set threshold to 0.01 if it's None.
+        if threshold is None:
+            threshold = 0.01
+
+        # Filter the nodes whose metric
+        # value is less than <threshold> percent
+        # of the root node.
+        metric_threshold = {}
+        for metric in metric_columns:
+            if metric not in graphframe2.inc_metrics:
+                metric_inc = metric + graphframe2.metadata["hatchet_inclusive_suffix"]
+            else:
+                metric_inc = metric
+
+            roots_metrics = []
+            for root in graphframe2.graph.roots:
+                roots_metrics.append(
+                    (root, graphframe2.dataframe.loc[root, metric_inc])
+                )
+
+            # in-place sort
+            roots_metrics.sort(key=lambda x: x[1], reverse=True)
+            total = roots_metrics[0][1]
+            metric_threshold[metric] = total * threshold
 
         graphframe2.inc_metrics = []
         graphframe2.exc_metrics = []
 
         # For each column/metric for which we want to
         # calculate load imbalance
-        for column in metric_columns:
+        for metric, threshold in metric_threshold.items():
             # Update/rename existing columns on graphframe2.dataframe
             # by adding .mean for already existing columns and create
             # new columns by adding .max to the corresponding
             # columns on graphframe3.
             _update_and_add_columns(
-                graphframe2.dataframe, column, graphframe3.dataframe[column]
+                graphframe2.dataframe, metric, graphframe3.dataframe[metric]
             )
 
             # Add new columns to .inc_metrics or .exc_metrics
-            if column in graphframe3.inc_metrics:
-                _update_metric_lists(graphframe2.inc_metrics)
-            elif column in graphframe3.exc_metrics:
-                _update_metric_lists(graphframe2.exc_metrics)
+            if metric in graphframe3.inc_metrics:
+                _update_metric_lists(graphframe2.inc_metrics, metric)
+            elif metric in graphframe3.exc_metrics:
+                _update_metric_lists(graphframe2.exc_metrics, metric)
+
+            graphframe2 = graphframe2.filter(lambda x: x[metric + ".max"] > threshold)
 
             # Calculate load imbalance for every given column
             # by dividing corresponding .max and .mean columns.
-            graphframe2.dataframe[column + ".imbalance"] = graphframe2.dataframe[
-                column + ".max"
-            ].div(graphframe2.dataframe[column + ".mean"])
+            graphframe2.dataframe[metric + ".imbalance"] = graphframe2.dataframe[
+                metric + ".max"
+            ].div(graphframe2.dataframe[metric + ".mean"])
 
         # default metric will be imbalance when user print the tree
         graphframe2.default_metric = metric_columns[0] + ".imbalance"

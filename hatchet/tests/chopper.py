@@ -50,21 +50,30 @@ def test_calculate_load_imbalance(calc_pi_hpct_db):
     )
 
     # Check if load imbalance is correct for the main node.
-    main = root.children[0]
-    main_original_metrics = graphframe.dataframe.loc[main]["time (inc)"].to_numpy()
-    main_imbalance = load_imb_gf.dataframe.loc[main]["time (inc).imbalance"]
+    main_original = root.children[0]
+    main_original_metrics = graphframe.dataframe.loc[main_original][
+        "time (inc)"
+    ].to_numpy()
+    main_imbalance = load_imb_gf.graph.roots[0].children[0]
+    main_imbalance = load_imb_gf.dataframe.loc[main_imbalance]["time (inc).imbalance"]
     assert (
         np.max(main_original_metrics) / np.mean(main_original_metrics) == main_imbalance
     )
 
     # Check if load imbalance is correct for the the node '__GI_sched_yield'.
-    another = graphframe.dataframe[
+    another_original = graphframe.dataframe[
         graphframe.dataframe["name"] == "__GI_sched_yield"
     ].index[0][0]
-    another_original_metrics = graphframe.dataframe.loc[another][
+    another_original_metrics = graphframe.dataframe.loc[another_original][
         "time (inc)"
     ].to_numpy()
-    another_imbalance = load_imb_gf.dataframe.loc[another]["time (inc).imbalance"]
+
+    another_imbalance = load_imb_gf.dataframe[
+        load_imb_gf.dataframe["name"] == "__GI_sched_yield"
+    ].index[0]
+    another_imbalance = load_imb_gf.dataframe.loc[another_imbalance][
+        "time (inc).imbalance"
+    ]
     assert (
         np.max(another_original_metrics) / np.mean(another_original_metrics)
         == another_imbalance

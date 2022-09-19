@@ -1285,12 +1285,12 @@ class GraphFrame:
         return Chopper().to_callgraph(self)
 
     @Logger.loggable
-    def load_imbalance(self, metric_columns=None):
+    def load_imbalance(self, metric_columns=None, threshold=None):
         """Calculates load imbalance for given metric column(s)
         Takes a graphframe and a list of metric column(s), and
         returns a new graphframe with metric.imbalance column(s).
         """
-        return Chopper().calculate_load_imbalance(self, metric_columns)
+        return Chopper().calculate_load_imbalance(self, metric_columns, threshold)
 
     @Logger.loggable
     def hot_path(self, start_node=None, metric=None, threshold=0.5):
