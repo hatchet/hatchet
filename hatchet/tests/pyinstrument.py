@@ -6,6 +6,7 @@
 import json
 
 import numpy as np
+import pandas as pd
 
 from hatchet import GraphFrame
 from hatchet.external.console import ConsoleRenderer
@@ -127,6 +128,17 @@ def test_graphframe_constructor_pyinstrument(hatchet_pyinstrument_json):
     """Validate that the graphframe constructor function is working correctly."""
     gf_test = GraphFrame.construct_from(str(hatchet_pyinstrument_json))
     gf_actual = GraphFrame.from_pyinstrument(str(hatchet_pyinstrument_json))
+
+    nodes_test = list(gf_test.graph.traverse())
+    nodes_actual = list(gf_actual.graph.traverse())
+
+    for node in nodes_test:
+        gf_test.dataframe.at[node, "val"] = nodes_test.index(node)
+    for node in nodes_actual:
+        gf_actual.dataframe.at[node, "val"] = nodes_actual.index(node)
+
+    gf_test.dataframe.sort_values(by=["val"], ignore_index=True, inplace=True)
+    gf_actual.dataframe.sort_values(by=["val"], ignore_index=True, inplace=True)
 
     assert gf_actual.dataframe.equals(gf_test.dataframe)
     assert gf_actual.graph == gf_test.graph
