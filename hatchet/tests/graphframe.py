@@ -1000,8 +1000,14 @@ def test_groupby_aggregate_by_name(mock_graph_literal):
     assert len(grouped_gf.graph) == len(call_graph_nodes)
 
     grouped_gf.dataframe = grouped_gf.dataframe.reset_index(drop=True)
+
     grouped_df = gf.dataframe.groupby("name", as_index=False).agg(np.sum)
-    assert grouped_gf.dataframe.equals(grouped_df)
+    grouped_gf.dataframe.sort_values(by=["name"], inplace=True)
+    grouped_df.sort_values(by=["name"], inplace=True)
+    grouped_gf.dataframe = grouped_gf.dataframe.reset_index(drop=True)
+    assert grouped_gf.dataframe[["name", "time (inc)", "time"]].equals(
+        grouped_df[["name", "time (inc)", "time"]]
+    )
 
 
 def test_depth(mock_graph_literal):
