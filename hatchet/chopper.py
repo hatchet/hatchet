@@ -198,3 +198,80 @@ class Chopper:
         return find_hot_path(
             gf_copy, start_node, metric, threshold, callpath=[start_node]
         )
+
+    @staticmethod
+    def calculate_speedup_efficiency(
+        graphframes=[], metric=None, weak=False, strong=False, threshold=None
+    ):
+        # circular import
+        from .graphframe import GraphFrame
+
+        assert (
+            weak is True or strong is True
+        ), "both weak and strong parameters cannot be False."
+
+        assert (
+            graphframes is not None and len(graphframes) != 0
+        ), "function param 'graphframes' requires at least one graphframe object"
+
+        process_counts = []
+        for gf in graphframes:
+            assert (
+                "num_processes" in gf.metadata.keys()
+            ), "pivot_index missing from GraphFrame metadata: use update_metadata() to specify."
+            process_counts.append(gf.metadata["num_processes"])
+
+        process_counts = sorted(process_counts)
+        lowest_pc = process_counts[0]
+        process_counts.remove(lowest_pc)
+
+        if not isinstance(graphframes, list):
+            graphframes = [graphframes]
+
+        if metric is None:
+            metric = graphframes[0].default_metric
+
+        if threshold is None:
+            threshold = 0.01
+
+        unified_graphframe = GraphFrame.unify_multiple_graphframes(graphframes)
+
+        metric_inc = ""
+        if metric not in unified_graphframe.inc_metrics:
+            metric_inc = (
+                metric + unified_graphframe.metadata["hatchet_inclusive_suffix"]
+            )
+        else:
+            metric_inc = metric
+
+        roots_metrics = []
+        for root in unified_graphframe.graph.roots:
+            root_val = (
+                unified_graphframe.dataframe.loc[
+                    root, "{}-{}".format(metric_inc, lowest_pc)
+                ],
+            )[0]
+            if root_val == root_val:
+                roots_metrics.append(root_val)
+
+        roots_metrics = sorted(roots_metrics, reverse=True)
+        total = roots_metrics[0]
+
+        unified_graphframe = unified_graphframe.filter(
+            lambda x: x["{}-{}".format(metric, lowest_pc)] > total * threshold
+        )
+
+        lowest_pc_val = unified_graphframe.dataframe["{}-{}".format(metric, lowest_pc)]
+        for pc in process_counts:
+            pc_val = unified_graphframe.dataframe["{}-{}".format(metric, pc)]
+            if weak:
+                new_column = "{}-{}-{}-weak-eff".format(metric, lowest_pc, pc)
+                new_colum_val = pc_val.div(lowest_pc_val)
+            if strong:
+                new_column = "{}-{}-{}-strong-eff".format(metric, lowest_pc, pc)
+                pc_val *= pc
+                new_colum_val = pc_val.div(lowest_pc_val)
+
+            unified_graphframe.dataframe[new_column] = new_colum_val.div(lowest_pc_val)
+
+        return unified_graphframe

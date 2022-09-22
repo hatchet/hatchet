@@ -1688,6 +1688,16 @@ class GraphFrame:
         )
         return hot_path
 
+    @staticmethod
+    @Logger.loggable
+    def calculate_speedup_efficiency(
+        graphframes=[], metric=None, weak=False, strong=False, threshold=None
+    ):
+
+        return Chopper.calculate_speedup_efficiency(
+            graphframes, metric, weak, strong, threshold
+        )
+
     @Logger.loggable
     def add(self, other):
         """Returns the column-wise sum of two graphframes as a new graphframe.
