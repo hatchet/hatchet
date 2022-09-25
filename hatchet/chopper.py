@@ -204,18 +204,18 @@ class Chopper:
     def multirun_analysis(
         graphframes=[],
         pivot_index="num_processes",
-        columns="name",
-        metric=None,
+        columns=["name"],
+        metric="time",
         threshold=None,
     ):
         """Creates a pivot table.
         Inputs:
          - graphframes: A list of graphframes.
-         - pivot_index: The numerical metric on the dataframe for the x-axis of the plot.
+         - pivot_index: The metric in each graphframe's metadata used to index the pivot table.
          Default: num_processes
-         - columns: The non-numerical metric for the columns of the table.
+         - columns: The non-numerical metric over which the pivot table's column values are aggregated.
          Default: name
-         - metric: The numerical metric on the dataframe for the y-axis of the plot.
+         - metric: The numerical metric which is aggregated to form the pivot table's column values.
          Default: time
          - threshold: The threshold for filtering metric rows of the graphframes.
         Output:
@@ -223,22 +223,22 @@ class Chopper:
         """
 
         assert (
-            graphframes is not None and len(graphframes) != 0
-        ), "function param 'graphframes' requires at least one graphframe object"
+            graphframes is not None and len(graphframes) >= 2
+        ), "function param 'graphframes' requires at least two graphframe objects"
+
         if not isinstance(graphframes, list):
             graphframes = [graphframes]
-
-        if pivot_index is None:
-            pivot_index = "num_processes"
-
-        if columns is None:
-            columns = ["name"]
 
         if not isinstance(columns, list):
             columns = [columns]
 
-        if metric is None:
-            metric = graphframes[0].default_metric
+        for gf in graphframes:
+            assert (
+                pivot_index in gf.metadata.keys()
+            ), "{} missing from GraphFrame metadata: use update_metadata() to specify.".format(
+                pivot_index
+            )
+            assert metric in gf.dataframe.columns, "{} metric not present in all graphframes".format(metric)
 
         dataframes = []
         for gf in graphframes:
@@ -247,11 +247,6 @@ class Chopper:
 
             # Grab the pivot_index from the metadata, store this as a new
             # column in the DataFrame.
-            assert (
-                pivot_index in gf.metadata.keys()
-            ), "{} missing from GraphFrame metadata: use update_metadata() to specify.".format(
-                pivot_index
-            )
             pivot_val = gf.metadata[pivot_index]
             gf_copy.dataframe[pivot_index] = pivot_val
 

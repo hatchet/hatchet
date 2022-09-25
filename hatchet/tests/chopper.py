@@ -6,6 +6,7 @@
 import pandas as pd
 import numpy as np
 from hatchet.graphframe import GraphFrame
+from hatchet.chopper import Chopper
 
 
 def test_flat_profile(calc_pi_hpct_db):
@@ -139,7 +140,7 @@ def test_multirun_analysis_lulesh(lulesh_caliper_json):
     df_dummy.index.name = "num_processes"
 
     # run multirun_analyis
-    df_test = GraphFrame.multirun_analysis(
+    df_test = Chopper.multirun_analysis(
         graphframes=[gf1_copy, gf2_copy, gf4_copy, gf8_copy],
         pivot_index="num_processes",
         columns="name",
@@ -191,7 +192,7 @@ def test_multirun_analysis_literal(mock_graph_literal):
     df_dummy.index.name = "num_processes"
 
     # run multirun_analyis
-    df_test = GraphFrame.multirun_analysis(
+    df_test = Chopper.multirun_analysis(
         graphframes=[gf1_copy, gf2_copy, gf4_copy, gf8_copy],
         pivot_index="num_processes",
         columns="name",
