@@ -238,7 +238,9 @@ class Chopper:
             ), "{} missing from GraphFrame metadata: use update_metadata() to specify.".format(
                 pivot_index
             )
-            assert metric in gf.dataframe.columns, "{} metric not present in all graphframes".format(metric)
+            assert (
+                metric in gf.dataframe.columns
+            ), "{} metric not present in all graphframes".format(metric)
 
         dataframes = []
         for gf in graphframes:
