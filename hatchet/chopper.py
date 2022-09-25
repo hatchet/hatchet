@@ -9,11 +9,7 @@ import numpy as np
 class Chopper:
     """High-level API for performance analysis."""
 
-    def flat_profile(
-        self,
-        graphframe,
-        groupby_column=None,
-    ):
+    def flat_profile(self, graphframe, groupby_column=None, as_index=True):
         """Generates flat profile for a given graphframe.
         Returns a new dataframe."""
         graphframe2 = graphframe.deepcopy()
@@ -24,7 +20,9 @@ class Chopper:
         # TODO: change drop_index_levels(). Drop only ranks or threads.
         graphframe2.drop_index_levels()
 
-        result_dataframe = graphframe2.dataframe.groupby(groupby_column).sum()
+        result_dataframe = graphframe2.dataframe.groupby(
+            groupby_column, as_index=as_index
+        ).sum()
         result_dataframe = result_dataframe.sort_values(
             by=[graphframe.default_metric], ascending=False
         )

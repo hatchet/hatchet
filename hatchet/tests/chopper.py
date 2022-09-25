@@ -30,6 +30,10 @@ def test_flat_profile(calc_pi_hpct_db):
         graphframe.dataframe.loc[another]["time (inc)"].to_numpy()
     )
 
+    # If as_index is False, check if the index is properly numbered
+    flat_profile = graphframe.flat_profile(as_index=False)
+    assert sorted(flat_profile.index.tolist()) == list(range(len(flat_profile)))
+
 
 def test_calculate_load_imbalance(calc_pi_hpct_db):
     """Validate that the load imbalance is calculated correctly."""
