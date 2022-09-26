@@ -101,6 +101,21 @@ class NsightReader:
                         self.nsys_trace[i]["Start (ns)"]
                     ):
                         self.node_call_stack.pop()
+                if len(self.node_call_stack) == 0:
+                    graph_root = Node(Frame(name=self.nsys_trace[i]["Name"]), None)
+                    node_dict = dict(
+                        {
+                            "node": graph_root,
+                            "name": graph_root.frame.get("name"),
+                            "time": int(self.nsys_trace[i]["DurNonChild (ns)"])
+                            / 1000000000,
+                            "time (inc)": int(self.nsys_trace[i]["Duration (ns)"])
+                            / 1000000000,
+                        }
+                    )
+                self.list_roots.append(graph_root)
+                self.callpath_to_node_dicts[str(graph_root.path())] = node_dict
+                self.node_call_stack.append((self.nsys_trace[i], graph_root))
                 parent = self.node_call_stack[-1][1]
                 child = Node(Frame(name=self.nsys_trace[i]["Name"]), parent)
                 self.node_call_stack.append((self.nsys_trace[i], child))
