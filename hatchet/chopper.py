@@ -43,7 +43,6 @@ class Chopper:
         Converts a CCT to a callgraph.
         Returns a new graphframe.
         """
-        assert graphframe.graph.is_tree(), "input graph is not a tree"
 
         # TODO: provide hierarchy information in the graphframe metadata to access the
         #       hierarchy of the input nodes - currently using function name
