@@ -226,9 +226,6 @@ class Chopper:
             graphframes is not None and len(graphframes) >= 2
         ), "function param 'graphframes' requires at least two graphframe objects"
 
-        if not isinstance(graphframes, list):
-            graphframes = [graphframes]
-
         if not isinstance(columns, list):
             columns = [columns]
 
@@ -241,6 +238,10 @@ class Chopper:
             assert (
                 metric in gf.dataframe.columns
             ), "{} metric not present in all graphframes".format(metric)
+            for column in columns:
+                assert (
+                    column in gf.dataframe.columns
+                ), "{} column not present in all graphframes".format(column)
 
         dataframes = []
         for gf in graphframes:
