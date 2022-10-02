@@ -3,8 +3,10 @@
 #
 # SPDX-License-Identifier: MIT
 
+import pandas as pd
 import numpy as np
 from hatchet.graphframe import GraphFrame
+from hatchet.chopper import Chopper
 
 
 def test_flat_profile(calc_pi_hpct_db):
@@ -100,3 +102,107 @@ def test_hot_path(calc_pi_hpct_db):
     hot_path = graphframe.hot_path(metric="time (inc)", threshold=2)
     assert len(hot_path) == 1
     assert hot_path[0].frame["name"] == "<program root>"
+
+
+def test_multirun_analysis_lulesh(lulesh_caliper_json):
+    """Validate that multirun_analysis works correctly with data containing
+    non-repeating functions."""
+    gf1 = GraphFrame.from_caliper(lulesh_caliper_json)
+    gf2, gf4, gf8 = gf1.deepcopy(), gf1.deepcopy(), gf1.deepcopy()
+
+    gf1.update_metadata(1)
+    gf2.update_metadata(2)
+    gf4.update_metadata(4)
+    gf8.update_metadata(8)
+
+    gf1_copy, gf2_copy, gf4_copy, gf8_copy = (
+        gf1.deepcopy(),
+        gf2.deepcopy(),
+        gf4.deepcopy(),
+        gf8.deepcopy(),
+    )
+
+    # drop index levels, filter values below threshold of 500000, group nodes by name,
+    # remove all columns except time, and replace time column with num_processes
+    # for each dataframe
+    for gf in [gf1, gf2, gf4, gf8]:
+        gf.drop_index_levels()
+        filtered_rows = gf.dataframe.apply(lambda x: x["time"] > 500000.0, axis=1)
+        gf.dataframe = gf.dataframe[filtered_rows]
+        gf.dataframe = gf.dataframe.groupby("name").sum()
+        gf.dataframe = gf.dataframe[["time"]]
+        gf.dataframe = gf.dataframe.rename(
+            {"time": gf.metadata["num_processes"]}, axis="columns"
+        )
+
+    # join the dataframes column-wise, transpose the dataframe, and set the index name
+    # to num_processes
+    df_dummy = pd.concat(
+        [gf1.dataframe, gf2.dataframe, gf4.dataframe, gf8.dataframe], axis=1
+    )
+    df_dummy = df_dummy.transpose()
+    df_dummy.index.name = "num_processes"
+
+    # run multirun_analyis
+    df_test = Chopper.multirun_analysis(
+        graphframes=[gf1_copy, gf2_copy, gf4_copy, gf8_copy],
+        pivot_index="num_processes",
+        columns="name",
+        metric="time",
+        threshold=500000.0,
+    )
+
+    # check if the test and dummy dataframes match
+    assert df_test.equals(df_dummy)
+
+
+def test_multirun_analysis_literal(mock_graph_literal):
+    """Validate that multirun_analysis works correctly with data containing
+    repeating functions."""
+    gf1 = GraphFrame.from_literal(mock_graph_literal)
+    gf2, gf4, gf8 = gf1.deepcopy(), gf1.deepcopy(), gf1.deepcopy()
+
+    gf1.update_metadata(1)
+    gf2.update_metadata(2)
+    gf4.update_metadata(4)
+    gf8.update_metadata(8)
+
+    gf1_copy, gf2_copy, gf4_copy, gf8_copy = (
+        gf1.deepcopy(),
+        gf2.deepcopy(),
+        gf4.deepcopy(),
+        gf8.deepcopy(),
+    )
+
+    # filter values below threshold of 5.0, group nodes by name,
+    # remove all columns except time, and replace time column with num_processes
+    # for each dataframe
+    for gf in [gf1, gf2, gf4, gf8]:
+        filtered_rows = gf.dataframe.apply(lambda x: x["time"] > 5.0, axis=1)
+        gf.dataframe = gf.dataframe[filtered_rows]
+        gf.dataframe = gf.dataframe.drop_duplicates()
+        gf.dataframe = gf.dataframe.groupby("name").sum()
+        gf.dataframe = gf.dataframe[["time"]]
+        gf.dataframe = gf.dataframe.rename(
+            {"time": gf.metadata["num_processes"]}, axis="columns"
+        )
+
+    # join the dataframes column-wise, transpose the dataframe, and set the index name
+    # to num_processes
+    df_dummy = pd.concat(
+        [gf1.dataframe, gf2.dataframe, gf4.dataframe, gf8.dataframe], axis=1
+    )
+    df_dummy = df_dummy.transpose()
+    df_dummy.index.name = "num_processes"
+
+    # run multirun_analyis
+    df_test = Chopper.multirun_analysis(
+        graphframes=[gf1_copy, gf2_copy, gf4_copy, gf8_copy],
+        pivot_index="num_processes",
+        columns="name",
+        metric="time",
+        threshold=5.0,
+    )
+
+    # check if the test and dummy dataframes match
+    assert df_test.equals(df_dummy)

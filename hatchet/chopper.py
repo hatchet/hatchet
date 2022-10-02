@@ -3,6 +3,7 @@
 #
 # SPDX-License-Identifier: MIT
 
+import pandas as pd
 import numpy as np
 
 
@@ -195,3 +196,73 @@ class Chopper:
         return find_hot_path(
             gf_copy, start_node, metric, threshold, callpath=[start_node]
         )
+
+    @staticmethod
+    def multirun_analysis(
+        graphframes=[],
+        pivot_index="num_processes",
+        columns=["name"],
+        metric="time",
+        threshold=None,
+    ):
+        """Creates a pivot table.
+        Inputs:
+         - graphframes: A list of graphframes.
+         - pivot_index: The metric in each graphframe's metadata used to index the pivot table.
+         Default: num_processes
+         - columns: The non-numerical metric over which the pivot table's column values are aggregated.
+         Default: name
+         - metric: The numerical metric which is aggregated to form the pivot table's column values.
+         Default: time
+         - threshold: The threshold for filtering metric rows of the graphframes.
+        Output:
+         - a pivot table
+        """
+
+        assert (
+            graphframes is not None and len(graphframes) >= 2
+        ), "function param 'graphframes' requires at least two graphframe objects"
+
+        if not isinstance(columns, list):
+            columns = [columns]
+
+        for gf in graphframes:
+            assert (
+                pivot_index in gf.metadata.keys()
+            ), "{} missing from GraphFrame metadata: use update_metadata() to specify.".format(
+                pivot_index
+            )
+            assert (
+                metric in gf.dataframe.columns
+            ), "{} metric not present in all graphframes".format(metric)
+            for column in columns:
+                assert (
+                    column in gf.dataframe.columns
+                ), "{} column not present in all graphframes".format(column)
+
+        dataframes = []
+        for gf in graphframes:
+            gf_copy = gf.deepcopy()
+            gf_copy.drop_index_levels()
+
+            # Grab the pivot_index from the metadata, store this as a new
+            # column in the DataFrame.
+            pivot_val = gf.metadata[pivot_index]
+            gf_copy.dataframe[pivot_index] = pivot_val
+
+            # Filter the dataframe, keeping only the rows that are above the threshold
+            if threshold is not None:
+                filtered_rows = gf_copy.dataframe.apply(
+                    lambda x: x[metric] > threshold, axis=1
+                )
+                gf_copy.dataframe = gf_copy.dataframe[filtered_rows]
+
+            # Insert the graphframe's dataframe into a list.
+            dataframes.append(gf_copy.dataframe)
+
+        # Concatenate all DataFrames into a single DataFrame called result.
+        result = pd.concat(dataframes)
+
+        pivot_df = result.pivot_table(index=pivot_index, columns=columns, values=metric)
+
+        return pivot_df
