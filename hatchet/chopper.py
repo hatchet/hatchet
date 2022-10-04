@@ -268,7 +268,8 @@ class Chopper:
         return pivot_df
 
     @staticmethod
-    def speedup_efficiency(graphframes=[],
+    def speedup_efficiency(
+        graphframes=[],
         weak=False,
         strong=False,
         efficiency=False,
@@ -276,7 +277,8 @@ class Chopper:
         pivot_index="num_processes",
         columns=["name"],
         metric="time",
-        threshold=None,):
+        threshold=None,
+    ):
 
         assert (
             strong is True or weak is True
@@ -294,7 +296,9 @@ class Chopper:
             weak is False or speedup is False
         ), "speed up can be calculated only for strong scaling."
 
-        pivot_table = Chopper.multirun_analysis(graphframes, pivot_index, columns, metric, threshold)
+        pivot_table = Chopper.multirun_analysis(
+            graphframes, pivot_index, columns, metric, threshold
+        )
 
         num_processes = []
         for graphframe in graphframes:
@@ -313,7 +317,9 @@ class Chopper:
                     # strong scaling speedup
                     result_df[other] = pivot_table.loc[base] / pivot_table.loc[other]
                 else:
-                    #strong scaling efficiency
-                    result_df[other] = (pivot_table.loc[base] * base) / (pivot_table.loc[other] * other)
+                    # strong scaling efficiency
+                    result_df[other] = (pivot_table.loc[base] * base) / (
+                        pivot_table.loc[other] * other
+                    )
 
         return result_df
