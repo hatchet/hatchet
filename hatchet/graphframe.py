@@ -774,15 +774,15 @@ class GraphFrame:
 
     @Logger.loggable
     def calculate_exclusive_metrics(self, columns=None):
-        """Calculates exclusive metrics using the corresponding inclusive metric.
+        """Calculates exclusive metrics using the corresponding inclusive metrics.
 
-        Uses all inclusive metrics if columns==None.
+        Computed for all inclusive metrics if columns=None.
 
         Skips if the given column is exclusive.
-        If the given columns is inclusive:
-        If ' (inc)' is in the given column, name of the new column will be
+        If the given column is inclusive:
+            If ' (inc)' is in the given column, name of the new column will be
         the given column without ' (inc)' at the end.
-        If ' (inc)' is not in the given column, name of the new column will be
+            If ' (inc)' is not in the given column, name of the new column will be
         the given column with ' (exc)' at the end.
         """
 
