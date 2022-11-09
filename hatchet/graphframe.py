@@ -786,7 +786,7 @@ class GraphFrame:
         the given column with ' (exc)' at the end.
         """
 
-        # convert to a list of str is given.
+        # convert to a list if columns is a string.
         if isinstance(columns, str):
             columns = [columns]
 
