@@ -92,6 +92,8 @@ class GraphFrame:
         self.metadata = {} if metadata is None else metadata
         if "hatchet_inclusive_suffix" not in self.metadata:
             self.metadata["hatchet_inclusive_suffix"] = " (inc)"
+        if "hatchet_exclusive_suffix" not in self.metadata:
+            self.metadata["hatchet_exclusive_suffix"] = " (exc)"
 
     @staticmethod
     @Logger.loggable
@@ -769,6 +771,96 @@ class GraphFrame:
             for s in self.exc_metrics
         ]
         self.subgraph_sum(self.exc_metrics, self.inc_metrics)
+
+    @Logger.loggable
+    def calculate_exclusive_metrics(self, columns=None):
+        """Calculates exclusive metrics using the corresponding inclusive metrics.
+
+        Computed for all inclusive metrics if columns=None.
+
+        Raise error if the given column is not in inc_metrics.
+        If the given column is inclusive:
+            If ' (inc)' is in the given column, name of the new column will be
+        the given column without ' (inc)' at the end.
+            If ' (inc)' is not in the given column, name of the new column will be
+        the given column with ' (exc)' at the end.
+        """
+
+        # check if the columns parameter is None
+        if columns is not None:
+            # make it a list if it's not None and not a list
+            if not isinstance(columns, list):
+                columns = [columns]
+
+            # check if the given columns is in inc_metrics.
+            for column in columns:
+                assert (
+                    column in self.inc_metrics
+                ), "{} does not exist in the graphframe.inc_metrics.".format(column)
+        else:
+            # if the user doesn't provide any columns, calculate
+            # exclusive metric for all inclusive metrics.
+            columns = [column for column in self.inc_metrics]
+
+        # create the new columns and add
+        # them to the exc_metrics.
+        inc_exc_pairs = []
+        new_data = {}
+        for column in columns:
+            # name the new column removing 'hatchet_inc_suffix' from
+            # the inclusive column
+            new_column = ""
+            if self.metadata["hatchet_inclusive_suffix"] in column:
+                new_column = column.replace(
+                    self.metadata["hatchet_inclusive_suffix"], ""
+                )
+            # add 'hatchet_ex_suffix' if 'hatchet_inc_suffix' doesn't exists.
+            else:
+                new_column = column + self.metadata["hatchet_exclusive_suffix"]
+
+            if new_column not in self.exc_metrics:
+                self.exc_metrics.append(new_column)
+
+            # keep the columns as a list of (inc_metric, exc_metric)
+            inc_exc_pairs.append((column, new_column))
+            # create a dict for the new data
+            new_data[new_column] = {}
+
+        for node in self.graph.traverse():
+            for inc, exc in inc_exc_pairs:
+                if isinstance(self.dataframe.index, pd.MultiIndex):
+                    for idx in self.dataframe.loc[node].index:
+                        node_index_tuple = None
+                        # if 1D multiindex
+                        if isinstance(idx, int):
+                            idx = [idx]
+                        node_index_tuple = tuple([node]) + tuple(idx)
+
+                        # calculate exclusive metric.
+                        child_inc_sum = 0
+                        for child in node.children:
+                            child_index_tuple = tuple([child]) + tuple(idx)
+                            child_inc_sum += self.dataframe.loc[child_index_tuple][inc]
+                        exc_value = (
+                            self.dataframe.loc[node_index_tuple][inc] - child_inc_sum
+                        )
+                        # store the new value.
+                        new_data[exc][node_index_tuple] = exc_value
+                # if no multiindex
+                else:
+                    # calculate exclusive metric.
+                    child_inc_sum = 0
+                    for child in node.children:
+                        child_inc_sum += self.dataframe.loc[child][inc]
+                    exc_value = self.dataframe.loc[node][inc] - child_inc_sum
+                    # store the new value.
+                    new_data[exc][node] = exc_value
+
+                # create series for each exc column.
+                new_data[exc] = pd.Series(data=new_data[exc])
+
+        # add all columns at once.
+        self.dataframe = self.dataframe.assign(**new_data)
 
     @Logger.loggable
     def show_metric_columns(self):
