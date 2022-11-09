@@ -142,9 +142,6 @@ def test_calculate_exclusive_metrics(calc_pi_hpct_db):
     # check if new created "time" column matches with the grount truth
     assert gf_drop2.dataframe["time"].equals(gf_drop2.dataframe["time (ground)"])
 
-    # check if new created "time" column matches with the grount truth
-    assert gf_drop.dataframe["time"].equals(gf_drop.dataframe["time (ground)"])
-
     # test 1D multiindex.
     gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
     # create another column to set as a ground truth.

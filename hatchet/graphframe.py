@@ -786,21 +786,27 @@ class GraphFrame:
         the given column with ' (exc)' at the end.
         """
 
-        # convert to a list if columns is a string.
-        if isinstance(columns, str):
-            columns = [columns]
-
         # check if a column is given as parameter.
         # if not given, create an exclusive
         # column for each inc metric.
         if columns is None:
             columns = self.inc_metrics
 
+        # convert to a list if columns is bot a list.
+        if not isinstance(columns, list):
+            columns = [columns]
+
+        for column in columns:
+            assert (
+                column in self.dataframe
+            ), "{} does not exist in the graphframe. Please check the columns in the dataframe"
+
         # create the new columns and add
         # them to the exc_metrics.
         inc_exc_pairs = []
         new_data = {}
         for column in columns:
+            # skip if the given metric is not inclusive.
             if column not in self.inc_metrics:
                 columns.remove(column)
                 continue
@@ -812,23 +818,26 @@ class GraphFrame:
                 new_column = column.replace(
                     self.metadata["hatchet_inclusive_suffix"], ""
                 )
-                # do nothing if the exc column already exists
-                if new_column in self.exc_metrics:
-                    continue
             # add 'hatchet_ex_suffix' if 'hatchet_inc_suffix' doesn't exists.
             else:
                 new_column = column + self.metadata["hatchet_exclusive_suffix"]
-                # do nothing if the exc column already exists
-                if new_column in self.exc_metrics:
-                    continue
 
             # check if exc metric already exists
             if new_column in self.dataframe:
-                # drop if it exists
+                # drop if it exists. a new one will be created later.
                 self.dataframe.drop(new_column, axis=1)
+                # it is in the dataframe but make sure it is also
+                # in the exc_metrics
+                if new_column not in self.exc_metrics:
+                    self.exc_metrics.append(new_column)
             else:
-                # add to exc_metric if it doesn't exist
-                self.exc_metrics.append(new_column)
+                # add to exc_metric if it doesn't exist.
+                # it is not in the dataframe but make sure
+                # we add it to exc_metric only if it doesn't exist.
+                # For example, maybe the user removed the metric from
+                # the dataframe but not from exc_metrics.
+                if new_column not in self.exc_metrics:
+                    self.exc_metrics.append(new_column)
 
             # keep the columns as a list of (inc_metric, exc_metric)
             inc_exc_pairs.append((column, new_column))
