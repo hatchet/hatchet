@@ -116,6 +116,83 @@ def test_calculate_inclusive_metrics():
     assert gf.dataframe.loc[e, "time (inc)"] == 1
 
 
+def test_calculate_exclusive_metrics(calc_pi_hpct_db):
+    # test without multiindex.
+    gf_drop = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+    gf_drop.drop_index_levels()
+    gf_drop2 = gf_drop.deepcopy()
+    # create another column to set as a ground truth.
+    gf_drop.dataframe["time (ground)"] = gf_drop.dataframe["time"]
+    # drop "time" and remove from exc_metrics
+    gf_drop.dataframe.drop(columns="time", axis=1, inplace=True)
+    gf_drop.exc_metrics.remove("time")
+    gf_drop.calculate_exclusive_metrics(columns="time (inc)")
+    # time should be created
+    assert list(gf_drop.dataframe.columns).count("time") == 1
+    assert gf_drop.exc_metrics.count("time") == 1
+    # check if new created "time" column matches with the grount truth
+    assert gf_drop.dataframe["time"].equals(gf_drop.dataframe["time (ground)"])
+
+    # create another column to set as a ground truth.
+    gf_drop2.dataframe["time (ground)"] = gf_drop2.dataframe["time"]
+    gf_drop2.calculate_exclusive_metrics(columns="time (inc)")
+    # time should not be created again
+    assert list(gf_drop2.dataframe.columns).count("time") == 1
+    assert gf_drop2.exc_metrics.count("time") == 1
+    # check if new created "time" column matches with the grount truth
+    assert gf_drop2.dataframe["time"].equals(gf_drop2.dataframe["time (ground)"])
+
+    # test 1D multiindex.
+    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+    # create another column to set as a ground truth.
+    gf.dataframe["time (ground)"] = gf.dataframe["time"]
+    # drop "time" and remove from exc_metrics
+    gf.dataframe.drop(columns="time", axis=1, inplace=True)
+    gf.exc_metrics.remove("time")
+    gf.calculate_exclusive_metrics(columns="time (inc)")
+
+    # check if new created "time" column matches with the grount truth
+    assert gf.dataframe["time"].equals(gf.dataframe["time (ground)"])
+    # time should be created
+    assert list(gf.dataframe.columns).count("time") == 1
+    assert gf.exc_metrics.count("time") == 1
+
+    # test 2D multiindex.
+    gf_dummy_2D = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+    gf_dummy_2D.dataframe = gf_dummy_2D.dataframe.reset_index()
+    gf_dummy_2D.dataframe["thread"] = 0
+    gf_dummy_2D.dataframe.set_index(["node", "rank", "thread"], inplace=True)
+
+    # create another column to set as a ground truth.
+    gf_dummy_2D.dataframe["time (ground)"] = gf_dummy_2D.dataframe["time"]
+    # drop "time" and remove from exc_metrics
+    gf_dummy_2D.dataframe.drop(columns="time", axis=1, inplace=True)
+    gf_dummy_2D.exc_metrics.remove("time")
+    gf_dummy_2D.calculate_exclusive_metrics(columns="time (inc)")
+
+    # check if new created "time" column matches with the grount truth
+    assert gf_dummy_2D.dataframe["time"].equals(gf_dummy_2D.dataframe["time (ground)"])
+    # time should be created
+    assert list(gf_dummy_2D.dataframe.columns).count("time") == 1
+    assert gf_dummy_2D.exc_metrics.count("time") == 1
+
+    # test without giving parameters to create_exclusive_columns()
+    gf_no_params = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+    # create another column to set as a ground truth.
+    gf_no_params.dataframe["time (ground)"] = gf_no_params.dataframe["time"]
+    # drop "time" and remove from exc_metrics
+    gf_no_params.dataframe.drop(columns="time", axis=1, inplace=True)
+    gf_no_params.exc_metrics.remove("time")
+    gf_no_params.calculate_exclusive_metrics()
+
+    assert gf_no_params.dataframe["time"].equals(
+        gf_no_params.dataframe["time (ground)"]
+    )
+    # time should be created
+    assert list(gf_no_params.dataframe.columns).count("time") == 1
+    assert gf_no_params.exc_metrics.count("time") == 1
+
+
 def test_subtree_sum_value_error():
     gf = GraphFrame.from_lists(("a", ("b", "c"), ("d", "e")))
 
