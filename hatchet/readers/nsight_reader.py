@@ -14,10 +14,10 @@ from csv import DictReader
 
 
 class NsightReader:
-    def __init__(self, nsys_trace, ncu_metrics=None):
-        fileObject = open(nsys_trace)
+    def __init__(self, nsight_trace, ncu_metrics=None):
+        fileObject = open(nsight_trace)
         # nsight systems trace data
-        self.nsys_trace = list(DictReader(fileObject))
+        self.nsight_trace = list(DictReader(fileObject))
         fileObject.close()
         # nsight compute metrics file path (optional)
         self.ncu_metrics = ncu_metrics
@@ -81,63 +81,63 @@ class NsightReader:
                         0
                     ]
 
-        for i in range(len(self.nsys_trace)):
+        for i in range(len(self.nsight_trace)):
             # if call stack is empty, current item in trace is a root
             if len(self.node_call_stack) == 0:
-                graph_root = Node(Frame(name=self.nsys_trace[i]["Name"]), None)
+                graph_root = Node(Frame(name=self.nsight_trace[i]["Name"]), None)
                 node_dict = dict(
                     {
                         "node": graph_root,
                         "name": graph_root.frame.get("name"),
-                        "time": int(self.nsys_trace[i]["DurNonChild (ns)"])
+                        "time": int(self.nsight_trace[i]["DurNonChild (ns)"])
                         / 1000000000,
-                        "time (inc)": int(self.nsys_trace[i]["Duration (ns)"])
+                        "time (inc)": int(self.nsight_trace[i]["Duration (ns)"])
                         / 1000000000,
                     }
                 )
                 self.list_roots.append(graph_root)
                 self.callpath_to_node_dicts[str(graph_root.path())] = node_dict
-                self.node_call_stack.append((self.nsys_trace[i], graph_root))
+                self.node_call_stack.append((self.nsight_trace[i], graph_root))
             else:
                 # start time of current item in trace
-                currentStartTime = int(self.nsys_trace[i]["Start (ns)"])
+                currentStartTime = int(self.nsight_trace[i]["Start (ns)"])
                 # end time of node atop the call stack
                 previousEndTime = int(self.node_call_stack[-1][0]["End (ns)"])
                 # if the start time is greater than the end time, the current trace item is not a child of the node atop the call stack
                 if previousEndTime < currentStartTime:
                     # keep popping the call stack until the current trace item's parent object is reached
                     while int(self.node_call_stack[-1][0]["End (ns)"]) < int(
-                        self.nsys_trace[i]["Start (ns)"]
+                        self.nsight_trace[i]["Start (ns)"]
                     ):
                         self.node_call_stack.pop()
                 # if all nodes in the call stack were popped, current trace item is a new root
                 if len(self.node_call_stack) == 0:
-                    graph_root = Node(Frame(name=self.nsys_trace[i]["Name"]), None)
+                    graph_root = Node(Frame(name=self.nsight_trace[i]["Name"]), None)
                     node_dict = dict(
                         {
                             "node": graph_root,
                             "name": graph_root.frame.get("name"),
-                            "time": int(self.nsys_trace[i]["DurNonChild (ns)"])
+                            "time": int(self.nsight_trace[i]["DurNonChild (ns)"])
                             / 1000000000,
-                            "time (inc)": int(self.nsys_trace[i]["Duration (ns)"])
+                            "time (inc)": int(self.nsight_trace[i]["Duration (ns)"])
                             / 1000000000,
                         }
                     )
                     self.list_roots.append(graph_root)
                     self.callpath_to_node_dicts[str(graph_root.path())] = node_dict
-                    self.node_call_stack.append((self.nsys_trace[i], graph_root))
+                    self.node_call_stack.append((self.nsight_trace[i], graph_root))
                 else:
                     parent = self.node_call_stack[-1][1]
-                    child = Node(Frame(name=self.nsys_trace[i]["Name"]), parent)
-                    self.node_call_stack.append((self.nsys_trace[i], child))
+                    child = Node(Frame(name=self.nsight_trace[i]["Name"]), parent)
+                    self.node_call_stack.append((self.nsight_trace[i], child))
                     child_path = str(child.path())
                     # if there is an existing node with the same callpath as the current trace item, aggregate their metrics
                     if self.callpath_to_node_dicts.get(child_path):
                         self.callpath_to_node_dicts[child_path]["time"] += (
-                            int(self.nsys_trace[i]["DurNonChild (ns)"]) / 1000000000
+                            int(self.nsight_trace[i]["DurNonChild (ns)"]) / 1000000000
                         )
                         self.callpath_to_node_dicts[child_path]["time (inc)"] += (
-                            int(self.nsys_trace[i]["Duration (ns)"]) / 1000000000
+                            int(self.nsight_trace[i]["Duration (ns)"]) / 1000000000
                         )
                     else:
                         parent.add_child(child)
@@ -145,9 +145,9 @@ class NsightReader:
                             {
                                 "node": child,
                                 "name": child.frame.get("name"),
-                                "time": int(self.nsys_trace[i]["DurNonChild (ns)"])
+                                "time": int(self.nsight_trace[i]["DurNonChild (ns)"])
                                 / 1000000000,
-                                "time (inc)": int(self.nsys_trace[i]["Duration (ns)"])
+                                "time (inc)": int(self.nsight_trace[i]["Duration (ns)"])
                                 / 1000000000,
                             }
                         )
