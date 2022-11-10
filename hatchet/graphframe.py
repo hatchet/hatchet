@@ -826,8 +826,10 @@ class GraphFrame:
             # create a dict for the new data
             new_data[new_column] = {}
 
+        # compute exclusive metrics by travering the graph
         for node in self.graph.traverse():
             for inc, exc in inc_exc_pairs:
+                # if the dataframe index is a MultiIndex
                 if isinstance(self.dataframe.index, pd.MultiIndex):
                     for idx in self.dataframe.loc[node].index:
                         node_index_tuple = None
@@ -846,7 +848,7 @@ class GraphFrame:
                         )
                         # store the new value.
                         new_data[exc][node_index_tuple] = exc_value
-                # if no multiindex
+                # if not a MultiIndex
                 else:
                     # calculate exclusive metric.
                     child_inc_sum = 0
@@ -859,7 +861,7 @@ class GraphFrame:
                 # create series for each exc column.
                 new_data[exc] = pd.Series(data=new_data[exc])
 
-        # add all columns at once.
+        # add all new exc columns to the dataframe at once.
         self.dataframe = self.dataframe.assign(**new_data)
 
     @Logger.loggable
