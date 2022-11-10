@@ -792,7 +792,7 @@ class GraphFrame:
             if not isinstance(columns, list):
                 columns = [columns]
 
-            # check if the given columns is in inc_metrics.
+            # check if the given columns are in inc_metrics.
             for column in columns:
                 assert (
                     column in self.inc_metrics
