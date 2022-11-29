@@ -51,31 +51,32 @@ class Chopper:
 
         return result_graphframe
 
-    def calculate_load_imbalance(self, graphframe, metric_columns=None):
-        """Calculates load imbalance for given metric column(s)
-        Takes a graphframe and a list of metric column(s), and
-        returns a new graphframe with metric.imbalance column(s).
+    def load_imbalance(self, graphframe, metric_columns=None):
+        """Calculates load imbalance for given the metric column(s).
+        Takes a graphframe and a list of metric column(s) to calculate
+        load imbalance. Returns a new graphframe with corresponding
+        metric.imbalance column(s).
         """
 
         def _update_and_add_columns(dataframe, old_column_name, new_column):
             """Rename some existing columns and create new ones."""
             # rename columns: '<metric>.mean'
-            dataframe.rename(columns={column: old_column_name + ".mean"}, inplace=True)
+            dataframe.rename(
+                columns={old_column_name: old_column_name + ".mean"}, inplace=True
+            )
             # create columns: '<metric>.max'
             dataframe[old_column_name + ".max"] = new_column
 
-        def _update_metric_lists(metric_types):
+        def _update_metric_lists(metric_types, metric):
             """Update graphframe.inc_metrics and graphframe.exc_metrics
             lists after renaming/creating columns"""
-            metric_types.append(column + ".mean")
-            metric_types.append(column + ".max")
+            metric_types.append(metric + ".mean")
+            metric_types.append(metric + ".max")
 
-        # Create a copy of the GraphFrame.
-        # 'graphframe2' and 'graphframe3' should
-        # have the same graph (with the same
-        # node references) for div() function to
-        # work properly. For that, 'graphframe3'
-        # should be the 'shallow' copy of grapframe2.
+        # Create a copy of the GraphFrame. 'graphframe2' and 'graphframe3' should
+        # have the same graph (with the same node references) for div() function to
+        # work properly. For that, 'graphframe3' should be the 'shallow' copy of
+        # graphframe2.
         graphframe2 = graphframe.deepcopy()
         graphframe3 = graphframe2.copy()
 
@@ -90,8 +91,8 @@ class Chopper:
         # Use default_metric if not given.
         if metric_columns is None:
             metric_columns = [graphframe.default_metric]
-        # Handle if the metric is given as a string.
-        if isinstance(metric_columns, str):
+        # Convert to a list if the metrics are not given as a list.
+        elif not isinstance(metric_columns, list):
             metric_columns = [metric_columns]
 
         graphframe2.inc_metrics = []
@@ -99,26 +100,26 @@ class Chopper:
 
         # For each column/metric for which we want to
         # calculate load imbalance
-        for column in metric_columns:
+        for metric in metric_columns:
             # Update/rename existing columns on graphframe2.dataframe
             # by adding .mean for already existing columns and create
             # new columns by adding .max to the corresponding
             # columns on graphframe3.
             _update_and_add_columns(
-                graphframe2.dataframe, column, graphframe3.dataframe[column]
+                graphframe2.dataframe, metric, graphframe3.dataframe[metric]
             )
 
-            # Add new columns to .inc_metrics or .exc_metrics
-            if column in graphframe3.inc_metrics:
-                _update_metric_lists(graphframe2.inc_metrics)
-            elif column in graphframe3.exc_metrics:
-                _update_metric_lists(graphframe2.exc_metrics)
+            # Add new columns to .inc_metrics or .exc_metrics.
+            if metric in graphframe3.inc_metrics:
+                _update_metric_lists(graphframe2.inc_metrics, metric)
+            elif metric in graphframe3.exc_metrics:
+                _update_metric_lists(graphframe2.exc_metrics, metric)
 
-            # Calculate load imbalance for every given column
-            # by dividing corresponding .max and .mean columns.
-            graphframe2.dataframe[column + ".imbalance"] = graphframe2.dataframe[
-                column + ".max"
-            ].div(graphframe2.dataframe[column + ".mean"])
+            # Calculate load imbalance for every given metric
+            # by calculating max-to-mean ratio.
+            graphframe2.dataframe[metric + ".imbalance"] = graphframe2.dataframe[
+                metric + ".max"
+            ].div(graphframe2.dataframe[metric + ".mean"])
 
         # default metric will be imbalance when user print the tree
         graphframe2.default_metric = metric_columns[0] + ".imbalance"

@@ -1384,7 +1384,7 @@ class GraphFrame:
         Takes a graphframe and a list of metric column(s), and
         returns a new graphframe with metric.imbalance column(s).
         """
-        return Chopper().calculate_load_imbalance(self, metric_columns)
+        return Chopper().load_imbalance(self, metric_columns)
 
     @Logger.loggable
     def hot_path(self, start_node=None, metric=None, threshold=0.5):

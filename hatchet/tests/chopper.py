@@ -37,11 +37,11 @@ def test_flat_profile(calc_pi_hpct_db):
     assert sorted(flat_profile.index.tolist()) == list(range(len(flat_profile)))
 
 
-def test_calculate_load_imbalance(calc_pi_hpct_db):
+def test_load_imbalance(calc_pi_hpct_db):
     """Validate that the load imbalance is calculated correctly."""
 
     graphframe = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
-    load_imb_gf = graphframe.load_imbalance(metric_columns=["time (inc)"])
+    load_imb_gf = graphframe.load_imbalance(metric_columns="time (inc)")
 
     # Check if load imbalance is correct for the root node.
     root = graphframe.graph.roots[0]
