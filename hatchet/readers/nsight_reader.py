@@ -148,7 +148,7 @@ class NsightReader:
             _add_metrics()
 
         graph = Graph(self.list_roots)
-        graph.enumerate_depth()
+        graph.enumerate_traverse()
 
         return graph
 
