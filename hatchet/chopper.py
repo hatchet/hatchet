@@ -51,11 +51,15 @@ class Chopper:
 
         return result_graphframe
 
-    def load_imbalance(self, graphframe, metric_columns=None):
+    def load_imbalance(self, graphframe, metric_columns=None, threshold=None):
         """Calculates load imbalance for given the metric column(s).
         Takes a graphframe and a list of metric column(s) to calculate
-        load imbalance. Returns a new graphframe with corresponding
-        metric.imbalance column(s).
+        load imbalance.
+        It takes a threshold value to filter out the insignificant nodes
+        from the graphframe. The threshold parameter takes a percentage.
+        For example, threshold=0.01 on time metric filters out the nodes
+        that the program spends less than 1% of the total execution time.
+        Returns a new graphframe with corresponding metric.imbalance column(s).
         """
 
         def _update_and_add_columns(dataframe, old_column_name, new_column):
@@ -95,9 +99,34 @@ class Chopper:
         elif not isinstance(metric_columns, list):
             metric_columns = [metric_columns]
 
+        # Filter the nodes whose metric
+        # value is less than <threshold> percent
+        # of the root node.
+        metric_threshold = {}
+        if threshold is not None:
+            for metric in metric_columns:
+                # find the inc metric to calculate the
+                # total value of the metric.
+                if metric not in graphframe3.inc_metrics:
+                    metric_inc = (
+                        metric + graphframe3.metadata["hatchet_inclusive_suffix"]
+                    )
+                else:
+                    metric_inc = metric
+
+                root_metrics = []
+
+                # find the largest value if there are multiple roots.
+                for root in graphframe3.graph.roots:
+                    root_metrics.append(graphframe3.dataframe.loc[root, metric_inc])
+
+                # in-place ascending sort.
+                root_metrics.sort()
+                total = root_metrics[-1]
+                metric_threshold[metric] = total * threshold
+
         graphframe2.inc_metrics = []
         graphframe2.exc_metrics = []
-
         # For each column/metric for which we want to
         # calculate load imbalance
         for metric in metric_columns:
@@ -114,6 +143,14 @@ class Chopper:
                 _update_metric_lists(graphframe2.inc_metrics, metric)
             elif metric in graphframe3.exc_metrics:
                 _update_metric_lists(graphframe2.exc_metrics, metric)
+
+            # filter out the nodes if their max metric value across
+            # processes/threads is less than threshold% of the total
+            # execution time.
+            if threshold is not None:
+                graphframe2 = graphframe2.filter(
+                    lambda x: x[metric + ".max"] > metric_threshold[metric]
+                )
 
             # Calculate load imbalance for every given metric
             # by calculating max-to-mean ratio.
