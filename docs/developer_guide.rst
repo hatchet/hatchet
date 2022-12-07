@@ -74,3 +74,18 @@ message``.
 GitHub provides a detailed `tutorial
 <https://docs.github.com/en/github/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests>`_
 on creating pull requests.
+
+How to write a Hatchet reader
+==============================
+
+The reader should be created under hatchet/readers. 
+A simple profile data collected from a simple program should be added for testing. 
+Example: hatchet/hatchet/tests/data/hpctoolkit-cpi-database/src/cpi.c
+The sample data should go under hatchet/tests/data.
+Tests should go under hatchet/tests. Create a file for the reader and add test 
+functions to hatchet/tests/conftests.py as well.
+
+Explain the data structures. Hatchet stores the data in a data structure 
+called GraphFrame, which is a combination of a graph and a Pandas DataFrame.  
+
+Check call paths to decide if a new node needs to be created.
