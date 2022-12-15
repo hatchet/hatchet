@@ -212,8 +212,10 @@ class TAUReader:
             columns = []
             for file_index in range(len(first_rank_filenames)):
                 with open(first_rank_filenames[file_index], "r") as f:
-                    # Skip the first line: "192 templated_functions_MULTI_TIME"
-                    next(f)
+                    # Get the metric name from the first line (..._TIME)
+                    # if it doesn't exist in the second line:
+                    # "192 templated_functions_MULTI_TIME"
+                    first_line = next(f)
                     # No need to check if the metadata is the same for all metric files.
                     metadata = next(f)
 
@@ -225,9 +227,16 @@ class TAUReader:
                             re.match(r"\#\s(.*)\s\#", metadata).group(1).split(" ")[:-3]
                         )
 
-                    # Example metric_name: "PAPI_L2_TCM"
+                    name_metadata = re.search(r"<value>(.*?)<\/value>", metadata)
+                    if name_metadata is None:
+                        # Get metric from the first line if it doesn't exist in the
+                        # second line (metadata).
+                        metric_name = first_line.split("_")[-1][:-1]
+                    else:
+                        # Get metric from the second line (metadata).
+                        metric_name = name_metadata.group(1)
+
                     # TODO: Decide if Calls and Subrs should be inc or exc metrics
-                    metric_name = re.search(r"<value>(.*?)<\/value>", metadata).group(1)
                     if metric_name == "CPU_TIME" or metric_name == "TIME":
                         metric_name = "time"
                     elif metric_name == "Name":
