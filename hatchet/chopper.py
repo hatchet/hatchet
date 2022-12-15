@@ -99,31 +99,19 @@ class Chopper:
         elif not isinstance(metric_columns, list):
             metric_columns = [metric_columns]
 
-        # Filter the nodes whose metric
-        # value is less than <threshold> percent
-        # of the root node.
-        metric_threshold = {}
+        if not isinstance(threshold, list):
+            threshold = [threshold]
+
+        metric_threshold = None
+        metric_filter = {}
         if threshold is not None:
-            for metric in metric_columns:
-                # find the inc metric to calculate the
-                # total value of the metric.
-                if metric not in graphframe3.inc_metrics:
-                    metric_inc = (
-                        metric + graphframe3.metadata["hatchet_inclusive_suffix"]
-                    )
-                else:
-                    metric_inc = metric
-
-                root_metrics = []
-
-                # find the largest value if there are multiple roots.
-                for root in graphframe3.graph.roots:
-                    root_metrics.append(graphframe3.dataframe.loc[root, metric_inc])
-
-                # in-place ascending sort.
-                root_metrics.sort()
-                total = root_metrics[-1]
-                metric_threshold[metric] = total * threshold
+            # Combine the given metric columns and the threshold values.
+            metric_threshold = dict(zip(metric_columns, threshold))
+            for metric, thres in metric_threshold.items():
+                # Sort the dataframe by the given metric and get the max value.
+                max_val = graphframe2.dataframe.sort_values(by=metric).iloc[-1][metric]
+                # Calculate the threshold.
+                metric_filter[metric] = max_val * thres
 
         graphframe2.inc_metrics = []
         graphframe2.exc_metrics = []
@@ -149,7 +137,7 @@ class Chopper:
             # execution time.
             if threshold is not None:
                 graphframe2 = graphframe2.filter(
-                    lambda x: x[metric + ".max"] > metric_threshold[metric]
+                    lambda x: x[metric + ".max"] > metric_filter[metric]
                 )
 
             # Calculate load imbalance for every given metric
