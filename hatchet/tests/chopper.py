@@ -41,36 +41,33 @@ def test_load_imbalance(calc_pi_hpct_db):
     """Validate that the load imbalance is calculated correctly."""
 
     graphframe = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
-    load_imb_gf = graphframe.load_imbalance(metric_columns="time (inc)")
+    load_imb_gf = graphframe.load_imbalance(metric_columns="time (inc)", threshold=0.01)
 
     # Check if load imbalance is correct for the root node.
     root = graphframe.graph.roots[0]
-    root_original_metrics = graphframe.dataframe.loc[root]["time (inc)"].to_numpy()
+    root_metric_max_org = max(graphframe.dataframe.loc[root, "time (inc)"])
+    root_metric_mean_org = np.mean(graphframe.dataframe.loc[root, "time (inc)"])
     root_imbalance = load_imb_gf.dataframe.loc[root]["time (inc).imbalance"]
-    assert (
-        np.max(root_original_metrics) / np.mean(root_original_metrics) == root_imbalance
-    )
+    assert root_metric_max_org / root_metric_mean_org == root_imbalance
 
     # Check if load imbalance is correct for the main node.
     main = root.children[0]
-    main_original_metrics = graphframe.dataframe.loc[main]["time (inc)"].to_numpy()
+    main_metric_max_org = max(graphframe.dataframe.loc[main, "time (inc)"])
+    main_metric_mean_org = np.mean(graphframe.dataframe.loc[main, "time (inc)"])
     main_imbalance = load_imb_gf.dataframe.loc[main]["time (inc).imbalance"]
-    assert (
-        np.max(main_original_metrics) / np.mean(main_original_metrics) == main_imbalance
-    )
+    assert main_metric_max_org / main_metric_mean_org == main_imbalance
 
     # Check if load imbalance is correct for the the node '__GI_sched_yield'.
     another = graphframe.dataframe[
         graphframe.dataframe["name"] == "__GI_sched_yield"
     ].index[0][0]
-    another_original_metrics = graphframe.dataframe.loc[another][
-        "time (inc)"
-    ].to_numpy()
-    another_imbalance = load_imb_gf.dataframe.loc[another]["time (inc).imbalance"]
-    assert (
-        np.max(another_original_metrics) / np.mean(another_original_metrics)
-        == another_imbalance
-    )
+    another_lb = load_imb_gf.dataframe[
+        load_imb_gf.dataframe["name"] == "__GI_sched_yield"
+    ].index[0]
+    another_metric_max_org = max(graphframe.dataframe.loc[another, "time (inc)"])
+    another_metric_mean_org = np.mean(graphframe.dataframe.loc[another, "time (inc)"])
+    another_imbalance = load_imb_gf.dataframe.loc[another_lb]["time (inc).imbalance"]
+    assert another_metric_max_org / another_metric_mean_org == another_imbalance
 
 
 def test_hot_path(calc_pi_hpct_db):

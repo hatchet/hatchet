@@ -51,11 +51,15 @@ class Chopper:
 
         return result_graphframe
 
-    def load_imbalance(self, graphframe, metric_columns=None):
+    def load_imbalance(self, graphframe, metric_columns=None, threshold=None):
         """Calculates load imbalance for the given metric column(s).
         Takes a graphframe and a list of metric column(s) to calculate
-        load imbalance. Returns a new graphframe with corresponding
-        metric.imbalance column(s).
+        load imbalance.
+        It takes a threshold value to filter out the insignificant nodes
+        from the graphframe. The threshold parameter takes a percentage.
+        For example, threshold=0.01 on time metric filters out the nodes
+        that the program spends less than 1% of the total execution time.
+        Returns a new graphframe with corresponding metric.imbalance column(s).
         """
 
         def _update_and_add_columns(dataframe, old_column_name, new_column):
@@ -100,6 +104,20 @@ class Chopper:
                 column in graphframe2.dataframe.columns
             ), "{} column does not exist in the dataframe.".format(column)
 
+        if not isinstance(threshold, list):
+            threshold = [threshold]
+
+        metric_threshold = None
+        metric_filter = {}
+        if threshold is not None:
+            # Combine the given metric columns and the threshold values.
+            metric_threshold = dict(zip(metric_columns, threshold))
+            for metric, thres in metric_threshold.items():
+                # Sort the dataframe by the given metric and get the max value.
+                max_val = graphframe2.dataframe.sort_values(by=metric).iloc[-1][metric]
+                # Calculate the threshold.
+                metric_filter[metric] = max_val * thres
+
         graphframe2.inc_metrics = []
         graphframe2.exc_metrics = []
 
@@ -119,6 +137,14 @@ class Chopper:
                 _update_metric_lists(graphframe2.inc_metrics, column)
             elif column in graphframe3.exc_metrics:
                 _update_metric_lists(graphframe2.exc_metrics, column)
+
+            # filter out the nodes if their max metric value across
+            # processes/threads is less than threshold% of the total
+            # execution time.
+            if threshold is not None:
+                graphframe2 = graphframe2.filter(
+                    lambda x: x[metric + ".max"] > metric_filter[metric]
+                )
 
             # Calculate load imbalance for every given metric
             # by calculating max-to-mean ratio.
