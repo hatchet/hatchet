@@ -43,7 +43,7 @@ imbalance across processes. A large maximum-to-mean ratio for a metric
 indicates heavy load imbalance. These calculations are performed by using
 pandas DataFrame operations. The computed load imbalance value per node is
 added as a new column in the DataFrame. The threshold parameter in
-the function can be used to to filter out nodes that have metric values below a
+the function can be used to filter out nodes that have metric values below a
 threshold. This function outputs a new GraphFrame that has the same graph as
 the input GraphFrame but a DataFrame that is sorted by the newly added load
 imbalance column.
@@ -123,12 +123,6 @@ block above for ``construct_from`` demonstrates how to use the
 ``multirun_analysis`` function with its default parameters (line 3) and
 a pivot table it outputs. The pivot table is truncated for presentation
 purposes.
-
-The ``multirun_analysis`` function makes it straightforward to analyze
-multiple executions and significantly reduces end user effort. Most
-importantly, users can easily manipulate the pivot table programmatically or
-generate a completely different one for different analysis tasks such as
-scaling and variability.
 
 **speedup_efficiency**: Speedup and efficiency are two
 commonly used metrics to understand the scalability of parallel codes. The ``speedup_efficiency`` function
