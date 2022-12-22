@@ -41,7 +41,7 @@ def test_load_imbalance(calc_pi_hpct_db):
     """Validate that the load imbalance is calculated correctly."""
 
     graphframe = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
-    load_imb_gf = graphframe.load_imbalance(metric_columns="time (inc)", threshold=0.01)
+    load_imb_gf = graphframe.load_imbalance(metric_column="time (inc)", threshold=0.01)
 
     # Check if load imbalance is correct for the root node.
     root = graphframe.graph.roots[0]

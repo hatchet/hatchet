@@ -51,15 +51,15 @@ class Chopper:
 
         return result_graphframe
 
-    def load_imbalance(self, graphframe, metric_columns=None, threshold=None):
-        """Calculates load imbalance for the given metric column(s).
-        Takes a graphframe and a list of metric column(s) to calculate
+    def load_imbalance(self, graphframe, metric_column=None, threshold=None):
+        """Calculates load imbalance for the given metric column.
+        Takes a graphframe and a metric column to calculate the
         load imbalance.
         It takes a threshold value to filter out the insignificant nodes
         from the graphframe. The threshold parameter takes a percentage.
         For example, threshold=0.01 on time metric filters out the nodes
-        that the program spends less than 1% of the total execution time.
-        Returns a new graphframe with corresponding metric.imbalance column(s).
+        that the program spends less than 1% of the max value of time metric.
+        Returns a new graphframe with corresponding <metric>.imbalance column.
         """
 
         def _update_and_add_columns(dataframe, old_column_name, new_column):
@@ -93,67 +93,54 @@ class Chopper:
         graphframe3.drop_index_levels(function=np.max)
 
         # Use default_metric if not given.
-        if metric_columns is None:
-            metric_columns = [graphframe.default_metric]
-        # Convert to a list if the metrics are not given as a list.
-        elif not isinstance(metric_columns, list):
-            metric_columns = [metric_columns]
+        if metric_column is None:
+            metric_column = graphframe.default_metric
 
-        for column in metric_columns:
-            assert (
-                column in graphframe2.dataframe.columns
-            ), "{} column does not exist in the dataframe.".format(column)
+        assert (
+            metric_column in graphframe2.dataframe.columns
+        ), "{} column does not exist in the dataframe.".format(metric_column)
 
-        if not isinstance(threshold, list):
-            threshold = [threshold]
-
-        metric_threshold = None
-        metric_filter = {}
         if threshold is not None:
-            # Combine the given metric columns and the threshold values.
-            metric_threshold = dict(zip(metric_columns, threshold))
-            for metric, thres in metric_threshold.items():
-                # Sort the dataframe by the given metric and get the max value.
-                max_val = graphframe2.dataframe.sort_values(by=metric).iloc[-1][metric]
-                # Calculate the threshold.
-                metric_filter[metric] = max_val * thres
+            # Get the max value of the given metric.
+            max_val = graphframe2.dataframe.sort_values(by=metric_column).iloc[-1][
+                metric_column
+            ]
+            # Calculate the threshold.
+            thres_val = max_val * threshold
 
         graphframe2.inc_metrics = []
         graphframe2.exc_metrics = []
 
-        # For each column/metric for which we want to
-        # calculate load imbalance
-        for column in metric_columns:
-            # Update/rename existing columns on graphframe2.dataframe
-            # by adding .mean for already existing columns and create
-            # new columns by adding .max to the corresponding
-            # columns on graphframe3.
-            _update_and_add_columns(
-                graphframe2.dataframe, column, graphframe3.dataframe[column]
+        # Update/rename existing columns on graphframe2.dataframe
+        # by adding .mean for already existing columns and create
+        # new columns by adding .max to the corresponding
+        # columns on graphframe3.
+        _update_and_add_columns(
+            graphframe2.dataframe, metric_column, graphframe3.dataframe[metric_column]
+        )
+
+        # Add new columns to .inc_metrics or .exc_metrics.
+        if metric_column in graphframe3.inc_metrics:
+            _update_metric_lists(graphframe2.inc_metrics, metric_column)
+        elif metric_column in graphframe3.exc_metrics:
+            _update_metric_lists(graphframe2.exc_metrics, metric_column)
+
+        # filter out the nodes if their max metric value across
+        # processes/threads is less than threshold% of the max value
+        # of the given metric.
+        if threshold is not None:
+            graphframe2 = graphframe2.filter(
+                lambda x: x[metric_column + ".max"] > thres_val
             )
 
-            # Add new columns to .inc_metrics or .exc_metrics.
-            if column in graphframe3.inc_metrics:
-                _update_metric_lists(graphframe2.inc_metrics, column)
-            elif column in graphframe3.exc_metrics:
-                _update_metric_lists(graphframe2.exc_metrics, column)
-
-            # filter out the nodes if their max metric value across
-            # processes/threads is less than threshold% of the total
-            # execution time.
-            if threshold is not None:
-                graphframe2 = graphframe2.filter(
-                    lambda x: x[metric + ".max"] > metric_filter[metric]
-                )
-
-            # Calculate load imbalance for every given metric
-            # by calculating max-to-mean ratio.
-            graphframe2.dataframe[column + ".imbalance"] = graphframe2.dataframe[
-                column + ".max"
-            ].div(graphframe2.dataframe[column + ".mean"])
+        # Calculate load imbalance for every given metric
+        # by calculating max-to-mean ratio.
+        graphframe2.dataframe[metric_column + ".imbalance"] = graphframe2.dataframe[
+            metric_column + ".max"
+        ].div(graphframe2.dataframe[metric_column + ".mean"])
 
         # default metric will be imbalance when user print the tree
-        graphframe2.default_metric = metric_columns[0] + ".imbalance"
+        graphframe2.default_metric = metric_column + ".imbalance"
         # sort by default_metric's load imbalance
         graphframe2.dataframe = graphframe2.dataframe.sort_values(
             by=[graphframe2.default_metric], ascending=False
