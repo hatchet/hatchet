@@ -133,7 +133,7 @@ class Chopper:
                 lambda x: x[metric_column + ".max"] > thres_val
             )
 
-        # Calculate load imbalance for every given metric
+        # Calculate load imbalance for the given metric
         # by calculating max-to-mean ratio.
         graphframe2.dataframe[metric_column + ".imbalance"] = graphframe2.dataframe[
             metric_column + ".max"
