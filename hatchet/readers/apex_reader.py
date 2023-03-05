@@ -1,5 +1,5 @@
-# Copyright 2022 University of Oregon and other Hatchet Project Developers. See
-# the top-level LICENSE file for details.
+# Copyright 2022-2023 University of Oregon and other Hatchet Project
+# Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
 
