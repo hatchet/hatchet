@@ -182,7 +182,8 @@ class Chopper:
             # statistics dataframe
             if verbose:
                 agg_df = agg_df.join(statistics_df, how="outer")
-                agg_df.drop("node", axis=1, inplace=True)
+
+            agg_df.drop("node", axis=1, inplace=True)
             return agg_df
 
         # Create a copy of the GraphFrame. 'graphframe2' and 'graphframe3' should
