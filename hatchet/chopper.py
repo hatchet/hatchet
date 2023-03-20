@@ -51,7 +51,9 @@ class Chopper:
 
         return result_graphframe
 
-    def load_imbalance(self, graphframe, metric_column=None, threshold=None):
+    def load_imbalance(
+        self, graphframe, metric_column=None, threshold=None, verbose=False
+    ):
         """Calculates load imbalance for the given metric column.
         Takes a graphframe and a metric column to calculate the
         load imbalance.
@@ -60,6 +62,9 @@ class Chopper:
         For example, threshold=0.01 on time metric filters out the nodes
         that the program spends less than 1% of the max value of time metric.
         Returns a new graphframe with corresponding <metric>.imbalance column.
+        If the verbose parameter is True, it provides frequency histogram,
+        the top five ranks that have the highest metric value, and percentile
+        information.
         """
 
         def _update_and_add_columns(dataframe, old_column_name, new_column):
@@ -77,6 +82,109 @@ class Chopper:
             metric_types.append(metric + ".mean")
             metric_types.append(metric + ".max")
 
+        def _calculate_statistics(dataframe, metric_column, func):
+            index_names = list(dataframe.index.names)
+            index_names.remove("node")
+
+            dataframe.reset_index(level="node", inplace=True)
+
+            # group by node
+            grouped_df = dataframe.groupby("node")
+
+            # create dict that stores aggregation function for each column
+            agg_dict = {}
+            for col in dataframe.columns.tolist():
+                if col == metric_column:
+                    agg_dict[col] = func
+                else:
+                    agg_dict[col] = lambda x: x.iloc[0]
+
+            # if verbose, calculate statistics for the
+            # frequency histogram, percentiles, and the top
+            # five ranks that has the highest metric value
+            if verbose:
+                statistics_dict = {}
+                # for each group
+                for node, item in grouped_df:
+                    freqs = []
+                    percentiles = []
+
+                    group = grouped_df.get_group(node)
+                    group.reset_index(inplace=True)
+                    # sort by metric value
+                    sorted_rank_metric = group[["rank", metric_column]].sort_values(
+                        by=metric_column, ascending=False
+                    )
+                    # store sorted ranks and metrics
+                    sorted_ranks = sorted_rank_metric["rank"].to_numpy()
+                    sorted_metric = sorted_rank_metric[metric_column].to_numpy()
+                    num_ranks = len(sorted_ranks)
+
+                    # we have fixed number of bins = 5.
+                    # Example: max=100, min=0, size=(100-0)/5=20
+                    max = sorted_metric[0]
+                    min = sorted_metric[-1]
+                    size = (max - min) / 5.0
+                    if size != 0:
+                        for i in range(5):
+                            bin_start = min + i * size
+                            bin_end = min + (i + 1) * size
+                            if i == 4:
+                                bin_end = max
+                            # count the number of ranks in a bin
+                            count = len(
+                                sorted_rank_metric[
+                                    (sorted_rank_metric[metric_column] > bin_start)
+                                    & (sorted_rank_metric[metric_column] <= bin_end)
+                                ]
+                            )
+                            freqs.append(count)
+                        # the first rank's value can be equal to min so
+                        # we count them as well.
+                        freqs[0] += len(
+                            sorted_rank_metric[
+                                (sorted_rank_metric[metric_column] == min)
+                            ]
+                        )
+                    else:
+                        # Example: if min=max=0
+                        freqs = [num_ranks] * 5
+
+                    # calculate percentiles.
+                    percentiles.append(np.percentile(sorted_metric, 0))
+                    percentiles.append(np.percentile(sorted_metric, 25))
+                    percentiles.append(np.percentile(sorted_metric, 50))
+                    percentiles.append(np.percentile(sorted_metric, 75))
+                    percentiles.append(np.percentile(sorted_metric, 100))
+
+                    # find the top five ranks that have the
+                    # highest metric value.
+                    if len(sorted_ranks) > 5:
+                        sorted_ranks = sorted_ranks[:5]
+
+                    # create statistics_dict.
+                    statistics_dict[node] = {
+                        "node": node,
+                        "imbalance.ranks": sorted_ranks,
+                        "freq.hist": freqs,
+                        "{}.min".format(metric_column): min,
+                        "percentile": percentiles,
+                    }
+
+                # create statistics dataframe from the dict.
+                statistics_df = pd.DataFrame.from_dict(statistics_dict.values())
+                statistics_df.set_index("node", inplace=True)
+
+            # aggregate grouped dataframe
+            agg_df = grouped_df.agg(agg_dict)
+
+            # if verbose, join aggregate dataframe with
+            # statistics dataframe
+            if verbose:
+                agg_df = agg_df.join(statistics_df, how="outer")
+                agg_df.drop("node", axis=1, inplace=True)
+            return agg_df
+
         # Create a copy of the GraphFrame. 'graphframe2' and 'graphframe3' should
         # have the same graph (with the same node references) for div() function to
         # work properly. For that, 'graphframe3' should be the 'shallow' copy of
@@ -84,12 +192,15 @@ class Chopper:
         graphframe2 = graphframe.deepcopy()
         graphframe3 = graphframe2.copy()
 
-        # Drop all index levels in gf2's DataFrame except 'node', computing the
-        # average time spent in each node.
-        graphframe2.drop_index_levels(function=np.mean)
+        # Similar to drop_index_levels() but it calculates
+        # statistics if verbose == True
+        graphframe2.dataframe = _calculate_statistics(
+            graphframe2.dataframe, metric_column, np.mean
+        )
 
         # Drop all index levels in a copy of gf3's DataFrame except 'node',
-        # computing the max time spent in each node.
+        # computing the max time spent in each node. We don't need to calculate
+        # statistics again.
         graphframe3.drop_index_levels(function=np.max)
 
         # Use default_metric if not given.
