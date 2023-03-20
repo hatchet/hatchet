@@ -960,68 +960,16 @@ class GraphFrame:
         Merging is done using bottom-up approach. It merges starting
         from the longest callpath (the bottom) and goes upward.
         """
-        if callpath_to_node_dicts is None:
-            callpath_to_node_dicts = {}
 
-        graphframe_cp = self.deepcopy()
-        graphframe_cp.drop_index_levels()
+        def _merge_paths(
+            new_parent, callpath, same_paths, same_paths_dicts, callpath_to_node_dicts
+        ):
+            node_dicts = same_paths_dicts[callpath]
 
-        # traverse the graph
-        for node in graphframe_cp.graph.traverse():
-            # check each path
-            for path in node.paths():
-                if path:
-                    # transform path from tuple of node objects
-                    # to tuple of strings.
-                    callpath = node.convert_path_to_str(path)
-
-                    # get the metric information (a row from the
-                    # dataframe) and store them in a dict.
-                    node_dict = dict()
-                    for key, value in (
-                        graphframe_cp.dataframe.loc[node].to_dict().items()
-                    ):
-                        node_dict[key] = value
-                    # row info doesn't contain node since it's index,
-                    # so we add the node to the node dict.
-                    node_dict["node"] = node
-
-                    # if the callpath was seen before, append the
-                    # new node dict. this will be used later for
-                    # aggregation
-                    if callpath in callpath_to_node_dicts.keys():
-                        previous = [callpath_to_node_dicts[callpath]]
-                        previous.append(node_dict)
-                        callpath_to_node_dicts[callpath] = previous
-                    # if the callpath was not seen before, keep the
-                    # related node dict
-                    else:
-                        callpath_to_node_dicts[callpath] = dict()
-                        callpath_to_node_dicts[callpath] = node_dict
-
-        same_paths = {}
-        # keep the same paths and only work on them.
-        for callpath, node_dicts in callpath_to_node_dicts.items():
-            # only the duplicate callpaths are stored as list.
-            if isinstance(node_dicts, list):
-                same_paths[callpath] = node_dicts
-
-        # sort the duplicate callpaths.
-        # we merge them starting from the longest callpath,
-        # means that we start from the bottom.
-        same_paths = sorted(same_paths.items(), key=lambda k: len(k[0]), reverse=True)
-
-        # iterate over the duplicate paths
-        for items in same_paths:
-            callpath = items[0]
-            node_dicts = items[1]
-
-            # create new node without parent-child
-            # relationships. this will be the 'unified node'.
-            # copy the first node. it doesn't make any difference.
             new_node = node_dicts[0]["node"].copy()
+            # print("NEW NODE:", new_node)
+            # print("NODE DICTS:", node_dicts)
 
-            # deep copy the corresponding node_dict.
             new_node_dict = dict()
             for key, value in node_dicts[0].items():
                 new_node_dict[key] = value
@@ -1033,32 +981,121 @@ class GraphFrame:
             for node_dict in node_dicts[1:]:
                 for metric in graphframe_cp.inc_metrics + graphframe_cp.exc_metrics:
                     # aggregate the metric values.
-                    new_node_dict[metric] += graphframe_cp.dataframe.loc[
-                        node_dict["node"], metric
-                    ]
+                    new_node_dict[metric] += node_dict[metric]
 
             # set the parent-child relationships for the
             # new node.
             for node_dict in node_dicts:
-                # add the chilren of the nodes that have
+                # print("show old nodes children:", node_dict["node"].children)
+                # add the children of the nodes that have
                 # the same callpath to the new node.
-                for child in node_dict["node"].children:
-                    new_node.add_child(child)
-                    child.add_parent(new_node)
-                    child.parents.remove(node_dict["node"])
-                # add the parent of the nodes that have
-                # the same callpath to the new node.
-                for parent in node_dict["node"].parents:
-                    if parent not in new_node.parents and parent.__str__() not in [
-                        par.__str__() for par in new_node.parents
-                    ]:
-                        new_node.add_parent(parent)
-                        parent.add_child(new_node)
-                    parent.children.remove(node_dict["node"])
+                if node_dict["node"].children:
+                    for child in node_dict["node"].children:
+                        new_node.add_child(child)
+                        child.add_parent(new_node)
+                        child.parents.remove(node_dict["node"])
+                        if new_parent:
+                            node_dict["node"].parents = []
+
+                    node_dict["node"].children = []
+
+            parents_children = []
+            if new_parent:
+                parents_children = []
+                for child in new_parent.children:
+                    if child.__str__() != new_node.__str__():
+                        parents_children.append(child)
+                new_parent.children = parents_children
+                new_node.add_parent(new_parent)
+                new_parent.add_child(new_node)
+            else:
+                old_parent = node_dicts[0]["node"].parents[0]
+                new_node.add_parent(old_parent)
+                for child in old_parent.children:
+                    if child.__str__() != new_node.__str__():
+                        parents_children.append(child)
+                old_parent.children = parents_children
+                node_dicts[0]["node"].parents[0].add_child(new_node)
 
             # store new node dict after doing aggregation and
             # setting the relationships.
-            callpath_to_node_dicts[callpath] = new_node_dict
+            del callpath_to_node_dicts[callpath]
+            callpath_to_node_dicts[callpath] = [new_node_dict]
+
+            same_paths.remove(callpath)
+            for child in new_node.children:
+                child_path = child.path()
+                if child_path:
+                    child_path = child.convert_path_to_str(child_path)
+                    if child_path in same_paths:
+                        _merge_paths(
+                            new_node,
+                            child_path,
+                            same_paths,
+                            same_paths_dicts,
+                            callpath_to_node_dicts,
+                        )
+
+        if callpath_to_node_dicts is None:
+            callpath_to_node_dicts = {}
+
+        graphframe_cp = self.deepcopy()
+        graphframe_cp.drop_index_levels()
+
+        # traverse the graph
+        for node in graphframe_cp.graph.traverse():
+            # check each path
+            for path in node.paths():
+                if path is not None:
+                    # transform path from tuple of node objects
+                    # to tuple of strings.
+                    callpath = node.convert_path_to_str(path)
+
+                    # get the metric information from each row
+                    # and store them in a dict.
+                    node_dict = dict()
+                    for metric, metric_value in (
+                        graphframe_cp.dataframe.loc[node].to_dict().items()
+                    ):
+                        node_dict[metric] = metric_value
+                    # metric info doesn't contain node since it's index,
+                    # so we add the node to the node dict.
+                    node_dict["node"] = node
+
+                    # if the callpath was seen before, append the
+                    # new node dict. this will be used later for
+                    # aggregation
+                    if callpath in callpath_to_node_dicts.keys():
+                        previous = callpath_to_node_dicts[callpath]
+                        previous.append(node_dict)
+                        callpath_to_node_dicts[callpath] = previous
+                    # if the callpath was not seen before, keep the
+                    # related node dict
+                    else:
+                        callpath_to_node_dicts[callpath] = dict()
+                        callpath_to_node_dicts[callpath] = [node_dict]
+
+        same_paths_dicts = {}
+        same_paths = []
+        # keep the same paths and only work on them.
+        for callpath, node_dicts in callpath_to_node_dicts.items():
+            # only the duplicate callpaths are stored as list.
+            if len(node_dicts) > 1:
+                same_paths_dicts[callpath] = node_dicts
+                same_paths.append(callpath)
+
+        # sort the duplicate callpaths.
+        # we merge them starting from the longest callpath,
+        # means that we start from the bottom.
+        same_paths.sort(reverse=True)
+        while same_paths:
+            _merge_paths(
+                None,
+                same_paths[-1],
+                same_paths,
+                same_paths_dicts,
+                callpath_to_node_dicts,
+            )
 
         # create a new graph by using the updated
         # relationships.
@@ -1068,7 +1105,10 @@ class GraphFrame:
 
         # create a new dataframe that has the aggregate values
         # for the duplicate callpaths.
-        dataframe = pd.DataFrame(callpath_to_node_dicts.values())
+        all_info = []
+        for val in callpath_to_node_dicts.values():
+            all_info.append(val[0])
+        dataframe = pd.DataFrame(all_info)
         dataframe.set_index("node", inplace=True)
         dataframe.sort_index(inplace=True)
 
@@ -1138,10 +1178,10 @@ class GraphFrame:
                 # store metric values.
                 node_dict = graphframe.dataframe.loc[node].to_dict()
                 node_dict["node"] = new_node
-                callpath_to_node_dict[callpath_names] = node_dict
+                callpath_to_node_dict[callpath_names] = [node_dict]
 
                 # set parent-child relationships.
-                parent = callpath_to_node_dict[parent_callpath_names]["node"]
+                parent = callpath_to_node_dict[parent_callpath_names][0]["node"]
                 parent.add_child(new_node)
                 new_node.add_parent(parent)
                 return new_node
@@ -1169,7 +1209,6 @@ class GraphFrame:
         # is given. if not, make it a list.
         if not isinstance(graphframes, list):
             graphframes = list(graphframes)
-
         # chose the biggest graphframe and start with
         # it. no need to recreate nodes and relationships
         # for the biggest gf.
@@ -1202,7 +1241,6 @@ class GraphFrame:
             if size_of_df > max_num_of_idx:
                 biggest_gf = gf_copy
                 max_num_of_idx = size_of_df
-
         # keep the biggest graphframe separate.
         gf_to_visited_node.pop(biggest_gf)
         # merge the nodes that have the exact same callpaths.
@@ -1212,11 +1250,10 @@ class GraphFrame:
         # we want to use it after the function returns (pass by reference).
         callpath_to_node_biggest = {}
         biggest_gf = biggest_gf.groupby_callpath(callpath_to_node_biggest)
-
         # for each callpath (i.e. node), looks at the other graphframes
         # and finds possible indices (i.e. nodes).
         for callpath, node_dict in callpath_to_node_biggest.items():
-            node_in_biggest = node_dict["node"]
+            node_in_biggest = node_dict[0]["node"]
             for gf in gf_to_visited_node.keys():
                 # check if there are indices that have the
                 # same name value (possible indices).
@@ -1258,7 +1295,7 @@ class GraphFrame:
                         else:
                             tmp_dict = gf.dataframe.loc[node].to_dict()
                             tmp_dict["node"] = node_in_biggest
-                            callpath_to_node_biggest[callpath].update(tmp_dict)
+                            callpath_to_node_biggest[callpath][0].update(tmp_dict)
 
         # drop the visited nodes from each graphframe
         for graphframe, visited_nodes in gf_to_visited_node.items():
@@ -1296,11 +1333,14 @@ class GraphFrame:
                     # metrics from the other graphframes.
                     else:
                         tmp_dict = graphframe.dataframe.loc[node].to_dict()
-                        callpath_to_node_biggest[callpath].update(tmp_dict)
+                        callpath_to_node_biggest[callpath][0].update(tmp_dict)
                 gf_to_visited_node[graphframe].append(node)
 
         # create a new dataframe.
-        dataframe = pd.DataFrame(callpath_to_node_biggest.values())
+        all_info = []
+        for val in callpath_to_node_biggest.values():
+            all_info.append(val[0])
+        dataframe = pd.DataFrame(all_info)
         dataframe.set_index("node", inplace=True)
         dataframe.sort_index(inplace=True)
 
