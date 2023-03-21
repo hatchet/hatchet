@@ -1217,29 +1217,37 @@ class GraphFrame:
         gf_to_visited_node = {}
         for idx in range(len(graphframes)):
             # do not change the given gfs.
-            gf_copy = graphframes[idx].deepcopy()
-            gf_copy.drop_index_levels()
-            gf_to_visited_node[gf_copy] = []
+            # gf_copy = graphframes[idx].deepcopy()
+            graphframes[idx].drop_index_levels()
+            gf_to_visited_node[graphframes[idx]] = []
 
             # rename inc/exc metrics. update dataframe, default metric,
             # and inc/exc lists.
-            old_default_metric = gf_copy.default_metric
+            # old_default_metric = graphframes[idx].default_metric
             assert (
                 num_procs in graphframes[idx].metadata.keys()
             ), "{} missing from GraphFrame metadata: use update_metadata() to specify.".format(
                 num_procs
             )
-            _rename_colums(gf_copy, gf_copy.inc_metrics, gf_copy.metadata[num_procs])
-            _rename_colums(gf_copy, gf_copy.exc_metrics, gf_copy.metadata[num_procs])
-            gf_copy.default_metric = "{}-{}".format(
-                old_default_metric, str(gf_copy.metadata[num_procs])
+            _rename_colums(
+                graphframes[idx],
+                graphframes[idx].inc_metrics,
+                graphframes[idx].metadata[num_procs],
             )
+            _rename_colums(
+                graphframes[idx],
+                graphframes[idx].exc_metrics,
+                graphframes[idx].metadata[num_procs],
+            )
+            # graphframes[idx].default_metric = "{}-{}".format(
+            #     old_default_metric, str(graphframes[idx].metadata[num_procs])
+            # )
 
             # find the biggest graphframe by using the number
             # of indices.
-            size_of_df = len(gf_copy.dataframe.index)
+            size_of_df = len(graphframes[idx].dataframe.index)
             if size_of_df > max_num_of_idx:
-                biggest_gf = gf_copy
+                biggest_gf = graphframes[idx]
                 max_num_of_idx = size_of_df
         # keep the biggest graphframe separate.
         gf_to_visited_node.pop(biggest_gf)
@@ -1282,7 +1290,7 @@ class GraphFrame:
                         gf_to_visited_node[gf].append(node)
                         # there might be multiple nodes that have the same
                         # callpath in other graphframes as well. if we already
-                        # stored any if the inc_metrics of the other graphframe
+                        # stored any of the inc_metrics of the other graphframe
                         # before, that means we have already seen the same callpath.
                         if gf.inc_metrics[0] in node_dict:
                             # aggregate the metric values.
@@ -1298,43 +1306,44 @@ class GraphFrame:
                             callpath_to_node_biggest[callpath][0].update(tmp_dict)
 
         # drop the visited nodes from each graphframe
-        for graphframe, visited_nodes in gf_to_visited_node.items():
-            graphframe.dataframe.drop(index=visited_nodes, inplace=True)
+        # for graphframe, visited_nodes in gf_to_visited_node.items():
+        # graphframe.dataframe.drop(index=visited_nodes, inplace=True)
 
         # iterate over the remaining nodes in other graphframes.
         # the remaining nodes should be created since the biggest
         # graphframe doesn't have them.
-        for graphframe in gf_to_visited_node.keys():
+        for graphframe, visited_nodes in gf_to_visited_node.items():
             biggest_gf.inc_metrics.extend(graphframe.inc_metrics)
             biggest_gf.exc_metrics.extend(graphframe.exc_metrics)
             # for each node that is not visited in the biggest
             # graphframe.
             for node in graphframe.dataframe.index:
-                # for each path of the node.
-                for path in node.paths():
-                    # convert the callpath from list of node objects
-                    # to the list of strings.
-                    callpath = node.convert_path_to_str(path)
-                    # the other graphframes might contain the same
-                    # callpath, so we still need to check if the
-                    # callpath was seen before.
-                    if callpath not in callpath_to_node_biggest.keys():
-                        # if not seen before, create the node and
-                        # its parents if needed.
-                        _create_node(
-                            biggest_gf,
-                            graphframe,
-                            node,
-                            path,
-                            callpath_to_node_biggest,
-                        )
-                    # if already seen, update the node dicts
-                    # (i.e. metric values) by including the
-                    # metrics from the other graphframes.
-                    else:
-                        tmp_dict = graphframe.dataframe.loc[node].to_dict()
-                        callpath_to_node_biggest[callpath][0].update(tmp_dict)
-                gf_to_visited_node[graphframe].append(node)
+                if node not in visited_nodes:
+                    # for each path of the node.
+                    for path in node.paths():
+                        # convert the callpath from list of node objects
+                        # to the list of strings.
+                        callpath = node.convert_path_to_str(path)
+                        # the other graphframes might contain the same
+                        # callpath, so we still need to check if the
+                        # callpath was seen before.
+                        if callpath not in callpath_to_node_biggest.keys():
+                            # if not seen before, create the node and
+                            # its parents if needed.
+                            _create_node(
+                                biggest_gf,
+                                graphframe,
+                                node,
+                                path,
+                                callpath_to_node_biggest,
+                            )
+                        # if already seen, update the node dicts
+                        # (i.e. metric values) by including the
+                        # metrics from the other graphframes.
+                        else:
+                            tmp_dict = graphframe.dataframe.loc[node].to_dict()
+                            callpath_to_node_biggest[callpath][0].update(tmp_dict)
+                    gf_to_visited_node[graphframe].append(node)
 
         # create a new dataframe.
         all_info = []
@@ -1349,16 +1358,33 @@ class GraphFrame:
         graph = Graph(roots)
         graph.enumerate_traverse()
 
-        # create the unified graphframe.
-        unified_gf = GraphFrame(
-            graph,
-            dataframe,
-            biggest_gf.exc_metrics,
-            biggest_gf.inc_metrics,
-            biggest_gf.default_metric,
-        )
+        for graphframe in graphframes:
+            drop_columns = set(dataframe.columns) - set(graphframe.dataframe.columns)
+            graphframe.dataframe = dataframe.copy()
+            graphframe.dataframe.drop(columns=drop_columns, axis=1, inplace=True)
+            metrics = graphframe.inc_metrics + graphframe.exc_metrics
+            for idx in range(len(metrics)):
+                renamed_metric = metrics[idx].replace(
+                    "-{}".format(graphframe.metadata[num_procs]), ""
+                )
+                graphframe.dataframe.rename(
+                    columns={metrics[idx]: renamed_metric},
+                    inplace=True,
+                )
+                metrics[idx] = renamed_metric
 
-        return unified_gf
+            graphframe.graph = graph
+
+        # create the unified graphframe.
+        # unified_gf = GraphFrame(
+        #     graph,
+        #     dataframe,
+        #     biggest_gf.exc_metrics,
+        #     biggest_gf.inc_metrics,
+        #     biggest_gf.default_metric,
+        # )
+
+        # return unified_gf
 
     def unify(self, other):
         """Returns a unified graphframe.
