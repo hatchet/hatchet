@@ -1144,16 +1144,25 @@ class GraphFrame:
         Adds '-<num_procs>' suffix if columns in different graphframes have
         the same name. For example: time-32, time-64."""
 
-        def _rename_colums(graphframe, metrics, suffix):
+        def _rename_colums(graphframe, metrics, suffix, add):
             "Renames columns and updates inc/exc columns lists."
-            for idx in range(len(metrics)):
-                graphframe.dataframe.rename(
-                    columns={metrics[idx]: "{}-{}".format(metrics[idx], suffix)},
-                    inplace=True,
-                )
+            if add:
+                for idx in range(len(metrics)):
+                    graphframe.dataframe.rename(
+                        columns={metrics[idx]: "{}-{}".format(metrics[idx], suffix)},
+                        inplace=True,
+                    )
 
-                # update inclusive and exclusive metrics lists.
-                metrics[idx] = "{}-{}".format(metrics[idx], str(suffix))
+                    # update inclusive and exclusive metrics lists.
+                    metrics[idx] = "{}-{}".format(metrics[idx], str(suffix))
+            else:
+                for idx in range(len(metrics)):
+                    renamed_metric = metrics[idx].replace("-{}".format(suffix), "")
+                    graphframe.dataframe.rename(
+                        columns={metrics[idx]: renamed_metric},
+                        inplace=True,
+                    )
+                    metrics[idx] = renamed_metric
 
         def _create_node(biggest_gf, graphframe, node, callpath, callpath_to_node_dict):
             """Recursively creates the missing nodes from bottom to up."""
@@ -1233,11 +1242,13 @@ class GraphFrame:
                 graphframes[idx],
                 graphframes[idx].inc_metrics,
                 graphframes[idx].metadata[num_procs],
+                add=True,
             )
             _rename_colums(
                 graphframes[idx],
                 graphframes[idx].exc_metrics,
                 graphframes[idx].metadata[num_procs],
+                add=True,
             )
             # graphframes[idx].default_metric = "{}-{}".format(
             #     old_default_metric, str(graphframes[idx].metadata[num_procs])
@@ -1362,17 +1373,18 @@ class GraphFrame:
             drop_columns = set(dataframe.columns) - set(graphframe.dataframe.columns)
             graphframe.dataframe = dataframe.copy()
             graphframe.dataframe.drop(columns=drop_columns, axis=1, inplace=True)
-            metrics = graphframe.inc_metrics + graphframe.exc_metrics
-            for idx in range(len(metrics)):
-                renamed_metric = metrics[idx].replace(
-                    "-{}".format(graphframe.metadata[num_procs]), ""
-                )
-                graphframe.dataframe.rename(
-                    columns={metrics[idx]: renamed_metric},
-                    inplace=True,
-                )
-                metrics[idx] = renamed_metric
-
+            _rename_colums(
+                graphframe,
+                graphframe.inc_metrics,
+                graphframe.metadata[num_procs],
+                add=False,
+            )
+            _rename_colums(
+                graphframe,
+                graphframe.exc_metrics,
+                graphframe.metadata[num_procs],
+                add=False,
+            )
             graphframe.graph = graph
 
         # create the unified graphframe.
