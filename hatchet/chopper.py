@@ -67,31 +67,20 @@ class Chopper:
         information.
         """
 
-        def _update_and_add_columns(dataframe, old_column_name, new_column):
-            """Rename some existing columns and create new ones."""
-            # rename columns: '<metric>.mean'
-            dataframe.rename(
-                columns={old_column_name: old_column_name + ".mean"}, inplace=True
-            )
-            # create columns: '<metric>.max'
-            dataframe[old_column_name + ".max"] = new_column
-
-        def _update_metric_lists(metric_types, metric):
+        def _update_metric_lists(metric_type, metric):
             """Update graphframe.inc_metrics and graphframe.exc_metrics
             lists after renaming/creating columns"""
-            metric_types.append(metric + ".mean")
-            metric_types.append(metric + ".max")
+            metric_type.append(metric + ".mean")
+            metric_type.append(metric + ".max")
 
         def _calculate_statistics(dataframe, metric_column, func):
+            """Calculate frequency histogram and percentiles. Find the
+            ranks that have the highest metric values."""
             index_names = list(dataframe.index.names)
             index_names.remove("node")
 
-            dataframe.reset_index(level="node", inplace=True)
-
-            # group by node
-            grouped_df = dataframe.groupby("node")
-
-            # create dict that stores aggregation function for each column
+            # create dict that stores aggregation function for each column.
+            # fuc = [np.mean, np.max] for the metric_column.
             agg_dict = {}
             for col in dataframe.columns.tolist():
                 if col == metric_column:
@@ -99,9 +88,13 @@ class Chopper:
                 else:
                     agg_dict[col] = lambda x: x.iloc[0]
 
+            # move node from index to column and group by node.
+            dataframe.reset_index(level="node", inplace=True)
+            grouped_df = dataframe.groupby("node")
+
             # if verbose, calculate statistics for the
             # frequency histogram, percentiles, and the top
-            # five ranks that has the highest metric value
+            # five ranks that has the highest metric value.
             if verbose:
                 statistics_dict = {}
                 # for each group
@@ -111,7 +104,7 @@ class Chopper:
 
                     group = grouped_df.get_group(node)
                     group.reset_index(inplace=True)
-                    # sort by metric value
+                    # sort by metric value. get rank and metric value
                     sorted_rank_metric = group[["rank", metric_column]].sort_values(
                         by=metric_column, ascending=False
                     )
@@ -120,16 +113,20 @@ class Chopper:
                     sorted_metric = sorted_rank_metric[metric_column].to_numpy()
                     num_ranks = len(sorted_ranks)
 
-                    # we have fixed number of bins = 5.
-                    # Example: max=100, min=0, size=(100-0)/5=20
+                    # we have fixed number of bins = 4.
+                    # Example: max=100, min=0, size=(100-0)/4=25
+                    bins = 4
                     max = sorted_metric[0]
                     min = sorted_metric[-1]
-                    size = (max - min) / 5.0
+                    size = (max - min) / bins
                     if size != 0:
-                        for i in range(5):
+                        for i in range(bins):
                             bin_start = min + i * size
                             bin_end = min + (i + 1) * size
-                            if i == 4:
+                            # sometimes bin_end != end because of
+                            # rounding. For example:
+                            # bin_end=52.93999, max = 53.94.
+                            if i == bins - 1:
                                 bin_end = max
                             # count the number of ranks in a bin
                             count = len(
@@ -147,15 +144,12 @@ class Chopper:
                             ]
                         )
                     else:
-                        # Example: if min=max=0
-                        freqs = [num_ranks] * 5
+                        # Example: if min=max=0 and num_ranks=2, freqs=[2, 2]
+                        freqs = [num_ranks] * bins
 
                     # calculate percentiles.
-                    percentiles.append(np.percentile(sorted_metric, 0))
-                    percentiles.append(np.percentile(sorted_metric, 25))
-                    percentiles.append(np.percentile(sorted_metric, 50))
-                    percentiles.append(np.percentile(sorted_metric, 75))
-                    percentiles.append(np.percentile(sorted_metric, 100))
+                    for i in [0, 25, 50, 75, 100]:
+                        percentiles.append(np.percentile(sorted_metric, i))
 
                     # find the top five ranks that have the
                     # highest metric value.
@@ -163,12 +157,12 @@ class Chopper:
                         sorted_ranks = sorted_ranks[:5]
 
                     # create statistics_dict.
+                    # add metric_column -> imbalance.ranks, time.hist, time.percentiles
                     statistics_dict[node] = {
                         "node": node,
-                        "imbalance.ranks": sorted_ranks,
-                        "freq.hist": freqs,
-                        "{}.min".format(metric_column): min,
-                        "percentile": percentiles,
+                        "{}.ranks".format(metric_column): sorted_ranks,
+                        "{}.hist".format(metric_column): freqs,
+                        "{}.percentiles".format(metric_column): percentiles,
                     }
 
                 # create statistics dataframe from the dict.
@@ -178,31 +172,32 @@ class Chopper:
             # aggregate grouped dataframe
             agg_df = grouped_df.agg(agg_dict)
 
+            # pandas creates multiindex columns when we do .agg() using
+            # multiple functions (np.mean and np.max).
+            # We first flatten the columns to remove multiindex.
+            # Example after to_flat_index():
+            # [('time', 'mean'), ('time', 'amax'), ('name', '<lambda>')]
+            # Then remove rename metric_column by adding mean and max.
+            # Remove <lambda> from others.
+            agg_df.columns = agg_df.columns.to_flat_index()
+            columns = agg_df.columns.values
+            for idx in range(len(columns)):
+                if columns[idx][0] == metric_column and columns[idx][1] == "mean":
+                    columns[idx] = metric_column + ".mean"
+                elif columns[idx][0] == metric_column and columns[idx][1] == "amax":
+                    columns[idx] = metric_column + ".max"
+                else:
+                    columns[idx] = columns[idx][0]
+
             # if verbose, join aggregate dataframe with
-            # statistics dataframe
+            # statistics dataframe.
             if verbose:
                 agg_df = agg_df.join(statistics_df, how="outer")
 
-            agg_df.drop("node", axis=1, inplace=True)
             return agg_df
 
-        # Create a copy of the GraphFrame. 'graphframe2' and 'graphframe3' should
-        # have the same graph (with the same node references) for div() function to
-        # work properly. For that, 'graphframe3' should be the 'shallow' copy of
-        # graphframe2.
+        # Create a copy of the GraphFrame.
         graphframe2 = graphframe.deepcopy()
-        graphframe3 = graphframe2.copy()
-
-        # Similar to drop_index_levels() but it calculates
-        # statistics if verbose == True
-        graphframe2.dataframe = _calculate_statistics(
-            graphframe2.dataframe, metric_column, np.mean
-        )
-
-        # Drop all index levels in a copy of gf3's DataFrame except 'node',
-        # computing the max time spent in each node. We don't need to calculate
-        # statistics again.
-        graphframe3.drop_index_levels(function=np.max)
 
         # Use default_metric if not given.
         if metric_column is None:
@@ -220,21 +215,19 @@ class Chopper:
             # Calculate the threshold.
             thres_val = max_val * threshold
 
+        # Similar to drop_index_levels() but it calculates
+        # statistics if verbose == True.
+        graphframe2.dataframe = _calculate_statistics(
+            graphframe2.dataframe, metric_column, [np.mean, np.max]
+        )
+
         graphframe2.inc_metrics = []
         graphframe2.exc_metrics = []
 
-        # Update/rename existing columns on graphframe2.dataframe
-        # by adding .mean for already existing columns and create
-        # new columns by adding .max to the corresponding
-        # columns on graphframe3.
-        _update_and_add_columns(
-            graphframe2.dataframe, metric_column, graphframe3.dataframe[metric_column]
-        )
-
         # Add new columns to .inc_metrics or .exc_metrics.
-        if metric_column in graphframe3.inc_metrics:
+        if metric_column in graphframe2.inc_metrics:
             _update_metric_lists(graphframe2.inc_metrics, metric_column)
-        elif metric_column in graphframe3.exc_metrics:
+        elif metric_column in graphframe2.exc_metrics:
             _update_metric_lists(graphframe2.exc_metrics, metric_column)
 
         # filter out the nodes if their max metric value across
@@ -250,6 +243,11 @@ class Chopper:
         graphframe2.dataframe[metric_column + ".imbalance"] = graphframe2.dataframe[
             metric_column + ".max"
         ].div(graphframe2.dataframe[metric_column + ".mean"])
+
+        # <metric_column>.max is already stored in <metric_column>.percentiles
+        # column if verbose = True. We don't drop it if verbose = False.
+        if verbose:
+            graphframe2.dataframe.drop(metric_column + ".max", axis=1, inplace=True)
 
         # default metric will be imbalance when user print the tree
         graphframe2.default_metric = metric_column + ".imbalance"
