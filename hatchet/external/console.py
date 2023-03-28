@@ -61,6 +61,7 @@ class ConsoleRenderer:
         self.highlight = kwargs["highlight_name"]
         self.colormap = kwargs["colormap"]
         self.invert_colormap = kwargs["invert_colormap"]
+        self.hotpath = kwargs["hotpath"]
 
         if self.color:
             self.colors = self.colors_enabled
@@ -194,10 +195,9 @@ class ConsoleRenderer:
         return legend
 
     def render_frame(self, node, dataframe, indent=u"", child_indent=u""):
-        node_depth = node._depth
-        if node_depth < self.depth:
-            # set dataframe index based on whether rank and thread are part of
-            # the MultiIndex
+        # Helper function to set dataframe index based on whether rank and
+        # thread are part of the MultiIndex
+        def _set_dataframe_index(node):
             if "rank" in dataframe.index.names and "thread" in dataframe.index.names:
                 df_index = (node, self.rank, self.thread)
             elif "rank" in dataframe.index.names:
@@ -206,33 +206,84 @@ class ConsoleRenderer:
                 df_index = (node, self.thread)
             else:
                 df_index = node
+            return df_index
 
-            node_metric = dataframe.loc[df_index, self.primary_metric]
+        # Helper function to find the number of descendants, levels and total metric values
+        # in the subtree of the tree whose depth reaches the maximum depth entered by the user
+        def _get_subtree_info(node, subtree_info):
+            for child in node.children:
+                # Adding the number of descendants in the subtree
+                subtree_info["descendants"] += 1
+                child_index = _set_dataframe_index(child)
 
-            metric_precision = "{:." + str(self.precision) + "f}"
-            metric_str = (
-                self._ansi_color_for_metric(node_metric)
-                + metric_precision.format(node_metric)
-                + self.colors.end
+                # If the metric is inclusive, then we will add all the inclusive
+                # metric values of the immediate children as the total sum of metric values
+                if "(inc)" in self.primary_metric:
+                    if node_depth == self.depth:
+                        subtree_info["sum_metric"] += dataframe.loc[
+                            child_index, self.primary_metric
+                        ]
+                else:
+                    # If the metric is exclusive, then we calculate the sum of metric values
+                    # by adding the exclusive metric value of each descendant in the subtree
+                    subtree_info["sum_metric"] += dataframe.loc[
+                        child_index, self.primary_metric
+                    ]
+
+                # Storing the highest level in the subtree
+                if child._depth > subtree_info["levels"]:
+                    subtree_info["levels"] = child._depth
+
+                if len(child.children) != 0:
+                    _get_subtree_info(child, subtree_info)
+
+        # This dictionary stores the subtree information that includes their no. of
+        # descendants, total metric value and their maximum level.
+        subtree_info = {"descendants": 0, "sum_metric": 0, "levels": self.depth}
+        node_depth = node._depth
+        df_index = _set_dataframe_index(node)
+        node_metric = dataframe.loc[df_index, self.primary_metric]
+
+        # The indents that will be used to change the nodes according to hoth paths nodes found
+        hotpath_indents = {
+            "├": self.colors.left + u"├─ " + self.colors.end,
+            "│": self.colors.left + u"│ " + self.colors.end,
+            "└": self.colors.left + u"└─ " + self.colors.end,
+            " ": u"   ",
+        }
+        # if self.hotpath:
+        #     hotpath = hotpaths(graphframe)
+
+        metric_precision = "{:." + str(self.precision) + "f}"
+        metric_str = (
+            self._ansi_color_for_metric(node_metric)
+            + metric_precision.format(node_metric)
+            + self.colors.end
+        )
+
+        if self.second_metric is not None:
+            metric_str += u" {c.faint}{second_metric:.{precision}f}{c.end}".format(
+                second_metric=dataframe.loc[df_index, self.second_metric],
+                precision=self.precision,
+                c=self.colors,
             )
 
-            if self.second_metric is not None:
-                metric_str += u" {c.faint}{second_metric:.{precision}f}{c.end}".format(
-                    second_metric=dataframe.loc[df_index, self.second_metric],
-                    precision=self.precision,
-                    c=self.colors,
-                )
-
-            node_name = dataframe.loc[df_index, self.name]
-            if self.expand is False:
-                if len(node_name) > 39:
-                    node_name = (
-                        node_name[:18] + "..." + node_name[(len(node_name) - 18) :]
-                    )
+        node_name = dataframe.loc[df_index, self.name]
+        if self.expand is False:
+            if len(node_name) > 39:
+                node_name = node_name[:18] + "..." + node_name[(len(node_name) - 18) :]
+        # If the user wants hotpaths to be shown then this will mark the nodes which are in the hotpaths
+        if len(self.hotpath) > 0 and node_name in self.hotpath:
+            name_str = self.colors.left + node_name + self.colors.end
+        # This will render the tree with no changes in the nodes whether its a regular tree or one that uses hotpaths
+        else:
             name_str = (
                 self._ansi_color_for_name(node_name) + node_name + self.colors.end
             )
 
+        # Print the graph based on the depth of a node and check if its
+        # below the default or user specified depth.
+        if node_depth < self.depth:
             # 0 is "", 1 is "L", and 2 is "R"
             if "_missing_node" in dataframe.columns:
                 left_or_right = dataframe.loc[df_index, "_missing_node"]
@@ -271,21 +322,82 @@ class ConsoleRenderer:
                 sorted_children = sorted(node.children, key=lambda n: n.frame)
                 if sorted_children:
                     last_child = sorted_children[-1]
-
+                # this is a variable that's defined to stop the hotpath to mark the nodes when
+                # finished visiting all the nodes in a hotpath
+                found = False
                 for child in sorted_children:
                     if child is not last_child:
-                        c_indent = child_indent + indents["├"]
                         cc_indent = child_indent + indents["│"]
+                        c_indent = child_indent + indents["├"]
+                        # For Hotpaths: This condition will determine id the child of a node is present in
+                        # the hotpath, if it is present then it will mark the indent adjacent to the node
+                        if (
+                            len(self.hotpath) > 0
+                            and child.frame.get("name") in self.hotpath
+                            and self.hotpath[-1] != child.frame.get("name")
+                            and not found
+                        ):
+                            c_indent = child_indent + hotpath_indents["├"]
+                            found = True
+                        # For Hotpaths: This condition will mark the indents thats are path of the hotpath
+                        # between the current node and the next child in the hotpath
+                        elif (
+                            len(self.hotpath) > 0
+                            and node_name in self.hotpath
+                            and self.hotpath[-1] != node_name
+                            and not found
+                        ):
+                            c_indent = child_indent + hotpath_indents["├"]
+                            cc_indent = child_indent + hotpath_indents["│"]
+                            if self.hotpath[-1] == node_name:
+                                found = True
+                        # This is the default condition if in case the user doesnt want to use the hotpath function
+                        # Or For Hotpaths: this is also the condition to render the tree without marking its indent
+                        # if its not present in the hotpath
+                        else:
+                            cc_indent = child_indent + indents["│"]
+                            c_indent = child_indent + indents["├"]
                     else:
+                        # default condition to print indents of the tree
                         c_indent = child_indent + indents["└"]
                         cc_indent = child_indent + indents[" "]
+                        # For Hotpaths: this is to mark the node of the child node of the last node in the hotpath
+                        if (
+                            len(self.hotpath) > 0
+                            and node_name in self.hotpath
+                            and child.frame.get("name") in self.hotpath
+                            and not found
+                        ):
+                            c_indent = child_indent + hotpath_indents["└"]
+                            if self.hotpath[-1] == node_name:
+                                found = True
+                        elif (
+                            len(self.hotpath) > 0
+                            and child.frame.get("name") in self.hotpath
+                            and not found
+                        ):
+                            c_indent = child_indent + hotpath_indents["└"]
                     result += self.render_frame(
                         child, dataframe, indent=c_indent, child_indent=cc_indent
                     )
         else:
-            result = ""
-            indents = {"├": u"", "│": u"", "└": u"", " ": u""}
+            if len(node.children) == 0:
+                result = u"{indent}{metric_str} {name_str}\n".format(
+                    indent=indent, metric_str=metric_str, name_str=name_str
+                )
+            else:
+                _get_subtree_info(node, subtree_info)
+                summary_string = "{indent}{metric_str} {name_str}\n{child_indent}└─\u25C0\u25AE Subtree Info (Total Metric: {metric}, # Descendants: {desc}, # Remaining Levels {levels})\n"
 
+                result = summary_string.format(
+                    indent=indent,
+                    metric_str=metric_str,
+                    name_str=name_str,
+                    child_indent=child_indent,
+                    metric=str(subtree_info["sum_metric"]),
+                    desc=str(subtree_info["descendants"]),
+                    levels=str(subtree_info["levels"] - node_depth),
+                )
         return result
 
     def _ansi_color_for_metric(self, metric):
