@@ -139,7 +139,7 @@ and returns a list of GraphFrames, one for each dataset. Users can then
 leverage Python's built-in functionalities to create the list from names and
 structures inspected from the file system.
 
-    ``construct_from`` automatically detects the data collection source of each
+``construct_from`` automatically detects the data collection source of each
 profile, using file extensions, JSON schemes, and other characteristics of the
 datasets that are unique to the various output formats. This allows Chopper to
 choose the appropriate data read in hatchet for each dataset, eliminating the
@@ -168,7 +168,7 @@ execution identifier. Per-execution, the metrics are also aggregated by the
 function name. This allows users to quickly summarize across executions and
 their composite functions for any metric.
 
-    ``multirun_analysis`` allows flexibly setting the desired index, columns
+``multirun_analysis`` allows flexibly setting the desired index, columns
 (e.g., using file or module rather than function name), and metrics with which
 to construct the pivot table. It also provides filtering of nodes below a
 threshold value of the metric. The code block above for ``construct_from`` demonstrates
