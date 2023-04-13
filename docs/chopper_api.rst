@@ -4,25 +4,26 @@ Chopper API
 Analyzing a Single Execution
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**to_callgraph**: In some cases, the user may not need
-performance metrics separated by the full calling context for each leaf node in
-the CCT. In such cases, the CCT can be condensed or collapsed into a call graph
-(by merging nodes with the same name), and analysis tasks can be performed on the call
-graph data. The ``to_callgraph`` function automatically
-converts a CCT to a call graph. This function merges CCT nodes based on their
-node name, and aggregates the performance metrics using the sum operation to
-create a single value of each metric for the merged node. This is applied to
-each node in the GraphFrame, merging nodes and edges as needed to construct the
-call graph representation of the CCT. This function outputs a new GraphFrame
-with updated parent-child relationships in its graph object and aggregated
-metric values on its DataFrame.
+**to_callgraph**: For some analyses, the full calling context
+of each function is not necessary. It may be more intuitive to examine the
+*call graph* which merges all calls to the same function name into a single
+node. The ``to_callgraph`` function converts a CCT into a call graph by
+merging nodes representing the same function name and summing their associated
+metric data. The output is a new GraphFrame where the graph has updated
+(merged) caller-callee relationships and the DataFrame has aggregated metric
+values.
 
 .. code-block:: python
 
-  gf = GraphFrame.from_hpctoolkit("simple-cct")
+  import hatchet as ht
+  %load_ext hatchet.vis.loader
+
+  gf = ht.GraphFrame.from_literal(simple_cct)
+  %cct gf # PerfTool's Jupyter CCT Visualization
+
   callgraph_graphframe = gf.to_callgraph()
 
-.. image:: images/chopper/CCT-toy.png
+.. image:: images/chopper/simple_cct_vis.png
    :scale: 30 %
    :align: right
 
@@ -30,128 +31,204 @@ metric values on its DataFrame.
    :scale: 30 %
    :align: right
 
-**load_imbalance**: Users are often interested in identifying load
-imbalance in their programs so that they can fix the work distribution between
-processes or threads. The ``load_imbalance`` function in Chopper allows studying
-the load imbalance at the level of individual nodes in the CCT.
+**flatten**: This function is a generalized version of
+``to_callgraph``. Rather than merging all nodes associated with the same
+function name, it enables users to merge nodes by a different non-numeric
+attribute, such as file name or load module. The user provides the column to
+use and Chopper merges the nodes into a graph. The resulting graph is not a
+call graph however as by definition, a call graph represents caller-callee
+relationships between functions.
 
-This function takes as input a GraphFrame, a metric on which to compute imbalance, 
-and a threshold value to filter out inconsequential nodes. For each node in the CCT,
-the mean and maximum metric values across all processes are calculated and 
-then the maximum is divided by the mean value, which signifies the load
-imbalance across processes. A large maximum-to-mean ratio for a metric
-indicates heavy load imbalance. These calculations are performed by using
-pandas DataFrame operations. The computed load imbalance value per node is
-added as a new column in the DataFrame. The threshold parameter in
-the function can be used to filter out nodes that have metric values below a
-threshold. This function outputs a new GraphFrame that has the same graph as
-the input GraphFrame but a DataFrame that is sorted by the newly added load
-imbalance column.
+**load_imbalance**: Load imbalance is a
+common performance problem in parallel programs. Developers and application
+users are interested in identifying load imbalance so they can improve the
+distribute of work among processes or threads. The ``load_imbalance``
+function in Chopper makes it easier to study load imbalance at the level of
+individual CCT nodes.
 
-**hot_path**: A common operation performed by users when
-analyzing a single execution is to examine the most time consuming call paths
-in the program. Chopper enables finding the hot path in a CCT
-starting at any node using a function call called ``hot_path``. The
-``hot_path`` function takes as input -- a GraphFrame, a metric (and
-optional threshold value), and a starting node. It traverses the graph starting
-at the start node to until a stopping criterion is met. The criterion is to
-find a node that accounts for more than a certain percent of the metric value
-of its parent. Once this node is identified, the path from the starting node to
-this node is referred to as the hot path.
+The input is a GraphFrame along with the metric on which to compute imbalance.
+Optional parameters are a threshold value to filter out inconsequential nodes
+and a flag for calculate detailed statistics about the load imbalance. The
+output is a new GraphFrame with the same graph object but additional columns
+in its DataFrame to describe load imbalance and optionally the verbose
+statistics.
 
-The user can provide a starting node to examine a subset of the CCT. By
-default, the function starts at the most time-consuming root node (in case of a forest).
-A default percent value of 50% is used for the stopping condition. The user
-can provide a different percent as the threshold parameter. The hot path output
-by this function can be visualized using the interactive Jupyter visualization
-in Hatchet in the context of the full tree.
+To calculate per-node load imbalance, pandas DataFrame operations are used to
+compute the mean and maximum of the given metric across all processes. Load balance
+is then the maximum divided by the mean. A large maximum-to-mean ratio indicates
+heavy load imbalance. The per-node load imbalance value is added as a new column
+in DataFrame.
+
+The threshold parameter is used to filter out nodes with metric values below
+the given threshold. This feature allows users to remove nodes that
+might have high imbalance because their metric values are small. For example,
+high load imbalance may not have significant impact on overall performance in
+the time spent in the node is small.
+
+The verbose option calculates additional load imbalance statistics. If
+enabled, the function adds a new column to the resulting DataFrame with each
+of the following: the top five ranks that have the highest metric values,
+values of 0th, 25th, 50th, 75th, and 100th percentiles of each node, and the
+number of processes in each of ten equal-sized bins between the
+0th (minimum across processes) and 100th (maximum across processes) percentile
+values.
+
+.. image:: images/chopper/load_imb_toy.png
+   :scale: 30 %
+   :align: right
 
 .. code-block:: python
 
-  gf = GraphFrame.from_hpctoolkit("simple-profile")
-  hot_path = gf.hot_path()
+    import hatchet as ht
+
+    gf = ht.GraphFrame.from_caliper("lulesh-512cores")
+    gf = gf.load_imbalance(metric_column="time", verbose=True)
+    print(gf.dataframe)
+
+.. code-block:: python
+
+    gf = ht.Chopper.load_imbalance(metric_column="time", verbose=True)
+
+**hot_path**: A common task in analyzing a single execution
+is to examine the most time-consuming call paths in the program or some subset
+of the program. Chopper's ``hot_path``
+function retrieves the hot path from any subtree of a CCT given its root. The
+input parameters are the GraphFrame, metric (and optional stopping condition),
+and the root of the subtree to search. Starting at the given subtree root, the
+method traverses the graph it finds a node whose metric accounts for more than a
+given percentage of that of its parent. This percentage is the stopping
+condition.
+The hot path is then the path between that node and the given subtree
+root. The function outputs a list of nodes using which the DataFrame can
+be manipulated.
+
+By default, the ``hot_path`` function uses the most time-consuming root
+node (in case of a forest) as the subtree root. The default stopping condition
+is 50%. The resulting hot path can be visualized
+in the context of the CCT using the interactive Jupyter visualization in
+hatchet.
 
 .. image:: images/chopper/hot-path-toy2.png
    :scale: 30 %
    :align: right
 
-The image shows the hot path for a toy CCT example. As
-shown, the hot path can be found by calling a single function (line 2 in code
-block). It then can be visualized by using Hatchet's Jupyter notebook
-visualization. The red-colored path, which is highlighted by bigger nodes to
-show hot nodes, represents the hot path. Most importantly, the user can 
-interactively expand or collapse subtrees to investigate the CCT or call graph further.
+.. code-block:: python
+
+  import hatchet as ht
+  %load_ext hatchet.vis.loader
+  
+  gf = ht.GraphFrame.from_hpctoolkit("simple-profile")
+  hot_path = gf.hot_path()
+  %cct gf #Jupyter CCT visualiation
+
+The image shows the hot path for a simple CCT example,
+found with a single Chopper function call (line 5) and visualized using
+hatchet's Jupyter notebook visualization (line 6).
+The red-colored path with the large red nodes and additional labeling
+represents the hot path. Users can interactively expand or collapse subtrees
+to investigate the CCT further.
 
 Comparing Multiple Executions
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**construct_from**: A user may need to ingest several datasets
-for some analysis tasks. To automate this task, the ``construct_from`` function takes a list of datasets,
-creates a GraphFrame for each, and returns a list of GraphFrames. Further, by
-investigating the file extensions, JSON schemas, and other characteristics of
-datasets that are unique to the output formats of different profiling tools, it
-automatically detects the source tool of each dataset. It then uses the
-appropriate data reader in Hatchet to correctly parse the data and create the
-corresponding GraphFrames. Thus, it eliminates the need for the user to
-identify the correct reader for a certain data format. Line 2 in the code
-blocks shown below demonstrates how the ``construct_from`` function can be used to create
-multiple GraphFrames objects at once using a list of datasets.
+**construct_from**: Ingesting multiple datasets is the first
+step to analyzing them. It is laborious and tedious to specify and load each profile
+manually, which is necessary in hatchet. To alleviate this
+problem, the ``construct_from`` function takes a list of datasets
+and returns a list of GraphFrames, one for each dataset. Users can then
+leverage Python's built-in functionalities to create the list from names and
+structures inspected from the file system.
+
+    ``construct_from`` automatically detects the data collection source of each
+profile, using file extensions, JSON schemes, and other characteristics of the
+datasets that are unique to the various output formats. This allows Chopper to
+choose the appropriate data read in hatchet for each dataset, eliminating the
+manual task of specifying each one.
+
+.. image:: images/chopper/pivot-table.pdf
+   :scale: 30 %
+   :align: right
 
 .. code-block:: python
 
   datasets = glob.glob("list_of_lulesh_profiles")
-  graphframes = GraphFrame.construct_from(datasets)
-  pivot_table = Chopper.multirun_analysis(graphframes)
+  gfs = hatchet.GraphFrame.construct_from(datasets)
+  table = hatchet.Chopper.multirun_analysis(gfs)
+  print(table)
 
-.. image:: images/chopper/multirun.png
+**multirun_analysis**: Analyzing across multiple executions
+typically involves comparing metric values across the individual CCT nodes of
+the different executions. Implementing this manually can be cumbersome,
+especially as CCTs will differ between runs. This task is simplified with the
+``multirun_analysis`` function.
+
+By default, ``multirun_analysis`` builds a unified "pivot table" of the
+multiple executions for a given metric. The index (or "pivot") is the
+execution identifier. Per-execution, the metrics are also aggregated by the
+function name. This allows users to quickly summarize across executions and
+their composite functions for any metric.
+
+    ``multirun_analysis`` allows flexibly setting the desired index, columns
+(e.g., using file or module rather than function name), and metrics with which
+to construct the pivot table. It also provides filtering of nodes below a
+threshold value of the metric. The code block above for ``construct_from`` demonstrates
+``multirun_analysis`` with default parameters (line 3) and its resulting table.
+
+**unify_multiple_graphframes**: The pivot table
+functionality of ``multirun_analysis`` helps generate quick summaries
+across a variety of groupings and metrics. However, fine-grained analysis
+tasks may require preserving those individual metrics and CCT topology in
+order to match them across CCT nodes. In these cases, unification of
+GraphFrames is needed so analyses can be done across calling contexts, even
+when the trees differ. Combining multiple large parallel profiles takes
+significant programming effort. This task is automated through the
+``unify_multiple_graphframes`` function, which takes multiple GraphFrames
+as inputs and updates each GraphFrame in place.
+
+
+The ``unify_multiple_graphframes`` function creates a union graph object
+from all input GraphFrames from the collection of unique call paths. The
+updated GraphFrames point to this new object and the DataFrame of each is
+updated with the missing nodes. The operation ensures that all input
+GraphFrames are associated with the same unified graph and have individually
+updated DataFrames.
+
+The image below illustrates how the GraphFrames
+are updated by unification. The resulting GraphFrames share the same graph
+while retaining their original metric values. Using this unified GraphFrames,
+node-level (calling context-dependent) metrics can be calculated, such as
+speedup and efficiency.
+
+.. image:: images/chopper/unify_multiple_graphframes.pdf
    :scale: 30 %
    :align: right
 
-**multirun_analysis**: Analyzing multiple executions together
-typically requires comparing metric values of each node in the CCTs of different
-executions. This can be quite cumbersome if attempted manually. This task is
-automated with the ``multirun_analysis function``. It takes multiple GraphFrame objects and provides a
-unified pivot table that rearranges the data to be indexed
-by a unique identifier that identifies each execution called the pivot. For each execution, the pivot table contains
-the metric values of each node in each GraphFrame.
+**speedup_efficiency**: Two commonly used metrics to
+determine the scalability of parallel codes are *speedup* and *efficiency*.
+The ``speedup_efficiency`` function simplifies the task of
+calculating these metrics per CCT node across multiple executions with different process or
+thread counts. Given multiple GraphFrames as input, ``speedup_efficiency`` creates a
+new DataFrame with efficiency or speedup per CCT node, using ``unify_multiple_graphframes``
+to unify the set of nodes. An optional parameter
+allows users to set a metric threshold with which to exclude unnecessary nodes.
 
-The ``multirun_analysis`` function is quite flexible and provides options
-to set the desired index, columns (e.g., node name, file, module), and metrics
-to be used in the pivot table. Additionally, it enables setting a threshold
-value to filter out the nodes that have metric values below the threshold. The code
-block above for ``construct_from`` demonstrates how to use the
-``multirun_analysis`` function with its default parameters (line 3) and
-a pivot table it outputs. The pivot table is truncated for presentation
-purposes.
+Speedup and efficiency have different expressions under the assumption of weak
+or strong scaling. Thus, the ``speedup_efficiency`` functions should be
+supplied with the type of experiment performed (weak or strong scaling) and
+the metric of interest (speedup or efficiency).
 
-**speedup_efficiency**: Speedup and efficiency are two
-commonly used metrics to understand the scalability of parallel codes. The ``speedup_efficiency`` function
-automates the task of calculating speedup and efficiency across several
-executions on different process/thread counts. It calculates the speedup and efficiency
-at per-node granularity. It takes multiple GraphFrames and returns a DataFrame
-that either stores efficiency or speedup values for each node in the CCT
-depending on the input parameters. This function utilizes the pivot table that
-the ``multirun_analysis`` function outputs. Similarly, this function also
-provides a parameter to set a threshold to enable filtering of unnecessary
-nodes.
+The image below shows the output DataFrame of efficiency values from
+a weak scaling (64 to 512 process) experiment of LULESH along with the
+corresponding code block (line 3). The DataFrame can then be used directly to
+plot the results.
 
-Speedup and efficiency have somewhat different expressions for weak and strong
-scaling, thus, should be calculated separately. The
-``speedup_efficiency`` function allows specifying the kind of
-experiment performed by the user (weak or strong scaling) and the metric to compute (speedup or efficiency), and
-performs the calculations accordingly.
-
-An example DataFrame that contains the computed efficiency values for different LULESH weak
-scaling executions (64 to 512 processes) can be seen in the image below
-along with the corresponding code block (line 3). The user can easily utilize
-the resulting DataFrame to plot the results.
+.. image:: images/chopper/eff3.png
+   :scale: 30 %
+   :align: right
 
 .. code-block:: python
 
   datasets = glob.glob("list_of_lulesh_profiles")
-  graphframes = GraphFrame.construct_from(datasets)
-  efficiency = Chopper.speedup_efficiency(graphframes, weak=True, efficiency=True)
-
-.. image:: images/chopper/eff.png
-   :scale: 30 %
-   :align: right
+  gfs = perftool.GraphFrame.construct_from(datasets)
+  efficiency = perftool.Chopper.speedup_efficiency(gfs, weak=True, efficiency=True)
+  print(efficiency.sort_values("512.time", ascending=True))
