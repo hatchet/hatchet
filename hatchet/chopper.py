@@ -113,9 +113,9 @@ class Chopper:
                     sorted_metric = sorted_rank_metric[metric_column].to_numpy()
                     num_ranks = len(sorted_ranks)
 
-                    # we have fixed number of bins = 4.
-                    # Example: max=100, min=0, size=(100-0)/4=25
-                    bins = 4
+                    # we have fixed number of bins = 10.
+                    # Example: max=100, min=0, size=(100-0)/10=10
+                    bins = 10
                     max = sorted_metric[0]
                     min = sorted_metric[-1]
                     size = (max - min) / bins
@@ -128,20 +128,24 @@ class Chopper:
                             # bin_end=52.93999, max = 53.94.
                             if i == bins - 1:
                                 bin_end = max
+                            if i == 0:
+                                bin_start = min
+
                             # count the number of ranks in a bin
                             count = len(
                                 sorted_rank_metric[
                                     (sorted_rank_metric[metric_column] > bin_start)
                                     & (sorted_rank_metric[metric_column] <= bin_end)
-                                ]
+                                ]["rank"].unique()
                             )
                             freqs.append(count)
+
                         # the first rank's value can be equal to min so
                         # we count them as well.
                         freqs[0] += len(
                             sorted_rank_metric[
                                 (sorted_rank_metric[metric_column] == min)
-                            ]
+                            ]["rank"].unique()
                         )
                     else:
                         # Example: if min=max=0 and num_ranks=2, freqs=[2, 2]
@@ -253,7 +257,7 @@ class Chopper:
         graphframe2.default_metric = metric_column + ".imbalance"
         # sort by default_metric's load imbalance
         graphframe2.dataframe = graphframe2.dataframe.sort_values(
-            by=[graphframe2.default_metric], ascending=False
+            by=[metric_column + ".mean"], ascending=False
         )
         return graphframe2
 
