@@ -1040,7 +1040,7 @@ class GraphFrame:
             callpath_to_node_dicts = {}
 
         graphframe_cp = self.deepcopy()
-        graphframe_cp.drop_index_levels()
+        graphframe_cp.drop_index_levels(np.max)
 
         # traverse the graph
         for node in graphframe_cp.graph.traverse():
@@ -1227,7 +1227,7 @@ class GraphFrame:
         for idx in range(len(graphframes)):
             # do not change the given gfs.
             # gf_copy = graphframes[idx].deepcopy()
-            graphframes[idx].drop_index_levels()
+            graphframes[idx].drop_index_levels(np.max)
             gf_to_visited_node[graphframes[idx]] = []
 
             # rename inc/exc metrics. update dataframe, default metric,
