@@ -71,7 +71,7 @@ class ScorePReader:
                 # Store the value as it is if it is not MinValue or MaxValue.
                 metric_value = metric_values.location_value(pycubexr_cnode, location.id)
 
-            if metric_name != "time" and metric.metric_type == "INCLUSIVE":
+            if metric.metric_type == "INCLUSIVE":
                 metric_name = "{}{}".format(metric.name, " (inc)")
 
             node_dict[callpath_rank_thread].update({metric_name: metric_value})
@@ -207,7 +207,7 @@ class ScorePReader:
                 # example metrics: 'name', 'visits', 'time (inc)', 'min_time',
                 # 'max_time', 'bytes_sent', 'bytes_received'.
                 metric_values = cubex.get_metric_values(metric)
-                if metric.name == "min_time" or metric.name == "max_time":
+                if metric.metric_type == "INCLUSIVE":
                     self.inc_metrics.append(metric.name + " (inc)")
                 else:
                     self.exc_metrics.append(metric.name)
@@ -285,8 +285,20 @@ class ScorePReader:
             # Stack the dataframe
             dataframe = dataframe.stack()
 
-        default_metric = "time"
+        # The root node is just the name of the program and
+        # does not represent a function, statement or loop.
+        # It's time (inc) value is 0, so we should set it.
+        for root in graph.roots:
+            total_val = 0
+            for child in root.children:
+                total_val += dataframe.loc[child, "time (inc)"].to_numpy()
+            dataframe.loc[root, "time (inc)"] = total_val
 
-        return hatchet.graphframe.GraphFrame(
-            graph, dataframe, self.exc_metrics, self.inc_metrics, default_metric
+        gf = hatchet.graphframe.GraphFrame(
+            graph, dataframe, self.exc_metrics, self.inc_metrics
         )
+
+        # Exclusive time metric is missing in Score-P output.
+        gf.calculate_exclusive_metrics("time (inc)")
+
+        return gf
