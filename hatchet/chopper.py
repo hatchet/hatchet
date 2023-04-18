@@ -293,3 +293,82 @@ class Chopper:
         pivot_df = result.pivot_table(index=pivot_index, columns=columns, values=metric)
 
         return pivot_df
+
+    @staticmethod
+    def speedup_efficiency(
+        graphframes=[],
+        weak=False,
+        strong=False,
+        efficiency=False,
+        speedup=False,
+        pivot_index="num_processes",
+        metrics=["time"],
+        threshold=None,
+    ):
+
+        # avoid circular import
+        from .graphframe import GraphFrame
+
+        assert (
+            strong is True or weak is True
+        ), "at least one of the 'strong' and 'weak' parameters should be True."
+        assert (
+            efficiency is True or speedup is True
+        ), "at least one of the 'efficiency' and 'speedup' parameters should be True."
+        assert (
+            efficiency is False or speedup is False
+        ), "only one of the 'efficiency' and 'speedup' parameters can be True."
+        assert (
+            weak is False or speedup is False
+        ), "speed up can be calculated only for strong scaling."
+
+        # GraphFrame.unify_multiple_graphframes(graphframes)
+
+        process_to_gf = []
+        for gf in graphframes:
+            assert (
+                "num_processes" in gf.metadata.keys()
+            ), "pivot_index missing from GraphFrame metadata: use update_metadata() to specify."
+            process_to_gf.append((gf.metadata[pivot_index], gf))
+
+        GraphFrame.unify_multiple_graphframes(graphframes)
+
+        process_to_gf = sorted(process_to_gf, key=lambda x: x[0])
+        base = process_to_gf[0][0]
+
+        result_df = pd.DataFrame()
+        for column in process_to_gf[0][1].dataframe.columns:
+            if (
+                column
+                not in process_to_gf[0][1].inc_metrics + process_to_gf[0][1].exc_metrics
+            ):
+                result_df[column] = process_to_gf[0][1].dataframe[column]
+
+        for other in process_to_gf[1:]:
+            print(other[0])
+            for metric in metrics:
+                new_column_name = "{}.{}".format(other[0], metric)
+                if weak:
+                    # weak scaling efficiency
+                    result_df[new_column_name] = (
+                        process_to_gf[0][1].dataframe[metric]
+                        / other[1].dataframe[metric]
+                    )
+                else:
+                    if speedup:
+                        # strong scaling speedup
+                        result_df[new_column_name] = (
+                            process_to_gf[0][1].dataframe[metric]
+                            / other[1].dataframe[metric]
+                        )
+                    else:
+                        # strong scaling efficiency
+                        result_df[new_column_name] = (
+                            (process_to_gf[0][1].dataframe[metric] * base)
+                            / other[1].dataframe[metric]
+                            * other[0]
+                        )
+        result_df.sort_values(
+            "{}.{}".format(process_to_gf[-1][0], metric), ascending=True, inplace=True
+        )
+        return result_df
