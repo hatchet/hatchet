@@ -346,6 +346,40 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
+    def from_omnitrace(file_or_files, **kwargs):
+        # import this lazily to avoid circular dependencies
+        from .readers.perfetto_reader import PerfettoReader
+        import glob
+        import os
+
+        files = []
+        filename_list = (
+            file_or_files
+            if isinstance(file_or_files, (list, tuple))
+            else [file_or_files]
+        )
+
+        for filename in filename_list:
+            if os.path.exists(filename) and os.path.isdir(filename):
+                filename = os.path.join(filename, "*.proto")
+
+            if not os.path.exists(filename):
+                files += glob.glob(
+                    filename,
+                    recursive=kwargs["recursive"] if "recursive" in kwargs else False,
+                )
+            else:
+                files += [filename]
+
+        if len(files) == 0:
+            raise ValueError(
+                "No omnitrace perfetto files found in '{}'".format(filename_list)
+            )
+
+        return PerfettoReader(files, **kwargs).read(**kwargs)
+
+    @staticmethod
+    @Logger.loggable
     def from_lists(*lists):
         """Make a simple GraphFrame from lists.
 
