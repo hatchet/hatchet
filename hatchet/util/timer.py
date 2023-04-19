@@ -7,6 +7,7 @@ from collections import OrderedDict
 from contextlib import contextmanager
 from datetime import datetime
 from io import StringIO
+from functools import wraps
 
 
 class Timer(object):
@@ -27,6 +28,7 @@ class Timer(object):
 
         self._phase = phase
         self._start_time = now
+        self._times[self._phase] = None
         return delta
 
     def end_phase(self):
@@ -42,15 +44,57 @@ class Timer(object):
         self._phase = None
         self._start_time = None
 
-    def __str__(self):
+    def to_string(self, header="Times:\n"):
+        _times = [[x, y] for x, y in self._times.items() if y is not None]
+        _fmt = "    %-{}s %.2fs\n".format(
+            min([73, max([20] + [len(x) + 1 for x, y in _times])])
+        )
         out = StringIO()
-        out.write("Times:\n")
-        for phase, delta in self._times.items():
-            out.write("    %-20s %.2fs\n" % (phase + ":", delta.total_seconds()))
+        out.write(header)
+        for phase, delta in _times:
+            out.write(_fmt % ("{}:".format(phase), delta.total_seconds()))
         return out.getvalue()
+
+    def __str__(self):
+        return self.to_string()
+
+    def __iadd__(self, rhs):
+        for phase, delta in rhs._times.items():
+            if self._times.get(phase):
+                self._times[phase] = self._times.get(phase) + delta
+            else:
+                self._times[phase] = delta
+        return self
 
     @contextmanager
     def phase(self, name):
-        self.start_phase(name)
+        _timer = Timer()
+        _timer.start_phase(name)
         yield
-        self.end_phase()
+        _timer.end_phase()
+        self += _timer
+
+    def decorator(self, name):
+        return TimerDecorator(self, name)
+
+
+class TimerDecorator(object):
+    """Wrapper around Timer to provide a decorator"""
+
+    def __init__(self, timer, name):
+        self._timer = timer
+        self._name = name
+
+    def __call__(self, func):
+        """Decorator"""
+
+        @wraps(func)
+        def function_wrapper(*args, **kwargs):
+            _timer = Timer()
+            _timer.start_phase(self._name)
+            result = func(*args, **kwargs)
+            _timer.end_phase()
+            self._timer += _timer
+            return result
+
+        return function_wrapper
