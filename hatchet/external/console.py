@@ -75,18 +75,16 @@ class ConsoleRenderer:
             self.primary_metric = self.metric_columns
             self.second_metric = None
         elif isinstance(self.metric_columns, list):
+            self.primary_metric = self.metric_columns[0]
             if len(self.metric_columns) > 2:
                 warnings.warn(
                     "More than 2 metrics specified in metric_column=. Tree() will only show 2 metrics at a time. The remaining metrics will not be shown.",
                     SyntaxWarning,
                 )
-                self.primary_metric = self.metric_columns[0]
                 self.second_metric = self.metric_columns[1]
             elif len(self.metric_columns) == 2:
-                self.primary_metric = self.metric_columns[0]
                 self.second_metric = self.metric_columns[1]
             elif len(self.metric_columns) == 1:
-                self.primary_metric = self.metric_columns[0]
                 self.second_metric = None
 
         if self.primary_metric not in dataframe.columns:
@@ -105,9 +103,8 @@ class ConsoleRenderer:
                 )
             )
 
-        # grab the min and max value for the primary metric, ignoring inf and
-        # nan values
-
+        # grab the min and max value of the primary metric of a given rank
+        # across all the nodes in the CCT, ignoring inf and nan values
         if "rank" in dataframe.index.names:
             metric_series = (dataframe.xs(self.rank, level=1))[self.primary_metric]
         else:
@@ -125,6 +122,7 @@ class ConsoleRenderer:
         else:
             self.lr_arrows = {"◀": u"< ", "▶": u"> "}
 
+        #TODO: probably better to sort by time
         for root in sorted(roots, key=lambda n: n.frame):
             result += self.render_frame(root, dataframe)
 
@@ -195,7 +193,7 @@ class ConsoleRenderer:
 
     def render_frame(self, node, dataframe, indent=u"", child_indent=u""):
         node_depth = node._depth
-        if node_depth < self.depth:
+        if node_depth <= self.depth:
             # set dataframe index based on whether rank and thread are part of
             # the MultiIndex
             if "rank" in dataframe.index.names and "thread" in dataframe.index.names:
@@ -268,6 +266,7 @@ class ConsoleRenderer:
             # large complex graphs
             if node not in self.visited:
                 self.visited.append(node)
+                #TODO: probably better to sort by time
                 sorted_children = sorted(node.children, key=lambda n: n.frame)
                 if sorted_children:
                     last_child = sorted_children[-1]
