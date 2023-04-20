@@ -122,7 +122,7 @@ class ConsoleRenderer:
         else:
             self.lr_arrows = {"◀": u"< ", "▶": u"> "}
 
-        #TODO: probably better to sort by time
+        # TODO: probably better to sort by time
         for root in sorted(roots, key=lambda n: n.frame):
             result += self.render_frame(root, dataframe)
 
@@ -266,7 +266,7 @@ class ConsoleRenderer:
             # large complex graphs
             if node not in self.visited:
                 self.visited.append(node)
-                #TODO: probably better to sort by time
+                # TODO: probably better to sort by time
                 sorted_children = sorted(node.children, key=lambda n: n.frame)
                 if sorted_children:
                     last_child = sorted_children[-1]
