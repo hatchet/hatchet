@@ -55,6 +55,7 @@ class GraphFrame:
         inc_metrics,
         default_metric="time",
         metadata=None,
+        attributes=None,
     ):
         """Create a new GraphFrame from a graph and a dataframe.
 
@@ -69,6 +70,15 @@ class GraphFrame:
                  from the graph, and potentially other indexes.
              exc_metrics: list of names of exclusive metrics in the dataframe.
              inc_metrics: list of names of inclusive metrics in the dataframe.
+             default_metric (str): default column to use if one is needed but
+                 not explicitly specified
+             metadata (dict): information about the dataframe, such as the naming
+                 convention for inclusive/exclusive metrics
+             attributes (dict): a dictionary of names + values used by readers to
+                 extend the Graphframe object. For example, if the underlying reader
+                 needs to provide important and easily accessible information or
+                 the reader needs to provide an additional function(s) for
+                 manipulating/verifying the data.
         """
         if graph is None:
             raise ValueError("GraphFrame() requires a Graph")
@@ -94,6 +104,27 @@ class GraphFrame:
             self.metadata["hatchet_inclusive_suffix"] = " (inc)"
         if "hatchet_exclusive_suffix" not in self.metadata:
             self.metadata["hatchet_exclusive_suffix"] = " (exc)"
+
+        try:
+            attributes = dict(attributes) if attributes is not None else {}
+        except TypeError as e:
+            print(
+                "graphframe attributes argument must be convertable to dict: {}".format(
+                    e
+                )
+            )
+            raise
+
+        # create attributes
+        self.attributes = attributes.keys()
+        for x, y in attributes.items():
+            if hasattr(self, x):
+                raise ValueError(
+                    "cannot create graphframe attribute '{}' because it already exists".format(
+                        x
+                    )
+                )
+            setattr(self, x, y)
 
     @staticmethod
     @Logger.loggable
@@ -385,6 +416,7 @@ class GraphFrame:
             list(self.inc_metrics),
             self.default_metric,
             dict(self.metadata),
+            attributes=dict([[x, getattr(self, x)] for x in self.attributes]),
         )
 
     @Logger.loggable
@@ -408,6 +440,7 @@ class GraphFrame:
             list(self.inc_metrics),
             self.default_metric,
             dict(self.metadata),
+            attributes=dict([[x, getattr(self, x)] for x in self.attributes]),
         )
 
     def drop_index_levels(self, function=np.mean):
@@ -515,6 +548,7 @@ class GraphFrame:
             list(self.inc_metrics),
             self.default_metric,
             dict(self.metadata),
+            attributes=dict([[x, getattr(self, x)] for x in self.attributes]),
         )
 
         if squash:
@@ -617,6 +651,7 @@ class GraphFrame:
             list(self.inc_metrics),
             self.default_metric,
             dict(self.metadata),
+            attributes=dict([[x, getattr(self, x)] for x in self.attributes]),
         )
         new_gf.calculate_inclusive_metrics()
         return new_gf
@@ -1353,6 +1388,7 @@ class GraphFrame:
             list(self.inc_metrics),
             self.default_metric,
             dict(self.metadata),
+            attributes=dict([[x, getattr(self, x)] for x in self.attributes]),
         )
         new_gf.drop_index_levels()
         return new_gf
