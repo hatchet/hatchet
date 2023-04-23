@@ -12,14 +12,21 @@ Subpackages
 Submodules
 ----------
 
-hatchet.cython\_modules.subtract\_metrics module
-------------------------------------------------
+hatchet.cython\_modules.graphframe\_modules module
+--------------------------------------------------
 
-.. automodule:: hatchet.cython_modules.subtract_metrics
+.. automodule:: hatchet.cython_modules.graphframe_modules
    :members:
    :undoc-members:
    :show-inheritance:
 
+hatchet.cython\_modules.reader\_modules module
+----------------------------------------------
+
+.. automodule:: hatchet.cython_modules.reader_modules
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------
