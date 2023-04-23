@@ -10,5 +10,5 @@ PyYAML
 cython
 multiprocess
 textX
-caliper-reader
+caliper-reader == 0.3.0
 pycubexr; python_version >= '3.6'
