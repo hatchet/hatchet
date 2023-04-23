@@ -11,9 +11,18 @@ Subpackages
    hatchet.external
    hatchet.readers
    hatchet.util
+   hatchet.writers
 
 Submodules
 ----------
+
+hatchet.chopper module
+----------------------
+
+.. automodule:: hatchet.chopper
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 hatchet.frame module
 --------------------
@@ -48,13 +57,20 @@ hatchet.node module
    :show-inheritance:
 
 hatchet.query module
------------------------------
+--------------------
 
 .. automodule:: hatchet.query
    :members:
    :undoc-members:
    :show-inheritance:
 
+hatchet.version module
+----------------------
+
+.. automodule:: hatchet.version
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------

@@ -4,14 +4,21 @@ hatchet.cython\_modules.libs package
 Submodules
 ----------
 
-hatchet.cython\_modules.libs.subtract\_metrics module
------------------------------------------------------
+hatchet.cython\_modules.libs.graphframe\_modules module
+-------------------------------------------------------
 
-.. automodule:: hatchet.cython_modules.libs.subtract_metrics
+.. automodule:: hatchet.cython_modules.libs.graphframe_modules
    :members:
    :undoc-members:
    :show-inheritance:
 
+hatchet.cython\_modules.libs.reader\_modules module
+---------------------------------------------------
+
+.. automodule:: hatchet.cython_modules.libs.reader_modules
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Module contents
 ---------------

@@ -4,6 +4,14 @@ hatchet.util package
 Submodules
 ----------
 
+hatchet.util.colormaps module
+-----------------------------
+
+.. automodule:: hatchet.util.colormaps
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 hatchet.util.config module
 --------------------------
 
@@ -36,6 +44,14 @@ hatchet.util.executable module
    :undoc-members:
    :show-inheritance:
 
+hatchet.util.logger module
+--------------------------
+
+.. automodule:: hatchet.util.logger
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 hatchet.util.profiler module
 ----------------------------
 
@@ -51,7 +67,6 @@ hatchet.util.timer module
    :members:
    :undoc-members:
    :show-inheritance:
-
 
 Module contents
 ---------------

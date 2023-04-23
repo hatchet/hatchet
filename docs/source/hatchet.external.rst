@@ -12,7 +12,6 @@ hatchet.external.console module
    :undoc-members:
    :show-inheritance:
 
-
 Module contents
 ---------------
 
