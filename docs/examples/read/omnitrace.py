@@ -29,6 +29,9 @@ if __name__ == "__main__":
         "-p", "--precision", default=6, type=int, help="Data value precision"
     )
     parser.add_argument(
+        "-d", "--max-depth", default=None, type=int, help="Max call-stack depth"
+    )
+    parser.add_argument(
         "-c",
         "--context",
         default="file",
@@ -103,6 +106,7 @@ if __name__ == "__main__":
         files,
         include_category=[] if args.use_attributes else args.include,
         exclude_category=[] if args.use_attributes else args.exclude,
+        max_depth=args.max_depth,
         verbose=args.verbose,
         report=_report,
     )
