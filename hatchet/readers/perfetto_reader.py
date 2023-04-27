@@ -1,5 +1,4 @@
-# Copyright 2020-2023 The Regents of the University of California, through
-# Lawrence Berkeley National Laboratory, and other Hatchet Project Developers.
+# Copyright 2023 Advanced Micro Devices, Inc., and other Hatchet Project Developers.
 # See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
@@ -46,6 +45,7 @@ class PerfettoReader:
         self.timer = Timer()
         self.filename = filename if isinstance(filename, (list, tuple)) else [filename]
         self.metadata = {"hatchet_inclusive_suffix": ".inc"}
+        self.default_metric = "time{}".format(self.metadata["hatchet_inclusive_suffix"])
         self.verbose = 0
         self.report = []
         self.exclude = []
@@ -60,6 +60,7 @@ class PerfettoReader:
         self.trace_processor = []
         self.compiled_patterns = []
         self.thread_index_regex = None
+        self.max_depth = None
         self.configure(**kwargs)
 
     def configure(self, **kwargs):
@@ -114,6 +115,8 @@ class PerfettoReader:
                 self.trace_processor += [
                     TraceProcessor(trace=(f)) for f in _new_filenames
                 ]
+
+        self.max_depth = kwargs.get("max_depth", None)
 
         self.timer.end_phase()
 
@@ -198,7 +201,7 @@ class PerfettoReader:
 
         with self.timer.phase("TP slice query"):
             self.dataframe = self.query_tp(
-                "SELECT slice.slice_id, slice.track_id, slice.category, slice.depth, slice.stack_id, slice.parent_stack_id, slice.dur, slice.name FROM slice"
+                "SELECT slice_id, track_id, category, depth, stack_id, parent_stack_id, ts, dur, name FROM slice"
             )
 
         with self.timer.phase("category filter gen"):
@@ -548,57 +551,61 @@ class PerfettoReader:
 
             return (_keys, _extra)
 
+        copy_cols = []
         list_roots = []
         track_id_dict = OrderedDict()
         callpath_to_node = {}
 
-        _time_inc = "time{}".format(self.metadata["hatchet_inclusive_suffix"])
+        def_metric = self.default_metric
 
         df = self.dataframe
-        _data = [
-            df["tp_index"].to_list(),
-            df["track_id"].to_list(),
-            df["slice_id"].to_list(),
-            df["name"].to_list(),
-            df["depth"].to_list(),
-            df["stack_id"].to_list(),
-            df["parent_stack_id"].to_list(),
-            df["category"].to_list(),
-            df["dur"].to_list(),
+        _cols = [
+            "tp_index",
+            "track_id",
+            "category",
+            "slice_id",
+            "stack_id",
+            "parent_stack_id",
+            "name",
+            "depth",
+            "ts",
+            "dur",
         ]
+        _data = [df[x].to_list() for x in _cols]
 
         assert min([len(x) for x in _data]) == max([len(x) for x in _data])
 
-        copy_cols = []
         self.timer.start_phase("slice processing")
 
-        for _tp_index in set(_data[0]):
-            for _track_id in set(_data[1]):
-                assert _tp_index < len(self.track_ids)
-                assert _track_id in self.track_ids[_tp_index].keys()
+        for _tp_index, _track_id in zip(
+            _data[_cols.index("tp_index")], _data[_cols.index("track_id")]
+        ):
+            assert _tp_index < len(self.track_ids)
+            assert _track_id in self.track_ids[_tp_index].keys()
 
-                _track_info = self.track_ids[_tp_index][_track_id]
-                _rank = _track_info["rank"]
-                _thread = _track_info["thread"]
+            _track_info = self.track_ids[_tp_index][_track_id]
+            _rank = _track_info["rank"]
+            _thread = _track_info["thread"]
 
-                if _tp_index not in track_id_dict:
-                    track_id_dict[_tp_index] = OrderedDict()
-                if _rank not in track_id_dict[_tp_index]:
-                    track_id_dict[_tp_index][_rank] = OrderedDict()
-                if _thread not in track_id_dict[_tp_index][_rank]:
-                    track_id_dict[_tp_index][_rank][_thread] = OrderedDict()
+            if _tp_index not in track_id_dict:
+                track_id_dict[_tp_index] = OrderedDict()
+            if _rank not in track_id_dict[_tp_index]:
+                track_id_dict[_tp_index][_rank] = OrderedDict()
+            if _thread not in track_id_dict[_tp_index][_rank]:
+                track_id_dict[_tp_index][_rank][_thread] = OrderedDict()
 
-                track_id_dict[_tp_index][_rank][_thread] = {0: None}
+            track_id_dict[_tp_index][_rank][_thread] = {0: None}
 
         for (
             _tp_index,
             _track_id,
+            _category,
             _slice_id,
-            _name,
-            _depth,
             _stack_id,
             _parent_stack_id,
-            _category,
+            _name,
+            _depth,
+            _ts,
             _dur,
         ) in zip(*_data):
             _track_info = self.track_ids[_tp_index][_track_id]
@@ -611,19 +618,25 @@ class PerfettoReader:
             if _parent_stack_id not in _track_id_dict:
                 continue
 
+            # reduce processing time
+            if self.max_depth is not None and _depth > self.max_depth:
+                continue
+
             _metrics = {}
             _metrics["rank"] = _track_info["rank"]
             _metrics["thread"] = _track_info["thread"]
             _metrics["pid"] = _track_info["pid"]
             _metrics["tid"] = _track_info["tid"]
+            _metrics["track_id"] = _track_id
+            _metrics["slice_id"] = _slice_id
             _metrics["stack_id"] = _stack_id
             _metrics["parent_stack_id"] = _parent_stack_id
-            _metrics["slice_id"] = _slice_id
-            _metrics[_time_inc] = float(_dur) * 1.0e-9  # nsec -> sec
+            _metrics["ts"] = _ts
+            _metrics[def_metric] = float(_dur) * 1.0e-9  # nsec -> sec
 
             _frame_attrs, _extra = get_frame_attributes(_name)
-            _extra["category"] = _category
             _extra["tp_index"] = _tp_index
+            _extra["category"] = _category
             _extra["depth"] = _depth
 
             if not copy_cols:
@@ -673,10 +686,9 @@ class PerfettoReader:
                 fill_value=0,
             )
 
-            inc_metrics = [_time_inc]
+            inc_metrics = [self.default_metric]
             exc_metrics = []
-
-            return (graph, dataframe, exc_metrics, inc_metrics, _time_inc)
+            return (graph, dataframe, exc_metrics, inc_metrics, self.default_metric)
 
     def read(self, **kwargs):
         """Read perfetto json."""
