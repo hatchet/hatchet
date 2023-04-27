@@ -1,5 +1,4 @@
-# Copyright 2020-2023 The Regents of the University of California, through
-# Lawrence Berkeley National Laboratory, and other Hatchet Project Developers.
+# Copyright 2023 Advanced Micro Devices, Inc., and other Hatchet Project Developers.
 # See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
@@ -60,11 +59,11 @@ def test_graphframe_mpi_single(omnitrace_mpi_single):
         omnitrace_mpi_single, include_category=["host"], verbose=3, report=["none"]
     )
 
-    assert len(gf.dataframe) == 672
+    assert len(gf.dataframe) == 562
 
     gf = gf.squash()
 
-    assert len(gf.dataframe) == 74
+    assert len(gf.dataframe) == 52
 
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
@@ -75,11 +74,11 @@ def test_graphframe_mpi_group(omnitrace_mpi_group):
         omnitrace_mpi_group, include_category=["host"], verbose=0, report=["all"]
     )
 
-    assert len(gf.dataframe) == 8640
+    assert len(gf.dataframe) == 6880
 
     gf = gf.squash()
 
-    assert len(gf.dataframe) == 1088
+    assert len(gf.dataframe) == 736
 
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
@@ -100,26 +99,37 @@ def test_sampling_mpi_group(omnitrace_mpi_group):
         precision=3,
         name_column="name",
         expand_name=True,
-        context_column="file",
+        context_column="category",
         rank=0,
         thread=0,
-        depth=10000,
+        depth=8,
         highlight_name=False,
         colormap="RdYlGn",
         invert_colormap=False,
     )
 
     output_v = "{}".format(output).split("\n")
-    matching_lines = [x.strip() if "gotcha_wrap" in x else None for x in output_v]
-    matching_count = sum([1 if x is not None else 0 for x in matching_lines])
 
-    print(
-        "matching 'gotcha_wrap' lines (n={}):\n    {}".format(
-            matching_count, "\n    ".join([x for x in matching_lines if x is not None])
+    def get_line_count(key, data, ignore=[]):
+        matching_lines = [x.strip() for x in data if key in x]
+        for itr in ignore:
+            matching_lines = [x for x in matching_lines if itr not in x]
+        matching_count = len(matching_lines)
+
+        print(
+            "matching '{}' lines (n={}):\n    {}".format(
+                key,
+                matching_count,
+                "\n    ".join([x for x in matching_lines if x is not None]),
+            )
         )
-    )
+        return matching_count
 
-    assert matching_count == 385
+    assert get_line_count("_libc_start_main", output_v) == 472
+    assert get_line_count("main", output_v, ["__libc_start_main", "run_main"]) == 479
+    assert get_line_count("run_main", output_v) == 15
+    assert get_line_count("PMPI_Init_thread", output_v) == 8
+    assert get_line_count("mca_base_framework_open", output_v) == 8
 
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
@@ -220,6 +230,7 @@ def test_read_attribute_mpi_group(omnitrace_mpi_group):
     assert gf.available_categories() == [
         "host",
         "mpi",
+        "overflow_sampling",
         "pthread",
         "timer_sampling",
     ]
@@ -228,7 +239,7 @@ def test_read_attribute_mpi_group(omnitrace_mpi_group):
 
     assert gf.selected_categories() == ["host", "mpi", "pthread"]
 
-    assert len(gf.dataframe) == 1856
+    assert len(gf.dataframe) == 1824
 
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
@@ -311,10 +322,26 @@ def test_graphframe_to_literal(omnitrace_mpi_aggregate):
 
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
-def test_default_metric(omnitrace_mpi_single):
+def test_default_metric_mpi_single_instrumentation(omnitrace_mpi_single):
     """Validation test for GraphFrame object using default metric field and to_{dot,flamegraph}"""
     gf = GraphFrame.from_omnitrace(
-        omnitrace_mpi_single, exclude_category=["timer_sampling"]
+        omnitrace_mpi_single,
+        exclude_category=["timer_sampling"],
+    )
+
+    for func in ["tree", "to_dot", "to_flamegraph"]:
+        lhs = "{}\n{}".format(func, getattr(gf, func)(gf.default_metric))
+        rhs = "{}\n{}".format(func, getattr(gf, func)())
+        assert lhs == rhs
+
+
+@pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
+def test_default_metric_mpi_single_sampling(omnitrace_mpi_single):
+    """Validation test for GraphFrame object using default metric field and to_{dot,flamegraph}"""
+    gf = GraphFrame.from_omnitrace(
+        omnitrace_mpi_single,
+        include_category=["timer_sampling"],
+        max_depth=2,
     )
 
     for func in ["tree", "to_dot", "to_flamegraph"]:
