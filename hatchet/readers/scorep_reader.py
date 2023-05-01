@@ -61,7 +61,6 @@ class ScorePReader:
             metric_name = metric.name
             metric_value = None
             if metric_name == "min_time" or metric_name == "max_time":
-                metric_name = "{}{}".format(metric.name, " (inc)")
                 # pycubexr stores min and max values in MinValue and MaxValue
                 # format. We convert them to float.
                 metric_value = metric_values.location_value(
