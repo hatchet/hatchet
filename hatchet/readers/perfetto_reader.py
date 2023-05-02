@@ -21,25 +21,66 @@ class PerfettoReader:
 
     def __init__(self, filename, select=None, **kwargs):
         """Arguments:
-        filename (str or file-stream or dict or None):
-            Valid argument types are:
+        filename (str or list/tuple of str):
+            Valid arguments should be a list of files
 
-            1. Filename for a perfetto JSON tree file
-            2. Open file stream to one of these files
-            3. Dictionary from perfetto JSON tree
+        verbose (int):
+            Information about processes, threads, categories, performance, etc.
 
-        select (list of str):
-            A list of strings which match the component enumeration names, e.g. ["cpu_clock"].
+        report (list of str):
+            alternative for verbose. Accepts:
 
-        per_thread (boolean):
-            Ensures that when applying filters to the graphframe, frames with
-            identical name/file/line/etc. info but from different threads are not
-            combined
+            - category (report categories in files)
+            - process (report process info in files)
+            - threads (report thread info in files)
+            - track_ids (report track id info in files)
+            - profile (report timing info from processing)
 
-        per_rank (boolean):
-            Ensures that when applying filters to the graphframe, frames with
-            identical name/file/line/etc. info but from different ranks are not
-            combined
+        exclude_category (list of str):
+            Every slice has an associated category, e.g., slices from sampling may be
+            in "sampling" category, slices from instrumentation may be in "instrumentation"
+            category. The categories in protobuf is specific to the tool that generated the
+            protobuf. Use this option to exclude the slices from specific categories
+
+        include_category (list of str):
+            Every slice has an associated category, e.g., slices from sampling may be
+            in "sampling" category, slices from instrumentation may be in "instrumentation"
+            category. The categories in protobuf is specific to the tool that generated the
+            protobuf. Use this option to restrict the slices to the specified categories
+
+        default_categories (list of str):
+            Use this option as a safety value when include/exclude are used. These categories
+            are used when include/exclude category filtering resulted in no data in the data
+            frame. Accepts "all" if you want to fallback to just including all categories.
+
+        patterns (list of regex str):
+            Use this option to specify how the function/file/line are extracted from labels.
+            For example, the default patterns are:
+
+                r"(?P<func>.*) \\[(?P<file>\\S+):(?P<line>[0-9]+)\\]$"
+                r"(?P<func>.*) \\[(?P<file>\\S+)\\]$"
+                r"^(?P<file>\\S+):(?P<line>[0-9]+)$"
+
+            To extract the function/file/line from the labeling patterns:
+
+                func [file:line]
+                func [file]
+                file:line
+
+            respectively.
+
+        thread_index_regex (regex str):
+            Use this option to determine thread IDs from the name of the threads. For example,
+            Omnitrace labels certain process tracks "Thread X (S)" to indicate that the given
+            process track are samples of Thread X. The default pattern is:
+
+                r"(T|t)hread (?P<thread_index>[0-9]+)( |$)"
+
+            to extract the "thread_index" field.
+
+        max_depth (int):
+            Set this a positive non-zero number signifying the maximum call-stack depth to
+            process. This can significantly reduce the processing time for large traces.
         """
 
         self.timer = Timer()
