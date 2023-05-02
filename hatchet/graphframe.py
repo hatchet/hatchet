@@ -346,7 +346,8 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
-    def from_omnitrace(file_or_files, **kwargs):
+    def from_perfetto(file_or_files, **kwargs):
+        """Create a GraphFrame from perfetto files"""
         # import this lazily to avoid circular dependencies
         from .readers.perfetto_reader import PerfettoReader
         import glob
@@ -377,6 +378,12 @@ class GraphFrame:
             )
 
         return PerfettoReader(files, **kwargs).read(**kwargs)
+
+    @staticmethod
+    @Logger.loggable
+    def from_omnitrace(file_or_files, **kwargs):
+        """In the future, this should support both omnitrace perfetto traces and timemory JSON files"""
+        return GraphFrame.from_perfetto(file_or_files, **kwargs)
 
     @staticmethod
     @Logger.loggable
