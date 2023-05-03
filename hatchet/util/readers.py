@@ -160,8 +160,8 @@ def graphframe_indexing_helper(
         names=indices,
     )
     df_value.set_index(indices, inplace=True)
-    df_value.sort_index(inplace=True)
     df_value = df_value.reindex(new_index, fill_value=fill_value)
+    df_value.sort_index(inplace=True)
 
     # set columns to the list of columns to pull from Node.frame and
     # propagate to a column
