@@ -931,3 +931,55 @@ def sw4_caliper_cuda_activity_profile_summary_cali(data_dir, tmpdir):
     tmpfile = os.path.join(str(tmpdir), "caliper_cuda_activity_profile_summary_v2.cali")
 
     return tmpfile
+
+
+@pytest.fixture
+def omnitrace_python_source(data_dir, tmpdir):
+    """single rank, single thread"""
+    omnitrace_data_dir = os.path.join(data_dir, "perfetto")
+    omnitrace_data_file = "python-source.proto"
+
+    shutil.copy(os.path.join(omnitrace_data_dir, omnitrace_data_file), str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), omnitrace_data_file)
+
+    return tmpfile
+
+
+@pytest.fixture
+def omnitrace_mpi_aggregate(data_dir, tmpdir):
+    """4 ranks each with 2 threads in one file"""
+    omnitrace_data_dir = os.path.join(data_dir, "perfetto")
+    omnitrace_data_file = "mpi-binary-rewrite-all.proto"
+
+    shutil.copy(os.path.join(omnitrace_data_dir, omnitrace_data_file), str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), omnitrace_data_file)
+
+    return tmpfile
+
+
+@pytest.fixture
+def omnitrace_mpi_single(data_dir, tmpdir):
+    """1 rank with 2 threads in one file"""
+    omnitrace_data_dir = os.path.join(data_dir, "perfetto")
+    omnitrace_data_file = "mpi-binary-rewrite-0.proto"
+
+    shutil.copy(os.path.join(omnitrace_data_dir, omnitrace_data_file), str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), omnitrace_data_file)
+
+    return tmpfile
+
+
+@pytest.fixture
+def omnitrace_mpi_group(data_dir, tmpdir):
+    """4 ranks each with 2 threads in 4 files"""
+    omnitrace_data_dir = os.path.join(data_dir, "perfetto")
+    omnitrace_data_file = "mpi-binary-rewrite-{}.proto"
+
+    for n in range(4):
+        shutil.copy(
+            os.path.join(omnitrace_data_dir, omnitrace_data_file.format(n)), str(tmpdir)
+        )
+
+    tmpfile = os.path.join(str(tmpdir), omnitrace_data_file.format("*"))
+
+    return tmpfile
