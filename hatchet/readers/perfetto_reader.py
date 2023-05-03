@@ -333,6 +333,8 @@ class PerfettoReader:
                     else thread.track_name
                 )
                 for process in self.process.itertuples():
+                    if process.tp_index != thread.tp_index:
+                        continue
                     _process_name = (
                         process.process_name
                         if process.track_name is None
@@ -592,7 +594,6 @@ class PerfettoReader:
 
             return (_keys, _extra)
 
-        copy_cols = []
         list_roots = []
         track_id_dict = OrderedDict()
         callpath_to_node = {}
@@ -680,11 +681,9 @@ class PerfettoReader:
             _extra["category"] = _category
             _extra["depth"] = _depth
 
-            if not copy_cols:
-                copy_cols = sorted(
-                    list(set(list(_frame_attrs.keys()) + list(_extra.keys())))
-                )
-
+            # look up the parent node specific to the TP index, rank, and thread
+            # stack ID is assigned by perfetto and parent stack ID is the
+            # stack ID of it's parent.
             _parent_node = _track_id_dict[_parent_stack_id]
 
             hnode = Node(Frame(_frame_attrs, **_extra), None)
@@ -694,10 +693,13 @@ class PerfettoReader:
             else:
                 list_roots.append(hnode)
 
+            # make sure this stack ID is unique for the
+            # TP index, rank, and thread and is equal to a
+            # previously seen node with the same stack ID
             if _stack_id not in _track_id_dict:
                 _track_id_dict[_stack_id] = hnode
             elif _track_id_dict[_stack_id] != hnode:
-                _existing = track_id_dict[_tp_index][_rank][_thread][_stack_id]
+                _existing = _track_id_dict[_stack_id]
                 raise RuntimeError(
                     f"{_stack_id} already exists in track_id_dict[{_tp_index}][{_rank}][{_thread}]. failed to set:\n  {hnode.frame} (current)\n    {_existing.frame} (existing)"
                 )
@@ -706,6 +708,7 @@ class PerfettoReader:
             if _hash in callpath_to_node:
                 raise ValueError(f"{_hash} already exists in callpath_to_node dict")
 
+            _frame_attrs.pop("type")  # should not be a column in dataframe
             callpath_to_node[_hash] = dict(
                 {"node": hnode, **_frame_attrs},
                 **_metrics,
