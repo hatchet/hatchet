@@ -14,6 +14,7 @@ def graphframe_indexing_helper(
     extensions=["rank", "thread"],
     columns=[],
     fill_value=0,
+    fill_missing_attribute={},
     deepcopy=True,
 ):
     """Helper for the complicated scenario of reindexing the dataframe
@@ -104,6 +105,16 @@ def graphframe_indexing_helper(
             In the case of multi-index, the NaN's need to be replaced with some
             value, zero is recommended.
 
+        fill_missing_attribute (dict):
+            If Node.frame does not have attribute with a specific key, fill with
+            the given value instead of using fill_value. E.g.,
+            if columns=["name", "file", "line"] and fill_value=0 and the
+            Node.frame at a given index only has a "name" attribute, and you
+            want the "file" column to be set to "<unknown>" instead of
+            0 and the "line" column to be set to -1 then pass the argument:
+
+                fill_missing_attribute={ "file": "<unknown>", "line": -1 }
+
         deep_copy (bool):
             Perform a full deep-copy of the dataframe (if data argument is
             dataframe). If you are not using the dataframe afterwards or
@@ -181,7 +192,13 @@ def graphframe_indexing_helper(
     # we will zip together the outer list to enable iterating over
     # data
     zeros_data = [zeros_idx] + [
-        [itr[0].frame[col] for itr in zeros_idx] for col in columns
+        [
+            # extract the value if it exists, otherwise check fill_missing_attribute
+            # for a potential override of fill_value
+            itr[0].frame.get(col, fill_missing_attribute.get(col, fill_value))
+            for itr in zeros_idx
+        ]
+        for col in columns
     ]
 
     # put values from Node.frame dictionary into column
