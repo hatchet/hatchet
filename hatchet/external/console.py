@@ -50,7 +50,7 @@ class ConsoleRenderer:
             result += "The graph is empty.\n\n"
             return result
 
-        self.metric_columns = kwargs["metric_column"]
+        self.metric_columns = kwargs["metric_columns"]
         self.precision = kwargs["precision"]
         self.name = kwargs["name_column"]
         self.expand = kwargs["expand_name"]
@@ -78,7 +78,7 @@ class ConsoleRenderer:
             self.primary_metric = self.metric_columns[0]
             if len(self.metric_columns) > 2:
                 warnings.warn(
-                    "More than 2 metrics specified in metric_column=. Tree() will only show 2 metrics at a time. The remaining metrics will not be shown.",
+                    "More than 2 metrics specified in metric_columns=. Tree() will only show 2 metrics at a time. The remaining metrics will not be shown.",
                     SyntaxWarning,
                 )
                 self.second_metric = self.metric_columns[1]
@@ -89,7 +89,7 @@ class ConsoleRenderer:
 
         if self.primary_metric not in dataframe.columns:
             raise KeyError(
-                "metric_column={} does not exist in the dataframe, please select a valid column. See a list of the available metrics with GraphFrame.show_metric_columns().".format(
+                "metric_columns={} does not exist in the dataframe, please select a valid column. See a list of the available metrics with GraphFrame.show_metric_columns().".format(
                     self.primary_metric
                 )
             )
@@ -98,7 +98,7 @@ class ConsoleRenderer:
             and self.second_metric not in dataframe.columns
         ):
             raise KeyError(
-                "metric_column={} does not exist in the dataframe, please select a valid column. See a list of the available metrics with GraphFrame.show_metric_columns().".format(
+                "metric_columns={} does not exist in the dataframe, please select a valid column. See a list of the available metrics with GraphFrame.show_metric_columns().".format(
                     self.second_metric
                 )
             )

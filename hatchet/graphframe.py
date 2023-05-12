@@ -981,16 +981,12 @@ class GraphFrame:
         other.graph = union_graph
 
     @deprecated_params(
-        metric="metric_column",
-        name="name_column",
-        expand_names="expand_name",
-        context="context_column",
-        invert_colors="invert_colormap",
+        metric_column="metric_columns",
     )
     @Logger.loggable
     def tree(
         self,
-        metric_column=None,
+        metric_columns=None,
         precision=3,
         name_column="name",
         expand_name=False,
@@ -1005,8 +1001,8 @@ class GraphFrame:
         """Format this graphframe as a tree and return the resulting string."""
         color = sys.stdout.isatty()
         shell = None
-        if metric_column is None:
-            metric_column = self.default_metric
+        if metric_columns is None:
+            metric_columns = self.default_metric
 
         if color is False:
             try:
@@ -1027,7 +1023,7 @@ class GraphFrame:
         return ConsoleRenderer(unicode=unicode, color=color).render(
             self.graph.roots,
             self.dataframe,
-            metric_column=metric_column,
+            metric_columns=metric_columns,
             precision=precision,
             name_column=name_column,
             expand_name=expand_name,
