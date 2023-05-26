@@ -193,9 +193,9 @@ class ConsoleRenderer:
 
     def render_frame(self, node, dataframe, indent="", child_indent=""):
         node_depth = node._depth
-        if node_depth <= self.depth:
-            # set dataframe index based on whether rank and thread are part of
-            # the MultiIndex
+        # set dataframe index based on whether rank and thread are part of
+        # the MultiIndex
+        def _set_dataframe_index(node):
             if "rank" in dataframe.index.names and "thread" in dataframe.index.names:
                 df_index = (node, self.rank, self.thread)
             elif "rank" in dataframe.index.names:
@@ -204,9 +204,41 @@ class ConsoleRenderer:
                 df_index = (node, self.thread)
             else:
                 df_index = node
+            return df_index
 
+        # Gets metric information of children nodes (Inclusive or Exclusive)
+        # Keeps track of number of descendants
+        def _get_subtree_info(node, subtree_info):
+            for child in node.children:
+                # Adding the number of descendants in the subtree
+                subtree_info["descendants"] += 1
+                child_index = _set_dataframe_index(child)
+
+                # If the metric is inclusive, then we will add all the inclusive
+                # metric values of the immediate children as the total sum of metric values
+                if "(inc)" in self.primary_metric:
+                    if node_depth == self.depth:
+                        subtree_info["sum_metric"] += dataframe.loc[
+                            child_index, self.primary_metric
+                        ]
+                else:
+                    # If the metric is exclusive, then we calculate the sum of metric values
+                    # by adding the exclusive metric value of each descendant in the subtree
+                    subtree_info["sum_metric"] += dataframe.loc[
+                        child_index, self.primary_metric
+                    ]
+
+                # Storing the highest level in the subtree
+                if child._depth > subtree_info["levels"]:
+                    subtree_info["levels"] = child._depth
+
+                if len(child.children) != 0:
+                    _get_subtree_info(child, subtree_info)
+
+
+        if node_depth <= self.depth:
+            df_index = _set_dataframe_index(node)
             node_metric = dataframe.loc[df_index, self.primary_metric]
-
             metric_precision = "{:." + str(self.precision) + "f}"
             metric_str = (
                 self._ansi_color_for_metric(node_metric)
@@ -230,7 +262,6 @@ class ConsoleRenderer:
             name_str = (
                 self._ansi_color_for_name(node_name) + node_name + self.colors.end
             )
-
             # 0 is "", 1 is "L", and 2 is "R"
             if "_missing_node" in dataframe.columns:
                 left_or_right = dataframe.loc[df_index, "_missing_node"]
@@ -244,7 +275,7 @@ class ConsoleRenderer:
                     lr_decorator = " {c.right}{decorator}{c.end}".format(
                         decorator=self.lr_arrows["▶"], c=self.colors
                     )
-
+            # This result line gathers the data for Nodes to be printed before the specified depth:
             result = "{indent}{metric_str} {name_str}".format(
                 indent=indent, metric_str=metric_str, name_str=name_str
             )
@@ -273,19 +304,28 @@ class ConsoleRenderer:
 
                 for child in sorted_children:
                     if child is not last_child:
+                    # if child is not node_depth:
                         c_indent = child_indent + indents["├"]
-                        cc_indent = child_indent + indents["│"]
+                        cc_indent = child_indent + indents["│"] # Prints this when depth node has 2 children
                     else:
                         c_indent = child_indent + indents["└"]
                         cc_indent = child_indent + indents[" "]
                     result += self.render_frame(
                         child, dataframe, indent=c_indent, child_indent=cc_indent
                     )
-        else:
-            result = ""
-            indents = {"├": "", "│": "", "└": "", " ": ""}
-
+        else: 
+                subtree_info = {"descendants": 0, "sum_metric": 0, "levels": self.depth}
+                _get_subtree_info(node, subtree_info)
+                summary_string = "{child_indent}└─\u25C0\u25AE Subtree Info (Total Metric: {metric}, Descendants: {desc}, Hidden Levels: {levels})\n"
+                result = summary_string.format(
+                    indent = indent,
+                    child_indent=child_indent,
+                    metric=str(subtree_info["sum_metric"]),
+                    desc=str(subtree_info["descendants"]),
+                    levels=str(subtree_info["levels"] - node_depth),
+                )
         return result
+
 
     def _ansi_color_for_metric(self, metric):
         metric_range = self.max_metric - self.min_metric
