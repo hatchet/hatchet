@@ -121,10 +121,12 @@ class ConsoleRenderer:
             self.lr_arrows = {"◀": "◀ ", "▶": "▶ "}
         else:
             self.lr_arrows = {"◀": "< ", "▶": "> "}
+        
+        looked_at = []
 
         # TODO: probably better to sort by time
         for root in sorted(roots, key=lambda n: n.frame):
-            result += self.render_frame(root, dataframe)
+            result += self.render_frame(root, looked_at, dataframe)
 
         if self.color is True:
             result += self.render_legend()
@@ -191,8 +193,9 @@ class ConsoleRenderer:
 
         return legend
 
-    def render_frame(self, node, dataframe, indent="", child_indent=""):
+    def render_frame(self, node, looked_at, dataframe, indent="", child_indent=""):
         node_depth = node._depth
+        # looked_at = [] # List to keep track of whether node info was already printed
         # set dataframe index based on whether rank and thread are part of
         # the MultiIndex
         def _set_dataframe_index(node):
@@ -306,16 +309,20 @@ class ConsoleRenderer:
                     if child is not last_child:
                     # if child is not node_depth:
                         c_indent = child_indent + indents["├"]
-                        cc_indent = child_indent + indents["│"] # Prints this when depth node has 2 children
+                        cc_indent = child_indent + indents["│"]
                     else:
                         c_indent = child_indent + indents["└"]
                         cc_indent = child_indent + indents[" "]
                     result += self.render_frame(
-                        child, dataframe, indent=c_indent, child_indent=cc_indent
+                        child, looked_at, dataframe, indent=c_indent, child_indent=cc_indent
                     )
         else: 
-                subtree_info = {"descendants": 0, "sum_metric": 0, "levels": self.depth}
-                _get_subtree_info(node, subtree_info)
+            subtree_info = {"descendants": 0, "sum_metric": 0, "levels": self.depth}
+            curr = node.parents[0]
+            if curr not in looked_at:
+                looked_at.append(curr) #add parent node to looked_at
+                # print(looked_at)
+                _get_subtree_info(curr, subtree_info)
                 summary_string = "{child_indent}└─\u25C0\u25AE Subtree Info (Total Metric: {metric}, Descendants: {desc}, Hidden Levels: {levels})\n"
                 result = summary_string.format(
                     indent = indent,
@@ -324,6 +331,8 @@ class ConsoleRenderer:
                     desc=str(subtree_info["descendants"]),
                     levels=str(subtree_info["levels"] - node_depth),
                 )
+            else:
+                result = ""
         return result
 
 
