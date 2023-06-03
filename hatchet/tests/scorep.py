@@ -70,7 +70,7 @@ def test_tree(scorep_profile_cubex):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
-        metric_column="max_time (inc)",
+        metric_columns="max_time (inc)",
         precision=3,
         name_column="name",
         expand_name=False,
