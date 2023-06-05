@@ -89,7 +89,7 @@ def test_tree(scorep_profile_cubex):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
-        metric_column="visits",
+        metric_columns="visits",
         precision=3,
         name_column="name",
         expand_name=False,
