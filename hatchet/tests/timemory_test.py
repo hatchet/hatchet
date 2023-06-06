@@ -48,7 +48,7 @@ def test_tree(timemory_json_data):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
-        metric_column="sum.wall_clock",
+        metric_columns="sum.wall_clock",
         precision=3,
         name_column="name",
         expand_name=False,
@@ -66,7 +66,7 @@ def test_tree(timemory_json_data):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
-        metric_column="sum.wall_clock",
+        metric_columns="sum.wall_clock",
         precision=3,
         name_column="name",
         expand_name=False,
