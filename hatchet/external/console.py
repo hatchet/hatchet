@@ -306,22 +306,20 @@ class ConsoleRenderer:
                     last_child = sorted_children[-1]
 
                 for child in sorted_children:
-                    if child is not last_child:
-                    # if child is not node_depth:
-                        c_indent = child_indent + indents["├"]
-                        cc_indent = child_indent + indents["│"]
-                    else:
+                    if child is last_child or self.depth is node_depth:
                         c_indent = child_indent + indents["└"]
                         cc_indent = child_indent + indents[" "]
+                    else:
+                        c_indent = child_indent + indents["├"]
+                        cc_indent = child_indent + indents["│"]
                     result += self.render_frame(
                         child, looked_at, dataframe, indent=c_indent, child_indent=cc_indent
-                    )
+                        )
         else: 
             subtree_info = {"descendants": 0, "sum_metric": 0, "levels": self.depth}
             curr = node.parents[0]
             if curr not in looked_at:
                 looked_at.append(curr) #add parent node to looked_at
-                # print(looked_at)
                 _get_subtree_info(curr, subtree_info)
                 summary_string = "{child_indent}└─\u25C0\u25AE Subtree Info (Total Metric: {metric}, Descendants: {desc}, Hidden Levels: {levels})\n"
                 result = summary_string.format(
@@ -329,7 +327,7 @@ class ConsoleRenderer:
                     child_indent=child_indent,
                     metric=str(subtree_info["sum_metric"]),
                     desc=str(subtree_info["descendants"]),
-                    levels=str(subtree_info["levels"] - node_depth),
+                    levels=str(subtree_info["levels"] - node_depth + 1),
                 )
             else:
                 result = ""
