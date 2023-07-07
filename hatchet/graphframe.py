@@ -145,6 +145,23 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
+    def from_hpctoolkit_db(dirname):
+        """Read an HPCToolkit database directory into a new GraphFrame.
+
+        Arguments:
+            dirname (str): parent directory of an HPCToolkit
+                experiment.xml file
+
+        Returns:
+            (GraphFrame): new GraphFrame containing HPCToolkit profile data
+        """
+        # import this lazily to avoid circular dependencies
+        from .readers.hpctoolkit_reader_db import HPCToolkitReaderDB
+
+        return HPCToolkitReaderDB(dirname).read()
+
+    @staticmethod
+    @Logger.loggable
     def from_caliper(filename_or_stream, query=None):
         """Read in a Caliper .cali or .json file.
         Args:
