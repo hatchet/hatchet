@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ["2.7", "3.7", "3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
         include:
         - python-version: "3.6"
           os: ubuntu-20.04
@@ -23,19 +23,8 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install Python2.7 packages
-      if: ${{ matrix.python-version == 2.7 }}
-      run: |
-        pip install --upgrade pip pytest numexpr==2.7.3 textX==3.0.0
-        pip install -r requirements.txt
-        # Optional Dependency for HDF Checkpointing
-        pip install tables
-        python setup.py install
-        python setup.py build_ext --inplace
-        python -m pip list
-
     - name: Install Python3 packages
-      if: ${{ matrix.python-version != 2.7 }}
+      if: ${{ matrix.python-version >= 3.6 }}
       run: |
         pip install --upgrade pip pytest
         pip install -r requirements.txt
