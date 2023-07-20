@@ -76,7 +76,7 @@ jobs:
 
     - name: Basic test with pytest
       run: |
-        PYTHONPATH=. coverage run $(which pytest)
+        PYTHONPATH=. python -m coverage run $(which pytest)
 
     - name: "Upload coverage to Codecov"
       uses: "codecov/codecov-action@v1"
