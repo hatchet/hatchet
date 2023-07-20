@@ -121,7 +121,7 @@ class ConsoleRenderer:
             self.lr_arrows = {"◀": "◀ ", "▶": "▶ "}
         else:
             self.lr_arrows = {"◀": "< ", "▶": "> "}
-        
+        # List to keep track of whether node info was already printed 
         looked_at = []
 
         # TODO: probably better to sort by time
@@ -193,54 +193,61 @@ class ConsoleRenderer:
 
         return legend
 
+
     def render_frame(self, node, looked_at, dataframe, indent="", child_indent=""):
-        node_depth = node._depth
-        # looked_at = [] # List to keep track of whether node info was already printed
-        # set dataframe index based on whether rank and thread are part of
-        # the MultiIndex
-        def _set_dataframe_index(node):
-            if "rank" in dataframe.index.names and "thread" in dataframe.index.names:
-                df_index = (node, self.rank, self.thread)
-            elif "rank" in dataframe.index.names:
-                df_index = (node, self.rank)
-            elif "thread" in dataframe.index.names:
-                df_index = (node, self.thread)
-            else:
-                df_index = node
-            return df_index
+        # set dataframe index based on whether rank and thread are part of the MultiIndex
+        df_index = ()
+        if "rank" in dataframe.index.names and "thread" in dataframe.index.names:
+            df_index = (self.rank, self.thread)
+        elif "rank" in dataframe.index.names:
+            df_index = (self.rank,)
+        elif "thread" in dataframe.index.names:
+            df_index = (self.thread,)
 
         # Gets metric information of children nodes (Inclusive or Exclusive)
         # Keeps track of number of descendants
-        def _get_subtree_info(node, subtree_info):
+        def _get_subtree_info(node, subtree_info, df_index):
             for child in node.children:
                 # Adding the number of descendants in the subtree
                 subtree_info["descendants"] += 1
-                child_index = _set_dataframe_index(child)
+                # If df_index is empty, set child_index to child, otherwise
+                # add child to tuple.
+                if not df_index:
+                    child_index = child
+                else:
+                    child_index = (child,) + df_index
 
                 # If the metric is inclusive, then we will add all the inclusive
                 # metric values of the immediate children as the total sum of metric values
                 if "(inc)" in self.primary_metric:
-                    if node_depth == self.depth:
+                    if node._depth == self.depth:
                         subtree_info["sum_metric"] += dataframe.loc[
                             child_index, self.primary_metric
                         ]
                 else:
                     # If the metric is exclusive, then we calculate the sum of metric values
                     # by adding the exclusive metric value of each descendant in the subtree
+                    # print(child_index)
                     subtree_info["sum_metric"] += dataframe.loc[
-                        child_index, self.primary_metric
-                    ]
+                        child_index, self.primary_metric]
+                    # if statement only necessary in else because it is not needed for (inc) metric
+                    # Pass df_index to _get_subtree_info define a new tuple for other child nodes.
+                    if len(child.children) != 0:
+                        _get_subtree_info(child, subtree_info, df_index)
 
                 # Storing the highest level in the subtree
                 if child._depth > subtree_info["levels"]:
                     subtree_info["levels"] = child._depth
 
-                if len(child.children) != 0:
-                    _get_subtree_info(child, subtree_info)
-
-
+        node_depth = node._depth
         if node_depth <= self.depth:
-            df_index = _set_dataframe_index(node)
+            # If df_index is empty, set df_index to child, otherwise
+            # add child to the tuple.
+            if not df_index:
+                df_index = node
+            else:
+                df_index = (node,) + df_index
+
             node_metric = dataframe.loc[df_index, self.primary_metric]
             metric_precision = "{:." + str(self.precision) + "f}"
             metric_str = (
@@ -278,7 +285,7 @@ class ConsoleRenderer:
                     lr_decorator = " {c.right}{decorator}{c.end}".format(
                         decorator=self.lr_arrows["▶"], c=self.colors
                     )
-            # This result line gathers the data for Nodes to be printed before the specified depth:
+            # Result line gathers the data for nodes to be printed before the specified depth:
             result = "{indent}{metric_str} {name_str}".format(
                 indent=indent, metric_str=metric_str, name_str=name_str
             )
@@ -296,8 +303,7 @@ class ConsoleRenderer:
             else:
                 indents = {"├": "|- ", "│": "|  ", "└": "`- ", " ": "   "}
 
-            # ensures that we never revisit nodes in the case of
-            # large complex graphs
+            # Ensures that we never revisit nodes in the case of large complex graphs
             if node not in self.visited:
                 self.visited.append(node)
                 # TODO: probably better to sort by time
@@ -306,6 +312,7 @@ class ConsoleRenderer:
                     last_child = sorted_children[-1]
 
                 for child in sorted_children:
+                    # Correct formatting for tree output
                     if child is last_child or self.depth is node_depth:
                         c_indent = child_indent + indents["└"]
                         cc_indent = child_indent + indents[" "]
@@ -318,9 +325,12 @@ class ConsoleRenderer:
         else: 
             subtree_info = {"descendants": 0, "sum_metric": 0, "levels": self.depth}
             curr = node.parents[0]
+            # If we are at depth, check whether curr is in looked_at to determine where
+            # summary_string should be printed
             if curr not in looked_at:
-                looked_at.append(curr) #add parent node to looked_at
-                _get_subtree_info(curr, subtree_info)
+                # add parent node to looked_at
+                looked_at.append(curr) 
+                _get_subtree_info(curr, subtree_info, df_index)
                 summary_string = "{child_indent}└─\u25C0\u25AE Subtree Info (Total Metric: {metric}, Descendants: {desc}, Hidden Levels: {levels})\n"
                 result = summary_string.format(
                     indent = indent,
@@ -329,14 +339,14 @@ class ConsoleRenderer:
                     desc=str(subtree_info["descendants"]),
                     levels=str(subtree_info["levels"] - node_depth + 1),
                 )
+            # if node has already been visited, we don't want to print a summary for that string
             else:
                 result = ""
         return result
 
-
     def _ansi_color_for_metric(self, metric):
         metric_range = self.max_metric - self.min_metric
-
+        
         if metric_range != 0:
             proportion_of_total = (metric - self.min_metric) / metric_range
         else:
