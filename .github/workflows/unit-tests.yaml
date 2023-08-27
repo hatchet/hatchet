@@ -39,7 +39,7 @@ jobs:
         pip install --upgrade click
         pip install --upgrade black
         pip install --upgrade flake8
-        black --diff --check .
+        black -t py39 --diff --check .
         flake8
 
     - name: Update coverage
