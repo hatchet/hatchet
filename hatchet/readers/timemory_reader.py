@@ -365,7 +365,7 @@ class TimemoryReader:
                     {"node": _hnode, **_frame_attrs},
                     **_extra,
                     **_exc_stats,
-                    **_inc_stats
+                    **_inc_stats,
                 )
             else:
                 # if yes, don't create a new dict, just add the new metrics to
@@ -544,7 +544,6 @@ class TimemoryReader:
         if self.multiple_ranks or self.multiple_threads:
             dataframe = dataframe.unstack()
             for idx, row in dataframe.iterrows():
-
                 # There is always a valid name for an index.
                 # Take that valid name and assign to other ranks/rows.
                 name = row["name"][row["name"].first_valid_index()]

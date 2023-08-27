@@ -213,7 +213,6 @@ class ScorePReader:
                     self.exc_metrics.append(metric.name)
 
                 for location in cubex.get_locations():
-
                     callpath_rank_thread = (callpath,) + _calculate_rank_thread(
                         location
                     )

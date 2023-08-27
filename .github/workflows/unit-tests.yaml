@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ["2.7", "3.7", "3.8", "3.9", "3.10", "3.11"]
+        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11"]
         include:
         - python-version: "3.6"
           os: ubuntu-20.04
@@ -23,19 +23,7 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
 
-    - name: Install Python2.7 packages
-      if: ${{ matrix.python-version == 2.7 }}
-      run: |
-        pip install --upgrade pip pytest numexpr==2.7.3 textX==3.0.0
-        pip install -r requirements.txt
-        # Optional Dependency for HDF Checkpointing
-        pip install tables
-        python setup.py install
-        python setup.py build_ext --inplace
-        python -m pip list
-
     - name: Install Python3 packages
-      if: ${{ matrix.python-version != 2.7 }}
       run: |
         pip install --upgrade pip pytest
         pip install -r requirements.txt
@@ -48,10 +36,10 @@ jobs:
     - name: Lint and format check with flake8 and black
       if: ${{ matrix.python-version == 3.9 }}
       run: |
-        pip install --upgrade click==8.0.4
-        pip install --upgrade black==21.12b0
+        pip install --upgrade click
+        pip install --upgrade black
         pip install --upgrade flake8
-        black --diff --check .
+        black -t py39 --diff --check .
         flake8
 
     - name: Update coverage
@@ -86,10 +74,17 @@ jobs:
         python -m pip install --no-build-isolation --upgrade --no-cache-dir -v 'timemory==3.3.0rc4' -v -v -v
 
     - name: Basic test with pytest
+      if: ${{ matrix.python-version != 3.9 }}
+      run: |
+        PYTHONPATH=. $(which pytest)
+
+    - name: Basic test with pytest
+      if: ${{ matrix.python-version == 3.9 }}
       run: |
         PYTHONPATH=. coverage run $(which pytest)
 
     - name: "Upload coverage to Codecov"
+      if: ${{ matrix.python-version == 3.9 }}
       uses: "codecov/codecov-action@v1"
       with:
         fail_ci_if_error: true

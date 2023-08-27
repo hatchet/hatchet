@@ -91,7 +91,7 @@ class GprofDotReader:
 
         # add all nodes with no parents to the list of roots
         list_roots = []
-        for (key, val) in self.name_to_hnode.items():
+        for key, val in self.name_to_hnode.items():
             if not val.parents:
                 list_roots.append(val)
 

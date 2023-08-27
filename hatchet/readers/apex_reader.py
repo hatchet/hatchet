@@ -155,7 +155,7 @@ class ApexReader:
 
             node_dict = dict(
                 {"node": graph_root, "rank": rank, "name": node_name},
-                **self.graph_dict[i]["metrics"]
+                **self.graph_dict[i]["metrics"],
             )
             node_dicts.append(node_dict)
 

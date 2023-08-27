@@ -40,7 +40,6 @@ def to_dot(hnode, dataframe, metric, name, rank, thread, threshold, visited):
     max_time = dataframe[metric].max()
 
     def add_nodes_and_edges(hnode):
-
         # set dataframe index based on if rank is a part of the index
         if "rank" in dataframe.index.names and "thread" in dataframe.index.names:
             df_index = (hnode, rank, thread)
