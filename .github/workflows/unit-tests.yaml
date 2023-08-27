@@ -24,7 +24,6 @@ jobs:
         python-version: ${{ matrix.python-version }}
 
     - name: Install Python3 packages
-      if: ${{ matrix.python-version >= 3.6 }}
       run: |
         pip install --upgrade pip pytest
         pip install -r requirements.txt
@@ -37,8 +36,8 @@ jobs:
     - name: Lint and format check with flake8 and black
       if: ${{ matrix.python-version == 3.9 }}
       run: |
-        pip install --upgrade click==8.0.4
-        pip install --upgrade black==21.12b0
+        pip install --upgrade click
+        pip install --upgrade black
         pip install --upgrade flake8
         black --diff --check .
         flake8
