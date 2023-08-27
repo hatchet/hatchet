@@ -34,12 +34,12 @@ jobs:
         python -m pip list
 
     - name: Lint and format check with flake8 and black
-      if: ${{ matrix.python-version == 3.9 }}
+      if: ${{ matrix.python-version == 3.7 }}
       run: |
         pip install --upgrade click
         pip install --upgrade black
         pip install --upgrade flake8
-        black -t py39 --diff --check .
+        black -t py37 --diff --check
         flake8
 
     - name: Update coverage
