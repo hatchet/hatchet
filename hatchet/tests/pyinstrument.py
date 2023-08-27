@@ -15,7 +15,6 @@ def test_graphframe(hatchet_pyinstrument_json):
     """Sanity test a GraphFrame object with known data."""
 
     def test_children(child_dict, gf):
-
         df = gf.dataframe.loc[
             (gf.dataframe["name"] == child_dict["function"])
             & (gf.dataframe["file"] == child_dict["file_path_short"])

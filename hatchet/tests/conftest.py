@@ -829,7 +829,6 @@ def mock_graph_literal_duplicate_first():
 
 @pytest.fixture
 def timemory_json_data():
-
     import numpy as np
     import timemory
     from timemory.bundle import marker

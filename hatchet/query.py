@@ -704,7 +704,7 @@ class QueryMatcher(AbstractQuery):
             self._apply_impl(gf, child, visited, matches)
 
 
-GRAMMAR = u"""
+GRAMMAR = """
 FullQuery: path_expr=MatchExpr(cond_expr=WhereExpr)?;
 MatchExpr: 'MATCH' path=PathQuery;
 PathQuery: '(' nodes=NodeExpr ')'('->' '(' nodes=NodeExpr ')')*;
