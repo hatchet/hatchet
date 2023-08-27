@@ -224,6 +224,7 @@ class Chopper:
         columns=["name"],
         metric="time",
         threshold=None,
+        groupby_function=None,
     ):
         """Creates a pivot table.
         Inputs:
@@ -264,6 +265,12 @@ class Chopper:
         for gf in graphframes:
             gf_copy = gf.deepcopy()
             gf_copy.drop_index_levels()
+
+            # group by name if the user gives a function such as np.mean
+            if groupby_function is not None:
+                gf_copy.dataframe = gf_copy.dataframe.groupby(
+                    "name", as_index=False
+                ).agg(groupby_function)
 
             # Grab the pivot_index from the metadata, store this as a new
             # column in the DataFrame.
