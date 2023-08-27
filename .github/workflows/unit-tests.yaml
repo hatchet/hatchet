@@ -74,6 +74,12 @@ jobs:
         python -m pip install --no-build-isolation --upgrade --no-cache-dir -v 'timemory==3.3.0rc4' -v -v -v
 
     - name: Basic test with pytest
+      if: ${{ matrix.python-version != 3.9 }}
+      run: |
+        PYTHONPATH=. $(which pytest)
+
+    - name: Basic test with pytest
+      if: ${{ matrix.python-version == 3.9 }}
       run: |
         PYTHONPATH=. coverage run $(which pytest)
 
