@@ -43,7 +43,7 @@ jobs:
         flake8
 
     - name: Update coverage
-      if: ${{ matrix.python-version >= 3.9 }}
+      if: ${{ matrix.python-version == 3.9 }}
       run: |
         pip install --upgrade coverage==6.2
 
@@ -75,7 +75,7 @@ jobs:
 
     - name: Basic test with pytest
       run: |
-        PYTHONPATH=. python -m coverage run $(which pytest)
+        PYTHONPATH=. coverage run $(which pytest)
 
     - name: "Upload coverage to Codecov"
       uses: "codecov/codecov-action@v1"
