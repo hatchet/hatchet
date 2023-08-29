@@ -136,8 +136,5 @@ def test_graphframe_constructor_pyinstrument(hatchet_pyinstrument_json):
     for node in nodes_actual:
         gf_actual.dataframe.at[node, "val"] = nodes_actual.index(node)
 
-    gf_test.dataframe.sort_values(by=["val"], ignore_index=True, inplace=True)
-    gf_actual.dataframe.sort_values(by=["val"], ignore_index=True, inplace=True)
-
     assert gf_actual.dataframe.equals(gf_test.dataframe)
     assert gf_actual.graph == gf_test.graph

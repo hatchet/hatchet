@@ -238,8 +238,5 @@ def test_graphframe_constructor_hpctoolkit(calc_pi_hpct_db):
     gf_test.drop_index_levels()
     gf_actual.drop_index_levels()
 
-    gf_actual.dataframe.sort_values(by=["nid"], ignore_index=True, inplace=True)
-    gf_test.dataframe.sort_values(by=["nid"], ignore_index=True, inplace=True)
-
     assert gf_actual.dataframe.equals(gf_test.dataframe)
     assert gf_actual.graph == gf_test.graph
