@@ -52,6 +52,7 @@ setup(
         "multiprocess",
         "caliper-reader",
         "pycubexr; python_version >= '3.6'",
+        "jsonschema",
     ],
     ext_modules=[
         Extension(

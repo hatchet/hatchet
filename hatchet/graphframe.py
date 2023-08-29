@@ -3,8 +3,11 @@
 #
 # SPDX-License-Identifier: MIT
 
+import os
 import sys
+import json
 import traceback
+import jsonschema
 
 from collections import defaultdict
 
@@ -125,6 +128,250 @@ class GraphFrame:
                     )
                 )
             setattr(self, x, y)
+
+    @staticmethod
+    def detect_profile_format(dirname_or_data):
+        """Read a database directory or file and automatically detect the data format.
+        Arguments:
+            dirname_or_data (str): path to the database directory or file
+        """
+
+        def _validate_json_schema(data, schema):
+            try:
+                jsonschema.validate(instance=data, schema=schema)
+                return True
+            except jsonschema.ValidationError:
+                return False
+
+        def _parse_json(filename):
+            with open(str(filename), "r") as f:
+                return json.loads(f.read())
+
+        JSON_SCHEMAS = {
+            "caliper_json": {
+                "type": "object",
+                "properties": {
+                    "data": {"type": "array"},
+                    "columns": {"type": "array"},
+                    "column_metadata": {"type": "array"},
+                    "nodes": {"type": "array"},
+                },
+                "required": ["data", "columns", "column_metadata", "nodes"],
+            },
+            "papi": {
+                "type": "object",
+                "properties": {
+                    "papi_version": {"type": "string"},
+                    "cpu_info": {"type": "string"},
+                    "max_cpu_rate_mhz": {"type": "string"},
+                    "event_definitions": {"type": "object"},
+                    "threads": {"type": "object"},
+                },
+                "required": [
+                    "papi_version",
+                    "cpu_info",
+                    "max_cpu_rate_mhz",
+                    "event_definitions",
+                    "threads",
+                ],
+            },
+            "pyinstrument": {
+                "type": "object",
+                "properties": {
+                    "start_time": {"type": "number"},
+                    "duration": {"type": "number"},
+                    "sample_count": {"type": "number"},
+                    "program": {"type": "string"},
+                    "cpu_time": {"type": "number"},
+                    "root_frame": {"type": "object"},
+                },
+                "required": [
+                    "start_time",
+                    "duration",
+                    "sample_count",
+                    "program",
+                    "cpu_time",
+                    "root_frame",
+                ],
+            },
+            "timemory": {
+                "type": "object",
+                "properties": {"timemory": {"type": "object"}},
+                "required": ["timemory"],
+            },
+        }
+
+        if isinstance(dirname_or_data, list):
+            return "literal"
+
+        if isinstance(dirname_or_data, dict):
+            return "timemory"
+
+        if isinstance(dirname_or_data, str):
+            # check if it is a SQL database URL
+            if "mysql://" in dirname_or_data:
+                return "spotdb"
+
+            # Formats in directory: apex, hpctoolkit, spotdb, tau, timemory, papi
+            if os.path.isdir(dirname_or_data):
+                # apex
+                tasktree_json_files = [
+                    f
+                    for f in os.listdir(dirname_or_data)
+                    if "tasktree" in f and f.endswith(".json")
+                ]
+                if len(tasktree_json_files) == len(os.listdir(dirname_or_data)):
+                    return "apex"
+
+                # hpctoolkit
+                metric_db_files = [
+                    f for f in os.listdir(dirname_or_data) if f.endswith(".metric-db")
+                ]
+                experiment_xml_files = [
+                    f
+                    for f in os.listdir(dirname_or_data)
+                    if f.endswith("experiment.xml")
+                ]
+                if len(metric_db_files) > 0 and len(experiment_xml_files) > 0:
+                    return "hpctoolkit"
+
+                # spotdb
+                cali_files = [
+                    f for f in os.listdir(dirname_or_data) if f.endswith(".cali")
+                ]
+                if len(cali_files) == len(os.listdir(dirname_or_data)):
+                    return "spotdb"
+
+                # papi
+                papi_report_files = [
+                    f
+                    for f in os.listdir(dirname_or_data)
+                    if f.endswith(".json")
+                    and _validate_json_schema(
+                        _parse_json(dirname_or_data + "/" + f), JSON_SCHEMAS["papi"]
+                    )
+                ]
+                if len(papi_report_files) == len(os.listdir(dirname_or_data)):
+                    return "papi"
+
+                # timemory
+                timemory_files = [
+                    f for f in os.listdir(dirname_or_data) if f.endswith(".tree.json")
+                ]
+                if len(timemory_files) == len(os.listdir(dirname_or_data)):
+                    return "timemory"
+
+                # tau
+                tau_profiles = [
+                    f
+                    for f in os.listdir(dirname_or_data)
+                    if "profile" in f and f.endswith(".0.0")
+                ]
+                if len(tau_profiles) > 0:
+                    return "tau"
+
+            # check if it is a file
+            if os.path.isfile(dirname_or_data):
+                file_name, file_ext = os.path.splitext(dirname_or_data)
+
+                if file_ext == ".cali":
+                    return "caliper"
+                if file_ext == ".pstats":
+                    return "cprofile"
+                if file_ext == ".dot" or "dot" in file_name.split("."):
+                    return "gprof_dot"
+                if file_ext == ".h5":
+                    return "hdf5"
+                if file_ext == ".cubex":
+                    return "scorep"
+                if file_ext == ".sqlite":
+                    return "spotdb"
+                if file_ext == ".json":
+                    # TODO: Check if we can just load the key and dtype of JSON.
+                    # We could also be unnecessarily read the data again.
+                    data = _parse_json(dirname_or_data)
+
+                    for format, schema in JSON_SCHEMAS.items():
+                        if _validate_json_schema(data, schema):
+                            return format
+        return None
+
+    @staticmethod
+    def construct_from(datasets=[]):
+        """Construct GraphFrame objects from a list of datasets.
+
+        Arguments:
+            datasets (list, str, tuple):
+                * list:
+                    Each item in the list is either a string path to a file or directory, or a list object. The input may also be a single list object.
+                    For data that require additional parameters, use a tuple containing the path and a dictionary of parameters.
+                    ex. ["path/to/file", "path/to/directory", [{"frame":...}], ("path/to/file", {"per_thread": True, "select": "cpu_clock"})]
+                    [
+                * str:
+                    The input may be a single string path to a file or directory.
+                    ex. "path/to/file"
+                * tuple:
+                    The input may be a single tuple containing the path and a dictionary of parameters.
+                    ex. ("path/to/file", {"per_rank": True})
+
+        Returns:
+            A list of respective GraphFrame objects (if input contained multiple datasets, else a single GraphFrame object)
+        """
+
+        def _from_path(data):
+            assert isinstance(
+                data, (str, list, tuple)
+            ), "each item in list 'datasets' may only be of type 'str', 'list', or 'tuple'"
+
+            FROM_DATABASE_MAPPER = {
+                "apex": GraphFrame.from_apex,
+                "caliper": GraphFrame.from_caliperreader,
+                "caliper_json": GraphFrame.from_caliper,
+                "cprofile": GraphFrame.from_cprofile,
+                "gprof_dot": GraphFrame.from_gprof_dot,
+                "hdf5": GraphFrame.from_hdf,
+                "hpctoolkit": GraphFrame.from_hpctoolkit,
+                "literal": GraphFrame.from_literal,
+                # "papi": GraphFrame.from_papi,
+                "pyinstrument": GraphFrame.from_pyinstrument,
+                "scorep": GraphFrame.from_scorep,
+                "spotdb": GraphFrame.from_spotdb,
+                "tau": GraphFrame.from_tau,
+                "timemory": GraphFrame.from_timemory,
+            }
+
+            if isinstance(data, tuple) and len(data) == 2:
+                profile_format = GraphFrame.detect_profile_format(data[0])
+            else:
+                profile_format = GraphFrame.detect_profile_format(data)
+
+            if profile_format in FROM_DATABASE_MAPPER:
+                if isinstance(data, tuple) and len(data) == 2:
+                    return FROM_DATABASE_MAPPER[profile_format](data[0], **data[1])
+                else:
+                    return FROM_DATABASE_MAPPER[profile_format](data)
+            else:
+                raise ValueError(
+                    "'GraphFrame.from_path' failed to recognize the data format. Please fallback to respective `GraphFrame.from_*`, where * is the data format."
+                )
+
+        assert (
+            len(datasets) != 0 and datasets is not None
+        ), "list 'datasets' must contain at least 1 dataset"
+
+        if not isinstance(datasets, list):
+            datasets = [datasets]
+        if isinstance(datasets, list) and isinstance(datasets[0], dict):
+            datasets = [datasets]
+
+        graphframes = []
+        for data in datasets:
+            graphframes.append(_from_path(data))
+
+        if len(graphframes) == 1:
+            return graphframes[0]
+
+        return graphframes
 
     @staticmethod
     @Logger.loggable

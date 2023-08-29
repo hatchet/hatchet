@@ -100,3 +100,17 @@ def test_default_metric(timemory_json_data):
         lhs = "{}".format(getattr(gf, func)(gf.default_metric))
         rhs = "{}".format(getattr(gf, func)())
         assert lhs == rhs
+
+
+@pytest.mark.skipif(not timemory_avail, reason="timemory package not available")
+def test_graphframe_constructor_timemory(timemory_json_data):
+    """Validate that the graphframe constructor function is working correctly."""
+    from timemory.component import WallClock
+
+    wc_s = WallClock.id()  # string identifier
+
+    gf_test = GraphFrame.construct_from((timemory_json_data, {"select": [wc_s]}))
+    gf_actual = GraphFrame.from_timemory(timemory_json_data, [wc_s])
+
+    assert gf_actual.dataframe.equals(gf_test.dataframe)
+    assert gf_actual.graph == gf_test.graph

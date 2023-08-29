@@ -297,3 +297,12 @@ def test_sw4_cuda_summary_from_caliperreader(
 
     for col in gf.exc_metrics + gf.inc_metrics:
         assert col in gf.dataframe.columns
+
+
+def test_graphframe_constructor_caliper_json(lulesh_caliper_json):
+    """Validate that the graphframe constructor function is working correctly."""
+    gf_test = GraphFrame.construct_from(str(lulesh_caliper_json))
+    gf_actual = GraphFrame.from_caliper(str(lulesh_caliper_json))
+
+    assert gf_actual.dataframe.equals(gf_test.dataframe)
+    assert gf_actual.graph == gf_test.graph

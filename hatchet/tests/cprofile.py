@@ -65,3 +65,12 @@ def test_tree(hatchet_cycle_pstats):
     )
     assert "f pstats_reader_test.py" in output
     assert re.match("(.|\n)*recursive(.|\n)*recursive", output)
+
+
+def test_graphframe_constructor_cprofile(hatchet_cycle_pstats):
+    """Validate that the graphframe constructor function is working correctly."""
+    gf_test = GraphFrame.construct_from(str(hatchet_cycle_pstats))
+    gf_actual = GraphFrame.from_cprofile(str(hatchet_cycle_pstats))
+
+    assert gf_actual.dataframe.equals(gf_test.dataframe)
+    assert gf_actual.graph == gf_test.graph

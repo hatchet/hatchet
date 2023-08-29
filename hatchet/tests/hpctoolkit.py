@@ -228,3 +228,15 @@ def test_inclusive_time_calculation(data_dir, calc_pi_hpct_db):
     assert all(
         gf.dataframe["time (inc)"].values == gf.dataframe["orig_inc_time"].values
     )
+
+
+def test_graphframe_constructor_hpctoolkit(calc_pi_hpct_db):
+    """Validate that the graphframe constructor function is working correctly."""
+    gf_test = GraphFrame.construct_from(str(calc_pi_hpct_db))
+    gf_actual = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+
+    gf_test.drop_index_levels()
+    gf_actual.drop_index_levels()
+
+    assert gf_actual.dataframe.equals(gf_test.dataframe)
+    assert gf_actual.graph == gf_test.graph

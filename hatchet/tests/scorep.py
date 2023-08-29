@@ -114,3 +114,13 @@ def test_graphframe_to_literal(scorep_profile_cubex):
     gf2 = GraphFrame.from_literal(graph_literal)
 
     assert len(gf.graph) == len(gf2.graph)
+
+
+@pytest.mark.skipif(not pycubexr_avail, reason="pycubexr package not available")
+def test_graphframe_constructor_scorep(scorep_profile_cubex):
+    """Validate that the graphframe constructor function is working correctly."""
+    gf_test = GraphFrame.construct_from(str(scorep_profile_cubex))
+    gf_actual = GraphFrame.from_scorep(str(scorep_profile_cubex))
+
+    assert gf_actual.dataframe.equals(gf_test.dataframe)
+    assert gf_actual.graph == gf_test.graph
