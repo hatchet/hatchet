@@ -121,7 +121,8 @@ class ConsoleRenderer:
             self.lr_arrows = {"◀": "◀ ", "▶": "▶ "}
         else:
             self.lr_arrows = {"◀": "< ", "▶": "> "}
-        # List to keep track of whether node info was already printed 
+
+        # List to keep track of visited nodes to assist with subtree_info formatting
         looked_at = []
 
         # TODO: probably better to sort by time
@@ -346,7 +347,7 @@ class ConsoleRenderer:
 
     def _ansi_color_for_metric(self, metric):
         metric_range = self.max_metric - self.min_metric
-        
+
         if metric_range != 0:
             proportion_of_total = (metric - self.min_metric) / metric_range
         else:
