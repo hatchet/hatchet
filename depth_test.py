@@ -6,10 +6,6 @@ if __name__ == "__main__":
     print(gf.tree(depth=10))
     print(gf.tree())
     print(gf.dataframe)
-    #print(gf.tree(depth=11))
-    #ht.test_tree(gf)
-    
-    #print(gf.tree(depth=4, metric_column = ["time", "time (inc)"]))
-
-    #print(gf.tree())
-    
+    # ht.test_tree(gf)
+    # print(gf.tree(depth=4, metric_column = ["time", "time (inc)"]))
+    # print(gf.tree())

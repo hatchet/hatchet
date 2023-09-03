@@ -194,7 +194,6 @@ class ConsoleRenderer:
 
         return legend
 
-
     def render_frame(self, node, looked_at, dataframe, indent="", child_indent=""):
         # set dataframe index based on whether rank and thread are part of the MultiIndex
         df_index = ()
@@ -322,19 +321,19 @@ class ConsoleRenderer:
                         cc_indent = child_indent + indents["│"]
                     result += self.render_frame(
                         child, looked_at, dataframe, indent=c_indent, child_indent=cc_indent
-                        )
-        else: 
+                    )
+        else:
             subtree_info = {"descendants": 0, "sum_metric": 0, "levels": self.depth}
             curr = node.parents[0]
             # If we are at depth, check whether curr is in looked_at to determine where
             # summary_string should be printed
             if curr not in looked_at:
                 # add parent node to looked_at
-                looked_at.append(curr) 
+                looked_at.append(curr)
                 _get_subtree_info(curr, subtree_info, df_index)
                 summary_string = "{child_indent}└─\u25C0\u25AE Subtree Info (Total Metric: {metric}, Descendants: {desc}, Hidden Levels: {levels})\n"
                 result = summary_string.format(
-                    indent = indent,
+                    indent=indent,
                     child_indent=child_indent,
                     metric=str(subtree_info["sum_metric"]),
                     desc=str(subtree_info["descendants"]),

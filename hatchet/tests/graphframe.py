@@ -1074,6 +1074,7 @@ def test_tree_depth1(calc_pi_hpct_db):
     assert "59960.000 interp.c:0 interp.c" in output
     assert "Subtree Info (Total Metric: 305643.0, Descendants: 5, Hidden Levels: 2)" in output
 
+
 def test_tree_depth2(calc_pi_hpct_db):
     gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
 
@@ -1097,6 +1098,7 @@ def test_tree_depth2(calc_pi_hpct_db):
     assert "Subtree Info (Total Metric: 0.0, Descendants: 9, Hidden Levels: 9)" in output
     assert "Subtree Info (Total Metric: 999238.0, Descendants: 19, Hidden Levels: 9)" in output
     assert "0.000 PMPI_Finalize /tmp/dpkg-mkdeb.gouoc49UG7/src/mvapich/src/build/../src/mpi/init/finalize.c" in output
+
 
 def test_output_with_cycle_graphs():
     r"""Test three output modes on a graph with cycles,

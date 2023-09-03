@@ -143,6 +143,7 @@ def test_tree(calc_pi_hpct_db):
         in output
     )
 
+
 def test_read_calc_pi_database(calc_pi_hpct_db):
     """Sanity check the HPCT database reader by examining a known input."""
     reader = HPCToolkitReader(str(calc_pi_hpct_db))
