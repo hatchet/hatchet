@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import hatchet.graphframe
 from hatchet.node import Node
@@ -423,9 +422,10 @@ class MetaReader:
         )
 
         # Size of the {SS} structure, currently 24
-        size_of_ss = int.from_bytes(
-            self.file.read(1), byteorder=self.byte_order, signed=self.signed
-        )
+        self.file.read(1)
+        # size_of_ss = int.from_bytes(
+        #     self.file.read(1), byteorder=self.byte_order, signed=self.signed
+        # )
 
         # empty space
         self.file.read(1)
@@ -514,13 +514,15 @@ class MetaReader:
 
                 # Differet types:
                 # 1: point, 2: execution, 3: function, 4: lex-aware.
-                psi_type = int.from_bytes(
-                    self.file.read(1), byteorder=self.byte_order, signed=self.signed
-                )
+                self.file.read(1)
+                # psi_type = int.from_bytes(
+                #     self.file.read(1), byteorder=self.byte_order, signed=self.signed
+                # )
 
-                psi_index = int.from_bytes(
-                    self.file.read(1), byteorder=self.byte_order, signed=self.signed
-                )
+                self.file.read(1)
+                # psi_index = int.from_bytes(
+                #     self.file.read(1), byteorder=self.byte_order, signed=self.signed
+                # )
 
                 # empty space
                 self.file.read(6)
@@ -1168,7 +1170,9 @@ class ProfileReader:
             # We don't need to read this section unless we want
             # the summary statistics. The commented out lines below
             # show how to read PSVB in case we read it in future.
-            psvb = self.file.read(0x20)
+            self.file.read(0x20)
+            # psvb = self.file.read(0x20)
+
             # nonzero_values = int.from_bytes(
             #     self.file.read(8), byteorder=self.byte_order, signed=self.signed
             # )
@@ -1508,9 +1512,10 @@ class CCTReader:
             self.file.read(8), byteorder=self.byte_order, signed=self.signed
         )
         # Number of traces listed in this section (u32)
-        num_contexts = int.from_bytes(
-            self.file.read(4), byteorder=self.byte_order, signed=self.signed
-        )
+        self.file.read(4)
+        # num_contexts = int.from_bytes(
+        #     self.file.read(4), byteorder=self.byte_order, signed=self.signed
+        # )
         # Size of a {CI} structure, currently 32
         context_size = int.from_bytes(
             self.file.read(1), byteorder=self.byte_order, signed=self.signed
@@ -1650,6 +1655,21 @@ class CCTReader:
             context_info["file"] = None
             context_info.pop("loop_type", None)
             context_info.pop("lexical_type", None)
+
+        # I encountered a context in which the 'function' was set to None:
+        # {'module': '/usr/lib64/libmlx5.so.1.24.44.0',
+        # 'file': '[libucs.so.0.0.0]',
+        # 'function': None,
+        # 'line': '-1',
+        # 'type': 'function',
+        # 'relation': 1,
+        # 'instruction': '-0x1'}
+        # I believe the type should have been 'instruction' instead of 'function'.
+        # That might be a bug on the HPCToolkit side.
+        if node_name is None:
+            node_name = "{}:{}".format(
+                context_info["module"], context_info["instruction"]
+            )
 
         # add name to the node's frame.
         node.frame.attrs["name"] = node_name
