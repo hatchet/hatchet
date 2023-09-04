@@ -1835,26 +1835,10 @@ class HPCToolkitReaderDB:
         # main_node, rank0, thread0 -> NaN
         # main_node, rank0, thread1 -> main
         # main_node, rank0, thread2 -> NaN
-        # First, groups by (main_node, rank0) to get these groups.
+        # Groups by (main_node, rank0) and checks
+        # the other rows in the group.
         # 'ffill' fills the NaN value of thread2.
         # 'bfill' fills the NaN value if thread0.
-        # for i in range(1, len(indices)):
-        # gradually reduce the level of the multiindex.
-        # in each iteration of the loop, the DataFrame is grouped
-        # by a subset of levels, moving up the hierarchy.
-        # group_by = dataframe.groupby(level=indices[:-i])
-        # fill the missing value by replacing with the last valid
-        # value encountered in the forward direction within each group.
-        # dataframe[columns_to_fill] = group_by[columns_to_fill].apply(
-        # lambda x: x.ffill()
-        # )
-        # fill the missing value by replacing with the next valid
-        # value encountered in the backward direction within each group.
-        # dataframe[columns_to_fill] = group_by[columns_to_fill].apply(
-        # lambda x: x.bfill()
-        # )
-
-        # Apply the fill_nans function to the specified columns
         for i in range(1, len(indices)):
             dataframe[columns_to_fill] = dataframe.groupby(indices[:-i])[
                 columns_to_fill
