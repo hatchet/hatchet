@@ -1,9 +1,12 @@
+import numpy as np
 import pandas as pd
 import hatchet.graphframe
 from hatchet.node import Node
 from hatchet.graph import Graph
+from hatchet.graphframe import GraphFrame
 from hatchet.frame import Frame
 import struct
+import yaml
 
 
 class MetaReader:
@@ -24,8 +27,8 @@ class MetaReader:
         self.current_nid = 0
         self.nid_to_ctx = {}
         self.node_map = {}
-        self.metric_name_map = {}
-        self.metric_type_map = {}
+        self.metric_id_name_map = {}
+        self.number_of_metric_types = 0
 
         # The meta.db header consists of the common .db header and n sections.
         # We're going to do a little set up work, so that's easy to change if
@@ -102,7 +105,6 @@ class MetaReader:
 
         # now let's read all the sections
         for section_name in self.read_order:
-            print("\n" + section_name)
             section_index = header_map[section_name]
             section_pointer = self.section_pointer[section_index]
             section_size = self.section_size[section_index]
@@ -181,7 +183,6 @@ class MetaReader:
             function_string = self.common_strings[function["string_index"]]
         if source_file_line is not None:
             file_line = str(source_file_line)
-        # print(context)
         return {
             "module": module_string,
             "file": source_file_string,
@@ -255,7 +256,6 @@ class MetaReader:
 
         self.database_title = self.__read_string(title_pointer)
         self.database_description = self.__read_string(description_pointer)
-        print("GENERAL", self.database_title, self.database_description)
 
     def __get_common_string(self, string_pointer: int) -> str:
         """Given the file pointer to find string, returns the string."""
@@ -290,7 +290,6 @@ class MetaReader:
         for i in range(len(self.common_strings)):
             self.common_string_index_map[pointer_index] = i
             pointer_index += len(self.common_strings[i]) + 1
-        print(self.common_strings)
 
     def __get_load_modules_index(self, load_module_pointer: int) -> int:
         """
@@ -345,7 +344,6 @@ class MetaReader:
             )
             module_map = {"string_index": self.common_string_index_map[path_pointer]}
             self.load_modules_list.append(module_map)
-        print(self.load_modules_list)
 
     def __read_string(self, file_pointer: int) -> str:
         """
@@ -393,8 +391,11 @@ class MetaReader:
             names_pointer = int.from_bytes(
                 self.file.read(8), byteorder=self.byte_order, signed=self.signed
             )
-            self.identifier_names.append(self.__read_string(names_pointer))
-        print(self.identifier_names)
+            identifier_name = self.__read_string(names_pointer)
+            if identifier_name == "NODE":
+                self.identifier_names.append("node_pid")
+            else:
+                self.identifier_names.append(identifier_name.lower())
 
     def __read_performance_metrics_section(
         self, section_pointer: int, section_size: int
@@ -429,23 +430,25 @@ class MetaReader:
         # empty space
         self.file.read(1)
 
-        # {PS} Descriptions of propgation scopes
-        ps_pointer = int.from_bytes(
-            self.file.read(8), byteorder=self.byte_order, signed=self.signed
-        )
+        # {PS} Descriptions of propgation scopes.
+        # We don't need the descriptions at this point.
+        # We will read descriptions for each metric later.
+        self.file.read(8)
+        # ps_pointer = int.from_bytes(
+        #     self.file.read(8), byteorder=self.byte_order, signed=self.signed
+        # )
 
         # Number of propgation scopes
-        number_of_ps = int.from_bytes(
-            self.file.read(2), byteorder=self.byte_order, signed=self.signed
-        )
+        self.file.read(2)
+        # number_of_ps = int.from_bytes(
+        #     self.file.read(2), byteorder=self.byte_order, signed=self.signed
+        # )
 
         # Size of the {PS} structure, currently 16
-        size_of_ps = int.from_bytes(
-            self.file.read(1), byteorder=self.byte_order, signed=self.signed
-        )
-
-        print("number of md: ", number_of_md)
-        print("number of ps: ", number_of_ps)
+        self.file.read(1)
+        # size_of_ps = int.from_bytes(
+        #     self.file.read(1), byteorder=self.byte_order, signed=self.signed
+        # )
 
         # Read MD
         for i in range(number_of_md):
@@ -459,114 +462,123 @@ class MetaReader:
                 self.file.read(8), byteorder=self.byte_order, signed=self.signed
             )
 
-            # {SS} Instantiated propagated sub-metrics
-            ss_pointer = int.from_bytes(
-                self.file.read(8), byteorder=self.byte_order, signed=self.signed
-            )
+            # {SS} Summary statistics. Hatchet currently don't need summary statistics.
+            self.file.read(8)
+            # ss_pointer = int.from_bytes(
+            #     self.file.read(8), byteorder=self.byte_order, signed=self.signed
+            # )
 
             # Number of instantiated sub-metrics for this metric
-            number_of_psi = int.from_bytes(
+            self.number_of_metric_types = int.from_bytes(
                 self.file.read(2), byteorder=self.byte_order, signed=self.signed
             )
 
-            # Number of summary statistics for this metric
-            number_of_ss = int.from_bytes(
-                self.file.read(2), byteorder=self.byte_order, signed=self.signed
-            )
+            # Number of summary statistics for this metric. Hatchet currently
+            # don't need summary statistics.
+            self.file.read(2)
+            # number_of_ss = int.from_bytes(
+            #     self.file.read(2), byteorder=self.byte_order, signed=self.signed
+            # )
 
             # empty space
             self.file.read(4)
 
-            print("num of psi: ", number_of_psi)
-            print("num of ss: ", number_of_ss)
             metric_name = self.__read_string(metric_name_pointer)
-            self.metric_name_map[i] = metric_name
-            print("METRIC: ", i, metric_name)
 
-            # read PSI
-            for i in range(number_of_psi):
+            # Instantiated propagated sub-metrics (PSI)
+            # Copied from FORMATS.md: Propagated metric values are generated for each
+            # context by summing values attributed to children contexts, within the
+            # measurements for a single application thread. Which children are included
+            # in this sum is indicated by the *pScope PS structure.
+            for i in range(self.number_of_metric_types):
                 self.file.seek(psi_pointer + (size_of_psi * i))
 
                 ps_in_psi_pointer = int.from_bytes(
                     self.file.read(8), byteorder=self.byte_order, signed=self.signed
                 )
 
-                prop_metric_id = int.from_bytes(
+                psi_metric_id = int.from_bytes(
                     self.file.read(2), byteorder=self.byte_order, signed=self.signed
                 )
 
                 # empty space
                 self.file.read(6)
 
+                # Get the description of propagation scopes for this metric ID.
                 self.file.seek(ps_in_psi_pointer)
 
-                propgation_name_pointer = int.from_bytes(
+                # Examples: point, function, lex_aware, execution
+                psi_name_pointer = int.from_bytes(
                     self.file.read(8), byteorder=self.byte_order, signed=self.signed
                 )
 
-                propgation_type = int.from_bytes(
+                # Differet types:
+                # 1: point, 2: execution, 3: function, 4: lex-aware.
+                psi_type = int.from_bytes(
                     self.file.read(1), byteorder=self.byte_order, signed=self.signed
                 )
-                propgation_index = int.from_bytes(
+
+                psi_index = int.from_bytes(
                     self.file.read(1), byteorder=self.byte_order, signed=self.signed
                 )
 
                 # empty space
                 self.file.read(6)
 
-                propgation_name = self.__read_string(propgation_name_pointer)
-                self.metric_type_map[prop_metric_id] = propgation_name
-                print(
-                    "propgation: ",
-                    propgation_name,
-                    prop_metric_id,
-                    propgation_type,
-                    propgation_index,
-                )
+                psi_name = self.__read_string(psi_name_pointer)
+                self.metric_id_name_map[psi_metric_id] = (metric_name, psi_name)
 
-            # Read SS
-            for i in range(number_of_ss):
-                self.file.seek(ss_pointer + (size_of_ss * i))
+            # Summary Statistic (SS):
+            # HPCToolkit aggregates the metric values from all threads/ranks and summarizes
+            # it into a single statistic per context. Hatchet doesn't provide summary
+            # statistics. Therefore, we don't need this section. Also, cct.db doesn't
+            # provide the summary statistic values. profile.db should be used to obtain
+            # that information. Therefore, this section is implemented but will not be
+            # used for now.
+            # for i in range(number_of_ss):
+            #     self.file.seek(ss_pointer + (size_of_ss * i))
 
-                ps_in_ss_pointer = int.from_bytes(
-                    self.file.read(8), byteorder=self.byte_order, signed=self.signed
-                )
+            #     ps_in_ss_pointer = int.from_bytes(
+            #         self.file.read(8), byteorder=self.byte_order, signed=self.signed
+            #     )
 
-                p_formula = int.from_bytes(
-                    self.file.read(8), byteorder=self.byte_order, signed=self.signed
-                )
+            #     ss_formula = int.from_bytes(
+            #         self.file.read(8), byteorder=self.byte_order, signed=self.signed
+            #     )
 
-                combine = int.from_bytes(
-                    self.file.read(1), byteorder=self.byte_order, signed=self.signed
-                )
+            #     ss_combine = int.from_bytes(
+            #         self.file.read(1), byteorder=self.byte_order, signed=self.signed
+            #     )
 
-                # empty space
-                self.file.read(1)
+            #     # empty space
+            #     self.file.read(1)
 
-                stat_metric_id = int.from_bytes(
-                    self.file.read(1), byteorder=self.byte_order, signed=self.signed
-                )
+            #     ss_metric_id = int.from_bytes(
+            #         self.file.read(1), byteorder=self.byte_order, signed=self.signed
+            #     )
 
-                # empty space
-                self.file.read(4)
+            #     # empty space
+            #     self.file.read(4)
 
-                self.file.seek(ps_in_ss_pointer)
+            #     self.file.seek(ps_in_ss_pointer)
 
-                propgation_name_pointer = int.from_bytes(
-                    self.file.read(8), byteorder=self.byte_order, signed=self.signed
-                )
+            #     # Read PS in SS
+            #     ss_name_pointer = int.from_bytes(
+            #         self.file.read(8), byteorder=self.byte_order, signed=self.signed
+            #     )
 
-                propgation_type = int.from_bytes(
-                    self.file.read(1), byteorder=self.byte_order, signed=self.signed
-                )
-                propgation_index = int.from_bytes(
-                    self.file.read(1), byteorder=self.byte_order, signed=self.signed
-                )
+            #     ss_type = int.from_bytes(
+            #         self.file.read(1), byteorder=self.byte_order, signed=self.signed
+            #     )
+            #     ss_index = int.from_bytes(
+            #         self.file.read(1), byteorder=self.byte_order, signed=self.signed
+            #     )
 
-                # empty space
-                self.file.read(6)
+            #     # empty space
+            #     self.file.read(6)
 
-                propgation_name = self.__read_string(p_formula)
+            #     ss_formula_string = self.__read_string(ss_formula)
+            #     ss_name = self.__read_string(ss_name_pointer)
 
     def __get_function_index(self, function_pointer: int) -> int:
         """
@@ -639,7 +651,6 @@ class MetaReader:
                 "load_modules_offset": modules_offset,
             }
             self.functions_list.append(current_function_map)
-        print(self.functions_list)
 
     def __get_source_file_index(self, source_file_pointer: int) -> int:
         """
@@ -702,7 +713,6 @@ class MetaReader:
             string_index = self.common_string_index_map[file_path_pointer]
             source_file_map = {"string_index": string_index}
             self.source_files_list.append(source_file_map)
-        print(self.source_files_list)
 
     def __read_context_tree_section(
         self, section_pointer: int, section_size: int
@@ -738,14 +748,6 @@ class MetaReader:
         for i in range(num_entry_points):
             current_pointer = entry_points_array_pointer + (i * entry_point_size)
             self.__read_single_entry_point(current_pointer)
-
-        graph = Graph(self.roots)
-        # print("GRAPH")
-        # for node in graph.traverse():
-        #     print(node._hatchet_nid, node)
-
-        # print(self.context_map.keys())
-        # print(self.node_map.values())
 
     def __read_single_entry_point(self, entry_point_pointer: int) -> None:
         """
@@ -796,17 +798,15 @@ class MetaReader:
             "load_module_offset": -1,
             "string_index": string_index,
         }
-        # context = {"string_index": string_index}
         self.context_map[context_id] = context
         # Create Node for this context
-        print("ROOT", context_id, self.get_information_from_context_id(context_id))
         root_context_info = self.get_information_from_context_id(context_id)
         node = Node(
             Frame({"type": "function", "name": root_context_info["function"]}),
             parent=None,
             hnid=self._add_context_id(context_id),
         )
-        # print(node)
+
         # Adding the Node to the CCT
         self.roots.append(node)
         self.node_map[context_id] = node
@@ -970,7 +970,6 @@ class MetaReader:
 
             self.context_map[context_id] = context
             node_context_info = self.get_information_from_context_id(context_id)
-            print(context_id, node_context_info)
             node = None
             if node_context_info["type"] == "line":
                 node = Node(
@@ -1096,48 +1095,47 @@ class ProfileReader:
 
         # self.__read_psvb()
 
-    def __read_psvb(self) -> None:
-        for profile in self.profile_info_list:
-            if profile["flags"] != 1:
-                print(profile)
-                self.file.seek(profile["psvb"])
+    # Profile-Major Sparse Value Block.
+    # We don't need to read this section unless we want
+    # the summary statistics. The commented out lines below
+    # show how to read PSVB in case we read it in future.
+    # def __read_psvb(self) -> None:
+    #     for profile in self.profile_info_list:
+    #         if profile["flags"] != 1:
+    #             self.file.seek(profile["psvb"])
 
-                nonzero_values = int.from_bytes(
-                    self.file.read(8), byteorder=self.byte_order, signed=self.signed
-                )
+    #             nonzero_values = int.from_bytes(
+    #                 self.file.read(8), byteorder=self.byte_order, signed=self.signed
+    #             )
 
-                metric_value_pairs = int.from_bytes(
-                    self.file.read(8), byteorder=self.byte_order, signed=self.signed
-                )
+    #             metric_value_pairs = int.from_bytes(
+    #                 self.file.read(8), byteorder=self.byte_order, signed=self.signed
+    #             )
 
-                nonempty_contexts = int.from_bytes(
-                    self.file.read(4), byteorder=self.byte_order, signed=self.signed
-                )
+    #             nonempty_contexts = int.from_bytes(
+    #                 self.file.read(4), byteorder=self.byte_order, signed=self.signed
+    #             )
 
-                # empty space
-                self.file.read(4)
+    #             # empty space
+    #             self.file.read(4)
 
-                context_to_values = int.from_bytes(
-                    self.file.read(8), byteorder=self.byte_order, signed=self.signed
-                )
+    #             context_to_values = int.from_bytes(
+    #                 self.file.read(8), byteorder=self.byte_order, signed=self.signed
+    #             )
 
-                self.file.seek(metric_value_pairs)
-                metric_id = int.from_bytes(
-                    self.file.read(4), byteorder=self.byte_order, signed=self.signed
-                )
-                metric_value = struct.unpack("d", self.file.read(8))[0]
+    #             self.file.seek(metric_value_pairs)
+    #             metric_id = int.from_bytes(
+    #                 self.file.read(4), byteorder=self.byte_order, signed=self.signed
+    #             )
+    #             metric_value = struct.unpack("d", self.file.read(8))[0]
 
-                self.file.seek(context_to_values)
-                context_id = int.from_bytes(
-                    self.file.read(4), byteorder=self.byte_order, signed=self.signed
-                )
-                start_index = int.from_bytes(
-                    self.file.read(8), byteorder=self.byte_order, signed=self.signed
-                )
-
-                print("metric_id: ", metric_id)
-                print("metric_value: ", metric_id)
-                print("context_id: ", metric_id)
+    #             self.file.seek(context_to_values)
+    #             context_id = int.from_bytes(
+    #                 self.file.read(4), byteorder=self.byte_order, signed=self.signed
+    #             )
+    #             start_index = int.from_bytes(
+    #                 self.file.read(8), byteorder=self.byte_order, signed=self.signed
+    #             )
 
     def __read_profiles_information_section(
         self, section_pointer: int, section_size: int
@@ -1162,29 +1160,33 @@ class ProfileReader:
         )
 
         self.profile_info_list = []
-
         for i in range(num_profiles):
             file_index = profiles_pointer + (i * profile_size)
             self.file.seek(file_index)
-            # Header for the values for this profile
-            nonzero_values = int.from_bytes(
-                self.file.read(8), byteorder=self.byte_order, signed=self.signed
-            )
 
-            metric_value_pairs = int.from_bytes(
-                self.file.read(8), byteorder=self.byte_order, signed=self.signed
-            )
+            # Profile-Major Sparse Value Block.
+            # We don't need to read this section unless we want
+            # the summary statistics. The commented out lines below
+            # show how to read PSVB in case we read it in future.
+            psvb = self.file.read(0x20)
+            # nonzero_values = int.from_bytes(
+            #     self.file.read(8), byteorder=self.byte_order, signed=self.signed
+            # )
 
-            nonempty_contexts = int.from_bytes(
-                self.file.read(4), byteorder=self.byte_order, signed=self.signed
-            )
+            # metric_value_pairs = int.from_bytes(
+            #     self.file.read(8), byteorder=self.byte_order, signed=self.signed
+            # )
 
-            # empty space
-            self.file.read(4)
+            # nonempty_contexts = int.from_bytes(
+            #     self.file.read(4), byteorder=self.byte_order, signed=self.signed
+            # )
 
-            context_to_values = int.from_bytes(
-                self.file.read(8), byteorder=self.byte_order, signed=self.signed
-            )
+            # # empty space
+            # self.file.read(4)
+
+            # context_to_values = int.from_bytes(
+            #     self.file.read(8), byteorder=self.byte_order, signed=self.signed
+            # )
 
             # Identifier tuple for this profile
             hit_pointer = int.from_bytes(
@@ -1196,33 +1198,27 @@ class ProfileReader:
             )
             profile_map = {"hit_pointer": hit_pointer, "flags": flags}
 
-            self.file.seek(metric_value_pairs)
-            metric_id = int.from_bytes(
-                self.file.read(2), byteorder=self.byte_order, signed=self.signed
-            )
-            metric_value = struct.unpack("d", self.file.read(8))[0]
+            # self.file.seek(metric_value_pairs)
+            # metric_id = int.from_bytes(
+            #     self.file.read(2), byteorder=self.byte_order, signed=self.signed
+            # )
+            # metric_value = struct.unpack("d", self.file.read(8))[0]
 
-            print(nonzero_values)
-            print(nonempty_contexts)
-            print("metric_id: ", metric_id)
-            print("metric_value: ", metric_value)
-            for nonzero_context in range(nonempty_contexts):
-                self.file.seek(
-                    context_to_values + (context_to_values * nonzero_context)
-                )
-                context_id = int.from_bytes(
-                    self.file.read(4), byteorder=self.byte_order, signed=self.signed
-                )
-                start_index = int.from_bytes(
-                    self.file.read(8), byteorder=self.byte_order, signed=self.signed
-                )
-                print("context_id: ", context_id)
+            # for nonzero_context in range(nonempty_contexts):
+            #     self.file.seek(
+            #         context_to_values + (context_to_values * nonzero_context)
+            #     )
+            #     context_id = int.from_bytes(
+            #         self.file.read(4), byteorder=self.byte_order, signed=self.signed
+            #     )
+            #     start_index = int.from_bytes(
+            #         self.file.read(8), byteorder=self.byte_order, signed=self.signed
+            #     )
 
             self.profile_info_list.append(profile_map)
             if hit_pointer == 0:
                 # this is a summary profile
                 self.summary_profile_index = i
-        print(self.profile_info_list)
 
     def get_hit_from_profile(self, index: int) -> list:
         profile = self.profile_info_list[index]
@@ -1247,7 +1243,6 @@ class ProfileReader:
             # hit pointer
             hit_pointer = self.file.tell()
 
-            # print((self.file.tell() - section_pointer))
             # Number of identifications in this tuple (u16)
             num_tuples = int.from_bytes(
                 self.file.read(2), byteorder=self.byte_order, signed=self.signed
@@ -1258,7 +1253,7 @@ class ProfileReader:
 
             # Identifications for an application thread
             # Read H.I.T.s
-            tuples_list = []
+            profile_properties = {}
             for i in range(num_tuples):
                 # One of the values listed in the meta.db Identifier Names section. (u8)
                 kind = int.from_bytes(
@@ -1266,24 +1261,32 @@ class ProfileReader:
                 )
                 # empty space
                 self.file.read(1)
+
                 # flag
                 flags = int.from_bytes(
                     self.file.read(2), byteorder=self.byte_order, signed=self.signed
                 )
                 # self.file.read(2)
+
                 # Logical identifier value, may be arbitrary but dense towards 0. (u32)
                 logical_id = int.from_bytes(
                     self.file.read(4), byteorder=self.byte_order, signed=self.signed
                 )
                 # self.file.read(4)
+
                 # Physical identifier value, eg. hostid or PCI bus index. (u64)
                 physical_id = int.from_bytes(
                     self.file.read(8), byteorder=self.byte_order, signed=self.signed
                 )
+
                 identifier_name = self.meta_reader.get_identifier_name(kind)
-                tuples_list.append((identifier_name, physical_id, flags, logical_id))
-            self.hit_map[hit_pointer] = tuples_list
-        # print(self.hit_map)
+
+                if flags & 0x1:
+                    profile_properties[identifier_name] = physical_id
+                else:
+                    profile_properties[identifier_name] = logical_id
+                # tuples_list.append((identifier_name, physical_id, flags, logical_id))
+            self.hit_map[hit_pointer] = profile_properties
 
     def __read_common_header(self) -> None:
         """
@@ -1326,11 +1329,67 @@ class ProfileReader:
             )
 
 
-class CCTReader:
+class DefaultReader:
+    """Reads the defaults.yaml file in the metrics directory.
+    This file is needed to obtain inclusive and exclusive metrics."""
+
     def __init__(self, file_location: str, meta_reader: MetaReader) -> None:
+        self.meta_reader = meta_reader
+        self.metric_defaults = {}
+
+        with open(file_location, "rb") as self.file:
+            file_contents = yaml.safe_load(self.file)
+
+            # Gets the inclusive and exclusive types for each metric.
+            # This part might need modifications in future.
+            for metric in file_contents["roots"]:
+                self.metric_defaults[metric["name"]] = {}
+                if "Sum" in metric["variants"]:
+                    if "percent" in metric["variants"]["Sum"]["render"]:
+                        formula = metric["variants"]["Sum"]["formula"]
+                        if "inclusive" in formula:
+                            self.metric_defaults[metric["name"]]["inclusive"] = formula[
+                                "inclusive"
+                            ]["standard"]["scope"]
+
+                        if "exclusive" in formula:
+                            self.metric_defaults[metric["name"]]["exclusive"] = formula[
+                                "exclusive"
+                            ]["standard"]["scope"]
+
+                elif "" in metric["variants"]:
+                    if "percent" in metric["variants"][""]["render"]:
+                        formula = metric["variants"][""]["formula"]
+                        if "inclusive" in formula:
+                            self.metric_defaults[metric["name"]]["inclusive"] = formula[
+                                "inclusive"
+                            ]["standard"]["scope"]
+
+                        if "exclusive" in formula:
+                            self.metric_defaults[metric["name"]]["exclusive"] = formula[
+                                "exclusive"
+                            ]["standard"]["scope"]
+
+
+class CCTReader:
+    """Reads the metric and profile information (thread, rank, etc.)
+    for each context."""
+
+    def __init__(
+        self,
+        file_location: str,
+        meta_reader: MetaReader,
+        profile_reader: ProfileReader,
+        defaults_reader: DefaultReader,
+    ) -> None:
         # open file
         self.file = open(file_location, "rb")
         self.meta_reader = meta_reader
+        self.profile_reader = profile_reader
+        self.defaults_reader = defaults_reader
+        self.node_dicts = {}
+        self.inclusive_metrics = set([])
+        self.exclusive_metrics = set([])
 
         # setting necessary read options
         self.byte_order = "little"
@@ -1418,11 +1477,29 @@ class CCTReader:
                 )
             )
 
+    def __create_node_dict(
+        self,
+        identifier,
+        profile_info,
+        node_name,
+        node,
+        context_info,
+        metric_name=False,
+        value=False,
+    ) -> None:
+        """Stores profile and metric information for each context.
+        node_dicts will be used later to create the dataframe."""
+        self.node_dicts[identifier] = dict(profile_info)
+        self.node_dicts[identifier]["name"] = node_name
+        self.node_dicts[identifier]["node"] = node
+        self.node_dicts[identifier].update(context_info)
+        if metric_name:
+            self.node_dicts[identifier][metric_name] = value
+
     def __read_cct_info_section(self, section_pointer: int, section_size: int) -> None:
         """
         Reader Context Trace Headers section of trace.db
         """
-
         # get to the right place in the file
         self.file.seek(section_pointer)
 
@@ -1439,18 +1516,75 @@ class CCTReader:
             self.file.read(1), byteorder=self.byte_order, signed=self.signed
         )
 
-        print(context_pointer, num_contexts, context_size)
-        print(len(self.meta_reader.context_map))
+        # Read metric and profile information for each context.
+        for i in self.meta_reader.context_map.keys():
+            # get the corresponding Hatchet node for the HPCToolkit context.
+            node = self.meta_reader.node_map[i]
 
-        for i in range(num_contexts - 1):
-            print("ctxId", self.meta_reader.get_information_from_context_id(i + 1))
-            header_pointer = context_pointer + ((i + 1) * context_size)
-            self.__read_single_context_value_block(header_pointer)
+            header_pointer = context_pointer + ((i) * context_size)
+            self.__read_single_context_value_block(
+                header_pointer,
+                node,
+                self.meta_reader.get_information_from_context_id(i),
+            )
 
-    def __read_single_context_value_block(self, header_pointer: int) -> None:
+    def __read_single_context_value_block(
+        self, header_pointer: int, node: Node, context_info: dict
+    ) -> None:
         """
-        Reads a single context header and all context elements associated with it
+        Reads the value block that includes all the metrics and
+        profile information (rank, thread, etc.) of a context.
         """
+
+        def __read_profiles(
+            next_metric_index,
+            visited_profiles,
+            node_name,
+            node,
+            context_info,
+            metric_name,
+        ):
+            """
+            Iterates over the profiles and corresponding metric values
+            of a metric associated with a context.
+            For example, in the first iteration, we focus on 'context1,'
+            and within that context, we examine 'metric1.' Within
+            'metric1,' we start with 'rank 0, thread 0,' and retrieve
+            its associated value. In the second iteration of the while
+            loop, we move to 'rank 0, thread 1' and retrieve its value.
+            """
+            while self.file.tell() < next_metric_index:
+                prof_index = int.from_bytes(
+                    self.file.read(4), byteorder=self.byte_order, signed=self.signed
+                )
+                value = struct.unpack("d", self.file.read(8))[0]
+
+                # get the profile info by using its index.
+                profile_info = self.profile_reader.get_hit_from_profile(prof_index)
+
+                # keep track of the profiles that has no values. we need to
+                # manually create these profiles to convert HPCToolkit's
+                # sparse representation to the Hatchet representation.
+                visited_profiles.add(prof_index)
+
+                # Example: (node, rank 0, thread 0)
+                identifier = (node,) + tuple(profile_info.values())
+
+                # add the metric value if the identifier has seen
+                # before. Otherwise, add new information.
+                if identifier in self.node_dicts.keys():
+                    self.node_dicts[identifier][metric_name] = value
+                else:
+                    self.__create_node_dict(
+                        identifier,
+                        profile_info,
+                        node_name,
+                        node,
+                        context_info,
+                        metric_name,
+                        value,
+                    )
+
         self.file.seek(header_pointer)
 
         # Header for each trace (u64)
@@ -1458,10 +1592,12 @@ class CCTReader:
             self.file.read(8), byteorder=self.byte_order, signed=self.signed
         )
 
+        # Stores the profile and corresponding metric value.
         profile_value_pairs = int.from_bytes(
             self.file.read(8), byteorder=self.byte_order, signed=self.signed
         )
 
+        # Number of non-empty (i.e. non-zero) metrics.
         nonempty_metrics = int.from_bytes(
             self.file.read(2), byteorder=self.byte_order, signed=self.signed
         )
@@ -1469,15 +1605,12 @@ class CCTReader:
         # empty space
         self.file.read(6)
 
-        metrics_to_values = int.from_bytes(
+        metrics_to_index = int.from_bytes(
             self.file.read(8), byteorder=self.byte_order, signed=self.signed
         )
 
-        # print("nonzero_vals: ", nonzero_vals)
-        # print("nonempty_metrics: ", nonempty_metrics)
         metric_indices = []
-
-        self.file.seek(metrics_to_values)
+        self.file.seek(metrics_to_index)
         for _ in range(nonempty_metrics):
             metric_id = int.from_bytes(
                 self.file.read(2), byteorder=self.byte_order, signed=self.signed
@@ -1486,37 +1619,230 @@ class CCTReader:
                 self.file.read(8), byteorder=self.byte_order, signed=self.signed
             )
             metric_indices.append((metric_id, start_index))
-        # print(metric_indices)
 
+        # construct the node name for the context. it will be
+        # used to create the name column in the dataframe.
+        node_name = None
+        if "type" in context_info.keys():
+            if context_info["type"] == "function":
+                node_name = context_info["function"]
+            # file:line
+            elif context_info["type"] == "line":
+                node_name = "{}:{}".format(context_info["file"], context_info["line"])
+            # Loop@file:line
+            elif context_info["type"] == "loop":
+                node_name = "Loop@{}:{}".format(
+                    context_info["file"], context_info["line"]
+                )
+            # module:instruction
+            # Example: app.exe:0x1581
+            elif context_info["type"] == "instruction":
+                node_name = "{}:{}".format(
+                    context_info["module"], context_info["instruction"]
+                )
+        # the root node, which is the parent of the main function,
+        # don't have a type. its name is stored in the 'function' key.
+        # that's why we create a 'type' for it.
+        else:
+            node_name = context_info["function"]
+            context_info["type"] = "function"
+            context_info["module"] = None
+            context_info["file"] = None
+            context_info.pop("loop_type", None)
+            context_info.pop("lexical_type", None)
+
+        # add name to the node's frame.
+        node.frame.attrs["name"] = node_name
+
+        # we need to keep track of the visited profiles. HPCToolkit
+        # sparse representation doesn't provide profile information
+        # if it has only 0 values. We need to create them manually
+        # to be able to show those profiles (i.e. rank/thread) on
+        # the dataframe.
+        visited_profiles = set([])
+        not_visited_profiles = list(self.profile_reader.profile_info_list)
+
+        # iterate over each metric.
+        # context1 -> metric1, context1 -> metric2, ...
         for i in range(len(metric_indices)):
             metric_id = metric_indices[i][0]
             start_index = metric_indices[i][1]
-            next_metric_index = profile_value_pairs + (12 * (i + 1))
+            next_metric_index = None
 
-            self.file.seek(profile_value_pairs + (start_index * 12))
-            print("metric id: ", metric_id)
-            # print(
-            #     metric_id, profile_value_pairs + (start_index * 12), next_metric_index
-            # )
-
-            # Read and process each value for the current metric
-            # for _ in range(start_index, next_metric_index):
-            while self.file.tell() < next_metric_index:
-                prof_index = int.from_bytes(
-                    self.file.read(4), byteorder=self.byte_order, signed=self.signed
+            # find the correct location to read.
+            # a profile and its value takes 12 bytes.
+            if i != len(metric_indices) - 1:
+                next_metric_index = profile_value_pairs + (
+                    (metric_indices[i + 1][1]) * 12
                 )
-                value = struct.unpack("d", self.file.read(8))[0]
-                print(f"profile index: {prof_index}, value: {value}")
+            else:
+                next_metric_index = profile_value_pairs + ((nonzero_vals) * 12)
+            self.file.seek(profile_value_pairs + (start_index * 12))
+
+            # get the metric name and type (point, execution, function, lex-aware)
+            # from the corresponding id.
+            metric = self.meta_reader.metric_id_name_map[metric_id][0]
+            metric_type = self.meta_reader.metric_id_name_map[metric_id][1]
+
+            # get the default inclusive and exclusive metric type
+            # for the corresponding metric.
+            exc, inc = None, None
+            if metric in self.defaults_reader.metric_defaults.keys():
+                exc = self.defaults_reader.metric_defaults[metric]["exclusive"]
+                inc = self.defaults_reader.metric_defaults[metric]["inclusive"]
+
+            # Read profiles and values for the current metric.
+            if metric_type == inc:
+                metric_name = metric + " (inc)"
+                self.inclusive_metrics.add(metric_name)
+                __read_profiles(
+                    next_metric_index,
+                    visited_profiles,
+                    node_name,
+                    node,
+                    context_info,
+                    metric_name,
+                )
+            elif metric_type == exc:
+                metric_name = self.meta_reader.metric_id_name_map[metric_id][0]
+                self.exclusive_metrics.add(metric_name)
+                __read_profiles(
+                    next_metric_index,
+                    visited_profiles,
+                    node_name,
+                    node,
+                    context_info,
+                    metric_name,
+                )
+
+        # remove the visited profiles.
+        not_visited_profiles = [
+            i for j, i in enumerate(not_visited_profiles) if j not in visited_profiles
+        ]
+
+        # iterate over the not visited nodes and create dummy instances.
+        for profile in not_visited_profiles:
+            hit_pointer = profile["hit_pointer"]
+            if hit_pointer != 0:
+                dummy_profile_info = self.profile_reader.hit_map[hit_pointer]
+                dummy_identifier = (node,) + tuple(dummy_profile_info.values())
+
+                self.__create_node_dict(
+                    dummy_identifier,
+                    dummy_profile_info,
+                    node_name,
+                    node,
+                    context_info,
+                    metric_name=False,
+                    value=False,
+                )
 
 
 class HPCToolkitReaderDB:
     def __init__(self, directory: str) -> None:
-        print("\nREAD METADB")
-        self.meta_reader: MetaReader = MetaReader(directory + "/meta.db")
-        # print("\nREAD PROFILEDB")
-        # self.profile_reader = ProfileReader(directory + "/profile.db", self.meta_reader)
-        print("\nREAD CONTEXTDB")
-        self.cct_reader = CCTReader(directory + "/cct.db", self.meta_reader)
+        self.directory = directory
 
     def read(self):
-        print("end")
+        self.meta_reader: MetaReader = MetaReader(self.directory + "/meta.db")
+        self.profile_reader: ProfileReader = ProfileReader(
+            self.directory + "/profile.db", self.meta_reader
+        )
+        self.defaults_reader: DefaultReader = DefaultReader(
+            self.directory + "/metrics/default.yaml", self.meta_reader
+        )
+        self.cct_reader = CCTReader(
+            self.directory + "/cct.db",
+            self.meta_reader,
+            self.profile_reader,
+            self.defaults_reader,
+        )
+
+        return self.create_graph()
+
+    def create_graph(self) -> GraphFrame:
+        graph = Graph(self.meta_reader.roots)
+        graph.enumerate_traverse()
+        dataframe = pd.DataFrame.from_dict(data=self.cct_reader.node_dicts.values())
+
+        columns = dataframe.columns
+        if "thread" in columns and "rank" in columns:
+            indices = ["node", "rank", "thread"]
+        elif "rank" in columns:
+            indices = ["node", "rank"]
+        elif "thread" in columns:
+            indices = ["node", "thread"]
+        else:
+            indices = ["node"]
+
+        dataframe.set_index(indices, inplace=True)
+        # create missing ranks/threads. this adds NaN to each column for
+        # the added rank/thread.
+        new_index = pd.MultiIndex.from_product(dataframe.index.levels)
+        dataframe = dataframe.reindex(new_index)
+        dataframe.sort_index(inplace=True)
+
+        self.cct_reader.exclusive_metrics = list(self.cct_reader.exclusive_metrics)
+        self.cct_reader.inclusive_metrics = list(self.cct_reader.inclusive_metrics)
+
+        default_metric = "time"
+        if "CPUTIME (sec)" in dataframe.columns:
+            dataframe.rename(
+                columns={
+                    "CPUTIME (sec)": "time",
+                    "CPUTIME (sec) (inc)": "time (inc)",
+                },
+                inplace=True,
+            )
+            self.cct_reader.exclusive_metrics.remove("CPUTIME (sec)")
+            self.cct_reader.inclusive_metrics.remove("CPUTIME (sec) (inc)")
+            self.cct_reader.exclusive_metrics.append("time")
+            self.cct_reader.inclusive_metrics.append("time (inc)")
+        else:
+            default_metric = self.cct_reader.exclusive_metrics[0]
+
+        columns_to_fill = [
+            "name",
+            "module",
+            "file",
+            "function",
+            "instruction",
+            "type",
+        ]
+        # fills the missing rows. Example:
+        # main_node, rank0, thread0 -> NaN
+        # main_node, rank0, thread1 -> main
+        # main_node, rank0, thread2 -> NaN
+        # First, groups by (main_node, rank0) to get these groups.
+        # 'ffill' fills the NaN value of thread2.
+        # 'bfill' fills the NaN value if thread0.
+        for i in range(1, len(indices)):
+            # gradually reduce the level of the multiindex.
+            # in each iteration of the loop, the DataFrame is grouped
+            # by a subset of levels, moving up the hierarchy.
+            group_by = dataframe.groupby(level=indices[:-i])
+            # fill the missing value by replacing with the last valid
+            # value encountered in the forward direction within each group.
+            dataframe[columns_to_fill] = group_by[columns_to_fill].apply(
+                lambda x: x.ffill()
+            )
+            # fill the missing value by replacing with the next valid
+            # value encountered in the backward direction within each group.
+            dataframe[columns_to_fill] = group_by[columns_to_fill].apply(
+                lambda x: x.bfill()
+            )
+
+        # if the metric is numeric, fill NaNs with zero.
+        dataframe[self.cct_reader.inclusive_metrics] = dataframe[
+            self.cct_reader.inclusive_metrics
+        ].fillna(0)
+        dataframe[self.cct_reader.exclusive_metrics] = dataframe[
+            self.cct_reader.exclusive_metrics
+        ].fillna(0)
+
+        return hatchet.graphframe.GraphFrame(
+            graph,
+            dataframe,
+            exc_metrics=self.cct_reader.exclusive_metrics,
+            inc_metrics=self.cct_reader.inclusive_metrics,
+            default_metric=default_metric,
+        )
