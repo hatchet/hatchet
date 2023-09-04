@@ -5,6 +5,7 @@
 
 import sys
 import traceback
+import os
 
 from collections import defaultdict
 
@@ -140,25 +141,12 @@ class GraphFrame:
         """
         # import this lazily to avoid circular dependencies
         from .readers.hpctoolkit_reader import HPCToolkitReader
-
-        return HPCToolkitReader(dirname).read()
-
-    @staticmethod
-    @Logger.loggable
-    def from_hpctoolkit_db(dirname):
-        """Read an HPCToolkit database directory into a new GraphFrame.
-
-        Arguments:
-            dirname (str): parent directory of an HPCToolkit
-                experiment.xml file
-
-        Returns:
-            (GraphFrame): new GraphFrame containing HPCToolkit profile data
-        """
-        # import this lazily to avoid circular dependencies
         from .readers.hpctoolkit_reader_db import HPCToolkitReaderDB
 
-        return HPCToolkitReaderDB(dirname).read()
+        if "experiment.xml" in os.listdir(dirname):
+            return HPCToolkitReader(dirname).read()
+        else:
+            return HPCToolkitReaderDB(dirname).read()
 
     @staticmethod
     @Logger.loggable

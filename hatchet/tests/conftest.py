@@ -87,6 +87,20 @@ def osu_allgather_hpct_db(data_dir, tmpdir):
 
 
 @pytest.fixture
+def saxpy_mpi_cuda_newhpct_db(data_dir, tmpdir):
+    """Builds a temporary directory containing the osu allgather database."""
+    hpct_db_dir = os.path.join(data_dir, "hpctoolkit-saxpy-mpi-cuda-database")
+
+    for f in glob(os.path.join(str(hpct_db_dir), "*.db")):
+        shutil.copy(f, str(tmpdir))
+
+    metrics_dir = os.path.join(str(hpct_db_dir), "metrics")
+    shutil.copytree(metrics_dir, os.path.join(str(tmpdir), "metrics"))
+
+    return tmpdir
+
+
+@pytest.fixture
 def hatchet_cycle_pstats(data_dir, tmpdir):
     """Builds a temporary directory containing the pstats from a profile of the hpctoolkit_reader function."""
     cprof_pstats_dir = os.path.join(data_dir, "cprofile-hatchet-pstats")
