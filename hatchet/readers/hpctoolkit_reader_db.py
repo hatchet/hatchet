@@ -1859,6 +1859,10 @@ class HPCToolkitReaderDB:
             self.cct_reader.exclusive_metrics
         ].fillna(0)
 
+        dataframe["line"] = dataframe["line"].astype("int64")
+        dataframe["core"] = dataframe["core"].astype("int64")
+        dataframe["node_pid"] = dataframe["node_pid"].astype("int64")
+
         return hatchet.graphframe.GraphFrame(
             graph,
             dataframe,
