@@ -229,7 +229,8 @@ class ConsoleRenderer:
                     # by adding the exclusive metric value of each descendant in the subtree
                     # print(child_index)
                     subtree_info["sum_metric"] += dataframe.loc[
-                        child_index, self.primary_metric]
+                        child_index, self.primary_metric
+                    ]
                     # if statement only necessary in else because it is not needed for (inc) metric
                     # Pass df_index to _get_subtree_info define a new tuple for other child nodes.
                     if len(child.children) != 0:
@@ -320,7 +321,11 @@ class ConsoleRenderer:
                         c_indent = child_indent + indents["├"]
                         cc_indent = child_indent + indents["│"]
                     result += self.render_frame(
-                        child, looked_at, dataframe, indent=c_indent, child_indent=cc_indent
+                        child,
+                        looked_at,
+                        dataframe,
+                        indent=c_indent,
+                        child_indent=cc_indent,
                     )
         else:
             subtree_info = {"descendants": 0, "sum_metric": 0, "levels": self.depth}
