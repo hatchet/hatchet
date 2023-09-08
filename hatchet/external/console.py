@@ -42,6 +42,7 @@ class ConsoleRenderer:
         self.unicode = unicode
         self.color = color
         self.visited = []
+        pd.set_option("display.max_rows", 5)
 
     def render(self, roots, dataframe, **kwargs):
         result = self.render_preamble()
@@ -248,7 +249,6 @@ class ConsoleRenderer:
                 df_index = node
             else:
                 df_index = (node,) + df_index
-
             node_metric = dataframe.loc[df_index, self.primary_metric]
             metric_precision = "{:." + str(self.precision) + "f}"
             metric_str = (
@@ -327,9 +327,14 @@ class ConsoleRenderer:
                         indent=c_indent,
                         child_indent=cc_indent,
                     )
+
         else:
             subtree_info = {"descendants": 0, "sum_metric": 0, "levels": self.depth}
-            curr = node.parents[0]
+            # If node doesn't have any parents, set curr equal to node
+            if node.parents:
+                curr = node.parents[0]
+            else:
+                curr = node
             # If we are at depth, check whether curr is in looked_at to determine where
             # summary_string should be printed
             if curr not in looked_at:
