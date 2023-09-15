@@ -1713,27 +1713,18 @@ class CCTReader:
 
             # Read profiles and values for the current metric.
             if metric_type == inc:
-                metric_name = metric + " (inc)"
-                self.inclusive_metrics.add(metric_name)
-                __read_profiles(
-                    next_metric_index,
-                    visited_profiles,
-                    node_name,
-                    node,
-                    context_info,
-                    metric_name,
-                )
+                metric = metric + " (inc)"
+                self.inclusive_metrics.add(metric)
             elif metric_type == exc:
-                metric_name = self.meta_reader.metric_id_name_map[metric_id][0]
-                self.exclusive_metrics.add(metric_name)
-                __read_profiles(
-                    next_metric_index,
-                    visited_profiles,
-                    node_name,
-                    node,
-                    context_info,
-                    metric_name,
-                )
+                self.exclusive_metrics.add(metric)
+            __read_profiles(
+                next_metric_index,
+                visited_profiles,
+                node_name,
+                node,
+                context_info,
+                metric,
+            )
 
         # remove the visited profiles.
         not_visited_profiles = [
