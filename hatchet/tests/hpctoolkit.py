@@ -264,31 +264,42 @@ def test_tree_v4(calc_pi_hpct_v4_db):
         colormap="RdYlGn",
         invert_colormap=False,
     )
-    assert "0.070 main src/home/ocankur/apps/test/hatchet_cpi/cpi.c" in output
+    assert "0.088 main src/home/ocankur/apps/test/hatchet_cpi/cpi.c" in output
     assert (
-        "0.042 PMPI_Reduce [libmpi.so.40.30.1] src/home/ocankur/apps/test/hatchet_cpi/cpi.c"
+        "0.058 PMPI_Reduce [libmpi.so.40.30.1] src/home/ocankur/apps/test/hatchet_cpi/cpi.c"
         in output
     )
-    assert "0.028 MPI_Finalize src/home/ocankur/apps/test/hatchet_cpi/cpi.c" in output
+    assert "0.029 MPI_Finalize src/home/ocankur/apps/test/hatchet_cpi/cpi.c" in output
+    assert (
+        "0.000 PMPI_Bcast [libmpi.so.40.30.1] src/home/ocankur/apps/test/hatchet_cpi/cpi.c"
+        in output
+    )
 
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
-        metric_column="time",
+        metric_column="time (inc)",
         precision=3,
         name_column="name",
         expand_name=False,
         context_column="file",
-        rank=0,
+        rank=3,
         thread=0,
         depth=10000,
         highlight_name=False,
         colormap="RdYlGn",
         invert_colormap=False,
     )
-    assert "0.109 <gpu copyout> [saxpy-mpi-cuda]" in output
-    assert "0.099 <gpu copyin> [saxpy-mpi-cuda]" in output
-    assert "0.095 <gpu copyin> [saxpy-mpi-cuda]" in output
+    assert "0.090 main src/home/ocankur/apps/test/hatchet_cpi/cpi.c" in output
+    assert (
+        "0.059 PMPI_Bcast [libmpi.so.40.30.1] src/home/ocankur/apps/test/hatchet_cpi/cpi.c"
+        in output
+    )
+    assert (
+        "0.000 PMPI_Reduce [libmpi.so.40.30.1] src/home/ocankur/apps/test/hatchet_cpi/cpi.c"
+        in output
+    )
+    assert "0.030 MPI_Finalize src/home/ocankur/apps/test/hatchet_cpi/cpi.c" in output
 
 
 # def test_inclusive_metric_calculation_new_format(data_dir, saxpy_mpi_cuda_newhpct_db):
