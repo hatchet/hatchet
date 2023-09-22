@@ -87,9 +87,9 @@ def osu_allgather_hpct_db(data_dir, tmpdir):
 
 
 @pytest.fixture
-def saxpy_mpi_cuda_newhpct_db(data_dir, tmpdir):
+def calc_pi_hpct_v4_db(data_dir, tmpdir):
     """Builds a temporary directory containing the osu allgather database."""
-    hpct_db_dir = os.path.join(data_dir, "hpctoolkit-saxpy-mpi-cuda-database")
+    hpct_db_dir = os.path.join(data_dir, "hatchet_cpi_v4_database")
 
     for f in glob(os.path.join(str(hpct_db_dir), "*.db")):
         shutil.copy(f, str(tmpdir))

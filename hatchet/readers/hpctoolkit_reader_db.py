@@ -1,3 +1,8 @@
+# Copyright 2021-2023 University of Maryland and other Hatchet Project
+# Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: MIT
+
 import pandas as pd
 import hatchet.graphframe
 from hatchet.node import Node
@@ -154,16 +159,6 @@ class MetaReader:
             type = "instruction"
         elif lexical_type == 0:
             type = "function"
-        elif function_index is not None:
-            # The function map
-            function = self.functions_list[function_index]
-            # current_function_map = {"string_index": function_name_index, \
-            #                         "source_line": source_line,
-            #                         "load_modules_index": load_module_index, \
-            #                         "source_file_index": source_file_index}
-
-            # getting function name
-            function_string = self.common_strings[function["string_index"]]
         else:
             # function is unkown
             function_string = "<unkown function>"
@@ -1046,7 +1041,7 @@ class ProfileReader:
         self.signed = False
         self.encoding = "ASCII"
 
-        # The meta.db header consists of the common .db header and n sections.
+        # The profile.db header consists of the common .db header and n sections.
         # We're going to do a little set up work, so that's easy to change if
         # any revisions change the orders.
 
@@ -1346,6 +1341,11 @@ class DefaultReader:
 
             # Gets the inclusive and exclusive types for each metric.
             # This part might need modifications in future.
+            # Reads the metric information in default.yaml and gets the
+            # inclusive and exclusive metrics by looking at corresponding
+            # section (inclusive/standard and exlusive/standard) of each
+            # metric. Inclusive metric is usually "execution",
+            # exclusive metric is usually "function".
             for metric in file_contents["roots"]:
                 self.metric_defaults[metric["name"]] = {}
                 if "Sum" in metric["variants"]:
@@ -1361,6 +1361,8 @@ class DefaultReader:
                                 "exclusive"
                             ]["standard"]["scope"]
 
+                # TODO: Not sure how to get inclusive and exclusive metrics when
+                # we have a list in the standard section instead of a single variable.
                 elif "" in metric["variants"]:
                     if "percent" in metric["variants"][""]["render"]:
                         formula = metric["variants"][""]["formula"]
@@ -1400,7 +1402,7 @@ class CCTReader:
         self.signed = False
         self.encoding = "ASCII"
 
-        # The trace.db header consists of the common .db header and n sections.
+        # The cct.db header consists of the common .db header and n sections.
         # We're going to do a little set up work, so that's easy to change if
         # any revisions change the orders.
 
@@ -1749,7 +1751,7 @@ class CCTReader:
                 )
 
 
-class HPCToolkitReaderDB:
+class HPCToolkitV4Reader:
     def __init__(self, directory: str) -> None:
         self.directory = directory
 
@@ -1768,9 +1770,9 @@ class HPCToolkitReaderDB:
             self.defaults_reader,
         )
 
-        return self.create_graph()
+        return self.create_graphframe()
 
-    def create_graph(self) -> GraphFrame:
+    def create_graphframe(self) -> GraphFrame:
         graph = Graph(self.meta_reader.roots)
         graph.enumerate_traverse()
         dataframe = pd.DataFrame.from_dict(data=self.cct_reader.node_dicts.values())

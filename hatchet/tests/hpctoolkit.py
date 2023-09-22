@@ -231,9 +231,9 @@ def test_inclusive_time_calculation(data_dir, calc_pi_hpct_db):
 
 
 # START OF TESTS FOR THE NEW FORMAT
-def test_graphframe_new_format(data_dir, saxpy_mpi_cuda_newhpct_db):
+def test_graphframe_v4(data_dir, calc_pi_hpct_v4_db):
     """Sanity test a GraphFrame object with known data."""
-    gf = GraphFrame.from_hpctoolkit(str(saxpy_mpi_cuda_newhpct_db))
+    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_v4_db))
 
     for col in gf.dataframe.columns:
         if col in gf.inc_metrics or col in gf.exc_metrics:
@@ -246,13 +246,13 @@ def test_graphframe_new_format(data_dir, saxpy_mpi_cuda_newhpct_db):
     # TODO: add tests to confirm values in dataframe
 
 
-def test_tree_new_format(saxpy_mpi_cuda_newhpct_db):
-    gf = GraphFrame.from_hpctoolkit(str(saxpy_mpi_cuda_newhpct_db))
+def test_tree_v4(calc_pi_hpct_v4_db):
+    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_v4_db))
 
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
-        metric_column="GPUOP (sec) (inc)",
+        metric_column="time (inc)",
         precision=3,
         name_column="name",
         expand_name=False,
@@ -264,14 +264,17 @@ def test_tree_new_format(saxpy_mpi_cuda_newhpct_db):
         colormap="RdYlGn",
         invert_colormap=False,
     )
-    assert "0.405 main [saxpy-mpi-cuda]" in output
-    assert "0.102 saxpy(double*, dou...ble*, double, int) [saxpy-mpi-cuda]" in output
-    assert "0.099 cudaMemcpy [saxpy-mpi-cuda]" in output
+    assert "0.070 main src/home/ocankur/apps/test/hatchet_cpi/cpi.c" in output
+    assert (
+        "0.042 PMPI_Reduce [libmpi.so.40.30.1] src/home/ocankur/apps/test/hatchet_cpi/cpi.c"
+        in output
+    )
+    assert "0.028 MPI_Finalize src/home/ocankur/apps/test/hatchet_cpi/cpi.c" in output
 
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
-        metric_column="GXCOPY (sec)",
+        metric_column="time",
         precision=3,
         name_column="name",
         expand_name=False,
@@ -305,9 +308,9 @@ def test_tree_new_format(saxpy_mpi_cuda_newhpct_db):
 #     )
 
 
-def test_graphframe_to_literal_new_format(data_dir, saxpy_mpi_cuda_newhpct_db):
+def test_graphframe_to_literal__v4(data_dir, calc_pi_hpct_v4_db):
     """Sanity test a GraphFrame object with known data."""
-    gf = GraphFrame.from_hpctoolkit(str(saxpy_mpi_cuda_newhpct_db))
+    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_v4_db))
     graph_literal = gf.to_literal()
 
     gf2 = GraphFrame.from_literal(graph_literal)
