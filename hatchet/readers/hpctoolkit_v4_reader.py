@@ -128,14 +128,6 @@ class MetaReader:
                 "loop_type": False,
             }
 
-            # return self.common_strings[context["string_index"]]
-        # context = {"relation": relation, "lexical_type": lexical_type, \
-        #                "function_index": function_index, \
-        #                "source_file_index": source_file_index, \
-        #                "source_file_line": source_file_line, \
-        #                "load_module_index":load_module_index, \
-        #                "load_module_offset": load_module_offset}
-
         load_module_index = context["load_module_index"]
         source_file_index = context["source_file_index"]
         source_file_line = context["source_file_line"]
@@ -524,58 +516,6 @@ class MetaReader:
 
                 psi_name = self.__read_string(psi_name_pointer)
                 self.metric_id_name_map[psi_metric_id] = (metric_name, psi_name)
-
-            # Summary Statistic (SS):
-            # HPCToolkit aggregates the metric values from all threads/ranks and summarizes
-            # it into a single statistic per context. Hatchet doesn't provide summary
-            # statistics. Therefore, we don't need this section. Also, cct.db doesn't
-            # provide the summary statistic values. profile.db should be used to obtain
-            # that information. Therefore, this section is implemented but will not be
-            # used for now.
-            # for i in range(number_of_ss):
-            #     self.file.seek(ss_pointer + (size_of_ss * i))
-
-            #     ps_in_ss_pointer = int.from_bytes(
-            #         self.file.read(8), byteorder=self.byte_order, signed=self.signed
-            #     )
-
-            #     ss_formula = int.from_bytes(
-            #         self.file.read(8), byteorder=self.byte_order, signed=self.signed
-            #     )
-
-            #     ss_combine = int.from_bytes(
-            #         self.file.read(1), byteorder=self.byte_order, signed=self.signed
-            #     )
-
-            #     # empty space
-            #     self.file.read(1)
-
-            #     ss_metric_id = int.from_bytes(
-            #         self.file.read(1), byteorder=self.byte_order, signed=self.signed
-            #     )
-
-            #     # empty space
-            #     self.file.read(4)
-
-            #     self.file.seek(ps_in_ss_pointer)
-
-            #     # Read PS in SS
-            #     ss_name_pointer = int.from_bytes(
-            #         self.file.read(8), byteorder=self.byte_order, signed=self.signed
-            #     )
-
-            #     ss_type = int.from_bytes(
-            #         self.file.read(1), byteorder=self.byte_order, signed=self.signed
-            #     )
-            #     ss_index = int.from_bytes(
-            #         self.file.read(1), byteorder=self.byte_order, signed=self.signed
-            #     )
-
-            #     # empty space
-            #     self.file.read(6)
-
-            #     ss_formula_string = self.__read_string(ss_formula)
-            #     ss_name = self.__read_string(ss_name_pointer)
 
     def __get_function_index(self, function_pointer: int) -> int:
         """
@@ -1090,50 +1030,6 @@ class ProfileReader:
             section_reader = reader_map[section_name]
             section_reader(section_pointer, section_size)
 
-        # self.__read_psvb()
-
-    # Profile-Major Sparse Value Block.
-    # We don't need to read this section unless we want
-    # the summary statistics. The commented out lines below
-    # show how to read PSVB in case we read it in future.
-    # def __read_psvb(self) -> None:
-    #     for profile in self.profile_info_list:
-    #         if profile["flags"] != 1:
-    #             self.file.seek(profile["psvb"])
-
-    #             nonzero_values = int.from_bytes(
-    #                 self.file.read(8), byteorder=self.byte_order, signed=self.signed
-    #             )
-
-    #             metric_value_pairs = int.from_bytes(
-    #                 self.file.read(8), byteorder=self.byte_order, signed=self.signed
-    #             )
-
-    #             nonempty_contexts = int.from_bytes(
-    #                 self.file.read(4), byteorder=self.byte_order, signed=self.signed
-    #             )
-
-    #             # empty space
-    #             self.file.read(4)
-
-    #             context_to_values = int.from_bytes(
-    #                 self.file.read(8), byteorder=self.byte_order, signed=self.signed
-    #             )
-
-    #             self.file.seek(metric_value_pairs)
-    #             metric_id = int.from_bytes(
-    #                 self.file.read(4), byteorder=self.byte_order, signed=self.signed
-    #             )
-    #             metric_value = struct.unpack("d", self.file.read(8))[0]
-
-    #             self.file.seek(context_to_values)
-    #             context_id = int.from_bytes(
-    #                 self.file.read(4), byteorder=self.byte_order, signed=self.signed
-    #             )
-    #             start_index = int.from_bytes(
-    #                 self.file.read(8), byteorder=self.byte_order, signed=self.signed
-    #             )
-
     def __read_profiles_information_section(
         self, section_pointer: int, section_size: int
     ) -> None:
@@ -1168,25 +1064,6 @@ class ProfileReader:
             self.file.read(0x20)
             # psvb = self.file.read(0x20)
 
-            # nonzero_values = int.from_bytes(
-            #     self.file.read(8), byteorder=self.byte_order, signed=self.signed
-            # )
-
-            # metric_value_pairs = int.from_bytes(
-            #     self.file.read(8), byteorder=self.byte_order, signed=self.signed
-            # )
-
-            # nonempty_contexts = int.from_bytes(
-            #     self.file.read(4), byteorder=self.byte_order, signed=self.signed
-            # )
-
-            # # empty space
-            # self.file.read(4)
-
-            # context_to_values = int.from_bytes(
-            #     self.file.read(8), byteorder=self.byte_order, signed=self.signed
-            # )
-
             # Identifier tuple for this profile
             hit_pointer = int.from_bytes(
                 self.file.read(8), byteorder=self.byte_order, signed=self.signed
@@ -1196,23 +1073,6 @@ class ProfileReader:
                 self.file.read(4), byteorder=self.byte_order, signed=self.signed
             )
             profile_map = {"hit_pointer": hit_pointer, "flags": flags}
-
-            # self.file.seek(metric_value_pairs)
-            # metric_id = int.from_bytes(
-            #     self.file.read(2), byteorder=self.byte_order, signed=self.signed
-            # )
-            # metric_value = struct.unpack("d", self.file.read(8))[0]
-
-            # for nonzero_context in range(nonempty_contexts):
-            #     self.file.seek(
-            #         context_to_values + (context_to_values * nonzero_context)
-            #     )
-            #     context_id = int.from_bytes(
-            #         self.file.read(4), byteorder=self.byte_order, signed=self.signed
-            #     )
-            #     start_index = int.from_bytes(
-            #         self.file.read(8), byteorder=self.byte_order, signed=self.signed
-            #     )
 
             self.profile_info_list.append(profile_map)
             if hit_pointer == 0:
