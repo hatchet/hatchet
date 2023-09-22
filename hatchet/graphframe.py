@@ -141,7 +141,7 @@ class GraphFrame:
         """
         # import this lazily to avoid circular dependencies
         from .readers.hpctoolkit_reader import HPCToolkitReader
-        from .readers.hpctoolkit_reader_db import HPCToolkitV4Reader
+        from .readers.hpctoolkit_v4_reader import HPCToolkitV4Reader
 
         if "experiment.xml" in os.listdir(dirname):
             return HPCToolkitReader(dirname).read()
