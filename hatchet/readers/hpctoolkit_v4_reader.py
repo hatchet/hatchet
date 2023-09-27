@@ -1677,7 +1677,7 @@ class HPCToolkitV4Reader:
             col
             for col in dataframe.columns
             if col not in self.cct_reader.exclusive_metrics
-            or col not in self.cct_reader.inclusive_metrics
+            and col not in self.cct_reader.inclusive_metrics
         ]
 
         # fills the missing rows. Example:
