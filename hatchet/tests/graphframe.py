@@ -769,7 +769,7 @@ def test_tree(mock_graph_literal):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
-        metric_column="time",
+        metric_columns="time",
         precision=3,
         name_column="name",
         expand_name=False,
@@ -788,7 +788,7 @@ def test_tree(mock_graph_literal):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
-        metric_column="time (inc)",
+        metric_columns="time (inc)",
         precision=3,
         name_column="name",
         expand_name=False,
@@ -846,7 +846,7 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf4.graph.roots,
         gf4.dataframe,
-        metric_column="time",
+        metric_columns="time",
         precision=3,
         name_column="name",
         expand_name=False,
@@ -875,7 +875,7 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf5.graph.roots,
         gf5.dataframe,
-        metric_column="time (inc)",
+        metric_columns="time (inc)",
         precision=3,
         name_column="name",
         expand_name=False,
@@ -909,7 +909,7 @@ def test_div_decorator(small_mock1, small_mock2):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf3.graph.roots,
         gf3.dataframe,
-        metric_column="time",
+        metric_columns="time",
         precision=3,
         name_column="name",
         expand_name=False,
@@ -1041,13 +1041,7 @@ def test_tree_deprecated_parameters(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
 
     with pytest.raises(ValueError):
-        gf.tree(invert_colors=True)
-
-    with pytest.raises(ValueError):
-        gf.tree(name="name")
-
-    with pytest.raises(TypeError):
-        gf.tree(metric="time", metric_column="time")
+        gf.tree(metric_column="time")
 
 
 def test_output_with_cycle_graphs():

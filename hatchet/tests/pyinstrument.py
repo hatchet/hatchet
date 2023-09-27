@@ -79,7 +79,7 @@ def test_tree(hatchet_pyinstrument_json):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
-        metric_column="time",
+        metric_columns="time",
         precision=3,
         name_column="name",
         expand_name=False,
@@ -97,7 +97,7 @@ def test_tree(hatchet_pyinstrument_json):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
-        metric_column="time (inc)",
+        metric_columns="time (inc)",
         precision=3,
         name_column="name",
         expand_name=False,
