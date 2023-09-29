@@ -60,17 +60,18 @@ class ScorePReader:
             # 'max_time', 'bytes_sent', 'bytes_received'.
             metric_name = metric.name
             metric_value = None
+            # MinValue and MaxValue requires special consideration because pycubexr
+            # stores them as objects instead of floats. We should convert them to
+            # float. We should store the value as it is if it is not MinValue or MaxValue.
             if metric_name == "min_time" or metric_name == "max_time":
-                # pycubexr stores min and max values in MinValue and MaxValue
-                # format. We convert them to float.
                 metric_value = metric_values.location_value(
                     pycubexr_cnode, location.id
                 ).value
             else:
-                # Store the value as it is if it is not MinValue or MaxValue.
                 metric_value = metric_values.location_value(pycubexr_cnode, location.id)
 
-            # The 'time' metric in Score-P is inclusive.
+            # We should check each metric and add ' (inc)' if
+            # their type is 'INCLUSIVE'.
             if metric.metric_type == "INCLUSIVE":
                 metric_name = "{}{}".format(metric.name, " (inc)")
 
@@ -285,9 +286,12 @@ class ScorePReader:
             # Stack the dataframe
             dataframe = dataframe.stack()
 
-        # The root node is just the name of the program and
-        # does not represent a function, statement or loop.
-        # Its time (inc) value is 0, so we should set it.
+        # The root node (above the main function) is just the
+        # name of the program and does not represent a
+        # function, statement or loop.
+        # In the raw score-p data, the root node has a time of 0
+        # but to be consisted we have to change that to the sum of
+        # time values in its children.
         if "time (inc)" in self.inc_metrics:
             for root in graph.roots:
                 total_val = 0
