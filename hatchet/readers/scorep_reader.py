@@ -290,8 +290,8 @@ class ScorePReader:
         # name of the program and does not represent a
         # function, statement or loop.
         # In the raw score-p data, the root node has a time of 0
-        # but to be consisted we have to change that to the sum of
-        # time values in its children.
+        # but to be consistent, we change that to the sum of
+        # time values of its children.
         if "time (inc)" in self.inc_metrics:
             for root in graph.roots:
                 total_val = 0
