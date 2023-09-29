@@ -42,7 +42,7 @@ class ConsoleRenderer:
         self.unicode = unicode
         self.color = color
         self.visited = []
-        pd.set_option("display.max_rows", 5)
+        self.seen = []
 
     def render(self, roots, dataframe, **kwargs):
         result = self.render_preamble()
@@ -123,12 +123,9 @@ class ConsoleRenderer:
         else:
             self.lr_arrows = {"◀": "< ", "▶": "> "}
 
-        # List to keep track of visited nodes to assist with subtree_info formatting
-        looked_at = []
-
         # TODO: probably better to sort by time
         for root in sorted(roots, key=lambda n: n.frame):
-            result += self.render_frame(root, looked_at, dataframe)
+            result += self.render_frame(root, dataframe)
 
         if self.color is True:
             result += self.render_legend()
@@ -195,8 +192,8 @@ class ConsoleRenderer:
 
         return legend
 
-    def render_frame(self, node, looked_at, dataframe, indent="", child_indent=""):
-        # set dataframe index based on whether rank and thread are part of the MultiIndex
+    def render_frame(self, node, dataframe, indent="", child_indent=""):
+        # Set the dataframe index based on whether rank and thread are part of the MultiIndex
         df_index = ()
         if "rank" in dataframe.index.names and "thread" in dataframe.index.names:
             df_index = (self.rank, self.thread)
@@ -211,8 +208,9 @@ class ConsoleRenderer:
             for child in node.children:
                 # Adding the number of descendants in the subtree
                 subtree_info["descendants"] += 1
-                # If df_index is empty, set child_index to child, otherwise
-                # add child to tuple.
+                # If df_index is an empty tuple due to no rank or thread, set child_index to child.
+                # Otherwise, add child to the df_index tuple and set this equal to child_index. child_index
+                # is used in calculating the inclusive and exclusive metrics.
                 if not df_index:
                     child_index = child
                 else:
@@ -228,11 +226,10 @@ class ConsoleRenderer:
                 else:
                     # If the metric is exclusive, then we calculate the sum of metric values
                     # by adding the exclusive metric value of each descendant in the subtree
-                    # print(child_index)
                     subtree_info["sum_metric"] += dataframe.loc[
                         child_index, self.primary_metric
                     ]
-                    # if statement only necessary in else because it is not needed for (inc) metric
+                    # If statement is only necessary in else because it is not needed for (inc) metric
                     # Pass df_index to _get_subtree_info define a new tuple for other child nodes.
                     if len(child.children) != 0:
                         _get_subtree_info(child, subtree_info, df_index)
@@ -243,8 +240,9 @@ class ConsoleRenderer:
 
         node_depth = node._depth
         if node_depth <= self.depth:
-            # If df_index is empty, set df_index to child, otherwise
-            # add child to the tuple.
+            # If df_index is an empty tuple due to no rank or thread, set df_index to child.
+            # Otherwise, add child to the df_index tuple and set this equal to df_index. df_index
+            # is used in calculating the metrics.
             if not df_index:
                 df_index = node
             else:
@@ -286,7 +284,6 @@ class ConsoleRenderer:
                     lr_decorator = " {c.right}{decorator}{c.end}".format(
                         decorator=self.lr_arrows["▶"], c=self.colors
                     )
-            # Result line gathers the data for nodes to be printed before the specified depth:
             result = "{indent}{metric_str} {name_str}".format(
                 indent=indent, metric_str=metric_str, name_str=name_str
             )
@@ -304,7 +301,7 @@ class ConsoleRenderer:
             else:
                 indents = {"├": "|- ", "│": "|  ", "└": "`- ", " ": "   "}
 
-            # Ensures that we never revisit nodes in the case of large complex graphs
+            # Visited is used to handle cycles
             if node not in self.visited:
                 self.visited.append(node)
                 # TODO: probably better to sort by time
@@ -312,8 +309,8 @@ class ConsoleRenderer:
                 if sorted_children:
                     last_child = sorted_children[-1]
 
+                # Set the correct indents and formatting for tree output.
                 for child in sorted_children:
-                    # Correct formatting for tree output
                     if child is last_child or self.depth is node_depth:
                         c_indent = child_indent + indents["└"]
                         cc_indent = child_indent + indents[" "]
@@ -322,7 +319,6 @@ class ConsoleRenderer:
                         cc_indent = child_indent + indents["│"]
                     result += self.render_frame(
                         child,
-                        looked_at,
                         dataframe,
                         indent=c_indent,
                         child_indent=cc_indent,
@@ -330,16 +326,20 @@ class ConsoleRenderer:
 
         else:
             subtree_info = {"descendants": 0, "sum_metric": 0, "levels": self.depth}
-            # If node doesn't have any parents, set curr equal to node
+            # Here we try to set curr to the parent node so that the correct node gets appended to the seen
+            # list. This covers the case for 2+ nodes that all have the same immediate parent. If we don't append
+            # the common parent node to seen, then a "Subtree Info" line will be printed for each of the three
+            # children, instead of only being printed once.
             if node.parents:
                 curr = node.parents[0]
             else:
                 curr = node
-            # If we are at depth, check whether curr is in looked_at to determine where
-            # summary_string should be printed
-            if curr not in looked_at:
-                # add parent node to looked_at
-                looked_at.append(curr)
+
+            # This seen check is necessary so that multiple "Subtree Info" lines arent printed for a single
+            # node. Essentially covers the case of when a node at the specified depth has 2+ immediate children that
+            # are all at the same depth.
+            if curr not in self.seen:
+                self.seen.append(curr)
                 _get_subtree_info(curr, subtree_info, df_index)
                 summary_string = "{child_indent}└─\u25C0\u25AE Subtree Info (Total Metric: {metric}, Descendants: {desc}, Hidden Levels: {levels})\n"
                 result = summary_string.format(
@@ -349,7 +349,7 @@ class ConsoleRenderer:
                     desc=str(subtree_info["descendants"]),
                     levels=str(subtree_info["levels"] - node_depth + 1),
                 )
-            # if node has already been visited, we don't want to print a summary for that string
+            # if node has already been visited, we don't want to print redundant summaries for that string
             else:
                 result = ""
         return result
