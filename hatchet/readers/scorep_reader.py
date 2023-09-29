@@ -60,7 +60,7 @@ class ScorePReader:
             # 'max_time', 'bytes_sent', 'bytes_received'.
             metric_name = metric.name
             metric_value = None
-            # MinValue and MaxValue requires special consideration because pycubexr
+            # MinValue and MaxValue require special consideration because pycubexr
             # stores them as objects instead of floats. We should convert them to
             # float. We should store the value as it is if it is not MinValue or MaxValue.
             if metric_name == "min_time" or metric_name == "max_time":
