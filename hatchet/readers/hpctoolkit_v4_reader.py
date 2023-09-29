@@ -1674,16 +1674,12 @@ class HPCToolkitV4Reader:
             default_metric = self.cct_reader.exclusive_metrics[0]
 
         columns_to_fill = [
-            "name",
-            "module",
-            "file",
-            "function",
-            "instruction",
-            "type",
-            "core",
-            "node_pid",
-            "line",
+            col
+            for col in dataframe.columns
+            if col not in self.cct_reader.exclusive_metrics
+            and col not in self.cct_reader.inclusive_metrics
         ]
+
         # fills the missing rows. Example:
         # main_node, rank0, thread0 -> NaN
         # main_node, rank0, thread1 -> main
@@ -1707,9 +1703,12 @@ class HPCToolkitV4Reader:
             self.cct_reader.exclusive_metrics
         ].fillna(0)
 
-        dataframe["line"] = dataframe["line"].astype("int64")
-        dataframe["core"] = dataframe["core"].astype("int64")
-        dataframe["node_pid"] = dataframe["node_pid"].astype("int64")
+        if "line" in dataframe.columns:
+            dataframe["line"] = dataframe["line"].astype("int64")
+        if "core" in dataframe.columns:
+            dataframe["core"] = dataframe["core"].astype("int64")
+        if "node_pid" in dataframe.columns:
+            dataframe["node_pid"] = dataframe["node_pid"].astype("int64")
 
         return hatchet.graphframe.GraphFrame(
             graph,
