@@ -70,7 +70,7 @@ def test_tree(scorep_profile_cubex):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
-        metric_column="max_time (inc)",
+        metric_column="time (inc)",
         precision=3,
         name_column="name",
         expand_name=False,
@@ -83,8 +83,8 @@ def test_tree(scorep_profile_cubex):
         invert_colormap=False,
     )
     assert "5.056 cpi" in output
-    assert "0.507 main /p/lustre1/cankur1/test/scorep/cpi.c" in output
-    assert "0.003 iteration /p/lustre1/cankur1/test/scorep/cpi.c" in output
+    assert "0.507 MPI_Init MPI" in output
+    assert "4.539 iteration /p/lustre1/cankur1/test/scorep/cpi.c" in output
 
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
