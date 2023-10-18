@@ -1351,7 +1351,7 @@ class CCTReader:
         node,
         context_info,
         metric_name=False,
-        value=False,
+        value=0,
     ) -> None:
         """Stores profile and metric information for each context.
         node_dicts will be used later to create the dataframe."""
@@ -1359,7 +1359,10 @@ class CCTReader:
         self.node_dicts[identifier]["name"] = node_name
         self.node_dicts[identifier]["node"] = node
         self.node_dicts[identifier].update(context_info)
-        if metric_name:
+        if isinstance(metric_name, set):
+            for metric in metric_name:
+                self.node_dicts[identifier][metric] = value
+        else:
             self.node_dicts[identifier][metric_name] = value
 
     def __read_cct_info_section(self, section_pointer: int, section_size: int) -> None:
@@ -1543,9 +1546,10 @@ class CCTReader:
         # the dataframe.
         visited_profiles = set([])
         not_visited_profiles = list(self.profile_reader.profile_info_list)
-
+        visited_metrics = set([])
         # iterate over each metric.
         # context1 -> metric1, context1 -> metric2, ...
+
         for i in range(len(metric_indices)):
             metric_id = metric_indices[i][0]
             start_index = metric_indices[i][1]
@@ -1565,7 +1569,8 @@ class CCTReader:
             # from the corresponding id.
             metric = self.meta_reader.metric_id_name_map[metric_id][0]
             metric_type = self.meta_reader.metric_id_name_map[metric_id][1]
-
+            visited_metrics.add(metric)
+            visited_metrics.add(metric + " (inc)")
             # get the default inclusive and exclusive metric type
             # for the corresponding metric.
             exc, inc = None, None
@@ -1579,6 +1584,7 @@ class CCTReader:
                 self.inclusive_metrics.add(metric)
             elif metric_type == exc:
                 self.exclusive_metrics.add(metric)
+
             __read_profiles(
                 next_metric_index,
                 visited_profiles,
@@ -1606,8 +1612,8 @@ class CCTReader:
                     node_name,
                     node,
                     context_info,
-                    metric_name=False,
-                    value=False,
+                    metric_name=visited_metrics,
+                    value=0,
                 )
 
 
@@ -1672,28 +1678,6 @@ class HPCToolkitV4Reader:
             self.cct_reader.inclusive_metrics.append("time (inc)")
         else:
             default_metric = self.cct_reader.exclusive_metrics[0]
-
-        columns_to_fill = [
-            col
-            for col in dataframe.columns
-            if col not in self.cct_reader.exclusive_metrics
-            and col not in self.cct_reader.inclusive_metrics
-        ]
-
-        # fills the missing rows. Example:
-        # main_node, rank0, thread0 -> NaN
-        # main_node, rank0, thread1 -> main
-        # main_node, rank0, thread2 -> NaN
-        # Groups by (main_node, rank0) and checks
-        # the other rows in the group.
-        # 'ffill' fills the NaN value of thread2.
-        # 'bfill' fills the NaN value if thread0.
-        for i in range(1, len(indices)):
-            dataframe[columns_to_fill] = dataframe.groupby(indices[:-i])[
-                columns_to_fill
-            ].transform(lambda x: x.ffill().bfill())
-            if not dataframe.isna().values.any():
-                break
 
         # if the metric is numeric, fill NaNs with zero.
         dataframe[self.cct_reader.inclusive_metrics] = dataframe[
