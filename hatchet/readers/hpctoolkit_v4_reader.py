@@ -1654,10 +1654,6 @@ class HPCToolkitV4Reader:
             indices = ["node"]
 
         dataframe.set_index(indices, inplace=True)
-        # create missing ranks/threads. this adds NaN to each column for
-        # the added rank/thread.
-        new_index = pd.MultiIndex.from_product(dataframe.index.levels)
-        dataframe = dataframe.reindex(new_index)
         dataframe.sort_index(inplace=True)
 
         self.cct_reader.exclusive_metrics = list(self.cct_reader.exclusive_metrics)
