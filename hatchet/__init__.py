@@ -9,3 +9,4 @@
 from .graphframe import GraphFrame
 from .query import QueryMatcher
 from .chopper import Chopper
+from ._config.config import get_option, set_option, reset_option
