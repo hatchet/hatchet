@@ -1359,6 +1359,8 @@ class CCTReader:
         self.node_dicts[identifier]["name"] = node_name
         self.node_dicts[identifier]["node"] = node
         self.node_dicts[identifier].update(context_info)
+
+        # create a metric value of 0 for all the missing values.
         if isinstance(metric_name, set):
             for metric in metric_name:
                 self.node_dicts[identifier][metric] = value
@@ -1432,9 +1434,10 @@ class CCTReader:
                 # get the profile info by using its index.
                 profile_info = self.profile_reader.get_hit_from_profile(prof_index)
 
-                # keep track of the profiles that has no values. we need to
-                # manually create these profiles to convert HPCToolkit's
-                # sparse representation to the Hatchet representation.
+                # keep track of the profiles that has no metric values.
+                # we need to manually create these profiles to convert
+                # HPCToolkit's sparse representation to the Hatchet
+                # representation.
                 visited_profiles.add(prof_index)
 
                 # Example: (node, rank 0, thread 0)
@@ -1547,9 +1550,9 @@ class CCTReader:
         visited_profiles = set([])
         not_visited_profiles = list(self.profile_reader.profile_info_list)
         visited_metrics = set([])
+
         # iterate over each metric.
         # context1 -> metric1, context1 -> metric2, ...
-
         for i in range(len(metric_indices)):
             metric_id = metric_indices[i][0]
             start_index = metric_indices[i][1]
@@ -1569,8 +1572,12 @@ class CCTReader:
             # from the corresponding id.
             metric = self.meta_reader.metric_id_name_map[metric_id][0]
             metric_type = self.meta_reader.metric_id_name_map[metric_id][1]
+
+            # store all the visited metrics.
+            # we will use this later to fill the missing values.
             visited_metrics.add(metric)
             visited_metrics.add(metric + " (inc)")
+
             # get the default inclusive and exclusive metric type
             # for the corresponding metric.
             exc, inc = None, None
@@ -1585,6 +1592,8 @@ class CCTReader:
             elif metric_type == exc:
                 self.exclusive_metrics.add(metric)
 
+            # this function read profiles and keeps
+            # track of visited profiles.
             __read_profiles(
                 next_metric_index,
                 visited_profiles,
@@ -1606,6 +1615,8 @@ class CCTReader:
                 dummy_profile_info = self.profile_reader.hit_map[hit_pointer]
                 dummy_identifier = (node,) + tuple(dummy_profile_info.values())
 
+                # fills all the metric values in not visited profiles
+                # with 0.
                 self.__create_node_dict(
                     dummy_identifier,
                     dummy_profile_info,
