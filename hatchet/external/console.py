@@ -205,7 +205,11 @@ class ConsoleRenderer:
             else:
                 df_index = node
 
-            node_metric = dataframe.loc[df_index, self.primary_metric]
+            try:
+                node_metric = dataframe.loc[df_index, self.primary_metric]
+            except KeyError:
+                # Will not exist in sparse format
+                node_metric = 0
 
             metric_precision = "{:." + str(self.precision) + "f}"
             metric_str = (
@@ -221,7 +225,15 @@ class ConsoleRenderer:
                     c=self.colors,
                 )
 
-            node_name = dataframe.loc[df_index, self.name]
+            #node_name = dataframe.loc[df_index, self.name]
+            #assert node_name == node.frame.attrs['name']
+            print(node.frame.attrs)
+            try:
+                node_name = node.frame.attrs['name']
+            except KeyError:
+                # Happens for hpctoolkit < v4
+                node_name = dataframe.loc[df_index, self.name]
+            print(node_name)
             if self.expand is False:
                 if len(node_name) > 39:
                     node_name = (
@@ -251,8 +263,13 @@ class ConsoleRenderer:
             if "_missing_node" in dataframe.columns:
                 result += lr_decorator
             if self.context in dataframe.columns:
+                try:
+                    context = dataframe.loc[df_index, self.context]
+                except KeyError:
+                    # We are in sparse format
+                    context = None
                 result += " {c.faint}{context}{c.end}\n".format(
-                    context=dataframe.loc[df_index, self.context], c=self.colors
+                    context=context, c=self.colors
                 )
             else:
                 result += "\n"
