@@ -4,6 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 import pandas as pd
+import numpy as np
 
 import hatchet.graphframe
 from hatchet.node import Node
@@ -16,11 +17,14 @@ NANOSEC_IN_SEC = 1000000000
 
 
 class NsightReader:
-    def __init__(self, nsight_trace, ncu_metrics=None):
-        fileObject = open(nsight_trace)
-        # nsight systems trace data
-        self.nsight_trace = list(DictReader(fileObject))
-        fileObject.close()
+    def __init__(self, nsight_trace=None, ncu_metrics=None):
+        if nsight_trace:
+            fileObject = open(nsight_trace)
+            # nsight systems trace data
+            self.nsight_trace = list(DictReader(fileObject))
+            fileObject.close()
+        else:
+            self.nsight_trace = nsight_trace
         # nsight compute metrics file path (optional)
         self.ncu_metrics = ncu_metrics
         self.list_roots = []
@@ -152,11 +156,48 @@ class NsightReader:
 
         return graph
 
+    def create_dummy_graph(self, dataframe):
+        dataframe = dataframe[dataframe["Kernel Name"].notna()].copy()
+        kernels = dataframe["Kernel Name"].tolist()
+        nodes = []
+        names = []
+        for kernel in kernels:
+            node = Node(Frame(name=kernel), None)
+            nodes.append(node)
+            names.append(kernel)
+
+        graph = Graph(nodes)
+        graph.enumerate_traverse()
+
+        dataframe.loc[:, "node"] = np.array(nodes)
+        dataframe.loc[:, "name"] = np.array(names)
+        return graph, dataframe
+
     def read(self):
-        graph = self.create_graph()
+        if self.nsight_trace:
+            graph = self.create_graph()
 
-        dataframe = pd.DataFrame(data=self.callpath_to_node_dicts.values())
-        dataframe.set_index(["node"], inplace=True)
-        dataframe.sort_index(inplace=True)
+            dataframe = pd.DataFrame(data=self.callpath_to_node_dicts.values())
+            dataframe.set_index(["node"], inplace=True)
+            dataframe.sort_index(inplace=True)
 
-        return hatchet.graphframe.GraphFrame(graph, dataframe, ["time"], ["time (inc)"])
+            return hatchet.graphframe.GraphFrame(
+                graph, dataframe, ["time"], ["time (inc)"]
+            )
+        else:
+            if self.ncu_metrics:
+                dataframe = pd.read_csv(self.ncu_metrics)
+                graph, dataframe = self.create_dummy_graph(dataframe)
+
+                dataframe.set_index("node", inplace=True)
+
+                dataframe["sm__cycles_elapsed.avg.per_second"] = dataframe[
+                    "sm__cycles_elapsed.avg.per_second"
+                ].astype(np.float64)
+
+                return hatchet.graphframe.GraphFrame(
+                    graph,
+                    dataframe,
+                    ["sm__cycles_elapsed.avg.per_second"],
+                    ["sm__cycles_elapsed.avg.per_second"],
+                )
