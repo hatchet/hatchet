@@ -225,15 +225,11 @@ class ConsoleRenderer:
                     c=self.colors,
                 )
 
-            #node_name = dataframe.loc[df_index, self.name]
-            #assert node_name == node.frame.attrs['name']
-            print(node.frame.attrs)
             try:
                 node_name = node.frame.attrs['name']
             except KeyError:
                 # Happens for hpctoolkit < v4
                 node_name = dataframe.loc[df_index, self.name]
-            print(node_name)
             if self.expand is False:
                 if len(node_name) > 39:
                     node_name = (

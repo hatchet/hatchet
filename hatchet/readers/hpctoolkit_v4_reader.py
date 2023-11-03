@@ -1635,8 +1635,6 @@ class HPCToolkitV4Reader:
     def create_graphframe(self) -> GraphFrame:
         graph = Graph(self.meta_reader.roots)
         graph.enumerate_traverse()
-        print(self.cct_reader.node_dicts.keys())
-        print(self.cct_reader.node_dicts.values())
         dataframe = pd.DataFrame.from_dict(data=self.cct_reader.node_dicts.values())
 
         columns = dataframe.columns
