@@ -21,6 +21,7 @@ from .util.dot import trees_to_dot
 from .util.logger import Logger
 from .util.deprecated import deprecated_params
 from .chopper import Chopper
+from hatchet._config.config import registered_options, global_config
 
 try:
     from .cython_modules.libs import graphframe_modules as _gfm_cy
@@ -997,11 +998,24 @@ class GraphFrame:
         context_column="file",
         rank=0,
         thread=0,
-        depth=10000,
+        # depth=10000,
+        depth=global_config["depth"],
+        # depth=4,
         highlight_name=False,
-        colormap="RdYlGn",
-        invert_colormap=False,
+        # colormap="RdYlGn",
+        colormap=global_config["colormap"],
+        # invert_colormap=False,
+        invert_colormap=global_config["invert_colormap"]
     ):
+        # print("THIS IS THE DEPTH PASSED IN to graphframe.py", depth)
+        # print("DEPTH FROM GLOBAL CONFIG",global_config["depth"])
+        # (WIP) Have these below here for now becuase for some reason they don't get assigned correctly in tree().
+        # depth, colormap, and invert_colormap stay at their default values even though they are passed in from global_config.
+        # When we set them below, they get set correctly.
+        depth=global_config["depth"]
+        colormap=global_config["colormap"]
+        invert_colormap=global_config["invert_colormap"]
+
         """Format this graphframe as a tree and return the resulting string."""
         color = sys.stdout.isatty()
         shell = None
