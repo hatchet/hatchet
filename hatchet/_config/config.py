@@ -50,6 +50,14 @@ def get_option(key: str) -> Any:
         return global_config[key]
 
 
+# This function returns the default value of the specified key
+def get_default_value(key: str) -> Any:
+    if len(key) == 0 or key not in registered_options:
+        raise ValueError("No such keys(s)")
+    else:
+        return registered_options[key]
+
+
 # This function updates the value of the specified key in the global_config dictionary.
 def set_option(key: str, val: Any):
     if len(key) == 0 or key not in registered_options:
