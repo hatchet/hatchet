@@ -998,23 +998,23 @@ class GraphFrame:
         context_column="file",
         rank=0,
         thread=0,
-        # depth=10000,
-        depth=global_config["depth"],
-        # depth=4,
+        depth=None,
         highlight_name=False,
-        # colormap="RdYlGn",
-        colormap=global_config["colormap"],
-        # invert_colormap=False,
-        invert_colormap=global_config["invert_colormap"]
+        colormap=None,
+        invert_colormap=None,
     ):
-        # print("THIS IS THE DEPTH PASSED IN to graphframe.py", depth)
-        # print("DEPTH FROM GLOBAL CONFIG",global_config["depth"])
         # (WIP) Have these below here for now becuase for some reason they don't get assigned correctly in tree().
         # depth, colormap, and invert_colormap stay at their default values even though they are passed in from global_config.
         # When we set them below, they get set correctly.
-        depth=global_config["depth"]
-        colormap=global_config["colormap"]
-        invert_colormap=global_config["invert_colormap"]
+
+        # These will only be changed if the user makes any changes using set_options. If none of the options are changed, then the 
+        # values that werew passed into tree() will be used. This allows us to use both set_option, as well as something like gf.tree(depth=3).
+        if depth == None:
+            depth=global_config["depth"]
+        if colormap == None:
+            colormap=global_config["colormap"]
+        if invert_colormap == None:
+            invert_colormap=global_config["invert_colormap"]
 
         """Format this graphframe as a tree and return the resulting string."""
         color = sys.stdout.isatty()

@@ -14,7 +14,6 @@ from typing import (
 import warnings
 
 
-# class GlobalConfig:
 # holds registered option default data
 registered_options: dict[str, Any] = {
     "colormap": "RdYlGn",
@@ -91,7 +90,6 @@ def reset_option(key: str) -> None:
 # Function to check the specifified key enetered. It sends the value to the corresponding validator depending on key enetered.
 def set_validators(key, value):
     if key == "colormap":
-        # return str_validator(key, value)
         if str_validator(key, value):
             return is_valid_colormap(key, value)
     elif key == "invert_colormap":
@@ -161,3 +159,4 @@ def is_valid_colormap(key, colormap_name):
                 colormap_name, key
             )
         )
+        
