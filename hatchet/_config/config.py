@@ -1,17 +1,11 @@
+# Copyright 2021-2023 University of Maryland and other Hatchet Project
+# Developers. See the top-level LICENSE file for details.
+#
+# SPDX-License-Identifier: MIT
+
 from __future__ import annotations
-
-import sys
-import traceback
-
-from collections import defaultdict
-
-from ..util.colormaps import ColorMaps
 from optparse import OptionError
-from typing import (
-    TYPE_CHECKING,
-    Any,
-)
-import warnings
+from typing import Any
 
 
 # holds registered option default data
