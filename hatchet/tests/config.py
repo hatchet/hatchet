@@ -12,7 +12,6 @@ from hatchet.external.console import ConsoleRenderer
 import pytest
 
 
-
 def test_get_option():
     colormap = ht.get_option("colormap")
     invert_colormap = ht.get_option("invert_colormap")
@@ -129,7 +128,6 @@ def test_tree_set_option_depth(calc_pi_hpct_db):
     ht.set_option("depth", 3)
     output2 = gf.tree()
     assert output1 == output2
-
 
     output3 = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,

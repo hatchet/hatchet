@@ -153,4 +153,3 @@ def is_valid_colormap(key, colormap_name):
                 colormap_name, key
             )
         )
-        

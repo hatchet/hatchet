@@ -1008,14 +1008,13 @@ class GraphFrame:
         colormap=None,
         invert_colormap=None,
     ):
-
         # These will only be changed if the user makes any changes using set_options.
         if depth == None:
-            depth=global_config["depth"]
+            depth = global_config["depth"]
         if colormap == None:
-            colormap=global_config["colormap"]
+            colormap = global_config["colormap"]
         if invert_colormap == None:
-            invert_colormap=global_config["invert_colormap"]
+            invert_colormap = global_config["invert_colormap"]
 
         """Format this graphframe as a tree and return the resulting string."""
         color = sys.stdout.isatty()
