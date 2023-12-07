@@ -1008,12 +1008,8 @@ class GraphFrame:
         colormap=None,
         invert_colormap=None,
     ):
-        # (WIP) Have these below here for now becuase for some reason they don't get assigned correctly in tree().
-        # depth, colormap, and invert_colormap stay at their default values even though they are passed in from global_config.
-        # When we set them below, they get set correctly.
 
-        # These will only be changed if the user makes any changes using set_options. If none of the options are changed, then the 
-        # values that werew passed into tree() will be used. This allows us to use both set_option, as well as something like gf.tree(depth=3).
+        # These will only be changed if the user makes any changes using set_options.
         if depth == None:
             depth=global_config["depth"]
         if colormap == None:
