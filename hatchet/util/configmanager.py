@@ -3,20 +3,20 @@
 #
 # SPDX-License-Identifier: MIT
 
-from __future__ import annotations
+# from __future__ import annotations
 from optparse import OptionError
-from typing import Any
+from typing import Any, Dict
 
 
 # holds registered option default data
-registered_options: dict[str, Any] = {
+registered_options: Dict[str, Any] = {
     "colormap": "RdYlGn",
     "invert_colormap": False,
     "depth": 10000,
 }
 
 # holds the current values for registered options
-global_config: dict[str, Any] = {
+global_config: Dict[str, Any] = {
     "colormap": "RdYlGn",
     "invert_colormap": False,
     "depth": 10000,
