@@ -21,7 +21,7 @@ from .util.dot import trees_to_dot
 from .util.logger import Logger
 from .util.deprecated import deprecated_params
 from .chopper import Chopper
-from hatchet._config.config import registered_options, global_config
+from hatchet._config.config import global_config
 
 try:
     from .cython_modules.libs import graphframe_modules as _gfm_cy
@@ -1004,11 +1004,11 @@ class GraphFrame:
         invert_colormap=None,
     ):
         # These will only be changed if the user makes any changes using set_options.
-        if depth == None:
+        if depth is None:
             depth = global_config["depth"]
-        if colormap == None:
+        if colormap is None:
             colormap = global_config["colormap"]
-        if invert_colormap == None:
+        if invert_colormap is None:
             invert_colormap = global_config["invert_colormap"]
 
         """Format this graphframe as a tree and return the resulting string."""
