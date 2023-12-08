@@ -4,10 +4,8 @@
 # SPDX-License-Identifier: MIT
 
 import hatchet as ht
-import pandas as pd
 
 from hatchet import GraphFrame
-from hatchet.readers.hpctoolkit_reader import HPCToolkitReader
 from hatchet.external.console import ConsoleRenderer
 import pytest
 
