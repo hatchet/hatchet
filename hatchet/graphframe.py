@@ -22,7 +22,7 @@ from .util.dot import trees_to_dot
 from .util.logger import Logger
 from .util.deprecated import deprecated_params
 from .chopper import Chopper
-from hatchet._config.config import global_config
+from .util.configmanager import global_config
 
 try:
     from .cython_modules.libs import graphframe_modules as _gfm_cy
