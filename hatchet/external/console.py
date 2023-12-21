@@ -106,7 +106,12 @@ class ConsoleRenderer:
         # grab the min and max value of the primary metric of a given rank
         # across all the nodes in the CCT, ignoring inf and nan values
         if "rank" in dataframe.index.names:
-            metric_series = (dataframe.xs(self.rank, level=1))[self.primary_metric]
+            if self.rank is not None:
+                metric_series = (dataframe.xs(self.rank, level=1))[self.primary_metric]
+            else:
+                def f(x):
+                    return x.loc[(slice(None), x.index.get_level_values("rank")[0], slice(None)), self.primary_metric]
+                metric_series = dataframe.groupby("node").apply(f)
         else:
             metric_series = dataframe[self.primary_metric]
         isfinite_mask = np.isfinite(metric_series.values)

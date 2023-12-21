@@ -1000,7 +1000,7 @@ class GraphFrame:
         name_column="name",
         expand_name=False,
         context_column="file",
-        rank=0,
+        rank=None,
         thread=None,
         depth=10000,
         highlight_name=False,
