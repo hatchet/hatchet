@@ -1001,7 +1001,7 @@ class GraphFrame:
         expand_name=False,
         context_column="file",
         rank=0,
-        thread=0,
+        thread=None,
         depth=10000,
         highlight_name=False,
         colormap="RdYlGn",
