@@ -199,30 +199,32 @@ class ConsoleRenderer:
     def render_frame(self, node, dataframe, indent="", child_indent=""):
         node_depth = node._depth
         if node_depth <= self.depth:
-            node_df = dataframe.loc[node]
-
             rank = self.rank
             thread = self.thread
             # Select the first rank/thread pair we have data for
-            if rank is None:
-                rank = node_df.index.get_level_values("rank")[0]
-            if thread is None:
-                thread = node_df.index.get_level_values("thread")[0]
+            node_df = dataframe.loc[node]
 
             # set dataframe index based on whether rank and thread are part of
             # the MultiIndex
-            if "rank" in dataframe.index.names and "thread" in dataframe.index.names:
-                df_index = (rank, thread)
-            elif "rank" in dataframe.index.names:
-                df_index = (node, rank)
+            if "rank" in dataframe.index.names:
+                if rank is None:
+                    rank = node_df.index.get_level_values("rank")[0]
+                if "thread" in dataframe.index.names:
+                    if thread is None:
+                        thread = node_df.index.get_level_values("thread")[0]
+                    df_index = (node, rank, thread)
+                else:
+                    df_index = (node, rank)
             elif "thread" in dataframe.index.names:
+                if thread is None:
+                    thread = node_df.index.get_level_values("thread")[0]
                 df_index = (node, thread)
             else:
-                # equivalent of doing [:]
-                df_index = slice(None)
+                df_index = node
 
-            #node_metric = dataframe.loc[df_index, self.primary_metric]
-            node_metric = node_df.loc[df_index, self.primary_metric]
+            node_metric = dataframe.loc[df_index, self.primary_metric]
+            #node_metric = node_df.loc[df_index, self.primary_metric]
+            #print(node_metric)
 
             metric_precision = "{:." + str(self.precision) + "f}"
             metric_str = (
@@ -238,8 +240,7 @@ class ConsoleRenderer:
                     c=self.colors,
                 )
 
-            #node_name = dataframe.loc[df_index, self.name]
-            node_name = node_df.loc[df_index, self.name]
+            node_name = dataframe.loc[df_index, self.name]
             if self.expand is False:
                 if len(node_name) > 39:
                     node_name = (
@@ -251,7 +252,7 @@ class ConsoleRenderer:
 
             # 0 is "", 1 is "L", and 2 is "R"
             if "_missing_node" in dataframe.columns:
-                left_or_right = node_df.loc[df_index, "_missing_node"]
+                left_or_right = dataframe.loc[df_index, "_missing_node"]
                 if left_or_right == 0:
                     lr_decorator = ""
                 elif left_or_right == 1:
@@ -270,7 +271,7 @@ class ConsoleRenderer:
                 result += lr_decorator
             if self.context in dataframe.columns:
                 result += " {c.faint}{context}{c.end}\n".format(
-                    context=node_df.loc[df_index, self.context], c=self.colors
+                    context=dataframe.loc[df_index, self.context], c=self.colors
                 )
             else:
                 result += "\n"
