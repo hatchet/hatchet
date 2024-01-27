@@ -109,8 +109,10 @@ class ConsoleRenderer:
             if self.rank is not None:
                 metric_series = (dataframe.xs(self.rank, level=1))[self.primary_metric]
             else:
-                def f(x):
-                    return x.loc[(slice(None), x.index.get_level_values("rank")[0], slice(None)), self.primary_metric]
+                # For each node, extract the primary metric for the first rank
+                def f(grp):
+                    first_rank = grp.index.get_level_values("rank")[0]
+                    return grp.xs(first_rank, level=1)[self.primary_metric]
                 metric_series = dataframe.groupby("node").apply(f)
         else:
             metric_series = dataframe[self.primary_metric]
@@ -223,8 +225,6 @@ class ConsoleRenderer:
                 df_index = node
 
             node_metric = dataframe.loc[df_index, self.primary_metric]
-            #node_metric = node_df.loc[df_index, self.primary_metric]
-            #print(node_metric)
 
             metric_precision = "{:." + str(self.precision) + "f}"
             metric_str = (
