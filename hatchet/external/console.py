@@ -288,6 +288,10 @@ class ConsoleRenderer:
             result = ""
             indents = {"├": "", "│": "", "└": "", " ": ""}
 
+        # Note: we still have to recurse even if
+        # we didn't render the current node because the specified rank/thread
+        # could run code from our child nodes
+
         # ensures that we never revisit nodes in the case of
         # large complex graphs
         if node not in self.visited and node_depth <= self.depth:
