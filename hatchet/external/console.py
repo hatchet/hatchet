@@ -292,7 +292,7 @@ class ConsoleRenderer:
         # we didn't render the current node because the specified rank/thread
         # could run code from our child nodes
 
-        # ensures that we never revisit nodes in the case of
+        # using a list for visited also ensures that we never revisit nodes in the case of
         # large complex graphs
         if node not in self.visited and node_depth <= self.depth:
             self.visited.append(node)
