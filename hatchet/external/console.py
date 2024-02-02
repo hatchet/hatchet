@@ -284,29 +284,37 @@ class ConsoleRenderer:
                 indents = {"├": "├─ ", "│": "│  ", "└": "└─ ", " ": "   "}
             else:
                 indents = {"├": "|- ", "│": "|  ", "└": "`- ", " ": "   "}
-
-            # ensures that we never revisit nodes in the case of
-            # large complex graphs
-            if node not in self.visited:
-                self.visited.append(node)
-                # TODO: probably better to sort by time
-                sorted_children = sorted(node.children, key=lambda n: n.frame)
-                if sorted_children:
-                    last_child = sorted_children[-1]
-
-                for child in sorted_children:
-                    if child is not last_child:
-                        c_indent = child_indent + indents["├"]
-                        cc_indent = child_indent + indents["│"]
-                    else:
-                        c_indent = child_indent + indents["└"]
-                        cc_indent = child_indent + indents[" "]
-                    result += self.render_frame(
-                        child, dataframe, indent=c_indent, child_indent=cc_indent
-                    )
         else:
             result = ""
             indents = {"├": "", "│": "", "└": "", " ": ""}
+
+        # ensures that we never revisit nodes in the case of
+        # large complex graphs
+        if node not in self.visited and node_depth <= self.depth:
+            self.visited.append(node)
+            # TODO: probably better to sort by time
+            sorted_children = sorted(node.children, key=lambda n: n.frame)
+            if sorted_children:
+                last_child = sorted_children[-1]
+
+            for child in sorted_children:
+                if child is not last_child:
+                    c_indent = child_indent
+                    cc_indent = child_indent
+                    if node_metric is not None:
+                        # Only add the child indents if we rendered the current node
+                        c_indent += indents["├"]
+                        cc_indent += indents["│"]
+                else:
+                    c_indent = child_indent
+                    cc_indent = child_indent
+                    if node_metric is not None:
+                        # Only add the child indents if we rendered the current node
+                        c_indent += indents["└"]
+                        cc_indent += indents[" "]
+                result += self.render_frame(
+                    child, dataframe, indent=c_indent, child_indent=cc_indent
+                )
 
         return result
 
