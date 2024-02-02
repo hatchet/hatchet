@@ -135,7 +135,8 @@ class ConsoleRenderer:
             result += self.render_frame(root, dataframe)
 
         if not self.rendered_tree_node:
-            raise ValueError(f"Did not find any nodes in the graphframe with rank {self.rank} and thread {self.thread}!")
+            raise ValueError(f"Did not find any nodes in the graphframe with rank {self.rank} and thread {self.thread} "
+                             f"above depth {self.depth}!")
 
         if self.color is True:
             result += self.render_legend()
