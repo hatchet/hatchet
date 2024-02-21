@@ -1623,7 +1623,7 @@ class CCTReader:
                     node_name,
                     node,
                     context_info,
-                    metric_name=visited_metrics,
+                    metric_names=visited_metrics,
                     value=0,
                 )
 
