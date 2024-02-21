@@ -306,9 +306,6 @@ class Chopper:
         threshold=None,
     ):
 
-        # avoid circular import
-        from .graphframe import GraphFrame
-
         assert (
             strong is True or weak is True
         ), "at least one of the 'strong' and 'weak' parameters should be True."
