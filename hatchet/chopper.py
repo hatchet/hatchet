@@ -377,3 +377,79 @@ class Chopper:
                             base_graphframe.dataframe[metric] * base_numpes
                         ) / (other[1].dataframe[metric] * other[0])
         return result_df
+
+    def correlation_analysis(self, graphframe, metrics=None, method="spearman"):
+        if not isinstance(metrics, list):
+            columns = [metrics]
+
+        assert (
+            metric1 in graphframe.dataframe.columns
+        ), "{} metric not present in all graphframes".format(metric1)
+        
+        assert (
+            metric2 in graphframe.dataframe.columns
+        ), "{} metric not present in all graphframes".format(metric2)
+
+        dataframe = graphframe.dataframe[metrics]
+        corr_matrix = dataframe.corr(method=method)
+        return corr_matrix
+    
+    @staticmethod
+    def filter_correlation_matrix(self, graphframe, correlation_matrix, min=0.0, max=1.0):
+
+        # Initialize a set to store the unique pairs
+        corr_pairs = set()
+
+        # Iterate over the correlation matrix
+        for col in correlation_matrix.columns:
+            for idx in correlation_matrix.index:
+                # Exclude diagonal (self-correlation)
+                if correlation_matrix.loc[idx, col] > min and correlation_matrix.loc[idx, col] < max and idx != col:  
+                    # Sort the pair to ensure consistent order
+                    pair = tuple(sorted([idx, col]))
+                    # Add the pair with its correlation value to the set
+                    corr_pairs.add((*pair, correlation_matrix.loc[idx, col]))
+
+        # Sort the pairs by correlation value
+        corr_pairs = sorted(corr_pairs, key=lambda pair: pair[2])
+        return corr_pairs
+
+    @staticmethod
+    def pairwise_correlation(self, graphframe, metric1=None, metric2=None, logscale=False):
+
+        assert (
+            metric1 in graphframe.dataframe.columns
+        ), "{} metric not present in all graphframes".format(metric1)
+        
+        assert (
+            metric2 in graphframe.dataframe.columns
+        ), "{} metric not present in all graphframes".format(metric2)
+
+        gf_copy = graphframe.deepcopy()
+        gf_copy.dataframe = gf_copy.dataframe[gf_copy.dataframe[metric1] > 0]
+        gf_copy.dataframe = gf_copy.dataframe[gf_copy.dataframe[metric2] > 0]
+
+        if logscale:
+            log_x = np.log(gf_copy.dataframe[metric1])
+            log_y = np.log(gf_copy.dataframe[metric2])
+            # fits a polynomial of degree 1.
+            coef = np.polyfit(log_x, log_y, 1)
+            poly1d_fn = np.poly1d(coef) 
+
+            # Calculating the predicted values on the log scale
+            predicted_y = poly1d_fn(log_x)
+
+            gf_copy.dataframe["{}-{}.predicted".format(metric1, metric2)] = predicted_y
+            gf_copy.dataframe['{}-{}distance'.format(metric1, metric2)] = log_y - predicted_y
+        else:
+            # fits a polynomial of degree 1.
+            coef = np.polyfit(metric1, metric2, 1)
+            poly1d_fn = np.poly1d(coef) 
+            
+            # Calculating the predicted values
+            predicted_y = poly1d_fn(metric1)
+
+            gf_copy.dataframe["{}-{}.predicted".format(metric1, metric2)] = predicted_y
+            gf_copy.dataframe['{}-{}distance'.format(metric1, metric2)] = metric2 - predicted_y
+        
+        return gf_copy
