@@ -205,13 +205,14 @@ def test_multirun_analysis_literal(mock_graph_literal):
     # check if the test and dummy dataframes match
     assert df_test.equals(df_dummy)
 
+
 def test_speedup_eff_analysis_literal(mock_graph_literal):
     """Validate that speedup_efficiency works correctly."""
     gf1 = GraphFrame.from_literal(mock_graph_literal)
 
     gf2, gf4, gf8 = gf1.deepcopy(), gf1.deepcopy(), gf1.deepcopy()
 
-    gf2.dataframe["time"] *= 0.5 
+    gf2.dataframe["time"] *= 0.5
 
     gf1.update_metadata(1)
     gf2.update_metadata(2)
@@ -226,12 +227,18 @@ def test_speedup_eff_analysis_literal(mock_graph_literal):
     )
 
     gfs = [gf1_copy, gf2_copy, gf4_copy, gf8_copy]
-    eff = Chopper.speedup_efficiency(gfs, strong=True, speedup=True, efficiency=False, metrics=["time"])
+    eff = Chopper.speedup_efficiency(
+        gfs, strong=True, speedup=True, efficiency=False, metrics=["time"]
+    )
     assert eff.iloc[1]["2.time"] == 2.0
     assert eff.iloc[1]["4.time"] == 1.0
-    eff = Chopper.speedup_efficiency(gfs, strong=True, speedup=False, efficiency=True, metrics=["time"])
+    eff = Chopper.speedup_efficiency(
+        gfs, strong=True, speedup=False, efficiency=True, metrics=["time"]
+    )
     assert eff.iloc[1]["2.time"] == 1.0
     assert eff.iloc[1]["4.time"] == 0.25
-    eff = Chopper.speedup_efficiency(gfs, weak=True, speedup=False, efficiency=True, metrics=["time"])
+    eff = Chopper.speedup_efficiency(
+        gfs, weak=True, speedup=False, efficiency=True, metrics=["time"]
+    )
     assert eff.iloc[1]["2.time"] == 2.0
     assert eff.iloc[1]["4.time"] == 1.0
