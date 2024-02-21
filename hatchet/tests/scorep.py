@@ -13,11 +13,11 @@ import pytest
 # check if the pycubexr package is available
 # without importing the package.
 # there are other ways to do it for python 3+
-import imp
+import importlib
 
 pycubexr_avail = True
 try:
-    imp.find_module("pycubexr")
+    importlib.util.find_spec("pycubexr")
 except ImportError:
     pycubexr_avail = False
 
