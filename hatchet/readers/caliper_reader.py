@@ -241,9 +241,11 @@ class CaliperReader:
                     # we will only reach here if path is the "secondary"
                     # hierarchy in the data
                     self.df_json_data["path"] = self.df_json_data["path"].apply(
-                        lambda x: None
-                        if (math.isnan(x))
-                        else self.json_nodes[int(x)]["label"]
+                        lambda x: (
+                            None
+                            if (math.isnan(x))
+                            else self.json_nodes[int(x)]["label"]
+                        )
                     )
                 else:
                     self.df_json_data[self.json_cols[idx]] = self.df_json_data[
