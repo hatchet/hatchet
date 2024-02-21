@@ -1917,6 +1917,29 @@ class GraphFrame:
         return hot_path
 
     @Logger.loggable
+    def pairwise_correlation(self, metric1=None, metric2=None, logscale=False):
+
+        # call hot_path function on high-level API
+        pairwise_correlation = Chopper().pairwise_correlation(
+            self, metric1, metric2, logscale
+        )
+        return pairwise_correlation
+
+    @Logger.loggable
+    def correlation_analysis(self, metrics=None, method="spearman"):
+
+        # call hot_path function on high-level API
+        correlation_matrix = Chopper().correlation_analysis(self, metrics, method)
+        return correlation_matrix
+
+    @Logger.loggable
+    def filter_correlation_matrix(self, correlation_matrix, minimum=0.0, maximum=1.0):
+        correlations = Chopper().filter_correlation_matrix(
+            self, correlation_matrix, minimum, maximum
+        )
+        return correlations
+
+    @Logger.loggable
     def add(self, other):
         """Returns the column-wise sum of two graphframes as a new graphframe.
 
