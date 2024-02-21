@@ -206,8 +206,7 @@ def test_multirun_analysis_literal(mock_graph_literal):
     assert df_test.equals(df_dummy)
 
 def test_speedup_eff_analysis_literal(mock_graph_literal):
-    """Validate that multirun_analysis works correctly with data containing
-    repeating functions."""
+    """Validate that speedup_efficiency works correctly."""
     gf1 = GraphFrame.from_literal(mock_graph_literal)
 
     gf2, gf4, gf8 = gf1.deepcopy(), gf1.deepcopy(), gf1.deepcopy()
