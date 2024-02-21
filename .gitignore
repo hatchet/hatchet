@@ -1,4 +1,7 @@
 *.pyc
+# Don't commit Cython generated c files
+# (setup.py will now use Cython to autogenerate them)
+*.c
 .cache
 .pytest_cache
 .ipynb_checkpoints

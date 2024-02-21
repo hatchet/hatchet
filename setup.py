@@ -3,8 +3,8 @@
 #
 # SPDX-License-Identifier: MIT
 
-from setuptools import setup
-from setuptools import Extension
+from setuptools import setup, Extension
+from Cython.Build import cythonize
 from codecs import open
 from os import path
 
@@ -53,14 +53,18 @@ setup(
         "caliper-reader",
         "pycubexr; python_version >= '3.6'",
     ],
-    ext_modules=[
-        Extension(
-            "hatchet.cython_modules.libs.reader_modules",
-            ["hatchet/cython_modules/reader_modules.c"],
-        ),
-        Extension(
-            "hatchet.cython_modules.libs.graphframe_modules",
-            ["hatchet/cython_modules/graphframe_modules.c"],
-        ),
-    ],
+    # TODO: the setup could be cleaner if we didn't dump the generated
+    # .so files into _libs
+    ext_modules=cythonize(
+        [
+            Extension(
+                "hatchet.cython_modules.libs.reader_modules",
+                ["hatchet/cython_modules/reader_modules.pyx"],
+            ),
+            Extension(
+                "hatchet.cython_modules.libs.graphframe_modules",
+                ["hatchet/cython_modules/graphframe_modules.pyx"],
+            ),
+        ]
+    )
 )

@@ -1,12 +1,21 @@
 # Github Actions Workflow for building wheels
+
 # The step for creating a github release is borrowed from cython
 # https://github.com/cython/cython/blob/master/.github/workflows/wheels.yml
+
+# The general structure of the workflow is also highly inspired by pandas'
+# wheel builder workflow
+# https://github.com/pandas-dev/pandas/blob/main/.github/workflows/wheels.yml
+
+# Inspiration for doing this also came from the LLNL hatchet wheel building workflow
+# https://github.com/LLNL/hatchet/blob/develop/.github/workflows/build_and_upload_wheels.yaml
 name: Build wheels
 
+# Run on pull request to the develop or releases branch, but don't
+# upload wheels
 on:
-  # Uncomment for testing through a PR
-  # pull_request:
-  #   branches: [develop, releases/**]
+  pull_request:
+    branches: [develop, releases/**]
   workflow_dispatch:
   push:
     tags:
@@ -37,6 +46,8 @@ jobs:
         env:
           CIBW_SKIP: pp* *musllinux*
           CIBW_BUILD: ${{ matrix.python[0] }}-${{ matrix.buildplat[1] }}
+          CIBW_BEFORE_TEST: pip install pytest
+          CIBW_TEST_COMMAND: pytest {package}/tests
 
       - uses: actions/upload-artifact@v3
         with:
