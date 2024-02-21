@@ -322,8 +322,6 @@ class Chopper:
             weak is False or speedup is False
         ), "speed up can be calculated only for strong scaling."
 
-        # GraphFrame.unify_multiple_graphframes(graphframes)
-
         process_to_gf = []
         for gf in graphframes:
             assert (
@@ -331,9 +329,9 @@ class Chopper:
             ), "pivot_index missing from GraphFrame metadata: use update_metadata() to specify."
             process_to_gf.append((gf.metadata[pivot_index], gf))
 
-        GraphFrame.unify_multiple_graphframes(graphframes)
+        # GraphFrame.unify_multiple_graphframes(graphframes)
 
-        process_to_gf = sorted(process_to_gf, key=lambda x: x[0])
+        sorted(process_to_gf, key=lambda x: x[0])
         base = process_to_gf[0][0]
 
         result_df = pd.DataFrame()
@@ -345,7 +343,6 @@ class Chopper:
                 result_df[column] = process_to_gf[0][1].dataframe[column]
 
         for other in process_to_gf[1:]:
-            print(other[0])
             for metric in metrics:
                 new_column_name = "{}.{}".format(other[0], metric)
                 if weak:
@@ -364,11 +361,6 @@ class Chopper:
                     else:
                         # strong scaling efficiency
                         result_df[new_column_name] = (
-                            (process_to_gf[0][1].dataframe[metric] * base)
-                            / other[1].dataframe[metric]
-                            * other[0]
-                        )
-        result_df.sort_values(
-            "{}.{}".format(process_to_gf[-1][0], metric), ascending=True, inplace=True
-        )
+                            process_to_gf[0][1].dataframe[metric] * base
+                        ) / (other[1].dataframe[metric] * other[0])
         return result_df
