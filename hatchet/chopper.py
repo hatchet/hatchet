@@ -255,7 +255,7 @@ class Chopper:
 
         # default metric will be imbalance when user print the tree
         graphframe2.default_metric = metric_column + ".imbalance"
-        # sort by default_metric's load imbalance
+        # sort by mean value 
         graphframe2.dataframe = graphframe2.dataframe.sort_values(
             by=[metric_column + ".mean"], ascending=False
         )
