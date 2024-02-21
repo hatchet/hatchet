@@ -384,7 +384,7 @@ class Chopper:
 
         for metric in metrics:
             assert (
-                metric in gf.dataframe.columns
+                metric in graphframe.dataframe.columns
             ), "{} column not present in all graphframes".format(metric)
 
         dataframe = graphframe.dataframe[metrics]
