@@ -1139,10 +1139,8 @@ class GraphFrame:
           4. If yes, adds metrics from the other graphframes.
           5. If no, create the corresponding nodes.
 
-        Returns a new 'unified' graphframe that contains all the metrics of
-        every graphframe given.
-        Adds '-<num_procs>' suffix if columns in different graphframes have
-        the same name. For example: time-32, time-64."""
+        Updates graphframes in place. The graphframes use the same graph with
+        their updated dataframes."""
 
         def _rename_colums(graphframe, metrics, suffix, add):
             "Renames columns and updates inc/exc columns lists."
@@ -1250,9 +1248,6 @@ class GraphFrame:
                 graphframes[idx].metadata[num_procs],
                 add=True,
             )
-            # graphframes[idx].default_metric = "{}-{}".format(
-            #     old_default_metric, str(graphframes[idx].metadata[num_procs])
-            # )
 
             # find the biggest graphframe by using the number
             # of indices.
@@ -1315,10 +1310,6 @@ class GraphFrame:
                             tmp_dict = gf.dataframe.loc[node].to_dict()
                             tmp_dict["node"] = node_in_biggest
                             callpath_to_node_biggest[callpath][0].update(tmp_dict)
-
-        # drop the visited nodes from each graphframe
-        # for graphframe, visited_nodes in gf_to_visited_node.items():
-        # graphframe.dataframe.drop(index=visited_nodes, inplace=True)
 
         # iterate over the remaining nodes in other graphframes.
         # the remaining nodes should be created since the biggest
@@ -1386,17 +1377,6 @@ class GraphFrame:
                 add=False,
             )
             graphframe.graph = graph
-
-        # create the unified graphframe.
-        # unified_gf = GraphFrame(
-        #     graph,
-        #     dataframe,
-        #     biggest_gf.exc_metrics,
-        #     biggest_gf.inc_metrics,
-        #     biggest_gf.default_metric,
-        # )
-
-        # return unified_gf
 
     def unify(self, other):
         """Returns a unified graphframe.
