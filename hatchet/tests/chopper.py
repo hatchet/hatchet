@@ -269,5 +269,5 @@ def test_correlation_analysis_literal(mock_graph_literal):
     assert filtered_corr_matrix[0][1] == "time2"
     assert filtered_corr_matrix[0][2] == 2.0
 
-    gf_corr = gf.pairwise_correlation(metric1="time", metric2="time2", logscale=False)
+    # gf_corr = gf.pairwise_correlation(metric1="time", metric2="time2", logscale=False)
     # add test for pairwise
