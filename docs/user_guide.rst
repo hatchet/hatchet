@@ -405,3 +405,5 @@ string that can be printed to the console. By default, the tree uses the
 ``name`` of each node and the associated ``time`` metric as the string
 representation. This operation uses automatic color by default, but True or
 False can be used to force override.
+
+.. include:: chopper_api.rst
