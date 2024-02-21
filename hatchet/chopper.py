@@ -391,7 +391,6 @@ class Chopper:
         corr_matrix = dataframe.corr(method=method)
         return corr_matrix
 
-    @staticmethod
     def filter_correlation_matrix(
         self, graphframe, correlation_matrix, minimum=0.0, maximum=1.0
     ):
@@ -404,8 +403,8 @@ class Chopper:
             for idx in correlation_matrix.index:
                 # Exclude diagonal (self-correlation)
                 if (
-                    correlation_matrix.loc[idx, col] > minimum
-                    and correlation_matrix.loc[idx, col] < maximum
+                    correlation_matrix.loc[idx, col] >= minimum
+                    and correlation_matrix.loc[idx, col] <= maximum
                     and idx != col
                 ):
                     # Sort the pair to ensure consistent order
@@ -417,7 +416,6 @@ class Chopper:
         corr_pairs = sorted(corr_pairs, key=lambda pair: pair[2])
         return corr_pairs
 
-    @staticmethod
     def pairwise_correlation(
         self, graphframe, metric1=None, metric2=None, logscale=False
     ):
@@ -444,21 +442,21 @@ class Chopper:
             # Calculating the predicted values on the log scale
             predicted_y = poly1d_fn(log_x)
 
-            gf_copy.dataframe["{}-{}.predicted".format(metric1, metric2)] = predicted_y
-            gf_copy.dataframe["{}-{}distance".format(metric1, metric2)] = (
+            gf_copy.dataframe["{}.predicted".format(metric2)] = predicted_y
+            gf_copy.dataframe["{}-{}.distance".format(metric1, metric2)] = (
                 log_y - predicted_y
             )
         else:
             # fits a polynomial of degree 1.
-            coef = np.polyfit(metric1, metric2, 1)
+            coef = np.polyfit(gf_copy.dataframe[metric1], gf_copy.dataframe[metric2], 1)
             poly1d_fn = np.poly1d(coef)
 
             # Calculating the predicted values
-            predicted_y = poly1d_fn(metric1)
+            predicted_y = poly1d_fn(gf_copy.dataframe[metric1])
 
-            gf_copy.dataframe["{}-{}.predicted".format(metric1, metric2)] = predicted_y
-            gf_copy.dataframe["{}-{}distance".format(metric1, metric2)] = (
-                metric2 - predicted_y
+            gf_copy.dataframe["{}.predicted".format(metric2)] = predicted_y
+            gf_copy.dataframe["{}-{}.distance".format(metric1, metric2)] = (
+                gf_copy.dataframe[metric2] - predicted_y
             )
 
         return gf_copy
