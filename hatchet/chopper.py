@@ -380,15 +380,12 @@ class Chopper:
 
     def correlation_analysis(self, graphframe, metrics=None, method="spearman"):
         if not isinstance(metrics, list):
-            columns = [metrics]
+            metrics = [metrics]
 
-        assert (
-            metric1 in graphframe.dataframe.columns
-        ), "{} metric not present in all graphframes".format(metric1)
-
-        assert (
-            metric2 in graphframe.dataframe.columns
-        ), "{} metric not present in all graphframes".format(metric2)
+        for metric in metrics:
+            assert (
+                metric in gf.dataframe.columns
+            ), "{} column not present in all graphframes".format(metric)
 
         dataframe = graphframe.dataframe[metrics]
         corr_matrix = dataframe.corr(method=method)
