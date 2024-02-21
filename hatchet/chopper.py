@@ -305,6 +305,22 @@ class Chopper:
         metrics=["time"],
         threshold=None,
     ):
+        """
+        Calculates the speedup and efficiency values.
+        Inputs:
+         - graphframes: A list of graphframes.
+         - weak: True for weak scaling experiments.
+         - strong: True for strong scaling experiments.
+         - efficiency: True if the user wants to calculate efficiency.
+         - strong: True if the user wants to calculate speedup.
+         - pivot_index: The metric in each graphframe's metadata used to do calculations.
+         Default: num_processes.
+         - metric: The numerical metric for which we want to calculate speedup and efficiency.
+         Default: time
+         - threshold: The threshold for filtering metric rows of the graphframes.
+        Output:
+         - a new dataframe that stores speedup and efficiency values.
+        """
 
         assert (
             strong is True or weak is True
@@ -332,6 +348,7 @@ class Chopper:
         base = process_to_gf[0][0]
 
         result_df = pd.DataFrame()
+        # add base values to the resulting dataframe.
         for column in process_to_gf[0][1].dataframe.columns:
             if (
                 column
@@ -339,24 +356,25 @@ class Chopper:
             ):
                 result_df[column] = process_to_gf[0][1].dataframe[column]
 
+        # calculate speedup and efficiency.
         for other in process_to_gf[1:]:
             for metric in metrics:
                 new_column_name = "{}.{}".format(other[0], metric)
                 if weak:
-                    # weak scaling efficiency
+                    # weak scaling efficiency: base / other
                     result_df[new_column_name] = (
                         process_to_gf[0][1].dataframe[metric]
                         / other[1].dataframe[metric]
                     )
                 else:
                     if speedup:
-                        # strong scaling speedup
+                        # strong scaling speedup: base / other
                         result_df[new_column_name] = (
                             process_to_gf[0][1].dataframe[metric]
                             / other[1].dataframe[metric]
                         )
                     else:
-                        # strong scaling efficiency
+                        # strong scaling efficiency: base * num_procs_base / other
                         result_df[new_column_name] = (
                             process_to_gf[0][1].dataframe[metric] * base
                         ) / (other[1].dataframe[metric] * other[0])
