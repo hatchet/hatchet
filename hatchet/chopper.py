@@ -379,6 +379,11 @@ class Chopper:
         return result_df
 
     def correlation_analysis(self, graphframe, metrics=None, method="spearman"):
+        """
+        Calculates correlation between metrics of a given graphframe.
+        Returns the correlation matrix. 
+        Pandas provides three different methods: pearson, spearman, kendall
+        """
         if not isinstance(metrics, list):
             metrics = [metrics]
 
@@ -394,6 +399,12 @@ class Chopper:
     def filter_correlation_matrix(
         self, graphframe, correlation_matrix, minimum=0.0, maximum=1.0
     ):
+        """
+        Filters the correlation matrix and returns the pairs 
+        with their correlation values.
+        The user can specify a range to filter values between 
+        'minimum' and 'maximum'.
+        """
 
         # Initialize a set to store the unique pairs
         corr_pairs = set()
@@ -407,8 +418,9 @@ class Chopper:
                     and correlation_matrix.loc[idx, col] <= maximum
                     and idx != col
                 ):
-                    # Sort the pair to ensure consistent order
+                    # Sort the pair
                     pair = tuple(sorted([idx, col]))
+
                     # Add the pair with its correlation value to the set
                     corr_pairs.add((*pair, correlation_matrix.loc[idx, col]))
 
@@ -419,6 +431,12 @@ class Chopper:
     def pairwise_correlation(
         self, graphframe, metric1=None, metric2=None, logscale=False
     ):
+        """
+        Calculates correlation between two metrics for each node. 
+        Performs linear regression and fits a linear model to the data.
+        Assumes a linear relationship between two performance metrics.
+
+        """
 
         assert (
             metric1 in graphframe.dataframe.columns
