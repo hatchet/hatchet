@@ -22,7 +22,7 @@ from .util.dot import trees_to_dot
 from .util.logger import Logger
 from .util.deprecated import deprecated_params
 from .chopper import Chopper
-from .util.configmanager import global_config
+from .util.configmanager import _global_config
 
 try:
     from .cython_modules.libs import graphframe_modules as _gfm_cy
@@ -1010,11 +1010,11 @@ class GraphFrame:
     ):
         # These will only be changed if the user makes any changes using set_options.
         if depth is None:
-            depth = global_config["depth"]
+            depth = _global_config["depth"]
         if colormap is None:
-            colormap = global_config["colormap"]
+            colormap = _global_config["colormap"]
         if invert_colormap is None:
-            invert_colormap = global_config["invert_colormap"]
+            invert_colormap = _global_config["invert_colormap"]
 
         """Format this graphframe as a tree and return the resulting string."""
         color = sys.stdout.isatty()

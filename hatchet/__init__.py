@@ -14,6 +14,4 @@ from .util.configmanager import (
     get_default_value,
     set_option,
     reset_option,
-    global_config,
-    registered_options,
 )

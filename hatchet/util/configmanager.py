@@ -9,14 +9,14 @@ from typing import Any, Dict
 
 
 # holds registered option default data
-registered_options: Dict[str, Any] = {
+_registered_options: Dict[str, Any] = {
     "colormap": "RdYlGn",
     "invert_colormap": False,
     "depth": 10000,
 }
 
 # holds the current values for registered options
-global_config: Dict[str, Any] = {
+_global_config: Dict[str, Any] = {
     "colormap": "RdYlGn",
     "invert_colormap": False,
     "depth": 10000,
@@ -37,28 +37,28 @@ colormaps = [
 
 # This function returns the current value of the specified key
 def get_option(key: str) -> Any:
-    if len(key) == 0 or key not in registered_options:
+    if len(key) == 0 or key not in _registered_options:
         raise ValueError("No such keys(s)")
     else:
-        return global_config[key]
+        return _global_config[key]
 
 
 # This function returns the default value of the specified key
 def get_default_value(key: str) -> Any:
-    if len(key) == 0 or key not in registered_options:
+    if len(key) == 0 or key not in _registered_options:
         raise ValueError("No such keys(s)")
     else:
-        return registered_options[key]
+        return _registered_options[key]
 
 
-# This function updates the value of the specified key in the global_config dictionary.
+# This function updates the value of the specified key in the _global_config dictionary.
 def set_option(key: str, val: Any):
-    if len(key) == 0 or key not in registered_options:
+    if len(key) == 0 or key not in _registered_options:
         raise ValueError("No such keys(s)")
     # Also need to check if val is valid for that specific key. Some keys take strings, others take bools, others take ints
     if set_validators(key, val):
         # If its valid, update the key, value pair
-        global_config[key] = val
+        _global_config[key] = val
     # If its not valid, an error will be thrown by one of the validator functions
 
 
@@ -68,12 +68,12 @@ def reset_option(key: str) -> None:
     if len(key) == 0:
         raise OptionError("No such keys(s)")
     # Need to check if its "all" or a specific key
-    if key in registered_options:
+    if key in _registered_options:
         # If it's a specific key and its valid
-        global_config[key] = registered_options[key]
+        _global_config[key] = _registered_options[key]
     elif key == "all":
-        for k, v in registered_options.items():
-            global_config[k] = v
+        for k, v in _registered_options.items():
+            _global_config[k] = v
     else:
         raise ValueError(
             "You must specify a valid key. Or, use the special keyword "
