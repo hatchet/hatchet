@@ -1350,7 +1350,7 @@ class CCTReader:
         node_name,
         node,
         context_info,
-        metric_name=False,
+        metric_names=False,
         value=0,
     ) -> None:
         """Stores profile and metric information for each context.
@@ -1361,11 +1361,11 @@ class CCTReader:
         self.node_dicts[identifier].update(context_info)
 
         # create a metric value of 0 for all the missing values.
-        if isinstance(metric_name, set):
-            for metric in metric_name:
+        if isinstance(metric_names, set):
+            for metric in metric_names:
                 self.node_dicts[identifier][metric] = value
         else:
-            self.node_dicts[identifier][metric_name] = value
+            self.node_dicts[identifier][metric_names] = value
 
     def __read_cct_info_section(self, section_pointer: int, section_size: int) -> None:
         """
