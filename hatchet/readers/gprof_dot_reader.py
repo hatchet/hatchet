@@ -74,7 +74,14 @@ class GprofDotReader:
                         continue
                     node_label = node.obj_dict["attributes"].get("label").strip('"')
 
-                    module, _, inc, exc, _ = node_label.split(r"\n")
+                    label_parts = node_label.split(r"\n")
+                    if len(label_parts) == 5:
+                        module, _, inc, exc, _ = label_parts
+                    elif len(label_parts) == 4:
+                        _, inc, exc, _ = label_parts
+                        module = None
+                    else:
+                        raise ValueError("invalid node label in dot file")
 
                     inc_time = float(re.sub(r"\%", "", inc))
                     exc_time = float(re.sub(r"[\(\%\)]", "", exc))
