@@ -67,7 +67,9 @@ class Node:
 
     def convert_path_to_str(self, path):
         """Takes a single path as a tuple of node
-        objects and converts it to a tuple of strings."""
+        objects and converts it to a tuple of strings.
+        DO NOT USE THIS FUNCTION TO COMPARE NODES IN MOST CASES!
+        """
         callpath_str = tuple()
         for node in path:
             callpath_str += (node.__str__(),)
