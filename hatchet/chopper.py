@@ -329,9 +329,6 @@ class Chopper:
             efficiency is True or speedup is True
         ), "at least one of the 'efficiency' and 'speedup' parameters should be True."
         assert (
-            efficiency is False or speedup is False
-        ), "only one of the 'efficiency' and 'speedup' parameters can be True."
-        assert (
             weak is False or speedup is False
         ), "speed up can be calculated only for strong scaling."
 
@@ -345,37 +342,38 @@ class Chopper:
         # GraphFrame.unify_multiple_graphframes(graphframes)
 
         sorted(process_to_gf, key=lambda x: x[0])
-        base = process_to_gf[0][0]
+        base_numps = process_to_gf[0][0]
+        base_graphframe = process_to_gf[0][1]
 
         result_df = pd.DataFrame()
         # add base values to the resulting dataframe.
-        for column in process_to_gf[0][1].dataframe.columns:
-            if (
-                column
-                not in process_to_gf[0][1].inc_metrics + process_to_gf[0][1].exc_metrics
-            ):
-                result_df[column] = process_to_gf[0][1].dataframe[column]
+        for column in base_graphframe.dataframe.columns:
+            if column not in base_graphframe.inc_metrics + base_graphframe.exc_metrics:
+                result_df[column] = base_graphframe.dataframe[column]
 
         # calculate speedup and efficiency.
         for other in process_to_gf[1:]:
             for metric in metrics:
-                new_column_name = "{}.{}".format(other[0], metric)
                 if weak:
+                    new_column_name = "{}.{}.{}".format(other[0], metric, "efficiency")
                     # weak scaling efficiency: base / other
                     result_df[new_column_name] = (
-                        process_to_gf[0][1].dataframe[metric]
-                        / other[1].dataframe[metric]
+                        base_graphframe.dataframe[metric] / other[1].dataframe[metric]
                     )
                 else:
                     if speedup:
+                        new_column_name = "{}.{}.{}".format(other[0], metric, "speedup")
                         # strong scaling speedup: base / other
                         result_df[new_column_name] = (
-                            process_to_gf[0][1].dataframe[metric]
+                            base_graphframe.dataframe[metric]
                             / other[1].dataframe[metric]
                         )
-                    else:
+                    if efficiency:
+                        new_column_name = "{}.{}.{}".format(
+                            other[0], metric, "efficiency"
+                        )
                         # strong scaling efficiency: base * num_procs_base / other
                         result_df[new_column_name] = (
-                            process_to_gf[0][1].dataframe[metric] * base
+                            base_graphframe.dataframe[metric] * base_numps
                         ) / (other[1].dataframe[metric] * other[0])
         return result_df

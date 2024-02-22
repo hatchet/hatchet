@@ -230,15 +230,23 @@ def test_speedup_eff_analysis_literal(mock_graph_literal):
     eff = Chopper.speedup_efficiency(
         gfs, strong=True, speedup=True, efficiency=False, metrics=["time"]
     )
-    assert eff.iloc[1]["2.time"] == 2.0
-    assert eff.iloc[1]["4.time"] == 1.0
+    assert eff.iloc[1]["2.time.speedup"] == 2.0
+    assert eff.iloc[1]["4.time.speedup"] == 1.0
+
     eff = Chopper.speedup_efficiency(
         gfs, strong=True, speedup=False, efficiency=True, metrics=["time"]
     )
-    assert eff.iloc[1]["2.time"] == 1.0
-    assert eff.iloc[1]["4.time"] == 0.25
+    assert eff.iloc[1]["2.time.efficiency"] == 1.0
+    assert eff.iloc[1]["4.time.efficiency"] == 0.25
+
     eff = Chopper.speedup_efficiency(
         gfs, weak=True, speedup=False, efficiency=True, metrics=["time"]
     )
-    assert eff.iloc[1]["2.time"] == 2.0
-    assert eff.iloc[1]["4.time"] == 1.0
+    assert eff.iloc[1]["2.time.efficiency"] == 2.0
+    assert eff.iloc[1]["4.time.efficiency"] == 1.0
+
+    eff = Chopper.speedup_efficiency(
+        gfs, strong=True, weak=False, speedup=True, efficiency=True, metrics=["time"]
+    )
+    assert eff.iloc[1]["2.time.speedup"] == 2.0
+    assert eff.iloc[1]["2.time.efficiency"] == 1.0
