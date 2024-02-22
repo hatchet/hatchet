@@ -66,5 +66,5 @@ setup(
                 ["hatchet/cython_modules/graphframe_modules.pyx"],
             ),
         ]
-    )
+    ),
 )
