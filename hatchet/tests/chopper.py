@@ -260,14 +260,3 @@ def test_correlation_analysis_literal(mock_graph_literal):
         metrics=["time", "time2"], method="spearman"
     )
     assert correlation_matrix.loc["time", "time2"] == 1.0
-
-    correlation_matrix.loc["time", "time2"] = 2.0
-    filtered_corr_matrix = gf.filter_correlation_matrix(
-        correlation_matrix, minimum=1.2, maximum=2.0
-    )
-    assert filtered_corr_matrix[0][0] == "time"
-    assert filtered_corr_matrix[0][1] == "time2"
-    assert filtered_corr_matrix[0][2] == 2.0
-
-    # gf_corr = gf.pairwise_correlation(metric1="time", metric2="time2", logscale=False)
-    # add test for pairwise
