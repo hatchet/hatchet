@@ -166,6 +166,18 @@ def calc_pi_callgrind_dot(data_dir, tmpdir):
 
 
 @pytest.fixture
+def gprof_dot(data_dir, tmpdir):
+    """Builds a temporary directory containing the gprof DOT file."""
+    gprof_dot_dir = os.path.join(data_dir, "gprof2dot-gprof")
+    gprof_dot_file = os.path.join(gprof_dot_dir, "gprof-profile.dot")
+
+    shutil.copy(gprof_dot_file, str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), "gprof-profile.dot")
+
+    return tmpfile
+
+
+@pytest.fixture
 def hatchet_pyinstrument_json(data_dir, tmpdir):
     """Builds a temporary directory containing the pyinstrument Hatchet json file."""
     pyinstrument_json_dir = os.path.join(data_dir, "pyinstrument-hatchet-json")
