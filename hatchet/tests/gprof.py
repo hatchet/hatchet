@@ -24,7 +24,6 @@ def test_graphframe(gprof_dot):
 
         if col == "module":
             assert (gf.dataframe[col].isna()).all()
-        
 
     # TODO: add tests to confirm values in dataframe
 
