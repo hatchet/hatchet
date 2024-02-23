@@ -814,6 +814,65 @@ def test_to_dot(mock_graph_literal):
             assert '"%s" -> "%s"' % (node._hatchet_nid, child._hatchet_nid) in output
 
 
+def test_unify_multiple_graphframes():
+    tuple1 = ["a", ("b", "c"), ("d", "e")]
+    tuple2 = ["a", ("b", "c", "d"), ("e", "f"), "g"]
+    tuple3 = ["a", ("b", "c", "d"), ("e", "f"), ("g", "h1")]
+    tuple4 = [
+        "a",
+        ("b", "c", "d"),
+        ("b", "c", "d"),
+        ("d", "e"),
+        ("e", "f"),
+        "g",
+        "h",
+        ("g", "h"),
+    ]
+
+    gf1 = GraphFrame.from_lists(tuple1)
+    gf2 = GraphFrame.from_lists(tuple2)
+    gf3 = GraphFrame.from_lists(tuple3)
+    # the biggest graphframe is gf4.
+    gf4 = GraphFrame.from_lists(tuple4)
+    gf1.update_metadata(1)
+    gf2.update_metadata(2)
+    gf3.update_metadata(3)
+    gf4.update_metadata(4)
+    gfs = [gf1, gf2, gf3, gf4]
+    GraphFrame.unify_multiple_graphframes(gfs)
+
+    # The final output should look like this.
+    # We merge the nodes if they have the same callpaths.
+    tuple_truth = [
+        "a",
+        ("b", "c", "d"),
+        ("e", "f"),
+        ("g", "h1", "h"),
+        ("d", "e"),
+        "h",
+    ]
+    gf_truth = GraphFrame.from_lists(tuple_truth)
+
+    truth_traverse = [node.frame.attrs["name"] for node in gf_truth.graph.traverse()]
+    unified_traverse = [node.frame.attrs["name"] for node in gf1.graph.traverse()]
+    assert truth_traverse == unified_traverse
+
+    unified_paths = {}
+    for node in gf1.graph.traverse():
+        for path in node.paths():
+            callpath = node.convert_path_to_str(path)
+            unified_paths[callpath] = node
+
+    for gf in gfs:
+        gf = gf.groupby_callpath()
+        for node in gf.graph.traverse():
+            for path in node.paths():
+                callpath = node.convert_path_to_str(path)
+                # check if the unified graphframe contains all
+                # the callpaths in every graphframe
+                assert callpath in unified_paths.keys()
+
+
 def test_unify_diff_graphs():
     gf1 = GraphFrame.from_lists(("a", ("b", "c"), ("d", "e")))
     gf2 = GraphFrame.from_lists(("a", ("b", "c", "d"), ("e", "f"), "g"))
