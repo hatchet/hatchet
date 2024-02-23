@@ -26,7 +26,7 @@ from pygments.token import Generic
 
 import pkg_resources
 
-sys.path.insert(0, os.path.abspath("../hatchet"))
+sys.path.insert(0, os.path.abspath("../"))
 
 # -- Project information -----------------------------------------------------
 
