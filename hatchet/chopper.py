@@ -293,3 +293,87 @@ class Chopper:
         pivot_df = result.pivot_table(index=pivot_index, columns=columns, values=metric)
 
         return pivot_df
+
+    @staticmethod
+    def speedup_efficiency(
+        graphframes=[],
+        weak=False,
+        strong=False,
+        efficiency=False,
+        speedup=False,
+        pivot_index="num_processes",
+        metrics=["time"],
+        threshold=None,
+    ):
+        """
+        Calculates the speedup and efficiency values.
+        Inputs:
+         - graphframes: A list of graphframes.
+         - weak: True for weak scaling experiments.
+         - strong: True for strong scaling experiments.
+         - efficiency: True if the user wants to calculate efficiency.
+         - strong: True if the user wants to calculate speedup.
+         - pivot_index: The metric in each graphframe's metadata used to do calculations.
+         Default: num_processes.
+         - metric: The numerical metric for which we want to calculate speedup and efficiency.
+         Default: time
+         - threshold: The threshold for filtering metric rows of the graphframes.
+        Output:
+         - a new dataframe that stores speedup and efficiency values.
+        """
+
+        assert (
+            strong is True or weak is True
+        ), "at least one of the 'strong' and 'weak' parameters should be True."
+        assert (
+            efficiency is True or speedup is True
+        ), "at least one of the 'efficiency' and 'speedup' parameters should be True."
+        assert (
+            weak is False or speedup is False
+        ), "speed up can be calculated only for strong scaling."
+
+        process_to_gf = []
+        for gf in graphframes:
+            assert (
+                "num_processes" in gf.metadata.keys()
+            ), "pivot_index missing from GraphFrame metadata: use update_metadata() to specify."
+            process_to_gf.append((gf.metadata[pivot_index], gf))
+
+        # GraphFrame.unify_multiple_graphframes(graphframes)
+
+        sorted(process_to_gf, key=lambda x: x[0])
+        base_numpes = process_to_gf[0][0]
+        base_graphframe = process_to_gf[0][1]
+
+        result_df = pd.DataFrame()
+        # add base values to the resulting dataframe.
+        for column in base_graphframe.dataframe.columns:
+            if column not in base_graphframe.inc_metrics + base_graphframe.exc_metrics:
+                result_df[column] = base_graphframe.dataframe[column]
+
+        # calculate speedup and efficiency.
+        for other in process_to_gf[1:]:
+            for metric in metrics:
+                if weak:
+                    new_column_name = "{}.{}.{}".format(other[0], metric, "efficiency")
+                    # weak scaling efficiency: base / other
+                    result_df[new_column_name] = (
+                        base_graphframe.dataframe[metric] / other[1].dataframe[metric]
+                    )
+                else:
+                    if speedup:
+                        new_column_name = "{}.{}.{}".format(other[0], metric, "speedup")
+                        # strong scaling speedup: base / other
+                        result_df[new_column_name] = (
+                            base_graphframe.dataframe[metric]
+                            / other[1].dataframe[metric]
+                        )
+                    if efficiency:
+                        new_column_name = "{}.{}.{}".format(
+                            other[0], metric, "efficiency"
+                        )
+                        # strong scaling efficiency: base * num_procs_base / other
+                        result_df[new_column_name] = (
+                            base_graphframe.dataframe[metric] * base_numpes
+                        ) / (other[1].dataframe[metric] * other[0])
+        return result_df
