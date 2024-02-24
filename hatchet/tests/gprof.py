@@ -8,7 +8,8 @@ import numpy as np
 from hatchet import GraphFrame
 from hatchet.readers.gprof_dot_reader import GprofDotReader
 
-roots = ['20', '37', '38', '48', '49', '51']
+roots = ["20", "37", "38", "48", "49", "51"]
+
 
 def test_graphframe(gprof_dot):
     """Sanity test a GraphFrame object with known data."""
