@@ -849,7 +849,7 @@ class MetaReader:
                 sub_flex_2 = int.from_bytes(
                     flex[8:10], byteorder=self.byte_order, signed=self.signed
                 )
-                flex = flex[10:]
+                flex = flex[16:]
                 source_file_index = self.__get_source_file_index(sub_flex_1)
                 source_file_line = sub_flex_2
 
