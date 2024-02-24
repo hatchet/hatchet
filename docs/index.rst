@@ -81,7 +81,7 @@ following `paper <http://www.cs.umd.edu/~bhatele/pubs/pdf/2019/sc2019.pdf>`_:
    :maxdepth: 2
    :caption: API Docs
 
-   Hatchet API Docs <source/hatchet>
+   Hatchet API Docs <source/modules>
 
 
 ##################

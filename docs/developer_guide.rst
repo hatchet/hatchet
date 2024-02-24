@@ -86,7 +86,8 @@ You can build the documentation locally by typing:
 
   cd docs
   pip install -r requirements.txt
-  sphinx-apidoc -o source/ ../hatchet
+  rm -rf source/
+  sphinx-apidoc -o source/ ../
   make html
 
 This will build the docs in the ``docs/_build/html`` directory. You can

@@ -68,10 +68,26 @@ hatchet.readers.hpctoolkit\_reader module
    :undoc-members:
    :show-inheritance:
 
+hatchet.readers.hpctoolkit\_v4\_reader module
+---------------------------------------------
+
+.. automodule:: hatchet.readers.hpctoolkit_v4_reader
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 hatchet.readers.literal\_reader module
 --------------------------------------
 
 .. automodule:: hatchet.readers.literal_reader
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+hatchet.readers.perfetto\_reader module
+---------------------------------------
+
+.. automodule:: hatchet.readers.perfetto_reader
    :members:
    :undoc-members:
    :show-inheritance:
