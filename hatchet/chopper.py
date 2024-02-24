@@ -342,7 +342,7 @@ class Chopper:
         # GraphFrame.unify_multiple_graphframes(graphframes)
 
         sorted(process_to_gf, key=lambda x: x[0])
-        base_numps = process_to_gf[0][0]
+        base_numpes = process_to_gf[0][0]
         base_graphframe = process_to_gf[0][1]
 
         result_df = pd.DataFrame()
@@ -374,6 +374,6 @@ class Chopper:
                         )
                         # strong scaling efficiency: base * num_procs_base / other
                         result_df[new_column_name] = (
-                            base_graphframe.dataframe[metric] * base_numps
+                            base_graphframe.dataframe[metric] * base_numpes
                         ) / (other[1].dataframe[metric] * other[0])
         return result_df
