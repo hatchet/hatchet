@@ -1,5 +1,5 @@
-# Copyright 2023 Advanced Micro Devices, Inc., and other Hatchet Project Developers.
-# See the top-level LICENSE file for details.
+# Copyright 2023-2024 Advanced Micro Devices, Inc., and other Hatchet Project
+# Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
 
