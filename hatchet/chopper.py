@@ -180,12 +180,12 @@ class Chopper:
             # multiple functions (np.mean and np.max).
             # We first flatten the columns to remove multiindex.
             # Example after to_flat_index():
-            # [('time', 'mean'), ('time', 'amax'), ('name', '<lambda>')]
+            # [('time', 'mean'), ('time', 'max'), ('name', '<lambda>')]
             # Then remove rename metric_column by adding mean and max.
             # Remove <lambda> from others.
             agg_df.columns = agg_df.columns.to_flat_index()
             columns = agg_df.columns.values
-            print(columns)
+
             for idx in range(len(columns)):
                 if columns[idx][0] == metric_column and columns[idx][1] == "mean":
                     columns[idx] = metric_column + ".mean"
@@ -242,9 +242,7 @@ class Chopper:
             graphframe2 = graphframe2.filter(
                 lambda x: x[metric_column + ".max"] > thres_val
             )
-        for col in graphframe2.dataframe.columns:
-            print(col)
-        print(graphframe2.dataframe[metric_column + ".max"])
+
         # Calculate load imbalance for the given metric
         # by calculating max-to-mean ratio.
         graphframe2.dataframe[metric_column + ".imbalance"] = graphframe2.dataframe[
