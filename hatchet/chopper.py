@@ -185,10 +185,11 @@ class Chopper:
             # Remove <lambda> from others.
             agg_df.columns = agg_df.columns.to_flat_index()
             columns = agg_df.columns.values
+            print(columns)
             for idx in range(len(columns)):
                 if columns[idx][0] == metric_column and columns[idx][1] == "mean":
                     columns[idx] = metric_column + ".mean"
-                elif columns[idx][0] == metric_column and columns[idx][1] == "amax":
+                elif columns[idx][0] == metric_column and columns[idx][1] == "max":
                     columns[idx] = metric_column + ".max"
                 else:
                     columns[idx] = columns[idx][0]
@@ -222,7 +223,7 @@ class Chopper:
         # Similar to drop_index_levels() but it calculates
         # statistics if verbose == True.
         graphframe2.dataframe = _calculate_statistics(
-            graphframe2.dataframe, metric_column, [np.mean, np.max]
+            graphframe2.dataframe, metric_column, ["mean", "max"]
         )
 
         graphframe2.inc_metrics = []
