@@ -241,7 +241,8 @@ class Chopper:
             graphframe2 = graphframe2.filter(
                 lambda x: x[metric_column + ".max"] > thres_val
             )
-        print(graphframe2.dataframe)
+        for col in graphframe2.columns:
+            print(col)
         # Calculate load imbalance for the given metric
         # by calculating max-to-mean ratio.
         graphframe2.dataframe[metric_column + ".imbalance"] = graphframe2.dataframe[
