@@ -829,12 +829,12 @@ class GraphFrame:
                         df_index2 = (subgraph_nodes, rank_thread)
 
                     for col in out_columns:
-                        self.dataframe.at[df_index1, col] = [
-                            function(self.dataframe.loc[df_index2, col])
-                        ]
+                        self.dataframe.at[df_index1, col] =function(
+                            self.dataframe.loc[df_index2, col]
+                        )
             else:
                 for col in out_columns:
-                    self.dataframe.loc[node, col] = function(
+                    self.dataframe.at[node, col] = function(
                         self.dataframe.loc[subgraph_nodes, col]
                     )
 
