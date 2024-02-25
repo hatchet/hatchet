@@ -1,4 +1,4 @@
-# Copyright 2020-2023 The Regents of the University of California, through
+# Copyright 2020-2024 The Regents of the University of California, through
 # Lawrence Berkeley National Laboratory, and other Hatchet Project Developers.
 # See the top-level LICENSE file for details.
 #
