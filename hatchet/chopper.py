@@ -321,6 +321,7 @@ class Chopper:
         Output:
          - a new dataframe that stores speedup and efficiency values.
         """
+        from .graphframe import GraphFrame
 
         assert (
             strong is True or weak is True
@@ -339,7 +340,7 @@ class Chopper:
             ), "pivot_index missing from GraphFrame metadata: use update_metadata() to specify."
             process_to_gf.append((gf.metadata[pivot_index], gf))
 
-        # GraphFrame.unify_multiple_graphframes(graphframes)
+        GraphFrame.unify_multiple_graphframes(graphframes)
 
         sorted(process_to_gf, key=lambda x: x[0])
         base_numpes = process_to_gf[0][0]
