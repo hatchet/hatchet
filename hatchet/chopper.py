@@ -392,7 +392,7 @@ class Chopper:
         for metric in metrics:
             assert (
                 metric in graphframe.dataframe.columns
-            ), "{} column not present in all graphframes".format(metric)
+            ), "{} column not present in graphframe".format(metric)
 
         dataframe = graphframe.dataframe[metrics]
         corr_matrix = dataframe.corr(method=method)
