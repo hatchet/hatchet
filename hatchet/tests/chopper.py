@@ -40,9 +40,9 @@ def test_flat_profile(calc_pi_hpct_db):
 def test_load_imbalance(calc_pi_hpct_db):
     """Validate that the load imbalance is calculated correctly."""
 
-    # graphframe = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
-    # load_imb_gf = graphframe.load_imbalance(metric_column="time (inc)", threshold=0.01)
-    # print(load_imb_gf)
+    graphframe = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+    load_imb_gf = graphframe.load_imbalance(metric_column="time (inc)")
+    print(load_imb_gf)
     # # Check if load imbalance is correct for the root node.
     # root = graphframe.graph.roots[0]
     # root_metric_max_org = np.max(graphframe.dataframe.loc[root, "time (inc)"])
