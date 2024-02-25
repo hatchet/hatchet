@@ -168,7 +168,7 @@ def calc_pi_callgrind_dot(data_dir, tmpdir):
 @pytest.fixture
 def gprof_dot(data_dir, tmpdir):
     """Builds a temporary directory containing the gprof DOT file."""
-    gprof_dot_dir = os.path.join(data_dir, "gprof2dot-gprof")
+    gprof_dot_dir = os.path.join(data_dir, "gprof2dot-test")
     gprof_dot_file = os.path.join(gprof_dot_dir, "gprof-profile.dot")
 
     shutil.copy(gprof_dot_file, str(tmpdir))
