@@ -377,3 +377,23 @@ class Chopper:
                             base_graphframe.dataframe[metric] * base_numpes
                         ) / (other[1].dataframe[metric] * other[0])
         return result_df
+
+    def correlation_analysis(self, graphframe, metrics=None, method="spearman"):
+        """
+        Calculates correlation between metrics of a given graphframe.
+        Returns the correlation matrix.
+        Pandas provides three different methods: pearson, spearman, kendall
+        """
+        if not isinstance(metrics, list):
+            metrics = [metrics]
+
+        assert len(metrics) > 1, "This function requires at least two metrics."
+
+        for metric in metrics:
+            assert (
+                metric in graphframe.dataframe.columns
+            ), "{} column not present in graphframe".format(metric)
+
+        dataframe = graphframe.dataframe[metrics]
+        corr_matrix = dataframe.corr(method=method)
+        return corr_matrix

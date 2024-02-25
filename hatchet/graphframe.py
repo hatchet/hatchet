@@ -1917,6 +1917,17 @@ class GraphFrame:
         return hot_path
 
     @Logger.loggable
+    def correlation_analysis(self, metrics=None, method="spearman"):
+        """Calculates correlation between metrics of a given graphframe.
+        Returns the correlation matrix.
+
+        Pandas provides three different methods: pearson, spearman, kendall
+        """
+        # call correlation_analysis function on high-level API
+        correlation_matrix = Chopper().correlation_analysis(self, metrics, method)
+        return correlation_matrix
+
+    @Logger.loggable
     def add(self, other):
         """Returns the column-wise sum of two graphframes as a new graphframe.
 
