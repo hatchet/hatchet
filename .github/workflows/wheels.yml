@@ -7,8 +7,6 @@
 # wheel builder workflow
 # https://github.com/pandas-dev/pandas/blob/main/.github/workflows/wheels.yml
 
-# Inspiration for doing this also came from the LLNL hatchet wheel building workflow
-# https://github.com/LLNL/hatchet/blob/develop/.github/workflows/build_and_upload_wheels.yaml
 name: Build wheels
 
 # Run on pull request to the develop or releases branch, but don't
@@ -84,8 +82,7 @@ jobs:
         run: python -m pip install build cython
 
       - name: Build sdist
-        # Disable isolation so we can have the cython from the
-        # host
+        # Disable isolation so we can have the cython from the host
         run: python -m build -s --no-isolation
 
       - uses: actions/upload-artifact@v4
