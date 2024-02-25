@@ -29,7 +29,7 @@ def test_graphframe(gprof_dot):
     # TODO: add tests to confirm values in dataframe
 
 
-def test_read_calc_pi_database(gprof_dot):
+def test_read_gprof_dot_sample_data(gprof_dot):
     """Sanity check the GprofDot reader by examining a known input."""
     reader = GprofDotReader(str(gprof_dot))
 
