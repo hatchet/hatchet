@@ -13,6 +13,7 @@ name: Build wheels
 # upload wheels
 on:
   pull_request:
+    types: [labeled, opened, synchronize, reopened]
     branches: [develop, releases/**]
   workflow_dispatch:
   push:
@@ -21,6 +22,11 @@ on:
 
 jobs:
   build_wheels:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, 'type: release')) ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
     name: Build wheel for ${{ matrix.python[0] }}-${{ matrix.buildplat[1] }}
     strategy:
       fail-fast: false
@@ -73,6 +79,11 @@ jobs:
               || contains(github.ref_name, 'rc') || contains(github.ref_name, 'dev') }}
 
   build_sdist:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' &&
+      contains(github.event.pull_request.labels.*.name, 'type: release')) ||
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v'))
     name: Build sdist
     runs-on: ubuntu-20.04
     steps:
