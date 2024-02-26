@@ -1904,7 +1904,7 @@ class GraphFrame:
         tmp_df.sort_index(inplace=True)
 
         graph = Graph(new_roots)
-        # graph.enumerate_traverse()
+        graph.enumerate_traverse()
 
         # put it all together
         new_gf = GraphFrame(graph, tmp_df, self.exc_metrics, self.inc_metrics)
