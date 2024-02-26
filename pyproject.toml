@@ -11,7 +11,7 @@ license = "MIT"
 
 [tool.black]
 line-length = 88
-target-version = ['py27', 'py35', 'py36', 'py37', 'py38']
+target-version = ['py35', 'py36', 'py37', 'py38']
 include = '\.pyi?$'
 exclude = '''
 /(

@@ -1,4 +1,4 @@
-# Copyright 2021-2023 University of Maryland and other Hatchet Project
+# Copyright 2023-2024 University of Maryland and other Hatchet Project
 # Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
@@ -11,6 +11,7 @@ import pytest
 
 
 def test_get_option():
+    """Sanity test get_option() before changing values."""
     colormap = ht.get_option("colormap")
     invert_colormap = ht.get_option("invert_colormap")
     depth = ht.get_option("depth")
@@ -21,6 +22,7 @@ def test_get_option():
 
 
 def test_get_default_value():
+    """Sanity test get_default_value()."""
     colormap = ht.get_default_value("colormap")
     invert_colormap = ht.get_default_value("invert_colormap")
     depth = ht.get_default_value("depth")
@@ -31,6 +33,7 @@ def test_get_default_value():
 
 
 def test_set_option():
+    """Sanity test set_option()."""
     ht.set_option("invert_colormap", True)
     ht.set_option("depth", 25)
     ht.set_option("colormap", "PRGn")
@@ -41,6 +44,7 @@ def test_set_option():
 
 
 def test_reset_option():
+    """Sanity test reset_option()."""
     ht.set_option("invert_colormap", True)
     ht.set_option("depth", 25)
     ht.set_option("colormap", "PRGn")
@@ -55,6 +59,7 @@ def test_reset_option():
 
 
 def test_reset_option_all():
+    """Test the 'all' option of reset_option() after changing all values."""
     ht.set_option("invert_colormap", True)
     ht.set_option("depth", 13)
     ht.set_option("colormap", "PRGn")
@@ -65,6 +70,7 @@ def test_reset_option_all():
     assert ht.get_option("depth") == 10000
 
 
+# Tests for correct errors getting raised with an incorrect/invalid input.
 def test_reset_option_with_invalid_key():
     with pytest.raises(ValueError, match="You must specify a valid key."):
         ht.reset_option("invalid")
@@ -101,6 +107,7 @@ def test_set_option_with_invalid_colormap():
 
 
 def test_tree_set_option_depth(calc_pi_hpct_db):
+    """Test functionalities on gf and make sure they output correctly."""
     gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
 
     output1 = ConsoleRenderer(unicode=True, color=False).render(
