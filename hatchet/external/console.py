@@ -42,6 +42,7 @@ class ConsoleRenderer:
         self.unicode = unicode
         self.color = color
         self.visited = []
+        self.seen = []
 
     def render(self, roots, dataframe, **kwargs):
         result = self.render_preamble()
@@ -192,21 +193,61 @@ class ConsoleRenderer:
         return legend
 
     def render_frame(self, node, dataframe, indent="", child_indent=""):
+        # Set the dataframe index based on whether rank and thread are part of the MultiIndex
+        df_index = ()
+        if "rank" in dataframe.index.names and "thread" in dataframe.index.names:
+            df_index = (self.rank, self.thread)
+        elif "rank" in dataframe.index.names:
+            df_index = (self.rank,)
+        elif "thread" in dataframe.index.names:
+            df_index = (self.thread,)
+
+        # Gets metric information of children nodes (Inclusive or Exclusive)
+        # Keeps track of number of descendants
+        def _get_subtree_info(node, subtree_info, df_index):
+            for child in node.children:
+                # Adding the number of descendants in the subtree
+                subtree_info["descendants"] += 1
+                # If df_index is an empty tuple due to no rank or thread, set child_index to child.
+                # Otherwise, add child to the df_index tuple and set this equal to child_index. child_index
+                # is used in calculating the inclusive and exclusive metrics.
+                if not df_index:
+                    child_index = child
+                else:
+                    child_index = (child,) + df_index
+
+                # If the metric is inclusive, then we will add all the inclusive
+                # metric values of the immediate children as the total sum of metric values
+                if "(inc)" in self.primary_metric:
+                    if node._depth == self.depth:
+                        subtree_info["sum_metric"] += dataframe.loc[
+                            child_index, self.primary_metric
+                        ]
+                else:
+                    # If the metric is exclusive, then we calculate the sum of metric values
+                    # by adding the exclusive metric value of each descendant in the subtree
+                    subtree_info["sum_metric"] += dataframe.loc[
+                        child_index, self.primary_metric
+                    ]
+                    # If statement is only necessary in else because it is not needed for (inc) metric
+                    # Pass df_index to _get_subtree_info define a new tuple for other child nodes.
+                    if len(child.children) != 0:
+                        _get_subtree_info(child, subtree_info, df_index)
+
+                # Storing the highest level in the subtree
+                if child._depth > subtree_info["levels"]:
+                    subtree_info["levels"] = child._depth
+
         node_depth = node._depth
         if node_depth <= self.depth:
-            # set dataframe index based on whether rank and thread are part of
-            # the MultiIndex
-            if "rank" in dataframe.index.names and "thread" in dataframe.index.names:
-                df_index = (node, self.rank, self.thread)
-            elif "rank" in dataframe.index.names:
-                df_index = (node, self.rank)
-            elif "thread" in dataframe.index.names:
-                df_index = (node, self.thread)
-            else:
+            # If df_index is an empty tuple due to no rank or thread, set df_index to child.
+            # Otherwise, add child to the df_index tuple and set this equal to df_index. df_index
+            # is used in calculating the metrics.
+            if not df_index:
                 df_index = node
-
+            else:
+                df_index = (node,) + df_index
             node_metric = dataframe.loc[df_index, self.primary_metric]
-
             metric_precision = "{:." + str(self.precision) + "f}"
             metric_str = (
                 self._ansi_color_for_metric(node_metric)
@@ -230,7 +271,6 @@ class ConsoleRenderer:
             name_str = (
                 self._ansi_color_for_name(node_name) + node_name + self.colors.end
             )
-
             # 0 is "", 1 is "L", and 2 is "R"
             if "_missing_node" in dataframe.columns:
                 left_or_right = dataframe.loc[df_index, "_missing_node"]
@@ -244,7 +284,6 @@ class ConsoleRenderer:
                     lr_decorator = " {c.right}{decorator}{c.end}".format(
                         decorator=self.lr_arrows["▶"], c=self.colors
                     )
-
             result = "{indent}{metric_str} {name_str}".format(
                 indent=indent, metric_str=metric_str, name_str=name_str
             )
@@ -262,8 +301,7 @@ class ConsoleRenderer:
             else:
                 indents = {"├": "|- ", "│": "|  ", "└": "`- ", " ": "   "}
 
-            # ensures that we never revisit nodes in the case of
-            # large complex graphs
+            # Visited is used to handle cycles
             if node not in self.visited:
                 self.visited.append(node)
                 # TODO: probably better to sort by time
@@ -271,20 +309,49 @@ class ConsoleRenderer:
                 if sorted_children:
                     last_child = sorted_children[-1]
 
+                # Set the correct indents and formatting for tree output.
                 for child in sorted_children:
-                    if child is not last_child:
-                        c_indent = child_indent + indents["├"]
-                        cc_indent = child_indent + indents["│"]
-                    else:
+                    if child is last_child or self.depth is node_depth:
                         c_indent = child_indent + indents["└"]
                         cc_indent = child_indent + indents[" "]
+                    else:
+                        c_indent = child_indent + indents["├"]
+                        cc_indent = child_indent + indents["│"]
                     result += self.render_frame(
-                        child, dataframe, indent=c_indent, child_indent=cc_indent
+                        child,
+                        dataframe,
+                        indent=c_indent,
+                        child_indent=cc_indent,
                     )
-        else:
-            result = ""
-            indents = {"├": "", "│": "", "└": "", " ": ""}
 
+        else:
+            subtree_info = {"descendants": 0, "sum_metric": 0, "levels": self.depth}
+            # Here we try to set curr to the parent node so that the correct node gets appended to the seen
+            # list. This covers the case for 2+ nodes that all have the same immediate parent. If we don't append
+            # the common parent node to seen, then a "Subtree Info" line will be printed for each of the three
+            # children, instead of only being printed once.
+            if node.parents:
+                curr = node.parents[0]
+            else:
+                curr = node
+
+            # This seen check is necessary so that multiple "Subtree Info" lines arent printed for a single
+            # node. Essentially covers the case of when a node at the specified depth has 2+ immediate children that
+            # are all at the same depth.
+            if curr not in self.seen:
+                self.seen.append(curr)
+                _get_subtree_info(curr, subtree_info, df_index)
+                summary_string = "{child_indent}└─\u25C0\u25AE Subtree Info (Total Metric: {metric}, Descendants: {desc}, Hidden Levels: {levels})\n"
+                result = summary_string.format(
+                    indent=indent,
+                    child_indent=child_indent,
+                    metric=str(subtree_info["sum_metric"]),
+                    desc=str(subtree_info["descendants"]),
+                    levels=str(subtree_info["levels"] - node_depth + 1),
+                )
+            # if node has already been visited, we don't want to print redundant summaries for that string
+            else:
+                result = ""
         return result
 
     def _ansi_color_for_metric(self, metric):
