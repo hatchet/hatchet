@@ -42,7 +42,7 @@ setup(
         "hatchet.tests",
         "hatchet.cython_modules.libs",
     ],
-    setup_requires=["cython"],
+    setup_requires=["cython", "setuptools"],
     install_requires=[
         "pydot",
         "pyyaml",
