@@ -42,16 +42,14 @@ setup(
         "hatchet.tests",
         "hatchet.cython_modules.libs",
     ],
-    setup_requires=[
-        "Cython"
-    ],
+    setup_requires=["cython"],
     install_requires=[
         "pydot",
-        "PyYAML",
+        "pyyaml",
         "matplotlib",
         "numpy",
         "pandas",
-        "textX",
+        "textx",
         "multiprocess",
         "caliper-reader",
         "pycubexr; python_version >= '3.6'",
