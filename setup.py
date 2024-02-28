@@ -56,7 +56,7 @@ setup(
     ],
     # TODO: the setup could be cleaner if we didn't dump the generated
     # .so files into _libs
-    ext_modules= [
+    ext_modules=[
         Extension(
             "hatchet.cython_modules.libs.reader_modules",
             ["hatchet/cython_modules/reader_modules.pyx"],
@@ -66,5 +66,5 @@ setup(
             ["hatchet/cython_modules/graphframe_modules.pyx"],
         ),
     ],
-    cmdclass={'build_ext': cy_build_ext}
+    cmdclass={"build_ext": cy_build_ext},
 )
