@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "hatchet"
-version = "1.4.0rc3"
+version = "1.4.0rc4"
 description = "A Python library for analyzing hierarchical performance data."
 authors = [
     "Abhinav Bhatele <bhatele@cs.umd.edu>",
