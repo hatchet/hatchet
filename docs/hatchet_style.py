@@ -3,10 +3,10 @@
 #
 # SPDX-License-Identifier: MIT
 
-
 # The name of the Pygments (syntax highlighting) style to use.
 from pygments.styles.default import DefaultStyle
 from pygments.token import Generic
+
 
 # modifications to the default style
 class HatchetStyle(DefaultStyle):

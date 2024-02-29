@@ -85,7 +85,7 @@ ep = pkg_resources.EntryPoint.parse("hatchet = conf:HatchetStyle", dist=dist)
 dist._ep_map = {"pygments.styles": {"plugin1": ep}}
 pkg_resources.working_set.add(dist)
 
-sys.path.insert(0, os.path.abspath('.'))
+sys.path.insert(0, os.path.abspath("."))
 pygments_style = "hatchet_style.HatchetStyle"
 
 
