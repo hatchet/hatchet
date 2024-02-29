@@ -9,3 +9,9 @@
 from .graphframe import GraphFrame
 from .query import QueryMatcher
 from .chopper import Chopper
+from .util.configmanager import (
+    get_option,
+    get_default_value,
+    set_option,
+    reset_option,
+)
