@@ -1,3 +1,7 @@
+[build-system]
+requires = ["setuptools", "Cython"]
+build-backend = "setuptools.build_meta"
+
 [tool.poetry]
 name = "hatchet"
 version = "1.4.0rc4"

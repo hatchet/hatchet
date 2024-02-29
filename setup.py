@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: MIT
 
 from setuptools import setup, Extension
-from Cython.Build import cythonize
+from Cython.Build import build_ext as cy_build_ext
 from codecs import open
 from os import path
 
@@ -56,16 +56,15 @@ setup(
     ],
     # TODO: the setup could be cleaner if we didn't dump the generated
     # .so files into _libs
-    ext_modules=cythonize(
-        [
-            Extension(
-                "hatchet.cython_modules.libs.reader_modules",
-                ["hatchet/cython_modules/reader_modules.pyx"],
-            ),
-            Extension(
-                "hatchet.cython_modules.libs.graphframe_modules",
-                ["hatchet/cython_modules/graphframe_modules.pyx"],
-            ),
-        ]
-    ),
+    ext_modules=[
+        Extension(
+            "hatchet.cython_modules.libs.reader_modules",
+            ["hatchet/cython_modules/reader_modules.pyx"],
+        ),
+        Extension(
+            "hatchet.cython_modules.libs.graphframe_modules",
+            ["hatchet/cython_modules/graphframe_modules.pyx"],
+        ),
+    ],
+    cmdclass={"build_ext": cy_build_ext},
 )

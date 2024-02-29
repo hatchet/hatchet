@@ -46,7 +46,7 @@ jobs:
         # Note: M1 images on Github Actions start from macOS 14
         - [macos-14, macosx_arm64]
         - [windows-2022, win_amd64]
-        python: [["cp39", "3.9"], ["cp310", "3.10"], ["cp311", "3.11"], ["cp312", "3.12"]]
+        python: [["cp38", "3.8"], ["cp39", "3.9"], ["cp310", "3.10"], ["cp311", "3.11"], ["cp312", "3.12"]]
     runs-on: ${{ matrix.buildplat[0] }}
     steps:
       - uses: actions/checkout@v4
