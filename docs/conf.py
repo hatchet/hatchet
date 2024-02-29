@@ -37,7 +37,7 @@ author = "Abhinav Bhatele"
 # The short X.Y version
 version = "1.4.0"
 # The full version, including alpha/beta/rc tags
-release = "1.4.0rc4"
+release = "1.4.0rc5"
 
 
 # -- General configuration ---------------------------------------------------
