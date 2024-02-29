@@ -7,6 +7,8 @@ import numpy as np
 import pandas as pd
 import os
 
+import pytest
+
 from hatchet import GraphFrame
 from hatchet.readers.hpctoolkit_reader import HPCToolkitReader
 from hatchet.external.console import ConsoleRenderer
@@ -327,3 +329,57 @@ def test_graphframe_to_literal__v4(data_dir, calc_pi_hpct_v4_db):
     gf2 = GraphFrame.from_literal(graph_literal)
 
     assert len(gf.graph) == len(gf2.graph)
+
+
+def test_graphframe_groupby_aggregate_by_name(calc_pi_hpct_db):
+    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+
+    functions = gf.dataframe["name"].unique()
+
+    groupby_column = "name"
+    agg_func = {"time": np.mean}
+    grouped_gf = gf.groupby_aggregate(groupby_column, agg_func)
+
+    assert all(m in grouped_gf.dataframe.name.values for m in functions)
+    assert len(grouped_gf.graph) == len(functions)
+
+
+@pytest.mark.xfail(reason="Hatchet cannot perform groupby-aggregate on missing data.")
+def test_graphframe_groupby_aggregate_by_module(calc_pi_hpct_db):
+    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+
+    modules = gf.dataframe["module"].unique()
+
+    groupby_column = "module"
+    agg_func = {"time": np.mean}
+    grouped_gf = gf.groupby_aggregate(groupby_column, agg_func)
+
+    assert all(m in grouped_gf.dataframe.name.values for m in modules)
+    assert len(grouped_gf.graph) == len(modules)
+
+
+@pytest.mark.xfail(reason="Hatchet cannot perform groupby-aggregate on missing data.")
+def test_graphframe_groupby_aggregate_by_file(calc_pi_hpct_db):
+    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+
+    filenames = gf.dataframe["file"].unique()
+
+    groupby_column = "file"
+    agg_func = {"time": np.mean}
+    grouped_gf = gf.groupby_aggregate(groupby_column, agg_func)
+
+    assert all(m in grouped_gf.dataframe.name.values for m in filenames)
+    assert len(grouped_gf.graph) == len(filenames)
+
+
+def test_graphframe_groupby_aggregate_by_type(calc_pi_hpct_db):
+    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_db))
+
+    types = gf.dataframe["type"].unique()
+
+    groupby_column = "type"
+    agg_func = {"time": np.mean}
+    grouped_gf = gf.groupby_aggregate(groupby_column, agg_func)
+
+    assert all(m in grouped_gf.dataframe.name.values for m in types)
+    assert len(grouped_gf.graph) == len(types)
