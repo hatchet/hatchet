@@ -60,6 +60,14 @@ hatchet.util.profiler module
    :undoc-members:
    :show-inheritance:
 
+hatchet.util.readers module
+---------------------------
+
+.. automodule:: hatchet.util.readers
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 hatchet.util.timer module
 -------------------------
 
