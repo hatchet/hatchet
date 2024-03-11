@@ -1068,7 +1068,7 @@ class GraphFrame:
         if metric is None:
             metric = self.default_metric
         return trees_to_dot(
-            self.graph.roots, self.dataframe, metric, name, rank, thread, threshold
+            self.graph.roots, self.dataframe, metric, self.get_node_metadata, name, rank, thread, threshold
         )
 
     @Logger.loggable
