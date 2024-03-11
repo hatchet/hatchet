@@ -43,7 +43,7 @@ class ConsoleRenderer:
         self.color = color
         self.visited = []
 
-    def render(self, roots, dataframe, **kwargs):
+    def render(self, roots, dataframe, meta_cb, **kwargs):
         result = self.render_preamble()
 
         if roots is None:
@@ -61,6 +61,10 @@ class ConsoleRenderer:
         self.highlight = kwargs["highlight_name"]
         self.colormap = kwargs["colormap"]
         self.invert_colormap = kwargs["invert_colormap"]
+
+        # Callback that takes a node and returns associated
+        # metadata for that node
+        self.meta_cb = meta_cb
 
         if self.color:
             self.colors = self.colors_enabled
@@ -216,7 +220,9 @@ class ConsoleRenderer:
         else:
             df_index = node
 
-        node_metric = None
+        node_metadict = self.meta_cb(node)
+
+        node_metric = np.nan
 
         # Set rendered_tree_node to True to let the caller know
         # that we rendered at least 1 node
@@ -229,7 +235,7 @@ class ConsoleRenderer:
 
         # If rank/thread combo doesn't exist, it didn't run on that rank/thread combo
         # and we shouldn't display it
-        if node_depth <= self.depth and node_metric is not None:
+        if node_depth <= self.depth:
             metric_precision = "{:." + str(self.precision) + "f}"
             metric_str = (
                 self._ansi_color_for_metric(node_metric)
@@ -244,7 +250,7 @@ class ConsoleRenderer:
                     c=self.colors,
                 )
 
-            node_name = dataframe.loc[df_index, self.name]
+            node_name = node_metadict["name"]
             if self.expand is False:
                 if len(node_name) > 39:
                     node_name = (
@@ -274,8 +280,9 @@ class ConsoleRenderer:
             if "_missing_node" in dataframe.columns:
                 result += lr_decorator
             if self.context in dataframe.columns:
+                context = node_metadict["file"]
                 result += " {c.faint}{context}{c.end}\n".format(
-                    context=dataframe.loc[df_index, self.context], c=self.colors
+                    context=context, c=self.colors
                 )
             else:
                 result += "\n"
