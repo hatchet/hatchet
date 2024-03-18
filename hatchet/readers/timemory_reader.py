@@ -1,4 +1,4 @@
-# Copyright 2020-2023 The Regents of the University of California, through
+# Copyright 2020-2024 The Regents of the University of California, through
 # Lawrence Berkeley National Laboratory, and other Hatchet Project Developers.
 # See the top-level LICENSE file for details.
 #
@@ -214,9 +214,9 @@ class TimemoryReader:
                 # match with metric labels if _metric_stat item is a list.
                 elif isinstance(_item, list):
                     for i in range(len(_item)):
-                        _ret[
-                            "{}.{}{}".format(_key, _metric_label[i], _metric_type)
-                        ] = _item[i]
+                        _ret["{}.{}{}".format(_key, _metric_label[i], _metric_type)] = (
+                            _item[i]
+                        )
                 # check if _metric_stat item is not a dict or list
                 else:
                     _ret["{}.{}{}".format(_key, _metric_label, _metric_type)] = _item

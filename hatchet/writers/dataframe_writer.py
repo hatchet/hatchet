@@ -1,4 +1,4 @@
-# Copyright 2017-2023 Lawrence Livermore National Security, LLC and other
+# Copyright 2017-2024 Lawrence Livermore National Security, LLC and other
 # Hatchet Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
@@ -64,9 +64,9 @@ class DataframeWriter(ABC):
         dump_df["inc_metrics"] = None
         dump_df.iat[0, dump_df.columns.get_loc("inc_metrics")] = gf_cpy.inc_metrics
         dump_df["default_metric"] = None
-        dump_df.iat[
-            0, dump_df.columns.get_loc("default_metric")
-        ] = gf_cpy.default_metric
+        dump_df.iat[0, dump_df.columns.get_loc("default_metric")] = (
+            gf_cpy.default_metric
+        )
         self._write_dataframe_to_file(dump_df, **kwargs)
 
 

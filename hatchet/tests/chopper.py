@@ -1,4 +1,4 @@
-# Copyright 2021-2023 University of Maryland and other Hatchet Project
+# Copyright 2021-2024 University of Maryland and other Hatchet Project
 # Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
@@ -204,3 +204,60 @@ def test_multirun_analysis_literal(mock_graph_literal):
 
     # check if the test and dummy dataframes match
     assert df_test.equals(df_dummy)
+
+
+def test_speedup_eff_analysis_literal(mock_graph_literal):
+    """Validate that speedup_efficiency works correctly."""
+    gf1 = GraphFrame.from_literal(mock_graph_literal)
+
+    gf2, gf4, gf8 = gf1.deepcopy(), gf1.deepcopy(), gf1.deepcopy()
+
+    gf2.dataframe["time"] *= 0.5
+
+    gf1.update_metadata(1)
+    gf2.update_metadata(2)
+    gf4.update_metadata(4)
+    gf8.update_metadata(8)
+
+    gf1_copy, gf2_copy, gf4_copy, gf8_copy = (
+        gf1.deepcopy(),
+        gf2.deepcopy(),
+        gf4.deepcopy(),
+        gf8.deepcopy(),
+    )
+
+    gfs = [gf1_copy, gf2_copy, gf4_copy, gf8_copy]
+    eff = Chopper.speedup_efficiency(
+        gfs, strong=True, speedup=True, efficiency=False, metrics=["time"]
+    )
+    assert eff.iloc[1]["2.time.speedup"] == 2.0
+    assert eff.iloc[1]["4.time.speedup"] == 1.0
+
+    eff = Chopper.speedup_efficiency(
+        gfs, strong=True, speedup=False, efficiency=True, metrics=["time"]
+    )
+    assert eff.iloc[1]["2.time.efficiency"] == 1.0
+    assert eff.iloc[1]["4.time.efficiency"] == 0.25
+
+    eff = Chopper.speedup_efficiency(
+        gfs, weak=True, speedup=False, efficiency=True, metrics=["time"]
+    )
+    assert eff.iloc[1]["2.time.efficiency"] == 2.0
+    assert eff.iloc[1]["4.time.efficiency"] == 1.0
+
+    eff = Chopper.speedup_efficiency(
+        gfs, strong=True, weak=False, speedup=True, efficiency=True, metrics=["time"]
+    )
+    assert eff.iloc[1]["2.time.speedup"] == 2.0
+    assert eff.iloc[1]["2.time.efficiency"] == 1.0
+
+
+def test_correlation_analysis_literal(mock_graph_literal):
+    """Validate that correlation analysis functions works correctly."""
+    gf = GraphFrame.from_literal(mock_graph_literal)
+
+    gf.dataframe["time2"] = gf.dataframe["time"]
+    correlation_matrix = gf.correlation_analysis(
+        metrics=["time", "time2"], method="spearman"
+    )
+    assert correlation_matrix.loc["time", "time2"] == 1.0

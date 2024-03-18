@@ -1,4 +1,4 @@
-# Copyright 2021-2023 University of Maryland and other Hatchet Project
+# Copyright 2021-2024 University of Maryland and other Hatchet Project
 # Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
@@ -13,11 +13,11 @@ import pytest
 # check if the pycubexr package is available
 # without importing the package.
 # there are other ways to do it for python 3+
-import imp
+import importlib
 
 pycubexr_avail = True
 try:
-    imp.find_module("pycubexr")
+    importlib.util.find_spec("pycubexr")
 except ImportError:
     pycubexr_avail = False
 

@@ -14,3 +14,5 @@ caliper-reader == 0.3.0
 pycubexr; python_version >= '3.6'
 perfetto; python_version >= '3.6'
 dataclasses; python_version >= '3.6'
+setuptools
+cython

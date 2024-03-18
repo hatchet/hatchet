@@ -1,4 +1,4 @@
-# Copyright 2017-2023 Lawrence Livermore National Security, LLC and other
+# Copyright 2017-2024 Lawrence Livermore National Security, LLC and other
 # Hatchet Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
@@ -64,6 +64,16 @@ class Node:
         if len(paths) > 1:
             raise MultiplePathError("Node has more than one path: " % paths)
         return paths[0]
+
+    def convert_path_to_str(self, path):
+        """Takes a single path as a tuple of node
+        objects and converts it to a tuple of strings.
+        DO NOT USE THIS FUNCTION TO COMPARE NODES IN MOST CASES!
+        """
+        callpath_str = tuple()
+        for node in path:
+            callpath_str += (node.__str__(),)
+        return callpath_str
 
     def dag_equal(self, other, vs=None, vo=None):
         """Check if DAG rooted at self has the same structure as that rooted at

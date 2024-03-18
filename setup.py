@@ -1,10 +1,10 @@
-# Copyright 2017-2023 Lawrence Livermore National Security, LLC and other
+# Copyright 2017-2024 Lawrence Livermore National Security, LLC and other
 # Hatchet Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
 
-from setuptools import setup
-from setuptools import Extension
+from setuptools import setup, Extension
+from Cython.Build import build_ext as cy_build_ext
 from codecs import open
 from os import path
 
@@ -42,25 +42,29 @@ setup(
         "hatchet.tests",
         "hatchet.cython_modules.libs",
     ],
+    setup_requires=["cython", "setuptools"],
     install_requires=[
         "pydot",
-        "PyYAML",
+        "pyyaml",
         "matplotlib",
         "numpy",
         "pandas",
-        "textX",
+        "textx",
         "multiprocess",
         "caliper-reader",
         "pycubexr; python_version >= '3.6'",
     ],
+    # TODO: the setup could be cleaner if we didn't dump the generated
+    # .so files into _libs
     ext_modules=[
         Extension(
             "hatchet.cython_modules.libs.reader_modules",
-            ["hatchet/cython_modules/reader_modules.c"],
+            ["hatchet/cython_modules/reader_modules.pyx"],
         ),
         Extension(
             "hatchet.cython_modules.libs.graphframe_modules",
-            ["hatchet/cython_modules/graphframe_modules.c"],
+            ["hatchet/cython_modules/graphframe_modules.pyx"],
         ),
     ],
+    cmdclass={"build_ext": cy_build_ext},
 )

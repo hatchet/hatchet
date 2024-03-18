@@ -1,4 +1,4 @@
-# Copyright 2017-2023 Lawrence Livermore National Security, LLC and other
+# Copyright 2017-2024 Lawrence Livermore National Security, LLC and other
 # Hatchet Project Developers. See the top-level LICENSE file for details.
 #
 # SPDX-License-Identifier: MIT
@@ -161,6 +161,18 @@ def calc_pi_callgrind_dot(data_dir, tmpdir):
 
     shutil.copy(gprof_dot_file, str(tmpdir))
     tmpfile = os.path.join(str(tmpdir), "callgrind.dot.64042.0.1")
+
+    return tmpfile
+
+
+@pytest.fixture
+def gprof_dot(data_dir, tmpdir):
+    """Builds a temporary directory containing the gprof DOT file."""
+    gprof_dot_dir = os.path.join(data_dir, "gprof2dot-test")
+    gprof_dot_file = os.path.join(gprof_dot_dir, "gprof-profile.dot")
+
+    shutil.copy(gprof_dot_file, str(tmpdir))
+    tmpfile = os.path.join(str(tmpdir), "gprof-profile.dot")
 
     return tmpfile
 
