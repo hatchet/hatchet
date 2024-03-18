@@ -985,7 +985,6 @@ class GraphFrame:
         self.graph = union_graph
         other.graph = union_graph
 
-
     def get_node_metadata(self, node):
         """
         Returns a dict of metadata (e.g. name, line no.) for this node
@@ -997,7 +996,6 @@ class GraphFrame:
         # the metadata, so we can pick any one
         row = self.dataframe.loc[node].iloc[0]
         return row[metadata_cols].to_dict()
-
 
     @deprecated_params(
         metric="metric_column",
