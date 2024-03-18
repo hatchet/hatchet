@@ -986,7 +986,7 @@ class GraphFrame:
         other.graph = union_graph
 
 
-    def get_node_metadata(self, node):
+    def get_node_categorical_features(self, node):
         """
         Returns a dict of metadata (e.g. name, line no.) for this node
         """
@@ -1046,7 +1046,7 @@ class GraphFrame:
         return ConsoleRenderer(unicode=unicode, color=color).render(
             self.graph.roots,
             self.dataframe,
-            self.get_node_metadata,
+            self.get_node_categorical_features,
             metric_column=metric_column,
             precision=precision,
             name_column=name_column,
@@ -1068,7 +1068,7 @@ class GraphFrame:
         if metric is None:
             metric = self.default_metric
         return trees_to_dot(
-            self.graph.roots, self.dataframe, metric, self.get_node_metadata, name, rank, thread, threshold
+            self.graph.roots, self.dataframe, metric, self.get_node_categorical_features, name, rank, thread, threshold
         )
 
     @Logger.loggable

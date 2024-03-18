@@ -88,12 +88,16 @@ def to_dot(hnode, dataframe, metric, meta_cb, name, rank, thread, threshold, vis
             except KeyError:
                 pass
 
-            if child_time >= threshold * max_time:
-                children.append(child)
+            if child_time >= threshold * max_time or np.isnan(child_time):
+                (nodes, edges) = add_nodes_and_edges(child)
+                if nodes != "" or edges != "":
+                    # If both nodes/edges is empty string, that means all child nodes
+                    # did not execute on the current rank/thread
+                    children.append((child, nodes, edges))
 
         # only display nodes whose metric is greater than some threshold
         # or nodes with children whose metric is greater than some threshold
-        if (node_time >= threshold * max_time) and (hnode not in visited) or len(children) > 0:
+        if (node_time >= threshold * max_time or len(children) > 0) and (hnode not in visited):
             weight = (node_time - min_time) / (max_time - min_time)
             color = matplotlib.colors.rgb2hex(colormap(weight))
 
@@ -107,14 +111,13 @@ def to_dot(hnode, dataframe, metric, meta_cb, name, rank, thread, threshold, vis
 
         if hnode not in visited:
             visited.append(hnode)
-            for child in children:
+            for child, child_nodes, child_edges in children:
                 # add edges
                 child_id = child._hatchet_nid
 
                 edge_string += '"{0}" -> "{1}";\n'.format(node_id, child_id)
-                (nodes, edges) = add_nodes_and_edges(child)
-                node_string += nodes
-                edge_string += edges
+                node_string += child_nodes
+                edge_string += child_edges
 
         return (node_string, edge_string)
 
