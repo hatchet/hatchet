@@ -1417,12 +1417,19 @@ class GraphFrame:
         """
         Returns a dict of metadata (e.g. name, line no.) for this node
         """
-        metadata_cols = ["name", "module", "file", "function", "line", "type"]
+        metadata_cols = ["name"]
+        potential_meta_cols = ["module", "file", "function", "line", "type"]
+        for col in potential_meta_cols:
+            if col in self.dataframe.columns:
+                metadata_cols.append(col)
 
+        # TODO: use metadata info from readers instead of doing this
         # Get the first row that corresponds to this node
         # Any row inside the graphframe corresponding to this node is guaranteed to have
         # the metadata, so we can pick any one
-        row = self.dataframe.loc[node].iloc[0]
+
+        # Note: make sure to pass node as a list, otherwise we'll sometimes get a series back
+        row = self.dataframe.loc[[node]].iloc[0]
         return row[metadata_cols].to_dict()
 
     @deprecated_params(
