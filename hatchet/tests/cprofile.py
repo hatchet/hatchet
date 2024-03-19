@@ -33,6 +33,7 @@ def test_tree(hatchet_cycle_pstats):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
+        gf.get_node_metadata,
         metric_column="time",
         precision=3,
         name_column="name",

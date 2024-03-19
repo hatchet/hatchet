@@ -32,6 +32,7 @@ def test_tree(tau_profile_dir):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
+        gf.get_node_metadata,
         metric_column="time",
         precision=3,
         name_column="name",

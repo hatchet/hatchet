@@ -769,6 +769,7 @@ def test_tree(mock_graph_literal):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
+        gf.get_node_metadata,
         metric_column="time",
         precision=3,
         name_column="name",
@@ -905,6 +906,7 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf4.graph.roots,
         gf4.dataframe,
+        gf4.get_node_metadata,
         metric_column="time",
         precision=3,
         name_column="name",
@@ -968,6 +970,7 @@ def test_div_decorator(small_mock1, small_mock2):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf3.graph.roots,
         gf3.dataframe,
+        gf3.get_node_metadata,
         metric_column="time",
         precision=3,
         name_column="name",
