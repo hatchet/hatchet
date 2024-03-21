@@ -486,36 +486,36 @@ class TAUReader:
         # rank that has notna value and use it for other rows/ranks
         # of the multiindex.
         # TODO: iterrows() is not the best way to iterate over rows.
-        num_of_indices = len(indices)
-        if num_of_indices > 1:
-            if num_of_indices == 2:
-                dataframe = dataframe.unstack()
-            elif num_of_indices == 3:
-                dataframe = dataframe.unstack().unstack()
-            for idx, row in dataframe.iterrows():
-                # There is always a valid name for an index.
-                # Take that valid name and assign to other ranks/rows.
-                name = row["name"][row["name"].first_valid_index()]
-                dataframe.loc[idx, "name"] = name
+        # num_of_indices = len(indices)
+        # if num_of_indices > 1:
+        #     if num_of_indices == 2:
+        #         dataframe = dataframe.unstack()
+        #     elif num_of_indices == 3:
+        #         dataframe = dataframe.unstack().unstack()
+        #     for idx, row in dataframe.iterrows():
+        #         # There is always a valid name for an index.
+        #         # Take that valid name and assign to other ranks/rows.
+        #         name = row["name"][row["name"].first_valid_index()]
+        #         dataframe.loc[idx, "name"] = name
 
-                # Sometimes there is no file information.
-                if row["file"].first_valid_index() is not None:
-                    file = row["file"][row["file"].first_valid_index()]
-                    dataframe.loc[idx, "file"] = file
+        #         # Sometimes there is no file information.
+        #         if row["file"].first_valid_index() is not None:
+        #             file = row["file"][row["file"].first_valid_index()]
+        #             dataframe.loc[idx, "file"] = file
 
-                # Sometimes there is no module information.
-                if row["module"].first_valid_index() is not None:
-                    module = row["module"][row["module"].first_valid_index()]
-                    dataframe.loc[idx, "module"] = module
+        #         # Sometimes there is no module information.
+        #         if row["module"].first_valid_index() is not None:
+        #             module = row["module"][row["module"].first_valid_index()]
+        #             dataframe.loc[idx, "module"] = module
 
-                # Fill the rest with 0
-                dataframe.fillna(0, inplace=True)
+        #         # Fill the rest with 0
+        #         dataframe.fillna(0, inplace=True)
 
-            # Stack the dataframe
-            if num_of_indices == 2:
-                dataframe = dataframe.stack()
-            elif num_of_indices == 3:
-                dataframe = dataframe.stack().stack()
+        #     # Stack the dataframe
+        #     if num_of_indices == 2:
+        #         dataframe = dataframe.stack()
+        #     elif num_of_indices == 3:
+        #         dataframe = dataframe.stack().stack()
 
         default_metric = "time (inc)"
         dataframe = dataframe.astype({"line": int, "end_line": int})

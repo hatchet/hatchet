@@ -1,0 +1,2 @@
+# Don't show test data in diff when it's added
+hatchet/tests/data/lulesh-tau-64-fdef-profiledir-5/* linguist-generated=true

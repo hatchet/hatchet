@@ -1413,6 +1413,25 @@ class GraphFrame:
         self.graph = union_graph
         other.graph = union_graph
 
+    def get_node_metadata(self, node):
+        """
+        Returns a dict of metadata (e.g. name, line no.) for this node
+        """
+        metadata_cols = ["name"]
+        potential_meta_cols = ["module", "file", "function", "line", "type"]
+        for col in potential_meta_cols:
+            if col in self.dataframe.columns:
+                metadata_cols.append(col)
+
+        # TODO: use metadata info from readers instead of doing this
+        # Get the first row that corresponds to this node
+        # Any row inside the graphframe corresponding to this node is guaranteed to have
+        # the metadata, so we can pick any one
+
+        # Note: make sure to pass node as a list, otherwise we'll sometimes get a series back
+        row = self.dataframe.loc[[node]].iloc[0]
+        return row[metadata_cols].to_dict()
+
     @deprecated_params(
         metric="metric_column",
         name="name_column",
@@ -1460,6 +1479,7 @@ class GraphFrame:
         return ConsoleRenderer(unicode=unicode, color=color).render(
             self.graph.roots,
             self.dataframe,
+            self.get_node_metadata,
             metric_column=metric_column,
             precision=precision,
             name_column=name_column,
