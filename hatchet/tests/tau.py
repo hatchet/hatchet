@@ -8,6 +8,8 @@ import numpy as np
 from hatchet import GraphFrame
 from hatchet.external.console import ConsoleRenderer
 
+import pytest
+
 
 def test_graphframe(tau_profile_dir):
     """Sanity test a GraphFrame object with known data."""
@@ -69,6 +71,66 @@ def test_tree(tau_profile_dir):
     assert "419.000 .TAU application" in output
     assert "4894.000 MPI_Finalize()" in output
     assert "333.000 MPI_Bcast()" in output
+
+
+def test_sparse_tree(sparse_tau_profile_dir):
+    """Sanity test a GraphFrame object with known data."""
+    gf = GraphFrame.from_tau(str(sparse_tau_profile_dir))
+    df = gf.dataframe
+
+    # check the tree for rank 0
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf.graph.roots,
+        gf.dataframe,
+        gf.get_node_metadata,
+        metric_column="time",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="file",
+        rank=0,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        colormap="RdYlGn",
+        invert_colormap=False,
+    )
+    assert "241468023.000 .TAU application" in output
+    assert "64835.000 MPI_Allreduce()" in output
+    assert "0.000 [CONTEXT]  MPI_Allreduce()" in output
+    # Ensure nan outputed when rank/thread didn't execute the node
+    assert "nan [SAMPLE] MPI_Allreduce" in output
+    # Make sure we aren't outputting nan when data exists
+    allreduce_node_df = df[df["name"] == "[SAMPLE] MPI_Allreduce"]
+    with pytest.raises(KeyError):
+        allreduce_node_df.xs((0,0), level=[1,2])
+
+    # check the tree for rank 1
+    output = ConsoleRenderer(unicode=True, color=False).render(
+        gf.graph.roots,
+        gf.dataframe,
+        gf.get_node_metadata,
+        metric_column="time",
+        precision=3,
+        name_column="name",
+        expand_name=False,
+        context_column="",
+        rank=1,
+        thread=0,
+        depth=10000,
+        highlight_name=False,
+        colormap="RdYlGn",
+        invert_colormap=False,
+    )
+    assert "235063506.000 .TAU application" in output
+    assert "5893592.000 MPI_Allreduce()" in output
+    assert "0.000 [CONTEXT]  MPI_Allreduce()" in output
+    # Ensure nan outputed when rank/thread didn't execute the node
+    assert "nan [SAMPLE] MPI_Allreduce" in output
+    # Make sure we aren't outputting nan when data exists
+    allreduce_node_df = df[df["name"] == "[SAMPLE] MPI_Allreduce"]
+    with pytest.raises(KeyError):
+        allreduce_node_df.xs((1,0), level=[1,2])
 
 
 def test_children(tau_profile_dir):
