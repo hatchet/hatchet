@@ -1,0 +1,2 @@
+# Don't show tau data in diff when its added
+profile.*.*.* binary
