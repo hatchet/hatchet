@@ -103,7 +103,7 @@ def test_sparse_tree(sparse_tau_profile_dir):
     # Make sure we aren't outputting nan when data exists
     allreduce_node_df = df[df["name"] == "[SAMPLE] MPI_Allreduce"]
     with pytest.raises(KeyError):
-        allreduce_node_df.xs((0,0), level=[1,2])
+        allreduce_node_df.xs((0, 0), level=[1, 2])
 
     # check the tree for rank 1
     output = ConsoleRenderer(unicode=True, color=False).render(
@@ -130,7 +130,7 @@ def test_sparse_tree(sparse_tau_profile_dir):
     # Make sure we aren't outputting nan when data exists
     allreduce_node_df = df[df["name"] == "[SAMPLE] MPI_Allreduce"]
     with pytest.raises(KeyError):
-        allreduce_node_df.xs((1,0), level=[1,2])
+        allreduce_node_df.xs((1, 0), level=[1, 2])
 
 
 def test_children(tau_profile_dir):
