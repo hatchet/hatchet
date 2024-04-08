@@ -2,9 +2,9 @@ name: unit tests
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ develop, next ]
   pull_request:
-    branches: [ develop, releases/** ]
+    branches: [ develop, releases/**, next ]
 
 jobs:
   ubuntu:
