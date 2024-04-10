@@ -30,8 +30,7 @@ def test_tree(tau_profile_dir):
 
     # check the tree for rank 0
     output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
+        gf,
         metric_column="time",
         precision=3,
         name_column="name",
@@ -50,8 +49,7 @@ def test_tree(tau_profile_dir):
 
     # check the tree for rank 1
     output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
+        gf,
         metric_column="time",
         precision=3,
         name_column="name",

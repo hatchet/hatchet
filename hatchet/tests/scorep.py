@@ -68,8 +68,7 @@ def test_tree(scorep_profile_cubex):
     gf = GraphFrame.from_scorep(str(scorep_profile_cubex))
 
     output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
+        gf,
         metric_column="time (inc)",
         precision=3,
         name_column="name",
@@ -87,8 +86,7 @@ def test_tree(scorep_profile_cubex):
     assert "4.539 iteration /p/lustre1/cankur1/test/scorep/cpi.c" in output
 
     output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
+        gf,
         metric_column="visits",
         precision=3,
         name_column="name",

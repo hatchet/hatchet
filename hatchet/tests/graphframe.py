@@ -767,8 +767,7 @@ def test_tree(mock_graph_literal):
     gf = GraphFrame.from_literal(mock_graph_literal)
 
     output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
+        gf,
         metric_column="time",
         precision=3,
         name_column="name",
@@ -786,8 +785,7 @@ def test_tree(mock_graph_literal):
     assert "15.000 garply" in output
 
     output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
+        gf,
         metric_column="time (inc)",
         precision=3,
         name_column="name",
@@ -903,8 +901,7 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
     )  # "" or same in both
 
     output = ConsoleRenderer(unicode=True, color=False).render(
-        gf4.graph.roots,
-        gf4.dataframe,
+        gf4,
         metric_column="time",
         precision=3,
         name_column="name",
@@ -932,8 +929,7 @@ def test_sub_decorator(small_mock1, small_mock2, small_mock3):
     assert gf5.dataframe.loc[gf5.dataframe["_missing_node"] == 0].shape[0] == 4  # ""
 
     output = ConsoleRenderer(unicode=True, color=False).render(
-        gf5.graph.roots,
-        gf5.dataframe,
+        gf5,
         metric_column="time (inc)",
         precision=3,
         name_column="name",
@@ -966,8 +962,7 @@ def test_div_decorator(small_mock1, small_mock2):
     assert gf3.dataframe.loc[gf3.dataframe["_missing_node"] == 0].shape[0] == 5  # ""
 
     output = ConsoleRenderer(unicode=True, color=False).render(
-        gf3.graph.roots,
-        gf3.dataframe,
+        gf3,
         metric_column="time",
         precision=3,
         name_column="name",
