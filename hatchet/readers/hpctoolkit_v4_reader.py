@@ -1570,8 +1570,6 @@ class CCTReader:
             else:
                 end_index = nonzero_vals
 
-            num_pairs = end_index - start_index
-
             # find the correct location to read.
             # a profile and its value takes 12 bytes.
             self.file.seek(profile_value_pairs + (start_index * 12))
