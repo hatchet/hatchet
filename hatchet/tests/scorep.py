@@ -70,6 +70,7 @@ def test_tree(scorep_profile_cubex):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
+        gf.get_node_metadata,
         metric_column="time (inc)",
         precision=3,
         name_column="name",
@@ -89,6 +90,7 @@ def test_tree(scorep_profile_cubex):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
+        gf.get_node_metadata,
         metric_column="visits",
         precision=3,
         name_column="name",

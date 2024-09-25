@@ -6,6 +6,8 @@
 .pytest_cache
 .ipynb_checkpoints
 
+*.DS_Store
+
 build
 docs/_build
 hatchet/cython_modules/libs/graphframe_modules.*.so

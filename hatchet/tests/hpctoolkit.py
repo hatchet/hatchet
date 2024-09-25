@@ -104,6 +104,7 @@ def test_tree(calc_pi_hpct_db):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
+        gf.get_node_metadata,
         metric_column="time",
         precision=3,
         name_column="name",
@@ -125,6 +126,7 @@ def test_tree(calc_pi_hpct_db):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
+        gf.get_node_metadata,
         metric_column="time (inc)",
         precision=3,
         name_column="name",
@@ -252,6 +254,7 @@ def test_tree_v4(calc_pi_hpct_v4_db):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
+        gf.get_node_metadata,
         metric_column="time (inc)",
         precision=3,
         name_column="name",
@@ -278,6 +281,7 @@ def test_tree_v4(calc_pi_hpct_v4_db):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
+        gf.get_node_metadata,
         metric_column="time (inc)",
         precision=3,
         name_column="name",

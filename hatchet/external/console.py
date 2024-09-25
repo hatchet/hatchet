@@ -43,7 +43,7 @@ class ConsoleRenderer:
         self.color = color
         self.visited = []
 
-    def render(self, roots, dataframe, **kwargs):
+    def render(self, roots, dataframe, meta_cb, **kwargs):
         result = self.render_preamble()
 
         if roots is None:
@@ -61,6 +61,10 @@ class ConsoleRenderer:
         self.highlight = kwargs["highlight_name"]
         self.colormap = kwargs["colormap"]
         self.invert_colormap = kwargs["invert_colormap"]
+
+        # Callback that takes a node and returns associated
+        # metadata for that node
+        self.meta_cb = meta_cb
 
         if self.color:
             self.colors = self.colors_enabled
@@ -122,9 +126,23 @@ class ConsoleRenderer:
         else:
             self.lr_arrows = {"◀": "< ", "▶": "> "}
 
+        # Use this instance var to track if we've rendered at least
+        # 1 node
+        # If not, we should raise an error letting them know that there
+        # were no nodes with their desired rank/thread pair in the dataframe
+        # (if we don't raise, this can be confusing to users to see an empty tree
+        #  as they might not have the default rank=0 and thread=0 combo in their graphframe)
+        self.rendered_tree_node = False
+
         # TODO: probably better to sort by time
         for root in sorted(roots, key=lambda n: n.frame):
             result += self.render_frame(root, dataframe)
+
+        if not self.rendered_tree_node:
+            raise ValueError(
+                f"Did not find any nodes in the graphframe with rank {self.rank} and thread {self.thread} "
+                f"above depth {self.depth}!"
+            )
 
         if self.color is True:
             result += self.render_legend()
@@ -193,6 +211,8 @@ class ConsoleRenderer:
 
     def render_frame(self, node, dataframe, indent="", child_indent=""):
         node_depth = node._depth
+        node_metadict = self.meta_cb(node)
+
         if node_depth <= self.depth:
             # set dataframe index based on whether rank and thread are part of
             # the MultiIndex
@@ -205,7 +225,18 @@ class ConsoleRenderer:
             else:
                 df_index = node
 
-            node_metric = dataframe.loc[df_index, self.primary_metric]
+            # Check if rank/thread combo ran this node
+            # if not we show nan
+            node_metric = np.nan
+
+            # Set rendered_tree_node to True to let the caller know
+            # that we rendered at least 1 node
+            try:
+                node_metric = dataframe.loc[df_index, self.primary_metric]
+                self.rendered_tree_node = True
+            except KeyError:
+                # node/rank/thread combo doesn't exist
+                pass
 
             metric_precision = "{:." + str(self.precision) + "f}"
             metric_str = (
@@ -221,7 +252,7 @@ class ConsoleRenderer:
                     c=self.colors,
                 )
 
-            node_name = dataframe.loc[df_index, self.name]
+            node_name = node_metadict["name"]
             if self.expand is False:
                 if len(node_name) > 39:
                     node_name = (
@@ -251,8 +282,9 @@ class ConsoleRenderer:
             if "_missing_node" in dataframe.columns:
                 result += lr_decorator
             if self.context in dataframe.columns:
+                context = node_metadict[self.context]
                 result += " {c.faint}{context}{c.end}\n".format(
-                    context=dataframe.loc[df_index, self.context], c=self.colors
+                    context=context, c=self.colors
                 )
             else:
                 result += "\n"
@@ -262,7 +294,7 @@ class ConsoleRenderer:
             else:
                 indents = {"├": "|- ", "│": "|  ", "└": "`- ", " ": "   "}
 
-            # ensures that we never revisit nodes in the case of
+            # using a list for visited also ensures that we never revisit nodes in the case of
             # large complex graphs
             if node not in self.visited:
                 self.visited.append(node)

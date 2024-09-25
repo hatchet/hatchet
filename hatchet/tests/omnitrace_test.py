@@ -95,6 +95,7 @@ def test_sampling_mpi_group(omnitrace_mpi_group):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
+        gf.get_node_metadata,
         metric_column="time.inc",
         precision=3,
         name_column="name",
@@ -143,6 +144,7 @@ def test_tree_python_source(omnitrace_python_source):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
+        gf.get_node_metadata,
         metric_column="time",
         precision=3,
         name_column="name",
@@ -173,6 +175,7 @@ def test_tree_mpi_aggregate(omnitrace_mpi_aggregate):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
+        gf.get_node_metadata,
         metric_column="time",
         precision=3,
         name_column="name",
@@ -202,6 +205,7 @@ def test_tree_mpi_group(omnitrace_mpi_group):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
+        gf.get_node_metadata,
         metric_column="time",
         precision=3,
         name_column="name",
@@ -293,6 +297,7 @@ def test_read_attribute_mpi_aggregate(omnitrace_mpi_aggregate):
     output = ConsoleRenderer(unicode=True, color=False).render(
         gf.graph.roots,
         gf.dataframe,
+        gf.get_node_metadata,
         metric_column="time",
         precision=3,
         name_column="name",

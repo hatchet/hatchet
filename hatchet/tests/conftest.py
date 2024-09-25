@@ -203,6 +203,17 @@ def tau_profile_dir(data_dir, tmpdir):
 
 
 @pytest.fixture
+def sparse_tau_profile_dir(data_dir, tmpdir):
+    """Builds a temporary directory containing the TAU profiles."""
+    tau_dir = os.path.join(data_dir, "lulesh-tau-64-fdef-profiledir-5")
+
+    for f in glob(tau_dir + "/*"):
+        shutil.copy(f, str(tmpdir))
+
+    return tau_dir
+
+
+@pytest.fixture
 def scorep_profile_cubex(data_dir, tmpdir):
     """Builds a temporary directory containing the Score-P profiles."""
     scorep_cubex_dir = os.path.join(data_dir, "scorep-cpi-cubex")
