@@ -50,6 +50,11 @@ jobs:
         repository: LLNL/Caliper
         path: Caliper
         token: ${{ secrets.GITHUB_TOKEN }}
+        # Checkout latest stable version of caliper
+        # otherwise we might get build failures from bleeding
+        # edge caliper
+        # TODO: bump this when caliper makes a new release
+        ref: "v2.11.0"
 
     - name: Build Caliper
       working-directory: Caliper
