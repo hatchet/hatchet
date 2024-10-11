@@ -18,6 +18,7 @@ try:
 except ImportError:
     perfetto_avail = False
 
+pytestmark = pytest.mark.skip("omnitrace incompatible with latest perfetto")
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
 def test_graphframe_python_source(omnitrace_python_source):
