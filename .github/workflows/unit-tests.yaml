@@ -78,8 +78,9 @@ jobs:
       run: |
         PYTHONPATH=. coverage run $(which pytest)
 
-    - name: "Upload coverage to Codecov"
-      if: ${{ matrix.python-version == 3.9 }}
-      uses: "codecov/codecov-action@v1"
-      with:
-        fail_ci_if_error: true
+    # TODO: someone needs to setup codecov again
+    # - name: "Upload coverage to Codecov"
+    #   if: ${{ matrix.python-version == 3.9 }}
+    #   uses: "codecov/codecov-action@v1"
+    #   with:
+    #     fail_ci_if_error: true
