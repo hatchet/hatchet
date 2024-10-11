@@ -20,6 +20,7 @@ except ImportError:
 
 pytestmark = pytest.mark.skip("omnitrace incompatible with latest perfetto")
 
+
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
 def test_graphframe_python_source(omnitrace_python_source):
     """Validation test a GraphFrame object with known single rank, single thread data."""
