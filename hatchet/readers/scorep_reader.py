@@ -64,9 +64,7 @@ class ScorePReader:
             # stores them as objects instead of floats. We convert them to float.
             # We store the value as it is if it is not MinValue or MaxValue.
             if metric_name == "min_time" or metric_name == "max_time":
-                metric_value = metric_values.location_value(
-                    pycubexr_cnode, location.id
-                )
+                metric_value = metric_values.location_value(pycubexr_cnode, location.id)
                 if hasattr(metric_value, "_values"):
                     # pybcubexr 2.0 breaking change (internally metrics are array-like now)
                     # we do this weird hasattr check because pycubexr doesn't expose a __version__
@@ -79,7 +77,9 @@ class ScorePReader:
             else:
                 # convert to python scalar from numpy scalar with item
                 # otherwise dtypes will change
-                metric_value = metric_values.location_value(pycubexr_cnode, location.id).item()
+                metric_value = metric_values.location_value(
+                    pycubexr_cnode, location.id
+                ).item()
 
             # We should check each metric and add ' (inc)' if
             # their type is 'INCLUSIVE'.
