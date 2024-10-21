@@ -31,8 +31,7 @@ def test_tree(hatchet_cycle_pstats):
     gf = GraphFrame.from_cprofile(str(hatchet_cycle_pstats))
 
     output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
+        gf,
         metric_column="time",
         precision=3,
         name_column="name",
@@ -49,8 +48,7 @@ def test_tree(hatchet_cycle_pstats):
     assert "<method 'disable' ...Profiler' objects> ~" in output
 
     output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
+        gf,
         metric_column="time (inc)",
         precision=3,
         name_column="name",

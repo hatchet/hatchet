@@ -43,8 +43,13 @@ class ConsoleRenderer:
         self.color = color
         self.visited = []
 
-    def render(self, roots, dataframe, **kwargs):
+    def render(self, gf, **kwargs):
         result = self.render_preamble()
+
+        self.gf = gf
+
+        roots = gf.graph.roots
+        dataframe = gf.dataframe
 
         if roots is None:
             result += "The graph is empty.\n\n"

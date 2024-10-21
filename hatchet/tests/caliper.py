@@ -163,8 +163,7 @@ def test_tree(lulesh_caliper_json):
     gf = GraphFrame.from_caliper(str(lulesh_caliper_json))
 
     output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
+        gf,
         metric_column="time",
         precision=3,
         name_column="name",
@@ -182,8 +181,7 @@ def test_tree(lulesh_caliper_json):
     assert "21493.000 CalcTimeConstraintsForElems" in output
 
     output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
+        gf,
         metric_column="time (inc)",
         precision=3,
         name_column="name",

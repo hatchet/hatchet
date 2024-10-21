@@ -77,8 +77,7 @@ def test_tree(hatchet_pyinstrument_json):
     gf = GraphFrame.from_pyinstrument(str(hatchet_pyinstrument_json))
 
     output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
+        gf,
         metric_column="time",
         precision=3,
         name_column="name",
@@ -95,8 +94,7 @@ def test_tree(hatchet_pyinstrument_json):
     assert "0.025 read hatchet/readers/caliper_reader.py" in output
 
     output = ConsoleRenderer(unicode=True, color=False).render(
-        gf.graph.roots,
-        gf.dataframe,
+        gf,
         metric_column="time (inc)",
         precision=3,
         name_column="name",

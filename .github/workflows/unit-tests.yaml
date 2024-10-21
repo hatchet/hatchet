@@ -2,9 +2,9 @@ name: unit tests
 
 on:
   push:
-    branches: [ develop ]
+    branches: [ develop, next ]
   pull_request:
-    branches: [ develop, releases/** ]
+    branches: [ develop, releases/**, next ]
 
 jobs:
   ubuntu:
@@ -78,7 +78,8 @@ jobs:
       run: |
         PYTHONPATH=. coverage run $(which pytest)
 
-    # TODO: someone needs to setup codecov again
+    # TODO: generate a codecov key and re-enable this
+    # making sure to bump the version of the action
     # - name: "Upload coverage to Codecov"
     #   if: ${{ matrix.python-version == 3.9 }}
     #   uses: "codecov/codecov-action@v1"

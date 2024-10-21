@@ -1458,8 +1458,7 @@ class GraphFrame:
             unicode = True
 
         return ConsoleRenderer(unicode=unicode, color=color).render(
-            self.graph.roots,
-            self.dataframe,
+            self,
             metric_column=metric_column,
             precision=precision,
             name_column=name_column,
