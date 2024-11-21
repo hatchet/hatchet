@@ -127,14 +127,17 @@ class GraphFrame:
                 )
             setattr(self, x, y)
 
+    # TODO: Remove sparse format argument before next release
     @staticmethod
     @Logger.loggable
-    def from_hpctoolkit(dirname):
+    def from_hpctoolkit(dirname, sparse_format=False):
         """Read an HPCToolkit database directory into a new GraphFrame.
 
         Arguments:
             dirname (str): parent directory of an HPCToolkit
                 experiment.xml file
+            sparse_format (bool): whether to read in data in the sparse format
+                TODO: To be removed before next major release
 
         Returns:
             (GraphFrame): new GraphFrame containing HPCToolkit profile data
@@ -144,9 +147,10 @@ class GraphFrame:
         from .readers.hpctoolkit_v4_reader import HPCToolkitV4Reader
 
         if "experiment.xml" in os.listdir(dirname):
+            # TODO: Make old hpctoolkit outputs sparse?
             return HPCToolkitReader(dirname).read()
         else:
-            return HPCToolkitV4Reader(dirname).read()
+            return HPCToolkitV4Reader(dirname, sparse_format=sparse_format).read()
 
     @staticmethod
     @Logger.loggable

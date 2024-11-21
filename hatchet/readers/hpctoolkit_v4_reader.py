@@ -1247,6 +1247,7 @@ class CCTReader:
         meta_reader: MetaReader,
         profile_reader: ProfileReader,
         defaults_reader: DefaultReader,
+        sparse_format: bool = False,
     ) -> None:
         # open file
         self.file = open(file_location, "rb")
@@ -1261,6 +1262,8 @@ class CCTReader:
         self.byte_order = "little"
         self.signed = False
         self.encoding = "ASCII"
+
+        self.sparse_format = sparse_format
 
         # The cct.db header consists of the common .db header and n sections.
         # We're going to do a little set up work, so that's easy to change if
@@ -1604,33 +1607,38 @@ class CCTReader:
             )
 
         # remove the visited profiles.
-        not_visited_profiles = [
-            i for j, i in enumerate(not_visited_profiles) if j not in visited_profiles
-        ]
+        # TODO: remove this code when sparse output format is the default
+        if not self.sparse_format:
+            not_visited_profiles = [
+                i
+                for j, i in enumerate(not_visited_profiles)
+                if j not in visited_profiles
+            ]
 
-        # iterate over the not visited nodes and create dummy instances.
-        for profile in not_visited_profiles:
-            hit_pointer = profile["hit_pointer"]
-            if hit_pointer != 0:
-                dummy_profile_info = self.profile_reader.hit_map[hit_pointer]
-                dummy_identifier = (node,) + tuple(dummy_profile_info.values())
+            # iterate over the not visited nodes and create dummy instances.
+            for profile in not_visited_profiles:
+                hit_pointer = profile["hit_pointer"]
+                if hit_pointer != 0:
+                    dummy_profile_info = self.profile_reader.hit_map[hit_pointer]
+                    dummy_identifier = (node,) + tuple(dummy_profile_info.values())
 
-                # fills all the metric values in not visited profiles
-                # with 0.
-                self.__create_node_dict(
-                    dummy_identifier,
-                    dummy_profile_info,
-                    node_name,
-                    node,
-                    context_info,
-                    metric_names=visited_metrics,
-                    value=0,
-                )
+                    # fills all the metric values in not visited profiles
+                    # with 0.
+                    self.__create_node_dict(
+                        dummy_identifier,
+                        dummy_profile_info,
+                        node_name,
+                        node,
+                        context_info,
+                        metric_names=visited_metrics,
+                        value=0,
+                    )
 
 
 class HPCToolkitV4Reader:
-    def __init__(self, directory: str) -> None:
+    def __init__(self, directory: str, sparse_format: bool = False) -> None:
         self.directory = directory
+        self.sparse_format = sparse_format
 
     def read(self):
         self.meta_reader: MetaReader = MetaReader(self.directory + "/meta.db")
@@ -1645,6 +1653,7 @@ class HPCToolkitV4Reader:
             self.meta_reader,
             self.profile_reader,
             self.defaults_reader,
+            sparse_format=self.sparse_format,
         )
 
         return self.create_graphframe()

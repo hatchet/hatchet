@@ -11,6 +11,8 @@ from hatchet import GraphFrame
 from hatchet.readers.hpctoolkit_reader import HPCToolkitReader
 from hatchet.external.console import ConsoleRenderer
 
+import pytest
+
 modules = [
     "cpi",
     "/collab/usr/global/tools/hpctoolkit/chaos_5_x86_64_ib/"
@@ -229,9 +231,16 @@ def test_inclusive_time_calculation(data_dir, calc_pi_hpct_db):
 
 
 # START OF TESTS FOR THE NEW FORMAT
-def test_graphframe_v4(data_dir, calc_pi_hpct_v4_db):
+
+
+# TODO: remove False option once sparse is only option in next major release
+@pytest.mark.parametrize("sparse_format", [False, True])
+def test_graphframe_v4(data_dir, calc_pi_hpct_v4_db, sparse_format):
     """Sanity test a GraphFrame object with known data."""
-    gf = GraphFrame.from_hpctoolkit(str(calc_pi_hpct_v4_db))
+    gf = GraphFrame.from_hpctoolkit(
+        str(calc_pi_hpct_v4_db), sparse_format=sparse_format
+    )
+    df = gf.dataframe
 
     for col in gf.dataframe.columns:
         if col in gf.inc_metrics or col in gf.exc_metrics:
@@ -240,6 +249,20 @@ def test_graphframe_v4(data_dir, calc_pi_hpct_v4_db):
             assert gf.dataframe[col].dtype == np.int64
         elif col in ("name", "node", "file", "module"):
             assert gf.dataframe[col].dtype == object
+
+    # In case of sparse format check to make sure we are not inserting dummy values
+    # into the dataframe
+    if sparse_format:
+        assert 0 not in df["time (inc)"]
+        # Data specific checks
+        assert len(df.reset_index()) == 461
+
+        first_node = df.index.get_level_values("node")[0]
+        # only 1 rank/thread ran
+        assert len(df.loc[first_node] == 1)
+        assert df.loc[(first_node, 0, 3), "time (inc)"] == 0.011382
+    else:
+        assert len(gf.dataframe.reset_index()) == 3280
 
     # TODO: add tests to confirm values in dataframe
 
