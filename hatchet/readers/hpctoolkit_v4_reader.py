@@ -1694,12 +1694,12 @@ class HPCToolkitV4Reader:
             self.cct_reader.exclusive_metrics
         ].fillna(0)
 
-        if "line" in dataframe.columns:
-            dataframe["line"] = dataframe["line"].astype("int64")
-        if "core" in dataframe.columns:
-            dataframe["core"] = dataframe["core"].astype("int64")
-        if "node_pid" in dataframe.columns:
-            dataframe["node_pid"] = dataframe["node_pid"].astype("int64")
+        # Coerce columns to nullable integer dtype
+        for col in ("line", "core", "node_pid"):
+            if col in dataframe.columns:
+                ser = pd.to_numeric(dataframe[col], errors="coerce")
+                # pandas nullable int allows <NA>
+                dataframe[col] = ser.astype("Int64")
 
         return hatchet.graphframe.GraphFrame(
             graph,
