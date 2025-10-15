@@ -1697,9 +1697,9 @@ class HPCToolkitV4Reader:
         # Coerce columns to nullable integer dtype
         for col in ("line", "core", "node_pid"):
             if col in dataframe.columns:
-                ser = pd.to_numeric(dataframe[col], errors="coerce")
-                # pandas nullable int allows <NA>
-                dataframe[col] = ser.astype("Int64")
+                dataframe[col] = pd.to_numeric(dataframe[col], errors="coerce").astype(
+                    "Int64"
+                )
 
         return hatchet.graphframe.GraphFrame(
             graph,
