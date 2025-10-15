@@ -238,8 +238,8 @@ def test_graphframe_v4(data_dir, calc_pi_hpct_v4_db):
     for col in gf.dataframe.columns:
         if col in gf.inc_metrics or col in gf.exc_metrics:
             assert gf.dataframe[col].dtype == np.float64
-        elif col in ("line"):
-            assert gf.dataframe[col].dtype == np.int64
+        elif col in ("line", "core", "node_pid"):
+            assert gf.dataframe[col].dtype == "Int64"
         elif col in ("name", "node", "file", "module"):
             assert gf.dataframe[col].dtype == object
 
