@@ -66,7 +66,7 @@ class ScorePReader:
             if metric_name == "min_time" or metric_name == "max_time":
                 metric_value = metric_values.location_value(
                     pycubexr_cnode, location.id
-                ).value
+                )._values
             else:
                 metric_value = metric_values.location_value(pycubexr_cnode, location.id)
 
