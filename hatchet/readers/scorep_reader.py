@@ -286,6 +286,28 @@ class ScorePReader:
             # Stack the dataframe
             dataframe = dataframe.stack()
 
+        uint_cols = [
+            "hits",
+            "end_line",
+            "line",
+            "visits",
+            "bytes_sent",
+            "bytes_received",
+        ]
+        for col in uint_cols:
+            if col in dataframe.columns:
+                dataframe[col] = dataframe[col].astype("int64")
+
+        context_cols = ["name", "file", "node"]
+        for col in context_cols:
+            if col in dataframe.columns:
+                dataframe[col] = dataframe[col].astype("object")
+
+        value_cols = ["max time (inc)", "min time (inc)", "time"]
+        for col in value_cols:
+            if col in dataframe.columns:
+                dataframe[col] = dataframe[col].astype("float64")
+
         # The root node (above the main function) is just the
         # name of the program and does not represent a
         # function, statement or loop.
