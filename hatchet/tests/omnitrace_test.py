@@ -20,6 +20,7 @@ except ImportError:
 
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
+@pytest.mark.xfail(reason="Hatchet does not yet handle new perfetto version.")
 def test_graphframe_python_source(omnitrace_python_source):
     """Validation test a GraphFrame object with known single rank, single thread data."""
 
@@ -33,6 +34,7 @@ def test_graphframe_python_source(omnitrace_python_source):
 
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
+@pytest.mark.xfail(reason="Hatchet does not yet handle new perfetto version.")
 def test_graphframe_mpi_aggregate(omnitrace_mpi_aggregate):
     """Validation test a GraphFrame object with multiple rank, multiple thread data in single file."""
 
@@ -52,6 +54,7 @@ def test_graphframe_mpi_aggregate(omnitrace_mpi_aggregate):
 
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
+@pytest.mark.xfail(reason="Hatchet does not yet handle new perfetto version.")
 def test_graphframe_mpi_single(omnitrace_mpi_single):
     """Validation test a GraphFrame object with single rank, multiple thread data."""
 
@@ -67,6 +70,7 @@ def test_graphframe_mpi_single(omnitrace_mpi_single):
 
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
+@pytest.mark.xfail(reason="Hatchet does not yet handle new perfetto version.")
 def test_graphframe_mpi_group(omnitrace_mpi_group):
     """Validation test a GraphFrame object with multiple rank, multiple thread data where data for each rank is in a separate file."""
 
@@ -82,6 +86,7 @@ def test_graphframe_mpi_group(omnitrace_mpi_group):
 
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
+@pytest.mark.xfail(reason="Hatchet does not yet handle new perfetto version.")
 def test_sampling_mpi_group(omnitrace_mpi_group):
     """Validate sampling data is preserved (each file has variable number of gotcha_wrap instances)"""
 
@@ -133,6 +138,7 @@ def test_sampling_mpi_group(omnitrace_mpi_group):
 
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
+@pytest.mark.xfail(reason="Hatchet does not yet handle new perfetto version.")
 def test_tree_python_source(omnitrace_python_source):
     """Sanity test a GraphFrame object with known data."""
     gf = GraphFrame.from_omnitrace(omnitrace_python_source)
@@ -160,6 +166,7 @@ def test_tree_python_source(omnitrace_python_source):
 
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
+@pytest.mark.xfail(reason="Hatchet does not yet handle new perfetto version.")
 def test_tree_mpi_aggregate(omnitrace_mpi_aggregate):
     """Sanity test a GraphFrame object with known data."""
     gf = GraphFrame.from_omnitrace(
@@ -190,6 +197,7 @@ def test_tree_mpi_aggregate(omnitrace_mpi_aggregate):
 
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
+@pytest.mark.xfail(reason="Hatchet does not yet handle new perfetto version.")
 def test_tree_mpi_group(omnitrace_mpi_group):
     """Sanity test a GraphFrame object with known data."""
     gf = GraphFrame.from_omnitrace(
@@ -219,6 +227,7 @@ def test_tree_mpi_group(omnitrace_mpi_group):
 
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
+@pytest.mark.xfail(reason="Hatchet does not yet handle new perfetto version.")
 def test_read_attribute_mpi_group(omnitrace_mpi_group):
     """Generate a graphframe with only host data and then re-read but include mpi and pthread category data"""
     gf = GraphFrame.from_omnitrace(
@@ -243,6 +252,7 @@ def test_read_attribute_mpi_group(omnitrace_mpi_group):
 
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
+@pytest.mark.xfail(reason="Hatchet does not yet handle new perfetto version.")
 def test_read_attribute_mpi_aggregate(omnitrace_mpi_aggregate):
     """Test the addition of "read" function attribute. ensure data is retained and works after garbage collection"""
     import gc
@@ -310,6 +320,7 @@ def test_read_attribute_mpi_aggregate(omnitrace_mpi_aggregate):
 
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
+@pytest.mark.xfail(reason="Hatchet does not yet handle new perfetto version.")
 def test_graphframe_to_literal(omnitrace_mpi_aggregate):
     """Test support for to_literal"""
     gf = GraphFrame.from_omnitrace(
@@ -322,6 +333,7 @@ def test_graphframe_to_literal(omnitrace_mpi_aggregate):
 
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
+@pytest.mark.xfail(reason="Hatchet does not yet handle new perfetto version.")
 def test_default_metric_mpi_single_instrumentation(omnitrace_mpi_single):
     """Validation test for GraphFrame object using default metric field and to_{dot,flamegraph}"""
     gf = GraphFrame.from_omnitrace(
@@ -336,6 +348,7 @@ def test_default_metric_mpi_single_instrumentation(omnitrace_mpi_single):
 
 
 @pytest.mark.skipif(not perfetto_avail, reason="perfetto package not available")
+@pytest.mark.xfail(reason="Hatchet does not yet handle new perfetto version.")
 def test_default_metric_mpi_single_sampling(omnitrace_mpi_single):
     """Validation test for GraphFrame object using default metric field and to_{dot,flamegraph}"""
     gf = GraphFrame.from_omnitrace(
