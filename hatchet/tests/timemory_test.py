@@ -18,7 +18,7 @@ except ImportError:
     timemory_avail = False
 
 
-@pytest.mark.skipif(not timemory_avail, reason="timemory package not available")
+@pytest.mark.xfail(not timemory_avail, reason="timemory package not available")
 def test_graphframe(timemory_json_data):
     """Sanity test a GraphFrame object with known data."""
     from timemory.component import WallClock
@@ -38,7 +38,7 @@ def test_graphframe(timemory_json_data):
             assert gf.dataframe[col].dtype == object
 
 
-@pytest.mark.skipif(not timemory_avail, reason="timemory package not available")
+@pytest.mark.xfail(not timemory_avail, reason="timemory package not available")
 def test_tree(timemory_json_data):
     """Sanity test a GraphFrame object with known data."""
     gf = GraphFrame.from_timemory(timemory_json_data)
@@ -82,7 +82,7 @@ def test_tree(timemory_json_data):
     print(output)
 
 
-@pytest.mark.skipif(not timemory_avail, reason="timemory package not available")
+@pytest.mark.xfail(not timemory_avail, reason="timemory package not available")
 def test_graphframe_to_literal(timemory_json_data):
     """Sanity test a GraphFrame object with known data."""
     gf = GraphFrame.from_timemory(timemory_json_data)
@@ -91,7 +91,7 @@ def test_graphframe_to_literal(timemory_json_data):
     assert len(graph_literal) == len(gf.graph.roots)
 
 
-@pytest.mark.skipif(not timemory_avail, reason="timemory package not available")
+@pytest.mark.xfail(not timemory_avail, reason="timemory package not available")
 def test_default_metric(timemory_json_data):
     """Validation test for GraphFrame object using default metric field"""
     gf = GraphFrame.from_timemory(timemory_json_data)
