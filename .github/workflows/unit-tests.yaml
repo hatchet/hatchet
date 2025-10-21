@@ -40,9 +40,9 @@ jobs:
         flake8
 
     - name: Update coverage
-      if: ${{ matrix.python-version == 3.9 }}
+      if: ${{ matrix.python-version == 3.12 }}
       run: |
-        pip install --upgrade coverage==6.2
+        pip install --upgrade coverage
 
     - name: Clone Caliper
       uses: actions/checkout@v2
@@ -69,7 +69,7 @@ jobs:
         PYTHONPATH=. $(which pytest)
 
     - name: Basic test with pytest
-      if: ${{ matrix.python-version == 3.9 }}
+      if: ${{ matrix.python-version == 3.12 }}
       run: |
         PYTHONPATH=. coverage run $(which pytest)
 
