@@ -81,4 +81,7 @@ jobs:
       with:
         directory: ./coverage/reports
         env_vars: OS,PYTHON
+        files: /home/runner/work/hatchet/hatchet/coverage.xml
+        flags: unittests
+        verbose: true
         fail_ci_if_error: true
