@@ -1,0 +1,14 @@
+comment: false
+coverage:
+  precision: 2
+  range:
+  - 60.0
+  - 90.0
+  round: nearest
+  status:
+    project:
+      default: true
+ignore:
+- (?s:hatchet/tests/[^\/]*)\Z
+- (?s:docs/examples/[^\/]*)\Z
+

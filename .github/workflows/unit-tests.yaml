@@ -73,8 +73,12 @@ jobs:
       run: |
         PYTHONPATH=. coverage run $(which pytest)
 
-    - name: "Upload coverage to Codecov"
-      if: ${{ matrix.python-version == 3.9 }}
-      uses: "codecov/codecov-action@v1"
+    - name: Upload coverage to Codecov
+      if: ${{ matrix.python-version == 3.12 }}
+      uses: codecov/codecov-action@v4
+      env:
+        CODECOV_TOKEN: ${{ secrets.HATCHET_CODECOV_TOKEN }}
       with:
+        directory: ./coverage/reports
+        env_vars: OS,PYTHON
         fail_ci_if_error: true
