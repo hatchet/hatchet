@@ -11,8 +11,7 @@ cython
 multiprocess
 textX
 caliper-reader == 0.3.0
-pycubexr; python_version >= '3.6'
-perfetto; python_version >= '3.6'
-dataclasses; python_version >= '3.6'
+pycubexr; python_version >= '3.9'
+dataclasses; python_version >= '3.9'
 setuptools
 cython
