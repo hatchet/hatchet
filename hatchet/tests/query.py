@@ -1201,7 +1201,7 @@ def test_apply_cypher(mock_graph_literal):
     query = CypherQuery(path)
     assert query.apply(gf) == []
 
-    gf.dataframe["time"] = np.NaN
+    gf.dataframe["time"] = np.nan
     gf.dataframe.at[gf.graph.roots[0], "time"] = 5.0
     path = """MATCH ("*", p)
     WHERE p."time" IS NOT NAN"""
@@ -1210,7 +1210,7 @@ def test_apply_cypher(mock_graph_literal):
     assert query.apply(gf) == match
 
     gf.dataframe["time"] = 5.0
-    gf.dataframe.at[gf.graph.roots[0], "time"] = np.NaN
+    gf.dataframe.at[gf.graph.roots[0], "time"] = np.nan
     path = """MATCH ("*", p)
     WHERE p."time" IS NAN"""
     match = [gf.graph.roots[0]]
