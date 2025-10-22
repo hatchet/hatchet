@@ -429,6 +429,34 @@ class GraphFrame:
         HDF5Writer(filename).write(self, key=key, **kwargs)
 
     @Logger.loggable
+    def to_pyg(self, metrics=["time", "time (inc)"], encoder=None, **kwargs):
+        """
+        Convert the GraphFrame to a PyTorch Geometric graph.
+
+        This method creates a PyTorch Geometric graph from the current GraphFrame
+        and returns a `torch_geometric.data.Data` graph object.
+
+        Each node in the PyTorch Geometric graph is represented by a node in the
+        GraphFrame. The value of each node is a vector consisting of [metrics..., encoding...].
+        By default, time and time (inc) are used as the metrics and the encoding is ignored.
+        Pass a callable to encoder that maps strings to lists of integers to include
+        encoding in the PyTorch Geometric graph. For example, `lambda encoder: [ord(c) for c in encoder]`.
+
+        Parameters:
+        metrics (list): A list of metric names to include in the PyTorch Geometric graph.
+        encoder (optional): An optional encoder map name strings to lists of integers.
+        **kwargs: Additional keyword arguments to pass to the PyGWriter.
+
+        Returns:
+        torch_geometric.data.Data: The resulting PyTorch Geometric graph object.
+        """
+
+        # import this lazily to avoid circular dependencies
+        from .writers.pyg_writer import PyGWriter
+
+        return PyGWriter().write(self, encoder=encoder, metrics=metrics, **kwargs)
+
+    @Logger.loggable
     def update_metadata(self, num_processes=None, num_threads=None, metadata=None):
         """Update a GraphFrame object's metadata."""
         if num_processes is not None:
