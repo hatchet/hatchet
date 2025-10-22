@@ -52,7 +52,7 @@ setup(
         "textx",
         "multiprocess",
         "caliper-reader",
-        "pycubexr; python_version >= '3.6'",
+        "pycubexr; python_version >= '3.9'",
     ],
     # TODO: the setup could be cleaner if we didn't dump the generated
     # .so files into _libs
