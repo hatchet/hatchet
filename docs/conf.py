@@ -31,9 +31,9 @@ copyright = "2017-2024, LLNS, LLC and other Hatchet Project Developers"
 author = "Abhinav Bhatele"
 
 # The short X.Y version
-version = "1.4.0"
+version = "1.4.1"
 # The full version, including alpha/beta/rc tags
-release = "1.4.0"
+release = "1.4.1rc0"
 
 
 # -- General configuration ---------------------------------------------------
