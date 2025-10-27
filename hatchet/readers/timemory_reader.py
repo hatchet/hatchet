@@ -519,18 +519,17 @@ class TimemoryReader:
         node_dicts = list(self.callpath_to_node_dict.values())
         dataframe = pd.DataFrame(data=node_dicts)
 
-        indices = []
-        # Set indices according to rank/thread numbers.
-        if self.multiple_ranks and self.multiple_threads:
-            indices = ["node", "rank", "thread"]
-        elif self.multiple_ranks:
-            dataframe.drop(columns=["thread"], inplace=True)
-            indices = ["node", "rank"]
-        elif self.multiple_threads:
-            dataframe.drop(columns=["rank"], inplace=True)
-            indices = ["node", "thread"]
-        else:
-            indices = ["node"]
+        indices = ["node"]
+        if self.multiple_ranks:
+            indices.append("rank")
+        if self.multiple_threads:
+            indices.append("thread")
+
+        # Drop any of {'rank','thread'} that aren’t in use, but only if present
+        unused = {"rank", "thread"} - set(indices)
+        to_drop = [c for c in unused if c in dataframe.columns]
+        if to_drop:
+            dataframe.drop(columns=to_drop, inplace=True)
 
         dataframe.set_index(indices, inplace=True)
         dataframe.sort_index(inplace=True)
