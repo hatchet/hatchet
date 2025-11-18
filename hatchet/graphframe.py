@@ -342,6 +342,15 @@ class GraphFrame:
 
     @staticmethod
     @Logger.loggable
+    def from_nsight(nsight_trace, ncu_metrics=None):
+        """Create a GraphFrame from an nsight trace."""
+        # import this lazily to avoid circular dependencies
+        from .readers.nsight_reader import NsightReader
+
+        return NsightReader(nsight_trace, ncu_metrics).read()
+
+    @staticmethod
+    @Logger.loggable
     def from_apex(dirname):
         """Create a GraphFrame from a list of dictionaries."""
         # import this lazily to avoid circular dependencies
