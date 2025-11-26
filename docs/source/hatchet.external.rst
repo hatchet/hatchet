@@ -11,11 +11,3 @@ hatchet.external.console module
    :members:
    :undoc-members:
    :show-inheritance:
-
-Module contents
----------------
-
-.. automodule:: hatchet.external
-   :members:
-   :undoc-members:
-   :show-inheritance:

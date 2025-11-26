@@ -254,16 +254,6 @@ ends in an integer and has an inclusive time greater than or equal to 10. When
 the query is used to filter and squash the the graph shown on the right, the
 returned GraphFrame contains the nodes shown in the table on the right.
 
-..
-    TODO
-    This bar is added to try to force the sample-graph.png and
-    query-dataframe.png images to be placed one above the other.
-    If anyone can find a better way to do this, please change it.
-|
-
-.. image:: images/query-dataframe.png
-   :scale: 35 %
-   :align: right
 
 Filter is one of the operations that leads to the graph object and DataFrame
 object becoming inconsistent. After a filter operation, there are nodes in the
@@ -272,6 +262,10 @@ Typically, the user will perform a squash on the GraphFrame after a filter
 operation to make the graph and DataFrame objects consistent again. This can be
 done either by manually calling the ``squash`` function on the new GraphFrame
 or by setting the ``squash`` parameter of the ``filter`` function to ``True``.
+
+.. image:: images/query-dataframe.png
+   :scale: 35 %
+   :align: right
 
 .. code-block:: python
 
