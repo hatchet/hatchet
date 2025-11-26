@@ -6,3 +6,4 @@ sphinxcontrib-programoutput
 sphinx-rtd-theme
 # Restrict to pygments <2.13
 pygments <2.13
+perfetto # for perfetto reader docs
