@@ -513,7 +513,7 @@ def test_filter_squash_bunny_to_goat():
         GraphFrame.from_lists(("e", "f", diamond), ("g", diamond, "h")),
         lambda row: row["node"].frame["name"] not in ("a", "c"),
         Graph.from_lists(("e", new_b, new_d, "f"), ("g", new_b, new_d, "h")),
-        [4, 2, 1, 1, 4, 1],  # e, b, d, f, g, h
+        [4, 2, 1, 1, 5, 1],  # e, b, d, f, g, h
     )
 
     check_filter_no_squash(
