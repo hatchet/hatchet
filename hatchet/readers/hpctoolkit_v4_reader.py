@@ -455,15 +455,16 @@ class MetaReader:
             #     self.file.read(8), byteorder=self.byte_order, signed=self.signed
             # )
 
-            # Number of instantiated sub-metrics for this metric
-            self.number_of_metric_types = int.from_bytes(
+            # Number of instantiated sub-metrics for this metric.
+            # These are just like the regular metrics we already have in all readers.
+            self.number_of_psi_metrics = int.from_bytes(
                 self.file.read(2), byteorder=self.byte_order, signed=self.signed
             )
 
             # Number of summary statistics for this metric. Hatchet currently
             # don't need summary statistics.
             self.file.read(2)
-            # number_of_ss = int.from_bytes(
+            # number_of_ss_metrics = int.from_bytes(
             #     self.file.read(2), byteorder=self.byte_order, signed=self.signed
             # )
 
@@ -477,7 +478,7 @@ class MetaReader:
             # context by summing values attributed to children contexts, within the
             # measurements for a single application thread. Which children are included
             # in this sum is indicated by the *pScope PS structure.
-            for i in range(self.number_of_metric_types):
+            for i in range(self.number_of_psi_metrics):
                 self.file.seek(psi_pointer + (size_of_psi * i))
 
                 ps_in_psi_pointer = int.from_bytes(
@@ -1055,29 +1056,30 @@ class ProfileReader:
         self.profile_info_list = []
         for i in range(num_profiles):
             file_index = profiles_pointer + (i * profile_size)
-            self.file.seek(file_index)
+            self.__read_PI(file_index, i)
 
-            # Profile-Major Sparse Value Block.
-            # We don't need to read this section unless we want
-            # the summary statistics. The commented out lines below
-            # show how to read PSVB in case we read it in future.
-            self.file.read(0x20)
-            # psvb = self.file.read(0x20)
+    def __read_PI(self, pi_pointer: int, pi_index: int) -> None:
+        self.file.seek(pi_pointer)
 
-            # Identifier tuple for this profile
-            hit_pointer = int.from_bytes(
-                self.file.read(8), byteorder=self.byte_order, signed=self.signed
-            )
-            # (u32)
-            flags = int.from_bytes(
-                self.file.read(4), byteorder=self.byte_order, signed=self.signed
-            )
-            profile_map = {"hit_pointer": hit_pointer, "flags": flags}
+        # Profile-Major Sparse Value Block.
+        # We don't need to read this section unless we want
+        # the summary statistics.
+        self.file.read(0x20)
 
-            self.profile_info_list.append(profile_map)
-            if hit_pointer == 0:
-                # this is a summary profile
-                self.summary_profile_index = i
+        # Identifier tuple for this profile
+        hit_pointer = int.from_bytes(
+            self.file.read(8), byteorder=self.byte_order, signed=self.signed
+        )
+        # (u32)
+        flags = int.from_bytes(
+            self.file.read(4), byteorder=self.byte_order, signed=self.signed
+        )
+        profile_map = {"hit_pointer": hit_pointer, "flags": flags}
+
+        self.profile_info_list.append(profile_map)
+        if hit_pointer == 0:
+            # this is a summary profile
+            self.summary_profile_index = pi_index
 
     def get_hit_from_profile(self, index: int) -> list:
         profile = self.profile_info_list[index]
@@ -1548,7 +1550,13 @@ class CCTReader:
         # to be able to show those profiles (i.e. rank/thread) on
         # the dataframe.
         visited_profiles = set([])
-        not_visited_profiles = list(self.profile_reader.profile_info_list)
+        # add all the profiles as not visited. we will remove
+        # the visited ones later.
+        not_visited_profiles = list()
+        for profile in self.profile_reader.profile_info_list:
+            hit_pt = profile["hit_pointer"]
+            if hit_pt != 0:
+                not_visited_profiles.append(self.profile_reader.hit_map[hit_pt])
         visited_metrics = set([])
 
         # iterate over each metric.
@@ -1556,27 +1564,20 @@ class CCTReader:
         for i in range(len(metric_indices)):
             metric_id = metric_indices[i][0]
             start_index = metric_indices[i][1]
-            next_metric_index = None
+
+            if i != len(metric_indices) - 1:
+                end_index = metric_indices[i + 1][1]
+            else:
+                end_index = nonzero_vals
 
             # find the correct location to read.
             # a profile and its value takes 12 bytes.
-            if i != len(metric_indices) - 1:
-                next_metric_index = profile_value_pairs + (
-                    (metric_indices[i + 1][1]) * 12
-                )
-            else:
-                next_metric_index = profile_value_pairs + ((nonzero_vals) * 12)
             self.file.seek(profile_value_pairs + (start_index * 12))
 
             # get the metric name and type (point, execution, function, lex-aware)
             # from the corresponding id.
             metric = self.meta_reader.metric_id_name_map[metric_id][0]
             metric_type = self.meta_reader.metric_id_name_map[metric_id][1]
-
-            # store all the visited metrics.
-            # we will use this later to fill the missing values.
-            visited_metrics.add(metric)
-            visited_metrics.add(metric + " (inc)")
 
             # get the default inclusive and exclusive metric type
             # for the corresponding metric.
@@ -1592,10 +1593,14 @@ class CCTReader:
             elif metric_type == exc:
                 self.exclusive_metrics.add(metric)
 
+            # store all the visited metrics.
+            # we will use this later to fill the missing values.
+            visited_metrics.add(metric)
+
             # this function read profiles and keeps
             # track of visited profiles.
             __read_profiles(
-                next_metric_index,
+                profile_value_pairs + (end_index * 12),
                 visited_profiles,
                 node_name,
                 node,
@@ -1603,29 +1608,36 @@ class CCTReader:
                 metric,
             )
 
+        # convert visited profiles to a suitable format
+        # so we can compare with the non visited ones.
+        visited_profiles_info = []
+        for prof_idx in visited_profiles:
+            visited_profiles_info.append(
+                self.profile_reader.get_hit_from_profile(prof_idx)
+            )
+
         # remove the visited profiles.
         not_visited_profiles = [
-            i for j, i in enumerate(not_visited_profiles) if j not in visited_profiles
+            profile
+            for profile in not_visited_profiles
+            if profile not in visited_profiles_info
         ]
 
         # iterate over the not visited nodes and create dummy instances.
         for profile in not_visited_profiles:
-            hit_pointer = profile["hit_pointer"]
-            if hit_pointer != 0:
-                dummy_profile_info = self.profile_reader.hit_map[hit_pointer]
-                dummy_identifier = (node,) + tuple(dummy_profile_info.values())
+            dummy_identifier = (node,) + tuple(profile.values())
 
-                # fills all the metric values in not visited profiles
-                # with 0.
-                self.__create_node_dict(
-                    dummy_identifier,
-                    dummy_profile_info,
-                    node_name,
-                    node,
-                    context_info,
-                    metric_names=visited_metrics,
-                    value=0,
-                )
+            # fills all the metric values in not visited profiles
+            # with 0.
+            self.__create_node_dict(
+                dummy_identifier,
+                profile,
+                node_name,
+                node,
+                context_info,
+                metric_names=visited_metrics,
+                value=0,
+            )
 
 
 class HPCToolkitV4Reader:
