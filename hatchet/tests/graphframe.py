@@ -986,96 +986,28 @@ def test_div_decorator(small_mock1, small_mock2):
     assert "10.000 H ◀" in output
 
 
-def test_groupby_aggregate_simple(mock_dag_literal_module):
-    r"""Test reindex on a simple graph:
+def test_groupby_aggregate_by_name(mock_graph_literal):
+    """Transform a CCT into a call graph by grouping on name column."""
+    gf = GraphFrame.from_literal(mock_graph_literal)
 
-          a                              main
-         / \                             /  \
-        b   e       groupby module     foo  bar
-        |   |       -------------->     |    |
-        c   f                         graz  baz
+    call_graph_nodes = gf.dataframe["name"].unique()
 
-        Node   Module
-         a     main
-         b     foo
-         c     graz
-         e     bar
-         f     baz
-
-    """
-    modules = ["main", "foo", "graz", "bar", "baz"]
-
-    gf = GraphFrame.from_literal(mock_dag_literal_module)
-
-    groupby_col = ["module"]
-    agg_func = {"time (inc)": np.max, "time": np.max}
-    out_gf = gf.groupby_aggregate(groupby_col, agg_func)
-
-    assert all(m in out_gf.dataframe.name.values for m in modules)
-    assert len(out_gf.graph) == len(modules)
-
-
-def test_groupby_aggregate_complex(mock_dag_literal_module_complex):
-    r"""Test reindex on a complex graph:
-
-          a                              main
-         / \                             /  \
-        b   e       groupby module     foo  bar
-        |           -------------->     |
-        c                             graz
-        |
-        d
-
-        Node   Module
-         a     main
-         b     foo
-         c     graz
-         d     graz
-         e     bar
-
-    """
-    modules = ["main", "foo", "graz", "bar"]
-
-    gf = GraphFrame.from_literal(mock_dag_literal_module_complex)
-
-    groupby_col = ["module"]
+    groupby_column = "name"
     agg_func = {"time (inc)": np.sum, "time": np.sum}
-    out_gf = gf.groupby_aggregate(groupby_col, agg_func)
+    grouped_gf = gf.groupby_aggregate(groupby_column, agg_func)
 
-    assert all(m in out_gf.dataframe.name.values for m in modules)
-    assert len(out_gf.graph) == len(modules)
+    assert all(m in grouped_gf.dataframe.name.values for m in call_graph_nodes)
+    assert len(grouped_gf.graph) == len(call_graph_nodes)
 
+    grouped_gf.dataframe = grouped_gf.dataframe.reset_index(drop=True)
 
-def test_groupby_aggregate_more_complex(mock_dag_literal_module_more_complex):
-    r"""Test reindex on a more complex graph:
-
-          a                              main
-         / \                             /  \
-        b   e       groupby module     foo--bar
-        |   |       -------------->     |
-        c   f                         graz
-        |
-        d
-
-        Node   Module
-         a     main
-         b     foo
-         c     graz
-         d     graz
-         e     bar
-         f     foo
-
-    """
-    modules = ["main", "foo", "graz", "bar"]
-
-    gf = GraphFrame.from_literal(mock_dag_literal_module_more_complex)
-
-    groupby_col = ["module"]
-    agg_func = {"time (inc)": np.sum, "time": np.sum}
-    out_gf = gf.groupby_aggregate(groupby_col, agg_func)
-
-    assert all(m in out_gf.dataframe.name.values for m in modules)
-    assert len(out_gf.graph) == len(modules)
+    grouped_df = gf.dataframe.groupby("name", as_index=False).agg(np.sum)
+    grouped_gf.dataframe.sort_values(by=["name"], inplace=True)
+    grouped_df.sort_values(by=["name"], inplace=True)
+    grouped_gf.dataframe = grouped_gf.dataframe.reset_index(drop=True)
+    assert grouped_gf.dataframe[["name", "time (inc)", "time"]].equals(
+        grouped_df[["name", "time (inc)", "time"]]
+    )
 
 
 def test_depth(mock_graph_literal):

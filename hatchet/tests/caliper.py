@@ -297,3 +297,62 @@ def test_sw4_cuda_summary_from_caliperreader(
 
     for col in gf.exc_metrics + gf.inc_metrics:
         assert col in gf.dataframe.columns
+
+
+def test_groupby_aggregate_by_name(calc_pi_caliper_json):
+    gf = GraphFrame.from_caliper(str(calc_pi_caliper_json))
+
+    functions = gf.dataframe["name"].unique()
+
+    groupby_column = "name"
+    agg_func = {"time": np.sum}
+    grouped_gf = gf.groupby_aggregate(groupby_column, agg_func)
+
+    assert all(m in grouped_gf.dataframe.name.values for m in functions)
+    assert len(grouped_gf.graph) == len(functions)
+
+
+@pytest.mark.xfail(reason="Hatchet cannot perform groupby-aggregate on missing data.")
+def test_groupby_aggregate_by_module(calc_pi_caliper_json):
+    """
+    Resulting groupby-aggregate dataframe will have missing ranks (i.e.,
+    missing rows) if the specified column contains values that vary across
+    ranks for a given node. For example for a node N, the file values for ranks
+    0-2 are [None, "foo.c", None]. The None values were added to the resulting
+    dataframe since the profile contained no data for this node and rank.
+    """
+    gf = GraphFrame.from_caliper(str(calc_pi_caliper_json))
+
+    modules = gf.dataframe["module"].unique()
+
+    groupby_column = "module"
+    agg_func = {"time": np.sum}
+    grouped_gf = gf.groupby_aggregate(groupby_column, agg_func)
+
+    # one of the modules is None (type: NoneType), so we need to check if the
+    # string None is in the list of modules
+    assert all(str(m) in grouped_gf.dataframe.name.values for m in modules)
+    assert len(grouped_gf.graph) == len(modules)
+
+
+@pytest.mark.xfail(reason="Hatchet cannot perform groupby-aggregate on missing data.")
+def test_groupby_aggregate_by_file(calc_pi_caliper_json):
+    """
+    Resulting groupby-aggregate dataframe will have missing ranks (i.e.,
+    missing rows) if the specified column contains values that vary across
+    ranks for a given node. For example for a node N, the file values for ranks
+    0-2 are [None, "foo.c", None]. The None values were added to the resulting
+    dataframe since the profile contained no data for this node and rank.
+    """
+    gf = GraphFrame.from_caliper(str(calc_pi_caliper_json))
+
+    filenames = gf.dataframe["file"].unique()
+
+    groupby_column = "file"
+    agg_func = {"time": np.max}
+    grouped_gf = gf.groupby_aggregate(groupby_column, agg_func)
+
+    # one of the modules is None (type: NoneType), so we need to check if the
+    # string None is in the list of modules
+    assert all(str(m) in grouped_gf.dataframe.name.unique() for m in filenames)
+    assert len(grouped_gf.graph) == len(filenames)
