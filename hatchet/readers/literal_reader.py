@@ -3,6 +3,8 @@
 #
 # SPDX-License-Identifier: MIT
 
+import re
+import json
 import pandas as pd
 
 import hatchet.graphframe
@@ -59,16 +61,32 @@ class LiteralReader:
         (GraphFrame): graphframe containing data from dictionaries
     """
 
-    def __init__(self, graph_dict):
+    def __init__(self, list_of_filenames_or_dicts):
         """Read from list of dictionaries.
 
         graph_dict (dict): List of dictionaries encoding nodes.
         """
-        self.graph_dict = graph_dict
+        self.filenames = []
+        self.list_of_dicts = []
+        self.num_ranks = 1
 
-    def parse_node_literal(
-        self, frame_to_node_dict, node_dicts, child_dict, hparent, seen_nids
-    ):
+        self.list_roots = []
+        self.node_dicts = []
+        self.frame_to_node_dict = {}
+        self.seen_nids = []
+
+        self.exc_metrics = []
+        self.inc_metrics = []
+
+        if isinstance(list_of_filenames_or_dicts[0], str):
+            self.filenames = list_of_filenames_or_dicts
+            self.num_ranks = len(self.filenames)
+        else:
+            self.list_of_dicts = list_of_filenames_or_dicts
+            # TODO: fix for multi-process data
+            self.num_ranks = 1
+
+    def parse_node_literal(self, child_dict, hparent):
         """Create node_dict for one node and then call the function
         recursively on all children.
         """
@@ -81,8 +99,9 @@ class LiteralReader:
             hnid = child_dict["metrics"]["_hatchet_nid"]
 
         frame = Frame(child_dict["frame"])
-        if hnid not in seen_nids:
+        if (hnid != -1 and hnid not in self.seen_nids) or (hnid == -1 and frame not in self.frame_to_node_dict):
             hnode = Node(frame, hparent, hnid=hnid)
+            self.frame_to_node_dict[frame] = hnode
 
             # depending on the node type, the name may not be in the frame
             node_name = child_dict["frame"].get("name")
@@ -92,61 +111,78 @@ class LiteralReader:
             node_dict = dict(
                 {"node": hnode, "name": node_name}, **child_dict["metrics"]
             )
+            if self.num_ranks > 1:
+                node_dict["rank"] = rank
 
-            node_dicts.append(node_dict)
-            frame_to_node_dict[frame] = hnode
-
-            if hnid != -1:
-                seen_nids.append(hnid)
-
+            self.node_dicts.append(node_dict)
         else:
-            hnode = frame_to_node_dict.get(frame)
+            hnode = self.frame_to_node_dict.get(frame)
+
+        if hnid != -1:
+            self.seen_nids.append(hnid)
 
         hparent.add_child(hnode)
 
         if "children" in child_dict:
             for child in child_dict["children"]:
-                self.parse_node_literal(
-                    frame_to_node_dict, node_dicts, child, hnode, seen_nids
-                )
+                self.parse_node_literal(child, hnode)
+
+    def create_graph(self):
+        for count in range(self.num_ranks):
+            frame = None
+            hnid = -1
+
+            if self.filenames:
+                rank = int(re.match(r"(.*)(\d+).json", self.filenames[count]).group(2))
+                with open(self.filenames[count]) as json_file:
+                    graph_dict = json.load(json_file)
+            else:
+                # TODO: fix for multi-process data
+                graph_dict = self.list_of_dicts
+
+            # start with creating a node_dict for each root
+            for i in range(len(graph_dict)):
+                if "_hatchet_nid" in graph_dict[i]["metrics"]:
+                    hnid = graph_dict[i]["metrics"]["_hatchet_nid"]
+                    self.seen_nids.append(hnid)
+                frame = Frame(graph_dict[i]["frame"])
+                if (hnid != -1 and hnid not in self.seen_nids) or (hnid == -1 and frame not in self.frame_to_node_dict):
+                    graph_root = Node(frame, None, hnid=hnid)
+                    self.frame_to_node_dict[frame] = graph_root
+
+                    # depending on the node type, the name may not be in the frame
+                    node_name = graph_dict[i]["frame"].get("name")
+                    if not node_name:
+                        node_name = graph_dict[i]["name"]
+
+                    node_dict = dict(
+                        {"node": graph_root, "name": node_name}, **graph_dict[i]["metrics"]
+                    )
+                    if self.num_ranks > 1:
+                        node_dict["rank"] = rank
+
+                    self.node_dicts.append(node_dict)
+                else:
+                    graph_root = self.frame_to_node_dict.get(frame)
+
+                self.list_roots.append(graph_root)
+
+                # call recursively on all children of root
+                if "children" in graph_dict[i]:
+                    for child in graph_dict[i]["children"]:
+                        self.parse_node_literal(child, graph_root)
+
+        for key in graph_dict[0]["metrics"].keys():
+            if "(inc)" in key:
+                self.inc_metrics.append(key)
+            else:
+                self.exc_metrics.append(key)
+
 
     def read(self):
-        list_roots = []
-        node_dicts = []
-        frame_to_node_dict = {}
-        frame = None
-        seen_nids = []
-        hnid = -1
+        self.create_graph()
 
-        # start with creating a node_dict for each root
-        for i in range(len(self.graph_dict)):
-            if "_hatchet_nid" in self.graph_dict[i]["metrics"]:
-                hnid = self.graph_dict[i]["metrics"]["_hatchet_nid"]
-                seen_nids.append(hnid)
-            frame = Frame(self.graph_dict[i]["frame"])
-            graph_root = Node(frame, None, hnid=hnid)
-
-            # depending on the node type, the name may not be in the frame
-            node_name = self.graph_dict[i]["frame"].get("name")
-            if not node_name:
-                node_name = self.graph_dict[i]["name"]
-
-            node_dict = dict(
-                {"node": graph_root, "name": node_name}, **self.graph_dict[i]["metrics"]
-            )
-            node_dicts.append(node_dict)
-
-            list_roots.append(graph_root)
-            frame_to_node_dict[frame] = graph_root
-
-            # call recursively on all children of root
-            if "children" in self.graph_dict[i]:
-                for child in self.graph_dict[i]["children"]:
-                    self.parse_node_literal(
-                        frame_to_node_dict, node_dicts, child, graph_root, seen_nids
-                    )
-
-        graph = Graph(list_roots)
+        graph = Graph(self.list_roots)
 
         # test if nids are already loaded
         if -1 in [n._hatchet_nid for n in graph.traverse()]:
@@ -154,16 +190,8 @@ class LiteralReader:
         else:
             graph.enumerate_depth()
 
-        exc_metrics = []
-        inc_metrics = []
-        for key in self.graph_dict[i]["metrics"].keys():
-            if "(inc)" in key:
-                inc_metrics.append(key)
-            else:
-                exc_metrics.append(key)
-
-        dataframe = pd.DataFrame(data=node_dicts)
+        dataframe = pd.DataFrame(data=self.node_dicts)
         dataframe.set_index(["node"], inplace=True)
         dataframe.sort_index(inplace=True)
 
-        return hatchet.graphframe.GraphFrame(graph, dataframe, exc_metrics, inc_metrics)
+        return hatchet.graphframe.GraphFrame(graph, dataframe, self.exc_metrics, self.inc_metrics)
